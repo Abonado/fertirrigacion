@@ -252,6 +252,42 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 @media (max-width:520px){.suma{grid-template-columns:1fr 1fr}.suma .btn{grid-column:1/-1}}
 .splash{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 .splash[hidden]{display:none}
+.fincas{position:fixed;inset:0;z-index:28;background:var(--bg);overflow:auto;padding:calc(20px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(28px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.fincas[hidden]{display:none}
+.fincas .in{max-width:1120px;margin:0 auto;display:grid;gap:20px}
+.fhead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:14px}
+.fhead h2{font:700 clamp(32px,7vw,46px)/1 var(--f-display);color:var(--navy);margin-top:4px}
+.fhead .fecha{font-size:13px;color:var(--muted);font-weight:600}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:18px}
+.fcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(20,30,40,.04),0 8px 24px rgba(20,30,40,.06)}
+.fcard .ph{position:relative;aspect-ratio:16/9;background:#2c4a3a;overflow:hidden}
+.fcard .ph>img,.fcard .ph>svg.paisaje{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.fcard .ph::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,16,24,.25) 0,rgba(8,16,24,0) 30%,rgba(8,16,24,0) 48%,rgba(8,16,24,.78) 100%);pointer-events:none}
+.fcard .ttl{position:absolute;left:16px;right:16px;bottom:12px;z-index:1;color:#fff;text-transform:uppercase}
+.fcard .ttl small{display:block;font-size:11px;letter-spacing:.14em;font-weight:600;opacity:.9}
+.fcard .ttl h3{font:700 32px/1 var(--f-display);color:#fff;letter-spacing:.01em}
+.fcard .nfin{position:absolute;top:12px;left:12px;z-index:1;font:700 13px var(--f-display);letter-spacing:.08em;color:#fff;background:rgba(8,16,24,.45);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:3px 10px}
+.fcard .wxc{position:absolute;top:10px;right:10px;z-index:1;background:rgba(255,255,255,.94);border-radius:999px;padding:4px 12px 4px 6px;display:flex;align-items:center;gap:6px;font:700 17px var(--f-display);color:var(--ink);box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.fcard .wxc svg{width:24px;height:24px}
+.fcard .cam{position:absolute;top:10px;left:56px;z-index:2;font-size:10px;padding:4px 9px;min-height:0;background:rgba(255,255,255,.9);border-radius:999px}
+.fcard .bd{padding:14px 16px 16px;display:grid;gap:12px;flex:1;align-content:start}
+.fcard .cabs{display:flex;gap:6px;flex-wrap:wrap}
+.fcard .cabs span{font:600 12px var(--f-body);letter-spacing:.04em;border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:3px 10px}
+.fcard .wxl{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fcard .wxl div{padding:7px 9px;border-left:1px solid var(--line);display:grid;gap:1px}
+.fcard .wxl div:first-child{border-left:0}
+.fcard .wxl span{font-size:10px;letter-spacing:.1em;color:var(--muted);font-weight:600}
+.fcard .wxl b{font:600 14px/1.15 var(--f-display);color:var(--ink)}
+.fcard .avs{display:grid;gap:6px}
+.fcard .avs h4{margin:0;font-size:11px;letter-spacing:.12em;color:var(--muted)}
+.fcard .av{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.35}
+.fcard .av .dot{margin-top:4px}
+.fcard .go{margin-top:auto;justify-content:center;width:100%}
+.fcard.off .ph>*:not(.ttl):not(.nfin):not(.cam){filter:grayscale(.55)}
+.fcard .ribbon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;background:rgba(8,16,24,.6);color:#fff;font:700 13px var(--f-display);letter-spacing:.1em;padding:6px 14px;border-radius:999px;white-space:nowrap}
+.brandl{display:flex;align-items:center;gap:12px}
+.fback{display:inline-flex;align-items:center;gap:2px;font:700 13px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--navy);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 6px;cursor:pointer}
+.fback svg{width:18px;height:18px}
 a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .splash .in{max-width:560px;margin:0 auto;min-height:100%;display:grid;gap:16px;align-content:center}
 .splash .hola{font:700 clamp(38px,11vw,64px)/.95 var(--f-display);color:var(--navy);margin:0;text-align:center}
@@ -326,10 +362,11 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
+<div class="fincas" id="fincas" role="dialog" aria-label="Fincas" hidden></div>
 <header class="top">
   <div class="wrap">
     <div class="brandrow">
-      <div><div class="eyebrow">Fertirrigación · cabezales de riego</div><h1>Abonado Pinta Santos</h1></div>
+      <div class="brandl"><button class="fback" data-act="fincas" aria-label="Volver a fincas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Fincas</button><div><div class="eyebrow">Fertirrigación · cabezales de riego</div><h1 id="h1">Abonado Pinta Santos</h1></div></div>
       <label class="date"><span>Día</span><input type="date" id="fecha"></label>
     </div>
     <nav class="scroller" id="cabs" aria-label="Cabezal"></nav>
@@ -380,7 +417,8 @@ function fe(id,cabs,lpcm,cap,kg,d,cmH,ej){return{id,nombre:'Depósito Microstep 
 function nit(id,cabs,lpcm,cap,kg,d,cmH,ej){return{id,nombre:'Depósito ácido nítrico',cabezales:cabs,lpcm,capacidad:cap,principal:'hno3',kgPrincipal:kg,venturis:1,reparto:false,cmHabitual:cmH,ejCm:ej,productos:[{p:'hno3',dosis:d}]}}
 function sec(cab,n,min,bjs){return{id:cab+'_s'+n,nombre:'Sector '+n,ejMin:min,bandejas:bjs.map(b=>({id:cab+'_b'+b[0].replace('.','_'),nombre:'Bandeja '+b[0],caudal:b[1],ejDren:b[2]}))}}
 const T12=[['1.1',223,6750],['1.2',220,8000],['1.3',219,3500]], T22=[['2.1',207,7000],['2.2',224,8000],['2.3',202,9000]];
-const DEFAULT_CONFIG={v:1,productos:PRODUCTOS,alertas:{ceMax:4,dCE:1.5,phMin:5.5,phMax:7,llenado:33},riego:{ini:'08:30',fin:'18:30'},medida:'cm',medidaV:2,ubic:{lat:37.4063,lon:-1.5829},stockMin:{},saco:{},
+const DEFAULT_CONFIG={v:1,productos:PRODUCTOS,alertas:{ceMax:4,dCE:1.5,phMin:5.5,phMax:7,llenado:33},riego:{ini:'08:30',fin:'18:30'},medida:'cm',medidaV:2,
+  fincas:[{id:'pinta',nombre:'Pinta Santos',cabezales:['pla','gas','fra']},{id:'palacias',nombre:'Las Palacias',cabezales:[]},{id:'fuente',nombre:'La Fuente',cabezales:['mt2','mt3']}],ubic:{lat:37.4063,lon:-1.5829},stockMin:{},saco:{},
   cabezales:[
     {id:'gas',nombre:'Gasolinera',ejM3:214,sectores:[sec('gas',3,130,[['3.1',209,10500],['3.2',210,11300]]),sec('gas',4,110,[['4.1',210,8750],['4.2',198,10250]])]},
     {id:'pla',nombre:'Planos',ejM3:203,sectores:[sec('pla',1,120,[['1.1',192,9000],['1.2',204,7750],['1.3',195,10500]]),sec('pla',2,100,[['2.1',198,12700],['2.2',206,12800],['2.3',198,13500]])]},
@@ -494,7 +532,60 @@ function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const
 
 /* ---------- Vistas ---------- */
 const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['almacen','Almacén'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
-function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico'].includes(st.tab);$('#cabs').innerHTML=st.cfg.cabezales.map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
+/* ---------- Fincas ---------- */
+const fincaAct=()=>(st.cfg.fincas||[]).find(f=>f.id===st.finca)||null;
+function cabsFinca(){const f=fincaAct();return f&&f.cabezales.length?f.cabezales.map(id=>st.cfg.cabezales.find(c=>c.id===id)).filter(Boolean):st.cfg.cabezales}
+st.fwx={};st.finca=(()=>{try{return localStorage.getItem('abono.finca')}catch(e){return null}})();
+async function loadFincaWx(f){if(enClaude())return;const u=f.ubic||AGUILAS,k=u.lat.toFixed(3)+','+u.lon.toFixed(3);if(st.fwx[k]&&!st.fwx[k].viejo&&Date.now()-st.fwx[k].t<30*60000)return;
+  try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${u.lat}&longitude=${u.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&timezone=Europe%2FMadrid&forecast_days=2`);
+    if(!r.ok)throw 0;const j=await r.json();if(!j.current||!j.daily)throw 0;st.fwx[k]={...j,t:Date.now()};try{localStorage.setItem('abono.wxf.'+k,JSON.stringify(st.fwx[k]))}catch(e){}}
+  catch(e){try{const c=JSON.parse(localStorage.getItem('abono.wxf.'+k)||'null');st.fwx[k]=c?{...c,viejo:true}:{fallo:true,t:Date.now()}}catch(_){st.fwx[k]={fallo:true,t:Date.now()}}}
+  if(!$('#fincas').hidden)renderFincas()}
+const fwxDe=f=>{const u=f.ubic||AGUILAS;return st.fwx[u.lat.toFixed(3)+','+u.lon.toFixed(3)]||null};
+function wxIcon(code){const sol='<circle cx="12" cy="12" r="4.2" fill="#f2b632"/><g stroke="#f2b632" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g>',
+    nube=(x=0,y=0,c='#9aa9b4')=>`<path transform="translate(${x} ${y})" d="M7 18h10a4 4 0 0 0 .4-8 5.5 5.5 0 0 0-10.6 1.4A3.3 3.3 0 0 0 7 18z" fill="${c}"/>`,
+    gotas='<g stroke="#3a7bd5" stroke-width="1.8" stroke-linecap="round"><path d="M8 20.5l-1 2M12 20.5l-1 2M16 20.5l-1 2"/></g>';
+  let b;if(code==null)b=nube();else if(code<=1)b=sol;else if(code===2)b=`<g transform="translate(-3 -3) scale(.8)">${sol}</g>${nube(1,1)}`;else if(code===3)b=nube();else if(code<=48)b=`${nube(0,-2)}<g stroke="#9aa9b4" stroke-width="1.6" stroke-linecap="round"><path d="M5 20h14M7 22.5h10"/></g>`;
+  else if(code<=67||(code>=80&&code<=82))b=`${nube(0,-3,'#7f8f9b')}${gotas}`;else if(code<=86)b=`${nube(0,-3)}<g fill="#9cc3e6"><circle cx="8" cy="21" r="1.2"/><circle cx="12" cy="22" r="1.2"/><circle cx="16" cy="21" r="1.2"/></g>`;else b=`${nube(0,-3,'#56636d')}<path d="M12.5 17l-2.5 4h3l-2 4" fill="none" stroke="#f2b632" stroke-width="1.8" stroke-linejoin="round"/>`;
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${b}</svg>`}
+function paisaje(f,i){const tonos=[['#f6c88a','#9ec6e8','#6f8f5a','#4f6b40'],['#f3b07a','#b7cde0','#8a7a52','#6b5b3a'],['#fbd9a0','#a9d0ee','#5f8a6a','#3f6650']][i%3];const tunel=(f.cabezales||[]).some(c=>/^mt/.test(c));
+  let inv='';for(let k=0;k<7;k++){const x=8+k*52;inv+=tunel?`<path d="M${x} 150 v-14 a22 22 0 0 1 44 0 v14z" fill="#eef3f6" stroke="#c9d5dc"/><path d="M${x+22} 114 v36" stroke="#d3dde3"/>`:`<path d="M${x} 150 v-20 l11 -9 l11 9 l11 -9 l11 9 v20z" fill="#eef3f6" stroke="#c9d5dc"/>`}
+  return `<svg class="paisaje" viewBox="0 0 380 214" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><linearGradient id="sk${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${tonos[1]}"/><stop offset="1" stop-color="${tonos[0]}"/></linearGradient></defs>
+    <rect width="380" height="214" fill="url(#sk${i})"/><circle cx="300" cy="62" r="20" fill="#fff4d6" opacity=".9"/><path d="M0 120 Q90 82 190 108 T380 96 V214 H0z" fill="${tonos[2]}" opacity=".75"/><path d="M0 146 Q120 118 240 140 T380 132 V214 H0z" fill="${tonos[3]}"/>
+    <g transform="translate(6 20)">${inv}</g><path d="M0 182 H380 V214 H0z" fill="${tonos[3]}"/></svg>`}
+function fincaAvisos(f){const out=[],cabs=f.cabezales||[];if(!cabs.length)return [['nd','Todavía sin cabezales ni datos']];
+  if(st.hist===null||st.llen===null)return [['nd','Cargando avisos…']];
+  const d=new Date();d.setDate(d.getDate()-1);const ayer=isoD(d),ra=(st.hist||[]).find(r=>r.fecha===ayer);
+  if(!ra||!cabs.some(c=>ra.m3&&ra.m3[c]!=null))out.push(['bad','Faltan las cuentas de ayer']);
+  const deps=st.cfg.bidones.filter(b=>b.cabezales.some(c=>cabs.includes(c))&&bajoUmbral(nivel(b)));
+  if(deps.length)out.push(['warn','Rellenar: '+deps.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')]);
+  const pend=(st.msgs||[]).filter(m=>!m.resuelto&&cabs.includes(m.cab)).length;if(pend)out.push(['warn',pend===1?'1 mensaje pendiente':pend+' mensajes pendientes']);
+  const ult=(st.hist||[]).find(r=>r.resumen&&cabs.some(c=>r.resumen[c]&&(r.resumen[c].ceD!=null||r.resumen[c].phD!=null)));
+  if(ult){const a=st.cfg.alertas;for(const c of cabs){const z=ult.resumen[c];if(!z)continue;if(z.ceD!=null&&z.ceD>a.ceMax)out.push(['bad',`CE de drenaje alta en ${cabNombre(c)}: ${fmt(z.ceD,2)} mS`]);if(z.phD!=null&&(z.phD<a.phMin||z.phD>a.phMax))out.push(['bad',`pH de drenaje fuera de rango en ${cabNombre(c)}: ${fmt(z.phD,1)}`])}}
+  const w=fwxDe(f);if(w&&w.daily){const sub={};for(const k in w.daily)sub[k]=w.daily[k].slice(0,2);for(const a of avisosWx(sub))out.push(a)}
+  if(!out.length)out.push(['ok','Todo en orden']);return out}
+function fotoFinca(f,i){const ft=f.foto;if(!ft)return paisaje(f,i);if(typeof ft==='string')return `<img src="${esc(ft)}" alt="">`;
+  return (ft.local||ft.fb)?`<img alt="" data-local="${ft.id}">`:`<img alt="" src="${esc(Adj.src(ft))}">`}
+function renderFincas(){const fs=st.cfg.fincas||[],admin=!window.NUBE||(NUBE.user&&NUBE.user.admin),hoyTxt=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+  $('#fincas').innerHTML=`<div class="in"><div class="fhead"><div><div class="eyebrow">Fertirrigación · cabezales de riego</div><h2>Fincas</h2></div><div class="fecha">${esc(hoyTxt)}</div></div>
+  <div class="fgrid">${fs.map((f,i)=>{const cabs=(f.cabezales||[]).map(cabNombre),w=fwxDe(f),c=w&&w.current,dd=w&&w.daily,off=!cabs.length,av=fincaAvisos(f),mx=4,u=f.ubic||AGUILAS;
+    const vto=c&&c.wind_direction_10m!=null?VIENTOS[Math.round(((c.wind_direction_10m%360)+360)%360/45)%8]:null;
+    return `<article class="fcard${off?' off':''}"><div class="ph">${fotoFinca(f,i)}<span class="nfin">${String(i+1).padStart(2,'0')}</span>
+      ${c?`<span class="wxc">${wxIcon(c.weather_code)}${fmt(c.temperature_2m,0)}°</span>`:''}${off?'<span class="ribbon">Sin datos todavía</span>':''}
+      <div class="ttl"><small>Finca</small><h3>${esc(f.nombre)}</h3></div>
+      ${admin&&Adj.can()?`<label class="btn cam" for="ff_${f.id}">Cambiar foto</label><input type="file" id="ff_${f.id}" data-ffoto="${f.id}" accept="image/*" hidden>`:''}</div>
+      <div class="bd">${cabs.length?`<div class="cabs">${cabs.map(n=>`<span>${esc(n)}</span>`).join('')}</div>`:''}
+      ${enClaude()?'':c&&dd?`<div class="wxl"><div><span>Cielo</span><b>${esc(WX_TXT[c.weather_code]||'—')}</b></div><div><span>Máx / mín</span><b>${fmt(dd.temperature_2m_max[0],0)}° / ${fmt(dd.temperature_2m_min[0],0)}°</b></div><div><span>Viento</span><b>${fmt(c.wind_speed_10m,0)} km/h${vto?' '+vto[0]:''}</b></div></div>`:`<div class="note">${w&&w.fallo?'Sin datos del tiempo':'Cargando el tiempo…'}</div>`}
+      <div class="avs"><h4>Avisos</h4>${av.slice(0,mx).map(([k,t])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span>${esc(t)}</span></div>`).join('')}${av.length>mx?`<div class="av note">y ${av.length-mx} más</div>`:''}</div>
+      <button class="btn pri go" data-act="finca-go" data-id="${f.id}" ${off?'disabled':''}>${off?'Sin datos todavía':'Entrar en '+esc(f.nombre)}</button></div></article>`}).join('')}</div></div>`;
+  hydrate()}
+function abrirFincas(){renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs()}
+function elegirFinca(id){const f=(st.cfg.fincas||[]).find(x=>x.id===id);if(!f||!f.cabezales.length)return;st.finca=id;try{localStorage.setItem('abono.finca',id)}catch(e){}
+  if(!f.cabezales.includes(st.cab))st.cab=f.cabezales[0];$('#fincas').hidden=true;document.documentElement.style.overflow='';renderAll();window.scrollTo(0,0)}
+document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
+  try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
+    await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
+function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado Pinta Santos'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 function renderTabs(){$('#tabs').innerHTML=TABS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
 /* Menús desplazables con ratón: rueda y arrastrar */
 function scrollRaton(el){if(!el)return;
@@ -639,7 +730,7 @@ function vHistorial(){if(st.hist===null){loadHist();return '<div class="card"><d
   return h+`</section>`}
 let histLoading=false;
 async function loadHist(){if(histLoading)return;histLoading=true;await loadHist_();histLoading=false;refreshTab()}
-function refreshTab(){spRes();avisosLlenado();if(['historial','graficas','almacen','informe','rellenar'].includes(st.tab))renderMain();else if(st.tab==='cuentas')softUpdate()}
+function refreshTab(){spRes();if(!$('#fincas').hidden)renderFincas();avisosLlenado();if(['historial','graficas','almacen','informe','rellenar'].includes(st.tab))renderMain();else if(st.tab==='cuentas')softUpdate()}
 async function loadHist_(){try{const[a,b]=await Promise.all([Store.listRegs(),Store.listCambios()]);st.hist=a;st.cambios=b}catch(e){st.hist=[];st.cambios=[];toast('No se pudo leer el historial')}}
 
 /* ---------- Adjuntos (fotos y archivos) ---------- */
@@ -692,14 +783,14 @@ function pendHTML(){if(!st.msgs)return '';const n=st.msgs.filter(m=>!m.resuelto&
   return n?`<button class="banner msgbar" data-tab="mensajes">${n} ${n>1?'mensajes pendientes':'mensaje pendiente'} · ver</button>`:''}
 let msgLoading=false;
 async function loadMsgs(){if(msgLoading)return;msgLoading=true;try{st.msgs=await Store.listMsgs()}catch(e){st.msgs=[]}msgLoading=false;
-  spRes();if(st.tab==='mensajes')renderMain();else if(st.tab==='cuentas')softUpdate()}
+  spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='mensajes')renderMain();else if(st.tab==='cuentas')softUpdate()}
 const autorActual=()=>((window.NUBE&&NUBE.user&&NUBE.user.nombre)||st.autor||'').trim();
 const autorEmail=()=>window.NUBE&&NUBE.user?{autorEmail:NUBE.user.email}:{};
 function vMensajes(){if(st.msgs===null){loadMsgs();return '<div class="card"><div class="note">Cargando mensajes…</div></div>'}
   const sel=st.msgCab??st.cab;
   let h=`<section class="card"><div><h3>Nuevo mensaje</h3><div class="sub">Avisos, incidencias y notas</div></div>
     <div class="row" style="align-items:flex-end">${window.NUBE&&NUBE.user?`<div class="field" style="flex:1 1 150px"><label>Escribes como</label><div class="yo"><b>${esc(NUBE.user.nombre)}</b></div></div>`:`<div class="field" style="flex:1 1 150px"><label for="msg_autor">Nombre</label><div class="inp"><input class="wide" id="msg_autor" data-m="autor" autocomplete="name" value="${esc(st.autor)}"></div></div>`}
-    <div class="field" style="flex:1 1 150px"><label for="msg_cab">Cabezal</label><div class="inp"><select id="msg_cab" data-m="cab"><option value="" ${sel===''?'selected':''}>General</option>${st.cfg.cabezales.map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div></div>
+    <div class="field" style="flex:1 1 150px"><label for="msg_cab">Cabezal</label><div class="inp"><select id="msg_cab" data-m="cab"><option value="" ${sel===''?'selected':''}>General</option>${cabsFinca().map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div></div>
     <div class="field"><label for="msg_txt">Mensaje</label><textarea id="msg_txt" data-m="txt" rows="3">${esc(st.msgDraft)}</textarea></div>
     ${adjHTML(st.msgAdj,true)}
     <div class="row">${Adj.can()?`<label class="btn" for="msg_foto">Añadir foto</label><input type="file" id="msg_foto" data-m="file" accept="image/*" multiple hidden>
@@ -1028,7 +1119,7 @@ function vDiagnostico(){const g=st.dg,cab=g.cab??st.cab;
   if(st.diags===null)loadDiags();
   let h=`<section class="card"><div><h3>Analizar una incidencia</h3><div class="sub">Fotos de la planta, la hoja y el detalle del daño · hasta 3${modo==='gemini'?' · analiza '+NUBE.ia.nombre():''}</div></div>
     <div class="frm"><div class="field"><label for="dg_cultivo">Cultivo</label><div class="inp"><input class="wide" id="dg_cultivo" data-dg="cultivo" value="${esc(g.cultivo)}"></div></div>
-    <div class="field"><label for="dg_cab">Cabezal</label><div class="inp"><select id="dg_cab" data-dg="cab">${st.cfg.cabezales.map(c=>`<option value="${c.id}" ${cab===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div>
+    <div class="field"><label for="dg_cab">Cabezal</label><div class="inp"><select id="dg_cab" data-dg="cab">${cabsFinca().map(c=>`<option value="${c.id}" ${cab===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div>
     <div class="field"><label for="dg_sector">Sector</label><div class="inp"><input class="wide" id="dg_sector" data-dg="sector" value="${esc(g.sector)}" placeholder="Opcional"></div></div></div>
     <div class="field"><label for="dg_sint">Qué le notas</label><textarea id="dg_sint" data-dg="sint" rows="3" placeholder="Ej.: hojas de abajo amarillas entre los nervios desde hace una semana">${esc(g.sint)}</textarea></div>
     ${g.fotos.length?`<div class="adjs">${g.fotos.map((f,i)=>`<span class="adjwrap"><span class="thumb"><img alt="Foto ${i+1}" src="${f.url}"></span><button class="rm" data-rmfoto="${i}" aria-label="Quitar foto ${i+1}">×</button></span>`).join('')}</div>`:''}
@@ -1359,7 +1450,9 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='dg-del'){st.confirmDg=t.dataset.id;renderMain()}
   else if(t.dataset.act==='dg-del-no'){st.confirmDg=null;renderMain()}
   else if(t.dataset.act==='dg-del-yes')dgDel(t.dataset.id);
-  else if(t.dataset.act==='entrar')cerrarSplash();
+  else if(t.dataset.act==='entrar'){cerrarSplash();abrirFincas()}
+  else if(t.dataset.act==='fincas')abrirFincas();
+  else if(t.dataset.act==='finca-go')elegirFinca(t.dataset.id);
   else if(t.dataset.go){const g=t.dataset.go;cerrarSplash();st.tab=g.startsWith('rellenar:')?'rellenar':g.startsWith('cuentas')?'cuentas':g;if(g.startsWith('rellenar:'))st.cab=g.split(':')[1];
     if(g==='cuentas-ayer'){const d=new Date();d.setDate(d.getDate()-1);if(st.dirtyReg)await saveReg();await loadFecha(isoD(d))}else renderAll()}
   else if(t.dataset.act==='notif-on'){Notification.requestPermission().then(()=>{softUpdate();avisosLlenado()})}
@@ -1391,7 +1484,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;renderSplash()}await Store.init();await Adj.init();
-  try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
+  try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
   st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs()})();
 /* Con datos compartidos: al volver a la app, recarga lo que hayan guardado otros */
 setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
