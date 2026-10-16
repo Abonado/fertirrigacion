@@ -551,7 +551,7 @@ function sumDren(c){const r=resumen(c.id);const per=c.sectores.map(s=>{const ps=
 function vRellenar(){const bs=bidonesDe(st.cab);let sel=st.fillB[st.cab];if(!bs.find(b=>b.id===sel))sel=bs[0].id;st.fillB[st.cab]=sel;const b=bs.find(x=>x.id===sel);
   const cm=st.fill[b.id]!==undefined?st.fill[b.id]:b.cmHabitual;
   let h=`<section class="card"><div><h3>Nivel de los depósitos</h3><div class="sub">${esc(cabById(st.cab).nombre)} · lo que queda y para cuántos días</div></div><div>${bs.map(x=>{const g=gastoDia(x);return `<div class="lrow"><div class="lnm"><b>${esc(x.nombre)}</b>
-    <div class="field gd"><label for="gd_${x.id}">Gasto diario</label><div class="inp sm"><input id="gd_${x.id}" data-k="cfg.cons.${x.id}" inputmode="decimal" autocomplete="off" placeholder="${g.med!=null?inVal(+g.med.toFixed(1)):''}" value="${inVal(x.consumoDia)}"><span class="u">cm/día</span></div></div>
+    <div class="field gd"><label for="gd_${x.id}">Gasto diario</label><div class="inp sm"><input id="gd_${x.id}" data-k="cfg.cons.${x.id}" inputmode="decimal" autocomplete="off" placeholder="${g.med!=null?inVal(+g.med.toFixed(1)):g.teo!=null?inVal(+g.teo.toFixed(1)):''}" value="${inVal(x.consumoDia)}"><span class="u">cm/día</span></div></div>
     <small data-out="gdn_${x.id}">${gdNota(x)}</small></div><div data-out="lvl_${x.id}">${nivelHTML(x)}</div></div>`}).join('')}</div></section>`;
   h+=`<div class="pick">${bs.map(x=>`<button class="chip" data-fill="${x.id}" aria-pressed="${x.id===sel}">${esc(x.nombre)}</button>`).join('')}</div>`;
   h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${fmt(b.lpcm,1)} L/cm · capacidad ${fmt(b.capacidad,0)} L</div></div>
@@ -732,7 +732,11 @@ const txtMed=()=>esGaste()?'Gaste':'Nivel';
 function lecturaAnt(b,conHoy){if(conHoy&&st.reg.niv&&st.reg.niv[b.id]!=null)return{fecha:st.fecha,raw:st.reg.niv[b.id],v:aNivel(b,st.reg.niv[b.id])};let best=null;
   for(const r of st.hist||[]){if(r.fecha>=st.fecha)continue;const v=(r.niv||{})[b.id];if(v!=null&&(!best||r.fecha>best.fecha))best={fecha:r.fecha,raw:v,v:aNivel(b,v)}}return best}
 /* Gasto diario: el que pongas a mano o, si no, la media real de los últimos 7 días con dato */
-function gastoDia(b){const vs=(st.hist||[]).map(r=>(r.cm||{})[b.id]).filter(v=>v!=null&&v>=0).slice(0,7),med=vs.length?vs.reduce((a,c)=>a+c,0)/vs.length:null,man=b.consumoDia>0?b.consumoDia:null;return{man,med,v:man??med}}
+/* Gasto diario del depósito: 1) el que pongas a mano; 2) la media real de los últimos 7 días con dato; 3) el teórico según la receta y los m³ medios de cada cabezal */
+function m3Medio(cab){const vs=(st.hist||[]).map(r=>(r.m3||{})[cab]).filter(v=>v!=null&&v>0).slice(0,7);return vs.length?vs.reduce((a,c)=>a+c,0)/vs.length:(cabById(cab).ejM3||null)}
+function gastoTeorico(b){const pp=b.productos.find(x=>x.p===b.principal);if(!pp||!pp.dosis||!b.kgPrincipal||!b.lpcm)return null;let t=0;
+  for(const c of b.cabezales){const m=m3Medio(c);if(m==null)return null;t+=pp.dosis*(1000/b.kgPrincipal)*m/100/b.lpcm}return t>0?t:null}
+function gastoDia(b){const vs=(st.hist||[]).map(r=>(r.cm||{})[b.id]).filter(v=>v!=null&&v>=0).slice(0,7),med=vs.length?vs.reduce((a,c)=>a+c,0)/vs.length:null,man=b.consumoDia>0?b.consumoDia:null,teo=gastoTeorico(b);return{man,med,teo,v:man??med??teo}}
 /* Parte del gasto de un día ya hecha: hoy va de 0 a 1 durante el horario de riego; los días pasados cuentan enteros */
 const minDe=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
 function fracDia(f){const h=hoy();if(f<h)return 1;if(f>h)return 0;const r=st.cfg.riego||{},a=minDe(r.ini)??510,b=minDe(r.fin)??1110,d=new Date(),m=d.getHours()*60+d.getMinutes();
@@ -770,8 +774,9 @@ const umbralLl=()=>{const v=st.cfg.alertas.llenado;return (v>0&&v<100?v:33)/100}
 const bajoUmbral=n=>!!(n&&n.max>0&&Math.max(0,n.rest)/n.max<=umbralLl()+1e-9);
 const depsBajos=()=>st.cfg.bidones.filter(b=>bajoUmbral(nivel(b)));
 function gdNota(b){const g=gastoDia(b);if(g.man)return `= ${fmt(g.man*b.lpcm,0)} L/día · puesto a mano${g.med!=null?' (media real '+fmt(g.med,1)+' cm)':''}`;
-  return g.med!=null?`Vacío: uso la media real, ${fmt(g.med,1)} cm/día = ${fmt(g.med*b.lpcm,0)} L`:'Escribe lo que gasta al día para que el nivel baje solo'}
-function nivelHTML(b){const n=nivel(b);if(!n)return `<div class="lvl"><span class="note">Sin medida: escribe ${esGaste()?'el gaste':'el nivel'} de hoy</span></div>`;
+  if(g.med!=null)return `Vacío: uso la media real, ${fmt(g.med,1)} cm/día = ${fmt(g.med*b.lpcm,0)} L`;
+  return g.teo!=null?`Vacío: uso lo que marca la receta con los m³ de cada día, ${fmt(g.teo,1)} cm/día = ${fmt(g.teo*b.lpcm,0)} L`:'Escribe lo que gasta al día para que el nivel baje solo'}
+function nivelHTML(b){const n=nivel(b);if(!n)return `<div class="lvl"><span class="note">Para que la barra empiece a bajar: escribe ${esGaste()?'el gaste':'el nivel'} de hoy en «Cuentas del día» o registra un llenado</span></div>`;
   const r=Math.max(0,n.rest),pct=Math.min(100,r*100/n.max),u=umbralLl(),c=bajoUmbral(n)?'bad':pct/100<=u+0.1?'warn':'ok';
   const fh=fracDia(hoy()),rg=st.cfg.riego||{},estT=n.est?`<div class="t"><span class="pill nd">Estimado · ${n.est===1?'1 día':n.est+' días'} sin medir${st.fecha===hoy()&&fh>0&&fh<1?' · regando ('+fmt(fh*100,0)+' % del día)':''}</span><span>mide el nivel para corregir</span></div>`:'';
   return `<div class="lvl"><div class="bar"><i class="${c}${n.est?' est':''}" style="width:${pct}%"></i><span class="mk" style="left:${u*100}%" title="Aviso de llenado"></span></div><div class="t"><span>Quedan <b>${fmt(r,1)} cm</b> · ${fmt(r*b.lpcm,0)} L · ${fmt(pct,0)} %</span>${c==='bad'?'<span class="pill bad">Toca llenar</span>':''}${n.dias!=null?`<span class="pill ${c}">≈ ${fmt(n.dias,1)} días</span>`:''}</div>${estT}</div>`}
