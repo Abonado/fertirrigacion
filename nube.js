@@ -187,7 +187,13 @@ function iaCode(e){const m=String((e&&(e.message||e.code))||e||'').toLowerCase()
   if(m.includes('safety')||m.includes('blocked'))return 'ia_bloqueo';
   if(m.includes('failed to fetch')||m.includes('network')||m.includes('fetch-error'))return 'red';
   return 'ia_error'}
-N.ia={async json(prompt,blobs){if(!navigator.onLine)throw{code:'red'};let I;try{I=await iaInit()}catch(e){console.error(e);throw{code:'red'}}
+/* Claude a través del servidor propio (Cloudflare Worker); si no está configurado, Gemini */
+const iaUrl=()=>{try{return (st.cfg&&st.cfg.iaUrl)||''}catch(e){return ''}};
+const CL_ERR={sesion:'ia_sesion',sin_acceso:'ia_sinacceso',creditos:'ia_creditos',limite:'ia_cuota',ocupada:'ia_ocupada',clave:'ia_clave',sin_clave:'ia_clave',origen:'ia_origen'};
+async function iaClaude(prompt,blobs){const tk=await N.auth.currentUser.getIdToken();const images=[];for(const b of blobs||[])images.push({data:await aB64(b),type:b.type||'image/jpeg'});
+  let r;try{r=await fetch(iaUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({prompt,images})})}catch(e){throw{code:'red'}}
+  const j=await r.json().catch(()=>null);if(!r.ok||!j||!j.text){console.error('IA Claude',r.status,j);throw{code:(j&&CL_ERR[j.error])||'ia_error'}}N.ia.ultimo='Claude';return j.text}
+N.ia={nombre:()=>iaUrl()?'Claude':'Gemini',async json(prompt,blobs){if(!navigator.onLine)throw{code:'red'};if(iaUrl())return iaClaude(prompt,blobs);let I;try{I=await iaInit()}catch(e){console.error(e);throw{code:'red'}}
   const parts=[prompt];for(const b of blobs||[])parts.push({inlineData:{data:await aB64(b),mimeType:b.type||'image/jpeg'}});
   let ult=null;for(const m of IA_MODELOS){try{const model=I.AI.getGenerativeModel(I.ai,{model:m,generationConfig:{responseMimeType:'application/json',temperature:0.3}});
       const r=await model.generateContent(parts);return r.response.text()}
