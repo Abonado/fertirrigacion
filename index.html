@@ -492,7 +492,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['almacen','Almacén'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
+const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['almacen','Almacén'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
 function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico'].includes(st.tab);$('#cabs').innerHTML=st.cfg.cabezales.map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 function renderTabs(){$('#tabs').innerHTML=TABS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
 /* Menús desplazables con ratón: rueda y arrastrar */
@@ -945,12 +945,13 @@ function onOpInput(e){const t=e.target,ae=t.dataset.ae,aj=t.dataset.aj,lf=t.data
 $('#main').addEventListener('input',onOpInput);$('#main').addEventListener('change',onOpInput);
 
 /* ---------- Diagnóstico con IA ---------- */
-let SM=null,smImgs=false,smReady=false;
+let SM=null,smImgs=false,smReady=true;
 async function initSample(){if(!window.claude||typeof window.claude.use!=='function'){smReady=true;return}try{SM=await window.claude.use('sample');if(SM){const l=await SM.limits().catch(()=>null);smImgs=!!(l&&l.images)}}catch(e){SM=null}smReady=true;if(st.tab==='diagnostico')renderMain()}
 const URG={alta:'bad',media:'warn',baja:'ok'};
 const iaCfg=()=>{try{return JSON.parse(localStorage.getItem('abono.ia')||'null')}catch(e){return null}};
 const iaOk=()=>{const c=iaCfg();return !!(c&&c.url&&c.pin)};
-const iaModo=()=>SM?'claude':iaOk()?'servidor':null;
+const iaGemini=()=>!!(window.NUBE&&NUBE.ia&&NUBE.user);
+const iaModo=()=>SM?'claude':iaGemini()?'gemini':iaOk()?'servidor':null;
 const b64=blob=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob)});
 function jsonSuelto(t){try{return JSON.parse(t)}catch(e){}const m=t.match(/```(?:json)?\s*([\s\S]*?)```/);if(m){try{return JSON.parse(m[1])}catch(e){}}const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(t.slice(a,b+1))}catch(e){}}return null}
 async function iaServidor(prompt,blobs,signal){const c=iaCfg(),images=[];for(const b of blobs)images.push(await b64(b));let r;
@@ -981,12 +982,13 @@ Cultivo: ${g.cultivo||'tomate'}
 Cabezal: ${cabNombre(cab)}${g.sector?` · ${g.sector}`:''}
 Síntomas descritos: ${g.sint.trim()||'no se han descrito'}
 ${g.datos?`Datos de fertirrigación del ${fFecha(st.fecha)}:\n${datosCab(cab)}`:'Sin datos de fertirrigación.'}`}
-function dgErr(e){const c=e&&e.code;return c==='not_granted'?'No has dado permiso para usar Claude desde esta página.':c==='rate_limited'?'Has llegado al límite de uso de Claude. Prueba más tarde.':c==='image_rejected'?'Alguna foto no se pudo leer. Prueba con otra.':c==='refused'?'La IA no ha analizado este caso. Cambia la descripción o las fotos.':c==='session_expired'?'Vuelve a iniciar sesión en Claude.':c==='images_unavailable'?'Aquí no se pueden enviar fotos a la IA.':c==='invalid_json'?'La respuesta no salió bien. Vuelve a intentarlo.':c==='red'?'Sin conexión con el servidor de IA.':c==='pin'?'La clave de acceso no coincide con la del servidor.':c==='servidor'?'El servidor de IA ha dado un error'+(e.detail?': '+e.detail:'')+'.':'No se pudo analizar. Inténtalo de nuevo.'}
+function dgErr(e){const c=e&&e.code;if(c==='ia_appcheck')return 'La IA está bloqueada por App Check. Revisa la configuración de reCAPTCHA o desactiva App Check para AI Logic en Firebase.';if(c==='ia_noactiva')return 'La IA no está activada en Firebase: entra en AI Logic y pulsa «Get started».';if(c==='ia_cuota')return 'Se ha llegado al límite gratuito de la IA por ahora. Prueba en un rato.';if(c==='ia_modelo')return 'El modelo de IA no está disponible. Avisa para actualizarlo.';if(c==='ia_bloqueo')return 'La IA no ha querido analizar estas fotos. Prueba con otras.';return c==='not_granted'?'No has dado permiso para usar Claude desde esta página.':c==='rate_limited'?'Has llegado al límite de uso de Claude. Prueba más tarde.':c==='image_rejected'?'Alguna foto no se pudo leer. Prueba con otra.':c==='refused'?'La IA no ha analizado este caso. Cambia la descripción o las fotos.':c==='session_expired'?'Vuelve a iniciar sesión en Claude.':c==='images_unavailable'?'Aquí no se pueden enviar fotos a la IA.':c==='invalid_json'?'La respuesta no salió bien. Vuelve a intentarlo.':c==='red'?'Sin conexión con el servidor de IA.':c==='pin'?'La clave de acceso no coincide con la del servidor.':c==='servidor'?'El servidor de IA ha dado un error'+(e.detail?': '+e.detail:'')+'.':'No se pudo analizar. Inténtalo de nuevo.'}
 async function dgAddFotos(files){for(const f of files){if(st.dg.fotos.length>=3){toast('Máximo 3 fotos');break}let b=f;try{b=await compressImg(f)}catch(e){}st.dg.fotos.push({blob:b,url:URL.createObjectURL(b)})}renderMain()}
 async function dgRun(){const g=st.dg;if(g.busy)return;if(!g.fotos.length&&!g.sint.trim()){toast('Añade una foto o describe los síntomas');return}
   const modo=iaModo();if(!modo)return;if(modo==='claude'&&g.fotos.length&&!smImgs){toast('Aquí no se pueden enviar fotos a la IA');return}
   g.busy=true;g.err=null;g.res=null;g.ctl=new AbortController();renderMain();
   try{let r;if(modo==='claude'){const opts={signal:g.ctl.signal,modelTier:'default',cache:false};if(g.fotos.length)opts.images=g.fotos.map(f=>f.blob);r=await SM.json(dgPrompt(),opts)}
+    else if(modo==='gemini'){const ctl=g.ctl;const t=await NUBE.ia.json(dgPrompt(),g.fotos.map(f=>f.blob));if(ctl.signal.aborted)throw{code:'cancelled'};r=jsonSuelto(t)}
     else r=await iaServidor(dgPrompt(),g.fotos.map(f=>f.blob),g.ctl.signal);if(!r||typeof r!=='object'||!Array.isArray(r.posibles))throw{code:'invalid_json'};g.res=r;await dgSave(r)}
   catch(e){if(!e||e.code!=='cancelled')g.err=dgErr(e)}
   g.busy=false;g.ctl=null;renderMain()}
@@ -1006,9 +1008,9 @@ function vDiagnostico(){const g=st.dg,cab=g.cab??st.cab;
   const modo=iaModo();
   if(!modo)return window.claude?`<section class="card"><div><h3>Diagnóstico con IA</h3><div class="sub">No disponible en esta vista</div></div><div class="note">La IA de Claude no está disponible ahora mismo en esta página.</div></section>`
     :`<section class="card"><div><h3>Conectar la IA</h3><div class="sub">Servidor de IA y clave de acceso</div></div>${iaForm()}</section>`;
-  const fotosOk=modo==='servidor'||smImgs;
+  const fotosOk=modo!=='claude'||smImgs;
   if(st.diags===null)loadDiags();
-  let h=`<section class="card"><div><h3>Analizar una planta</h3><div class="sub">Fotos de la planta, la hoja y el detalle del daño</div></div>
+  let h=`<section class="card"><div><h3>Analizar una incidencia</h3><div class="sub">Fotos de la planta, la hoja y el detalle del daño · hasta 3</div></div>
     <div class="frm"><div class="field"><label for="dg_cultivo">Cultivo</label><div class="inp"><input class="wide" id="dg_cultivo" data-dg="cultivo" value="${esc(g.cultivo)}"></div></div>
     <div class="field"><label for="dg_cab">Cabezal</label><div class="inp"><select id="dg_cab" data-dg="cab">${st.cfg.cabezales.map(c=>`<option value="${c.id}" ${cab===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div>
     <div class="field"><label for="dg_sector">Sector</label><div class="inp"><input class="wide" id="dg_sector" data-dg="sector" value="${esc(g.sector)}" placeholder="Opcional"></div></div></div>

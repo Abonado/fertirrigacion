@@ -169,6 +169,31 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-nube
       const ex=await N.alta(nom,mail,pw);N.busy=false;re();aviso(ex?'Ese email ya tenía cuenta: tiene acceso con su contraseña de siempre':'Alta hecha: ya puede entrar')}
   }catch(err){N.busy=false;re();aviso(err&&err.msg?err.msg:errTxt(err))}});
 
+/* ---------- IA de incidencias: Gemini con Firebase AI Logic (sin servidor propio) ---------- */
+const IA_V='13.0.0',IA_MODELOS=['gemini-3.8-flash','gemini-3-flash','gemini-2.5-flash'],RECAPTCHA="";
+let iaP=null;
+function iaInit(){if(iaP)return iaP;const base='https://www.gstatic.com/firebasejs/'+IA_V+'/';
+  iaP=(async()=>{const[A,AI,AC]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-ai.js'),RECAPTCHA?import(base+'firebase-app-check.js'):Promise.resolve(null)]);
+    const app=A.getApps().find(a=>a.name==='ia')||A.initializeApp(CFG,'ia');
+    if(AC&&RECAPTCHA)AC.initializeAppCheck(app,{provider:new AC.ReCaptchaV3Provider(RECAPTCHA),isTokenAutoRefreshEnabled:true});
+    return{AI,ai:AI.getAI(app,{backend:new AI.GoogleAIBackend()})}})();
+  iaP.catch(()=>{iaP=null});return iaP}
+const aB64=blob=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob)});
+function iaCode(e){const m=String((e&&(e.message||e.code))||e||'').toLowerCase();
+  if(m.includes('app check')||m.includes('appcheck')||m.includes('app-check'))return 'ia_appcheck';
+  if(m.includes('429')||m.includes('quota')||m.includes('resource_exhausted')||m.includes('rate'))return 'ia_cuota';
+  if(m.includes('not been used')||m.includes('api-not-enabled')||m.includes('is disabled')||m.includes('not enabled'))return 'ia_noactiva';
+  if(m.includes('404')||m.includes('not found')||m.includes('not supported'))return 'ia_modelo';
+  if(m.includes('safety')||m.includes('blocked'))return 'ia_bloqueo';
+  if(m.includes('failed to fetch')||m.includes('network')||m.includes('fetch-error'))return 'red';
+  return 'ia_error'}
+N.ia={async json(prompt,blobs){if(!navigator.onLine)throw{code:'red'};let I;try{I=await iaInit()}catch(e){console.error(e);throw{code:'red'}}
+  const parts=[prompt];for(const b of blobs||[])parts.push({inlineData:{data:await aB64(b),mimeType:b.type||'image/jpeg'}});
+  let ult=null;for(const m of IA_MODELOS){try{const model=I.AI.getGenerativeModel(I.ai,{model:m,generationConfig:{responseMimeType:'application/json',temperature:0.3}});
+      const r=await model.generateContent(parts);return r.response.text()}
+    catch(e){console.error('IA',m,e);ult=iaCode(e);if(ult!=='ia_modelo')throw{code:ult}}}
+  throw{code:ult||'ia_error'}}};
+
 window.addEventListener('online',()=>{if(N.user&&N.user.admin)cargarAcc()});
 /* Si el administrador cambia el nombre, se actualiza al volver a la app */
 document.addEventListener('visibilitychange',async()=>{if(document.hidden||!N.user)return;const a=await leerAcceso(true);if(!a)return;N.acc=a;const i=(a.info||{})[N.user.email];
