@@ -168,7 +168,9 @@ textarea{width:100%;font:500 16px var(--f-body);color:var(--ink);background:var(
 .wkptt.on{background:radial-gradient(circle at 50% 38%,#e0533f,var(--bad) 62%,#6e180f);box-shadow:0 0 0 10px rgba(163,39,27,.18),0 10px 28px rgba(163,39,27,.4);animation:wkpulse 1s ease-in-out infinite}
 @keyframes wkpulse{50%{box-shadow:0 0 0 18px rgba(163,39,27,.08),0 10px 28px rgba(163,39,27,.4)}}
 .wklist{display:grid}.wkm{display:flex;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}.wkm:first-child{border-top:0}
-.wkm b{display:block}.wkm small{color:var(--muted);font-size:12px}
+.wkm b{display:block}.wkm .wkt{flex:1;min-width:0}
+.wkx{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;flex:none}.wkx svg{width:20px;height:20px}.wkx:hover{color:var(--bad);border-color:var(--bad)}
+.wkdel{display:flex;gap:6px}.wkm small{color:var(--muted);font-size:12px}
 .wkplay{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);font-size:16px;cursor:pointer;flex:none;color:var(--navy)}
 .wkplay.on{background:var(--accent);color:#fff;border-color:var(--accent)}.wkm.yo .wkplay{background:var(--ok-bg)}
 .cleg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.cleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
@@ -920,12 +922,13 @@ function wkLlegan(ws){for(const w of ws){if(!wkVisible(w))continue;if(!st.wk.fin
     if(w.de!==miEmail()&&Date.parse(w.ts)>wkInicio){if(!document.hidden&&wkAuto()){wkCola.push(w)}else notificar('Walkie: '+(w.deNombre||''),'Nuevo audio en '+wkNombreCanal(w.canal),'wk-'+w.id)}}
   st.wk.sort((a,b)=>a.ts<b.ts?1:-1);wkSiguiente();if(st.tab==='walkie')renderMain()}
 let wkEscucha=null;
-function wkIniciar(){if(wkEscucha||!(window.NUBE&&NUBE.escuchar&&NUBE.user))return;const d=new Date(Date.now()-24*3600e3).toISOString();wkEscucha=NUBE.escuchar('walkie',d,wkLlegan)}
+function wkIniciar(){if(wkEscucha||!(window.NUBE&&NUBE.escuchar&&NUBE.user))return;const d=new Date(Date.now()-24*3600e3).toISOString();wkEscucha=NUBE.escuchar('walkie',d,wkLlegan,ids=>{st.wk=st.wk.filter(w=>!ids.includes(w.id));softUpdateWk()})}
 async function wkLimpiar(){if(!esAdminU())return;const lim=new Date(Date.now()-WK_DIAS*864e5).toISOString();try{const l=await Store.listCol('walkie',500);for(const w of l)if(w.ts<lim){await Store.delCol('walkie',w.id);if(w.audio)await Adj.del(w.audio)}}catch(e){}}
 function softUpdateWk(){if(st.tab!=='walkie')return;const el=$('[data-out="wklist"]');if(el)el.innerHTML=wkListHTML()}
 function wkListHTML(){const c=st.wkCanal,l=st.wk.filter(w=>wkVisible(w)&&w.canal===c).slice(0,40);
   if(!l.length)return '<div class="note">Sin audios en las últimas 24 horas.</div>';
-  return l.map(w=>`<div class="wkm ${w.de===miEmail()?'yo':''}"><button class="wkplay ${st.wkPlaying===w.id?'on':''}" data-act="wk-play" data-id="${w.id}" aria-label="Escuchar">${st.wkPlaying===w.id?'■':'▶'}</button><div><b>${w.de===miEmail()?'Tú':esc(w.deNombre||'')}</b><small>${fHora(w.ts)} · ${fmt(w.dur||0,0)} s</small></div></div>`).join('')}
+  return l.map(w=>{const puede=w.de===miEmail()||esAdminU();return `<div class="wkm ${w.de===miEmail()?'yo':''}"><button class="wkplay ${st.wkPlaying===w.id?'on':''}" data-act="wk-play" data-id="${w.id}" aria-label="Escuchar">${st.wkPlaying===w.id?'■':'▶'}</button><div class="wkt"><b>${w.de===miEmail()?'Tú':esc(w.deNombre||'')}</b><small>${fHora(w.ts)} · ${fmt(w.dur||0,0)} s</small></div>
+    ${puede?(st.wkDel===w.id?`<span class="wkdel"><button class="btn danger" data-act="wk-del-yes" data-id="${w.id}">Borrar</button><button class="btn" data-act="wk-del-no">No</button></span>`:`<button class="wkx" data-act="wk-del" data-id="${w.id}" aria-label="Borrar audio" title="Borrar audio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12M10 11v5M14 11v5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`):''}</div>`}).join('')}
 function vWalkie(){if(!(window.NUBE&&NUBE.user))return `<section class="card"><div><h3>Walkie</h3><div class="sub">Funciona en la app con usuarios</div></div><div class="note">Entra con tu usuario en la app del móvil para usar el walkie.</div></section>`;
   wkIniciar();const cs=wkCanales();if(!cs.find(c=>c.id===st.wkCanal))st.wkCanal=(st.finca&&cs.find(c=>c.id===st.finca))?st.finca:'todos';const r=st.wkRec;
   return `<div class="pick">${cs.map(c=>`<button class="chip" data-wkc="${c.id}" aria-pressed="${st.wkCanal===c.id}">${esc(c.nombre)}</button>`).join('')}</div>
@@ -1717,6 +1720,9 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.tfil){st.tFil=t.dataset.tfil;renderMain()}
   else if(t.dataset.mfil){st.mFil=t.dataset.mfil;renderMain()}
   else if(t.dataset.wkc){st.wkCanal=t.dataset.wkc;renderMain()}
+  else if(t.dataset.act==='wk-del'){st.wkDel=t.dataset.id;softUpdateWk()}
+  else if(t.dataset.act==='wk-del-no'){st.wkDel=null;softUpdateWk()}
+  else if(t.dataset.act==='wk-del-yes'){const id=t.dataset.id,w=st.wk.find(x=>x.id===id);try{await Store.delCol('walkie',id);if(w&&w.audio)await Adj.del(w.audio);st.wk=st.wk.filter(x=>x.id!==id);st.wkDel=null;softUpdateWk();toast('Audio borrado')}catch(e){toast(errMsg(e))}}
   else if(t.dataset.act==='wk-play'){const w=st.wk.find(x=>x.id===t.dataset.id);if(w)wkPlay(w,false)}
   else if(t.dataset.almsel){st.almSel=t.dataset.almsel;st.confirmMv=null;renderMain()}
   else if(t.dataset.aper){st.almPer=t.dataset.aper==='mes'?'mes':+t.dataset.aper;renderMain()}
