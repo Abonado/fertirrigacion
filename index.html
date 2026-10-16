@@ -514,6 +514,7 @@ function vCuentas(){const c=cabById(st.cab);let h=banner()+`<div data-out="pend"
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}${fmt(b.lpcm,1)} L por cm</div></div></div>
       ${lecturaBoxes(b,c)}
       <div data-out="lec_${b.id}">${lecturaHTML(b)}</div>
+      <div class="row"><button class="btn" data-act="llenar-arriba" data-id="${b.id}">He llenado hasta arriba</button></div>
       <div data-out="t_${b.id}">${tankDose(b,c)}</div></section>`}
   return h}
 function sumCuentas(){let ok=0,tot=0,peor=null;for(const b of bidonesDe(st.cab))for(const x of b.productos){if(!x.dosis)continue;const r=dosisReal(b,x,st.cab);if(r==null)continue;tot++;const e=estado(r,x.dosis);if(e.c==='ok')ok++;if(!peor||Math.abs(e.d)>Math.abs(peor.e.d))peor={x,e}}
@@ -549,7 +550,7 @@ function sumDren(c){const r=resumen(c.id);const per=c.sectores.map(s=>{const ps=
   return `<div class="stat"><span>Media del cabezal</span><b>${fmt(r.drenaje,1)} %</b><small>${esc(c.nombre)}</small></div>`+(r.ceD!=null?`<div class="stat"><span>CE drenaje</span><b>${fmt(r.ceD,2)}</b><small class="nt">mS/cm</small></div>`:'')+per.map(p=>`<div class="stat"><span>${esc(p.s.nombre)}</span><b>${fmt(p.m,1)} %</b><small>${fmt(st.reg.min[p.s.id],0)} min</small></div>`).join('')}
 
 function vRellenar(){const bs=bidonesDe(st.cab);let sel=st.fillB[st.cab];if(!bs.find(b=>b.id===sel))sel=bs[0].id;st.fillB[st.cab]=sel;const b=bs.find(x=>x.id===sel);
-  const cm=st.fill[b.id]!==undefined?st.fill[b.id]:b.cmHabitual;
+  const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b);
   let h=`<section class="card"><div><h3>Nivel de los depósitos</h3><div class="sub">${esc(cabById(st.cab).nombre)} · lo que queda y para cuántos días</div></div><div>${bs.map(x=>{const g=gastoDia(x);return `<div class="lrow"><div class="lnm"><b>${esc(x.nombre)}</b>
     <div class="field gd"><label for="gd_${x.id}">Gasto diario</label><div class="inp sm"><input id="gd_${x.id}" data-k="cfg.cons.${x.id}" inputmode="decimal" autocomplete="off" placeholder="${g.med!=null?inVal(+g.med.toFixed(1)):g.teo!=null?inVal(+g.teo.toFixed(1)):''}" value="${inVal(x.consumoDia)}"><span class="u">cm/día</span></div></div>
     <small data-out="gdn_${x.id}">${gdNota(x)}</small></div><div data-out="lvl_${x.id}">${nivelHTML(x)}</div></div>`}).join('')}</div></section>`;
@@ -568,7 +569,9 @@ function vRellenar(){const bs=bidonesDe(st.cab);let sel=st.fillB[st.cab];if(!bs.
   const evs=(st.llen||[]).filter(e=>e.bidon===b.id).sort((a,c)=>a.ts<c.ts?1:-1).slice(0,6);
   h+=`<div><h3 style="font-size:16px">Últimos llenados y medidas</h3>${evs.length?evs.map(e=>`<div class="ev"><span><b>${fFecha(e.fecha)}</b> · ${e.tipo==='llenado'?`Llenado +${fmt(e.cmAdd,1)} cm → ${esGaste()?'gaste ':''}${fmt(aLectura(b,e.cmFinal),1)} cm`:`Medida: ${esGaste()?'gaste ':''}${fmt(aLectura(b,e.cmFinal),1)} cm`}</span>${st.confirmLl===e.id?`<span class="row"><button class="btn danger" data-act="ll-del-yes" data-id="${e.id}">Sí, borrar</button><button class="btn" data-act="ll-del-no">Cancelar</button></span>`:`<button class="btn" data-act="ll-del" data-id="${e.id}">Borrar</button>`}</div>`).join(''):'<div class="note">Sin registros.</div>'}</div></section>`;
   return h}
-function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:b.cmHabitual;if(cm==null)return '';const L=cm*b.lpcm;let liqCm=0;
+/* Lo que falta para llenar hasta arriba (= gaste actual); si no se sabe el nivel, los cm habituales */
+function cmLlenar(b){const n=nivel(b);if(n&&n.max>0)return +Math.max(0,Math.min(n.max,n.max-Math.max(0,n.rest))).toFixed(1);return b.cmHabitual}
+function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b);if(cm==null)return '';const L=cm*b.lpcm;let liqCm=0;
   let h=`<div class="line">Volumen a preparar: <b>${fmt(L,0)} L</b></div><div class="steps">`;
   for(const x of b.productos){if(!x.dosis)continue;const q=L*conc(b,x)/1000;let extra='';if(prod(x.p).liq){const c=q/b.lpcm;liqCm+=c;extra=` <span class="note">≈ ${fmt(c,1)} cm</span>`}
     h+=`<div class="step"><span>${esc(prod(x.p).n)}${extra}</span><b>${fmt(q,1)} ${uCant(x.p)}</b></div>`}
@@ -759,18 +762,20 @@ function nivel(b){let ev=null;for(const e of st.llen||[])if(e.bidon===b.id&&e.fe
 function cmAuto(b){const p=lecturaAnt(b,false),hr=st.reg.niv&&st.reg.niv[b.id];if(!p||hr==null)return null;const h=aNivel(b,hr);let base={fecha:p.fecha,v:p.v,raw:p.raw,tras:null},ul=null;
   for(const e of st.llen||[])if(e.bidon===b.id&&e.fecha>=p.fecha&&e.fecha<st.fecha&&e.cmFinal!=null&&(!ul||e.ts>ul.ts))ul=e;
   if(ul)base={fecha:ul.fecha,v:ul.cmFinal,raw:aLectura(b,ul.cmFinal),tras:ul.tipo};
-  return{prev:base,add:0,g:+(base.v-h).toFixed(1)}}
-function autoCm(id){const b=bid(id),a=b&&cmAuto(b);if(!a||a.g<0){if(b&&lecturaAnt(b,false))st.reg.cm[id]=null;return}st.reg.cm[id]=a.g;document.querySelectorAll(`[data-k="reg.cm.${id}"]`).forEach(i=>{i.value=inVal(a.g)})}
+  let g=+(base.v-h).toFixed(1),relleno=false;if(g<0){relleno=true;g=+Math.max(0,maxCm(b)-h).toFixed(1)}
+  return{prev:base,add:0,g,relleno}}
+function autoCm(id){const b=bid(id),a=b&&cmAuto(b);if(!a){if(b&&lecturaAnt(b,false))st.reg.cm[id]=null;return}st.reg.cm[id]=a.g;document.querySelectorAll(`[data-k="reg.cm.${id}"]`).forEach(i=>{i.value=inVal(a.g)})}
 function lecturaBoxes(b,c){const prev=lecturaAnt(b,false);
   const ant=`<div class="lbox"><span>${txtMed()} anterior</span><b>${prev?fmt(prev.raw,1):'—'} <small>cm</small></b><small>${prev?fFecha(prev.fecha):'sin lectura'}</small></div>`;
   const hoyF=`<div class="field"><label for="nv_${b.id}_${c.id}">${txtMed()} hoy</label><div class="inp"><input id="nv_${b.id}_${c.id}" data-k="reg.niv.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.niv[b.id])}"><span class="u">cm</span></div></div>`;
   const res=prev?`<div class="lbox res" data-out="res_${b.id}">${resBox(b)}</div>`
     :`<div class="field"><label for="cm_${b.id}_${c.id}">cm gastados</label><div class="inp"><input id="cm_${b.id}_${c.id}" data-k="reg.cm.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.cm[b.id])}"><span class="u">cm</span></div></div>`;
   return `<div class="lect">${ant}${hoyF}${res}</div>`}
-function resBox(b){const a=cmAuto(b),v=st.reg.cm[b.id],neg=a&&a.g<0;
+function resBox(b){const a=cmAuto(b),v=st.reg.cm[b.id],neg=false;
   return `<span>cm gastados</span><b class="${neg?'neg':''}">${neg?fmt(a.g,1):fmt(v,1)} <small>cm</small></b><small>${neg?'revisa la lectura':v!=null?'= '+fmt(v*b.lpcm,0)+' L':'escribe '+(esGaste()?'el gaste':'el nivel')+' de hoy'}</small>`}
 function lecturaHTML(b){const h=st.reg.niv&&st.reg.niv[b.id],p=lecturaAnt(b,false);if(h==null)return p?`<div class="note">Última lectura: ${esGaste()?'gaste ':''}${fmt(p.raw,1)} cm · ${fFecha(p.fecha)}</div>`:'';
   const a=cmAuto(b);if(!a)return `<div class="note">Primera lectura: escribe hoy los cm gastados a mano. Desde la próxima se calculan solos.</div>`;
+  if(a.relleno)return `<div class="note">${esGaste()?'El gaste ha bajado':'El nivel ha subido'}: se llenó hasta arriba después de la última medida, así que cuento desde lleno = <b>${fmt(a.g,1)} cm gastados</b>.${b.cabezales?` <button class="btn" data-act="ll-inferido" data-id="${b.id}" data-f="${a.prev.fecha}" data-add="${fmt(esGaste()?a.prev.raw:maxCm(b)-a.prev.v,1).replace(',','.')}">Apuntar ese llenado (almacén)</button>`:''}</div>`;
   const neg=a.g<0;const de=`${fFecha(a.prev.fecha)}${a.prev.tras?' tras '+a.prev.tras:''}`,cuenta=esGaste()?`Gaste hoy ${fmt(h,1)} cm − ${de} ${fmt(a.prev.raw,1)} cm`:`${de}: ${fmt(a.prev.raw,1)} cm − hoy ${fmt(h,1)} cm`;
   return `<div class="${neg?'banner':'note'}">${neg?`<b>${esGaste()?'El gaste ha bajado':'El nivel ha subido'}.</b> Si has llenado, regístralo en «Rellenar depósito». `:''}${cuenta} = <b>${fmt(a.g,1)} cm gastados</b></div>`}
 const umbralLl=()=>{const v=st.cfg.alertas.llenado;return (v>0&&v<100?v:33)/100};
@@ -797,8 +802,8 @@ async function avisosLlenado(){if(!notifOk()||Notification.permission!=='granted
     try{localStorage.setItem(k,h)}catch(e){}}}
 function lvlBanner(){const bs=bidonesDe(st.cab).filter(b=>bajoUmbral(nivel(b)));
   return bs.length?`<button class="banner msgbar" data-tab="rellenar">${bs.length===1?'1 depósito para rellenar':bs.length+' depósitos para rellenar'}: ${bs.map(b=>esc(b.nombre)).join(', ')} · ver</button>`:''}
-function lfOpen(tipo){const b=bid(st.fillB[st.cab]);const n=nivel(b),add=st.fill[b.id]!==undefined?st.fill[b.id]:b.cmHabitual;
-  st.lf={tipo,bidon:b.id,fecha:st.fecha,add:tipo==='llenado'?add:null,final:tipo==='llenado'?(add==null?null:+Math.min(b.capacidad/b.lpcm,(n?Math.max(0,n.rest):0)+add).toFixed(1)):(n?+Math.max(0,n.rest).toFixed(1):null),desc:true,finalTouched:false};renderMain()}
+function lfOpen(tipo,o){o=o||{};const b=bid(o.bidon||st.fillB[st.cab]);const n=nivel(b),mx=maxCm(b),add=o.add??(st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b));
+  st.lf={tipo,bidon:b.id,fecha:o.fecha||st.fecha,add:tipo==='llenado'?add:null,final:tipo==='llenado'?+mx.toFixed(2):(n?+Math.max(0,n.rest).toFixed(1):null),desc:true,finalTouched:false};renderMain()}
 async function lfSave(){const L=st.lf,b=bid(L.bidon);if(L.final==null||L.final<0){toast('Escribe el nivel en cm');return}if(L.tipo==='llenado'&&!(L.add>0)){toast('Escribe los cm añadidos');return}
   const ev={ts:new Date().toISOString(),fecha:L.fecha||st.fecha,bidon:b.id,tipo:L.tipo,cmFinal:L.final};
   if(L.tipo==='llenado'){ev.cmAdd=L.add;ev.cantidades={};const lt=L.add*b.lpcm;for(const x of b.productos){if(!x.dosis)continue;ev.cantidades[x.p]=+(lt*conc(b,x)/1000).toFixed(2)}}
@@ -949,7 +954,7 @@ function onOpInput(e){const t=e.target,ae=t.dataset.ae,aj=t.dataset.aj,lf=t.data
     else if(aj==='sacos'){const n=num(t.value);st.aj.real=n==null?null:+(n*sacoDe(st.aj.p)).toFixed(3);const o=$('#aj_real');if(o)o.value=inVal(st.aj.real)}
     else st.aj.p=t.value;if(aj==='p'&&e.type==='change')renderMain();else softUpdate();return}
   if(lf){const L=st.lf;if(!L)return;if(lf==='fecha')L.fecha=t.value;else if(lf==='desc')L.desc=t.checked;else if(lf==='final'){const x=num(t.value);L.final=x==null?null:+aNivel(bid(L.bidon),x).toFixed(2);L.finalTouched=true}
-    else if(lf==='add'){L.add=num(t.value);if(!L.finalTouched){const n=nivel(bid(L.bidon));const bb=bid(L.bidon);L.final=L.add==null?null:+Math.min(bb.capacidad/bb.lpcm,(n?Math.max(0,n.rest):0)+L.add).toFixed(1);const fi=$('#lf_final');if(fi)fi.value=inVal(aLectura(bb,L.final))}}}}
+    else if(lf==='add'){L.add=num(t.value);if(!L.finalTouched){const bb=bid(L.bidon);L.final=L.add==null?null:+maxCm(bb).toFixed(2);const fi=$('#lf_final');if(fi)fi.value=inVal(aLectura(bb,L.final))}}}}
 $('#main').addEventListener('input',onOpInput);$('#main').addEventListener('change',onOpInput);
 
 /* ---------- Diagnóstico con IA ---------- */
@@ -1326,6 +1331,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='msg-del-no'){st.confirmDel=null;renderMain()}
   else if(t.dataset.act==='msg-del-yes')delMsg(t.dataset.id);
   else if(t.dataset.act==='lf-open')lfOpen(t.dataset.t);
+  else if(t.dataset.act==='llenar-arriba'||t.dataset.act==='ll-inferido'){const id=t.dataset.id;st.fillB[st.cab]=id;st.tab='rellenar';const o={bidon:id};if(t.dataset.f){o.fecha=t.dataset.f;o.add=+t.dataset.add}renderAll();lfOpen('llenado',o);window.scrollTo(0,0)}
   else if(t.dataset.act==='lf-save')lfSave();
   else if(t.dataset.act==='lf-cancel'){st.lf=null;renderMain()}
   else if(t.dataset.act==='ll-del'){st.confirmLl=t.dataset.id;renderMain()}
