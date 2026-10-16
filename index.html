@@ -152,6 +152,15 @@ textarea{width:100%;font:500 16px var(--f-body);color:var(--ink);background:var(
 .msg.done{opacity:.6}
 .msg .h{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
 .msg .h b{color:var(--ink);font-size:14px}
+.tareas{display:grid}
+.tarea{display:grid;gap:6px;padding:12px 0 12px 12px;border-top:1px solid var(--line);border-left:3px solid var(--line)}
+.tarea:first-child{border-top:0}
+.tarea.hoy{border-left-color:var(--warn)}.tarea.atrasada,.tarea.urg{border-left-color:var(--bad)}.tarea.hecha{border-left-color:var(--ok);opacity:.85}
+.tarea .tt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.tarea .tt b{font-size:16px}
+.tarea .tm{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.tarea .tm b{color:var(--accent)}.tarea .tm .de{opacity:.8}
+.tarea p{margin:0}
+.tarea .hecho{background:var(--ok-bg);border-radius:8px;padding:8px 10px;font-size:13px}
+.tarea .tdone{display:grid;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px}
 .msg.parami{border-left:3px solid var(--accent);padding-left:10px;background:linear-gradient(90deg,var(--ok-bg),transparent 60%)}
 .pill.para{background:var(--accent);color:#fff}
 .msg p{margin:0;white-space:pre-wrap;font-size:15px;overflow-wrap:anywhere}
@@ -476,6 +485,7 @@ const Store={db:null,mode:'local',
   async listCambios(){if(this.db){const q=await this.db.collection('cambios').orderBy('ts','desc').limit(60).get();return q.docs.map(d=>d.data())}return this.lsGet('abono.cambios')||[]},
   async listMsgs(){if(this.db){const q=await this.db.collection('mensajes').orderBy('ts','desc').limit(200).get();return q.docs.map(d=>({...d.data(),id:d.id}))}return this.lsGet('abono.msgs')||[]},
   async addMsg(m){if(this.db){const r=await this.db.collection('mensajes').add(m);return r.id}const id='m'+Date.now();const l=this.lsGet('abono.msgs')||[];l.unshift({...m,id});this.lsSet('abono.msgs',l.slice(0,500));return id},
+  async updCol(n,id,patch){if(this.db)return this.db.collection(n).doc(id).update(patch);this.lsSet('abono.'+n,(this.lsGet('abono.'+n)||[]).map(x=>x.id===id?{...x,...patch}:x))},
   async updMsg(id,patch){if(this.db)return this.db.collection('mensajes').doc(id).update(patch);this.lsSet('abono.msgs',(this.lsGet('abono.msgs')||[]).map(x=>x.id===id?{...x,...patch}:x))},
   async delMsg(id){if(this.db)return this.db.collection('mensajes').doc(id).delete();this.lsSet('abono.msgs',(this.lsGet('abono.msgs')||[]).filter(x=>x.id!==id))},
   async listCol(n,lim){if(this.db){const q=await this.db.collection(n).orderBy('ts','desc').limit(lim||500).get();return q.docs.map(d=>({...d.data(),id:d.id}))}return this.lsGet('abono.'+n)||[]},
@@ -540,7 +550,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['almacen','Almacén'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
+const TABS=[['cuentas','Cuentas del día'],['tareas','Tareas'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['almacen','Almacén'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -573,6 +583,7 @@ function fincaAvisos(f){const out=[],cabs=f.cabezales||[];if(!cabs.length)return
   if(!ra||!cabs.some(c=>ra.m3&&ra.m3[c]!=null))out.push(['bad','Faltan las cuentas de ayer']);
   const deps=st.cfg.bidones.filter(b=>b.cabezales.some(c=>cabs.includes(c))&&bajoUmbral(nivel(b)));
   if(deps.length)out.push(['warn','Rellenar: '+deps.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')]);
+  const ta=(st.tareas||[]).filter(t=>t.finca===f.id&&!t.hecha&&t.fecha<hoy()).length;if(ta)out.push(['bad',ta===1?'1 tarea atrasada':ta+' tareas atrasadas']);
   const pmi=pendParaMi().filter(m=>cabs.includes(m.cab)).length;if(pmi)out.push(['bad',pmi===1?'1 mensaje para ti':pmi+' mensajes para ti']);
   const pend=(st.msgs||[]).filter(m=>!m.resuelto&&cabs.includes(m.cab)).length;if(pend)out.push(['warn',pend===1?'1 mensaje pendiente':pend+' mensajes pendientes']);
   const ult=(st.hist||[]).find(r=>r.resumen&&cabs.some(c=>r.resumen[c]&&(r.resumen[c].ceD!=null||r.resumen[c].phD!=null)));
@@ -599,7 +610,7 @@ function renderFincas(){const fs=fincasVis(),admin=!window.NUBE||(NUBE.user&&NUB
       <div class="avs"><h4>Avisos</h4>${av.slice(0,mx).map(([k,t])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span>${esc(t)}</span></div>`).join('')}${av.length>mx?`<div class="av note">y ${av.length-mx} más</div>`:''}</div>
       <button class="btn pri go" data-act="finca-go" data-id="${f.id}" ${off?'disabled':''}>${off?'Sin datos todavía':'Entrar en '+esc(f.nombre)}</button></div></article>`}).join('')}</div></div>`;
   hydrate()}
-function abrirFincas(){renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs()}
+function abrirFincas(){if(st.tareas===null)loadTareas();renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs()}
 function coordsDe(t){t=String(t||'');let m=/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/.exec(t)||/@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(t)||/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/.exec(t);
   if(!m)return null;const lat=+m[1],lon=+m[2];return Math.abs(lat)<=90&&Math.abs(lon)<=180?{lat,lon}:null}
 async function guardarUbic(id,u){for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.ubic={lat:+u.lat.toFixed(5),lon:+u.lon.toFixed(5)}}
@@ -609,7 +620,7 @@ function elegirFinca(id){const f=fincasVis().find(x=>x.id===id);if(!f||!f.cabeza
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado Pinta Santos'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
+function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico','tareas'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado Pinta Santos'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 function renderTabs(){$('#tabs').innerHTML=TABS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
 /* Menús desplazables con ratón: rueda y arrastrar */
 function scrollRaton(el){if(!el)return;
@@ -793,7 +804,7 @@ function adjHTML(list,removable){if(!list||!list.length)return '';
     if(a.img)return `<span class="adjwrap"><button class="thumb" data-img="${a.id}" aria-label="Ver foto"><img alt="" ${a.local||a.fb?`data-local="${a.id}"`:''} src="${Adj.src(a)}"></button>${rm}</span>`;
     return `<span class="adjwrap"><button class="fchip" data-file="${a.id}">${CLIP}<span>${esc(a.name)}</span><small>${fSize(a.size||0)}</small></button>${rm}</span>`}).join('')+`</div>`}
 async function hydrate(){for(const el of document.querySelectorAll('img[data-local]')){if(el.getAttribute('src'))continue;const u=await Adj.url(findAdj(el.dataset.local)||{id:el.dataset.local,local:true});if(u)el.src=u}}
-function findAdj(id){for(const a of [...st.msgAdj,...st.ent.adj])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[])])for(const a of m.adjuntos||[])if(a.id===id)return a;return null}
+function findAdj(id){for(const a of [...st.msgAdj,...st.ent.adj,...st.tf.adj,...st.td.adj])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[]),...(st.priv||[]),...(st.tareas||[])])for(const a of [...(m.adjuntos||[]),...(m.adjHecha||[])])if(a.id===id)return a;return null}
 async function addFiles(files,list){list=list||st.msgAdj;for(const f of files){const tmp={tmp:true,id:'t'+Math.random(),name:f.name||'archivo'};list.push(tmp);renderMain();
   try{const a=await Adj.put(f);list[list.indexOf(tmp)]=a}catch(e){list.splice(list.indexOf(tmp),1);
     toast(e&&e.code==='tipo'?'Aquí solo se pueden adjuntar fotos, PDF, vídeos y texto':e&&e.code==='too_large'?'El archivo es demasiado grande':'No se pudo adjuntar '+(f.name||'el archivo'))}
@@ -810,6 +821,69 @@ async function loadMsgs(){if(msgLoading)return;msgLoading=true;try{st.msgs=await
   spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='mensajes')renderMain();else if(st.tab==='cuentas')softUpdate()}
 const autorActual=()=>((window.NUBE&&NUBE.user&&NUBE.user.nombre)||st.autor||'').trim();
 const autorEmail=()=>window.NUBE&&NUBE.user?{autorEmail:NUBE.user.email}:{};
+/* ---------- Tareas y partes de trabajo ---------- */
+st.tareas=null;st.tf={open:false,titulo:'',finca:'',cab:'',para:'',fecha:hoy(),urg:false,rep:'',det:'',adj:[]};st.td={id:null,nota:'',adj:[]};st.tFil=null;st.confirmT=null;
+const REP={'':'No se repite',sem:'Cada semana',quin:'Cada 15 días',mes:'Cada mes'};
+let tLoading=false;
+async function loadTareas(){if(tLoading)return;tLoading=true;try{st.tareas=await Store.listCol('tareas',1000)}catch(e){st.tareas=st.tareas||[]}tLoading=false;avisosTareas();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='tareas')renderMain()}
+const yoNombre=()=>autorActual()||'Yo';
+function personas(){const yo=miEmail();return yo?[{email:yo,nombre:yoNombre()+' (yo)'},...equipo()]:[]}
+const tVisible=t=>!restringido()||(t.para&&t.para===miEmail())||fincasVis().some(f=>f.id===t.finca);
+const tMia=t=>!!(miEmail()&&t.para===miEmail());
+const tEstado=t=>t.hecha?'hecha':t.fecha<hoy()?'atrasada':t.fecha===hoy()?'hoy':'prox';
+function tareasMias(){return (st.tareas||[]).filter(t=>tMia(t)&&!t.hecha&&t.fecha<=hoy())}
+async function avisosTareas(){if(!notifOk()||Notification.permission!=='granted')return;let vis=[];try{vis=JSON.parse(localStorage.getItem('abono.notift')||'[]')}catch(e){}
+  for(const t of (st.tareas||[]).filter(t=>tMia(t)&&!t.hecha&&t.creadaEmail!==miEmail())){if(vis.includes(t.id))continue;await notificar('Tarea nueva: '+t.titulo,`${fFecha(t.fecha)}${t.urg?' · URGENTE':''} · de ${t.creadaPor||''}`,'tarea-'+t.id);vis.push(t.id)}
+  try{localStorage.setItem('abono.notift',JSON.stringify(vis.slice(-300)))}catch(e){}}
+function sumaFecha(f,rep){const d=new Date(f+'T12:00:00');if(rep==='sem')d.setDate(d.getDate()+7);else if(rep==='quin')d.setDate(d.getDate()+15);else if(rep==='mes')d.setMonth(d.getMonth()+1);return isoD(d)}
+function tareaHTML(t){const e=tEstado(t),f=(st.cfg.fincas||[]).find(x=>x.id===t.finca),open=st.td.id===t.id,puede=!window.NUBE||(NUBE.user&&(NUBE.user.admin||t.creadaEmail===miEmail()));
+  return `<div class="tarea ${e}${t.urg&&!t.hecha?' urg':''}"><div class="tt"><b>${esc(t.titulo)}</b>${t.urg&&!t.hecha?'<span class="pill bad">Urgente</span>':''}${e==='atrasada'?'<span class="pill bad">Atrasada</span>':e==='hoy'?'<span class="pill warn">Hoy</span>':e==='hecha'?'<span class="pill ok">Hecha</span>':''}</div>
+    <div class="tm">${f?`<span class="mini">${esc(f.nombre)}${t.cab?' · '+esc(cabNombre(t.cab)):''}</span>`:''}<span>${t.para?(tMia(t)?'<b>Para ti</b>':'Para '+esc(t.paraNombre||'')):'Para cualquiera'}</span><span>${t.hecha?'Hecha '+fHora(t.hechaTs)+' por '+esc(t.hechaPor||''):fFecha(t.fecha)}</span>${t.rep?`<span>↻ ${esc(REP[t.rep])}</span>`:''}<span class="de">Creada por ${esc(t.creadaPor||'')}</span></div>
+    ${t.det?`<p>${esc(t.det)}</p>`:''}${adjHTML(t.adjuntos,false)}
+    ${t.hecha&&(t.nota||(t.adjHecha||[]).length)?`<div class="hecho"><b>Al terminar:</b> ${esc(t.nota||'')}${adjHTML(t.adjHecha,false)}</div>`:''}
+    ${open?`<div class="tdone"><div class="field"><label for="td_nota">Nota (opcional)</label><textarea id="td_nota" data-td="nota" rows="2" placeholder="Qué se ha hecho, incidencias…">${esc(st.td.nota)}</textarea></div>${adjHTML(st.td.adj,true)}
+      <div class="row">${Adj.can()?`<label class="btn" for="td_foto">Añadir foto</label><input type="file" id="td_foto" data-td="file" accept="image/*" multiple hidden>`:''}<button class="btn pri" data-act="t-ok" data-id="${t.id}" ${st.td.adj.some(a=>a.tmp)?'disabled':''}>Confirmar hecha</button><button class="btn" data-act="t-cancel">Cancelar</button></div></div>`
+    :`<div class="row">${t.hecha?`<button class="btn" data-act="t-reabrir" data-id="${t.id}">Reabrir</button>`:`<button class="btn pri" data-act="t-hecha" data-id="${t.id}">Marcar hecha</button>`}
+      ${puede?(st.confirmT===t.id?`<span class="note">¿Borrar tarea?</span><button class="btn danger" data-act="t-del-yes" data-id="${t.id}">Sí, borrar</button><button class="btn" data-act="t-cancel">Cancelar</button>`:`<button class="btn" data-act="t-del" data-id="${t.id}">Borrar</button>`):''}</div>`}</div>`}
+function vTareas(){if(st.tareas===null){loadTareas();return '<div class="card"><div class="note">Cargando tareas…</div></div>'}
+  if(st.tFil===null)st.tFil=miEmail()?'mias':'pend';
+  const g=st.tf,fs=fincasVis(),fsel=fs.find(x=>x.id===g.finca)||fincaAct()||fs[0],cabsF=fsel?fsel.cabezales:[];
+  const all=(st.tareas||[]).filter(tVisible).filter(t=>!st.finca||!fincaAct()||t.finca===st.finca||tMia(t));
+  const pend=all.filter(t=>!t.hecha),mias=pend.filter(tMia),atr=pend.filter(t=>t.fecha<hoy());
+  let h=`<section class="summary"><div class="stat"><span>Para ti</span><b>${miEmail()?mias.length:'—'}</b><small>pendientes</small></div><div class="stat"><span>Atrasadas</span><b>${atr.length}</b><small>sin hacer</small></div><div class="stat"><span>Hechas</span><b>${all.filter(t=>t.hecha&&t.hechaTs&&t.hechaTs.slice(0,10)===hoy()).length}</b><small>hoy</small></div></section>`;
+  if(!g.open)h+=`<div class="row"><button class="btn pri" data-act="t-nueva">+ Nueva tarea</button></div>`;
+  else h+=`<section class="card"><div><h3>Nueva tarea</h3><div class="sub">Qué hay que hacer, dónde, quién y cuándo</div></div>
+    <div class="field"><label for="tf_titulo">Tarea</label><div class="inp"><input id="tf_titulo" data-tf="titulo" class="wide" style="width:100%;text-align:left" placeholder="Ej.: Limpiar filtros del cabezal" value="${esc(g.titulo)}" autocomplete="off"></div></div>
+    <div class="frm"><div class="field"><label for="tf_finca">Finca</label><div class="inp"><select id="tf_finca" data-tf="finca">${fs.filter(f=>f.cabezales.length).map(f=>`<option value="${f.id}" ${fsel&&fsel.id===f.id?'selected':''}>${esc(f.nombre)}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="tf_cab">Cabezal</label><div class="inp"><select id="tf_cab" data-tf="cab"><option value="">Toda la finca</option>${cabsF.map(c=>`<option value="${c}" ${g.cab===c?'selected':''}>${esc(cabNombre(c))}</option>`).join('')}</select></div></div>
+      ${personas().length?`<div class="field"><label for="tf_para">Para</label><div class="inp"><select id="tf_para" data-tf="para"><option value="">Cualquiera</option>${personas().map(u=>`<option value="${esc(u.email)}" ${g.para===u.email?'selected':''}>${esc(u.nombre)}</option>`).join('')}</select></div></div>`:''}
+      <div class="field"><label for="tf_fecha">Para el día</label><div class="inp"><input type="date" id="tf_fecha" data-tf="fecha" value="${g.fecha}"></div></div>
+      <div class="field"><label for="tf_rep">Repetir</label><div class="inp"><select id="tf_rep" data-tf="rep">${Object.entries(REP).map(([k,v])=>`<option value="${k}" ${g.rep===k?'selected':''}>${v}</option>`).join('')}</select></div></div></div>
+    <label class="chk"><input type="checkbox" data-tf="urg" ${g.urg?'checked':''}> Urgente</label>
+    <div class="field"><label for="tf_det">Detalles (opcional)</label><textarea id="tf_det" data-tf="det" rows="2">${esc(g.det)}</textarea></div>
+    ${adjHTML(g.adj,true)}
+    <div class="row">${Adj.can()?`<label class="btn" for="tf_foto">Añadir foto</label><input type="file" id="tf_foto" data-tf="file" accept="image/*" multiple hidden>`:''}<button class="btn pri" data-act="t-crear" ${g.adj.some(a=>a.tmp)?'disabled':''}>Crear tarea</button><button class="btn" data-act="t-cerrar">Cancelar</button></div></section>`;
+  const fil=[...(miEmail()?[['mias','Para mí'+(mias.length?' ('+mias.length+')':'')]]:[]),['pend','Pendientes'],['hoy','Hoy y atrasadas'],['hechas','Hechas']];
+  h+=`<div class="pick">${fil.map(([k,t])=>`<button class="chip" data-tfil="${k}" aria-pressed="${st.tFil===k}">${esc(t)}</button>`).join('')}</div>`;
+  let l=st.tFil==='mias'?pend.filter(tMia):st.tFil==='hoy'?pend.filter(t=>t.fecha<=hoy()):st.tFil==='hechas'?all.filter(t=>t.hecha):pend;
+  l=l.slice().sort((a,b)=>st.tFil==='hechas'?(a.hechaTs<b.hechaTs?1:-1):((b.urg?1:0)-(a.urg?1:0))||(a.fecha<b.fecha?-1:a.fecha>b.fecha?1:0));if(st.tFil==='hechas')l=l.slice(0,40);
+  h+=`<section class="card"><div><h3>${{mias:'Tus tareas',pend:'Pendientes',hoy:'Para hoy y atrasadas',hechas:'Hechas'}[st.tFil]}</h3><div class="sub">${l.length} ${l.length===1?'tarea':'tareas'}${fincaAct()?' · '+esc(fincaAct().nombre):''}</div></div>${l.length?`<div class="tareas">${l.map(tareaHTML).join('')}</div>`:'<div class="note">Nada por aquí.</div>'}</section>`;
+  return h}
+async function crearTarea(){const g=st.tf,titulo=g.titulo.trim();if(!titulo){toast('Escribe qué hay que hacer');return}const fs=fincasVis(),f=fs.find(x=>x.id===g.finca)||fincaAct()||fs.find(x=>x.cabezales.length);
+  const dest=personas().find(u=>u.email===g.para);
+  const t={ts:new Date().toISOString(),titulo,finca:f?f.id:'',cab:g.cab||'',para:dest?dest.email:'',paraNombre:dest?dest.nombre.replace(/ \(yo\)$/,''):'',fecha:g.fecha||hoy(),urg:!!g.urg,rep:g.rep||'',det:g.det.trim(),adjuntos:g.adj.filter(a=>!a.tmp),hecha:false,creadaPor:yoNombre(),creadaEmail:miEmail()};
+  try{const id=await Store.addCol('tareas',t);st.tareas.unshift({...t,id});st.tf={open:false,titulo:'',finca:t.finca,cab:'',para:'',fecha:hoy(),urg:false,rep:'',det:'',adj:[]};renderMain();toast(dest?'Tarea asignada a '+t.paraNombre:'Tarea creada')}catch(e){toast(errMsg(e))}}
+async function tareaHecha(id){const t=st.tareas.find(x=>x.id===id);if(!t)return;const p={hecha:true,hechaTs:new Date().toISOString(),hechaPor:yoNombre(),nota:st.td.nota.trim(),adjHecha:st.td.adj.filter(a=>!a.tmp)};
+  try{await Store.updCol('tareas',id,p);Object.assign(t,p);st.td={id:null,nota:'',adj:[]};
+    if(t.rep){const n={...t,ts:new Date().toISOString(),fecha:sumaFecha(t.fecha<hoy()?hoy():t.fecha,t.rep),hecha:false,nota:'',adjHecha:[],hechaTs:null,hechaPor:null};delete n.id;const nid=await Store.addCol('tareas',n);st.tareas.unshift({...n,id:nid});toast('Hecha. La próxima queda para el '+fFecha(n.fecha))}else toast('Tarea hecha');renderMain()}catch(e){toast(errMsg(e))}}
+async function tareaReabrir(id){const t=st.tareas.find(x=>x.id===id);if(!t)return;const p={hecha:false,hechaTs:null,hechaPor:null};try{await Store.updCol('tareas',id,p);Object.assign(t,p);renderMain()}catch(e){toast(errMsg(e))}}
+async function tareaDel(id){const t=st.tareas.find(x=>x.id===id);try{await Store.delCol('tareas',id);for(const a of [...((t&&t.adjuntos)||[]),...((t&&t.adjHecha)||[])])await Adj.del(a);st.tareas=st.tareas.filter(x=>x.id!==id);st.confirmT=null;renderMain();toast('Tarea borrada')}catch(e){toast(errMsg(e))}}
+function onTInput(e){const t=e.target,k=t.dataset.tf,kd=t.dataset.td;if(!k&&!kd)return;
+  if(k){const g=st.tf;if(k==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';addFiles(fs,g.adj)}return}
+    if(k==='urg')g.urg=t.checked;else g[k]=t.value;if(k==='finca'&&e.type==='change'){g.cab='';renderMain()}return}
+  if(kd==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';addFiles(fs,st.td.adj)}return}st.td[kd]=t.value}
+$('#main').addEventListener('input',onTInput);$('#main').addEventListener('change',onTInput);
+
 /* Mensajes dirigidos a una persona */
 const miEmail=()=>window.NUBE&&NUBE.user?NUBE.user.email:'';
 function equipo(){const a=window.NUBE&&NUBE.acc;if(!a)return [];const yo=miEmail();return (a.emails||[]).filter(e=>e!==yo).map(e=>({email:e,nombre:((a.info||{})[e]||{}).nombre||e.split('@')[0]})).sort((x,y)=>x.nombre.localeCompare(y.nombre))}
@@ -1254,6 +1328,7 @@ function resumenHTML(){if(st.hist===null||st.llen===null||st.alm===null)return `
   if(st.hist.some(r=>r.fecha===hoyS))items.push(['ok','Cuentas de hoy guardadas','cuentas-hoy']);
   const dep=depsBajos();
   if(dep.length)items.push(['warn',`${dep.length===1?'1 depósito':dep.length+' depósitos'} para rellenar: ${dep.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')}`,'rellenar:'+dep[0].cabezales[0]]);
+  if(st.tareas===null)loadTareas();const tm=tareasMias();if(tm.length)items.push([tm.some(t=>t.fecha<hoy()||t.urg)?'bad':'warn',tm.length===1?'1 tarea para ti hoy':tm.length+' tareas para ti hoy','tareas']);
   const pv=privSinLeer().length;if(pv)items.push(['bad',pv===1?'1 mensaje privado para ti':pv+' mensajes privados para ti','mensajes-priv']);
   const pm=pendParaMi().length;if(pm)items.push(['bad',pm===1?'1 mensaje para ti':pm+' mensajes para ti','mensajes-mios']);
   const pend=(st.msgs||[]).filter(m=>!m.resuelto).length;if(pend)items.push(['warn',pend===1?'1 mensaje pendiente':pend+' mensajes pendientes','mensajes']);
@@ -1415,7 +1490,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()},150)});
 
-const VIEWS={cuentas:vCuentas,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
+const VIEWS={cuentas:vCuentas,tareas:vTareas,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
 function renderMain(){$('#main').innerHTML=VIEWS[st.tab]();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
 function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=VIEWS[st.tab]();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
@@ -1465,7 +1540,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.open){if(st.dirtyReg)await saveReg();st.tab='cuentas';await loadFecha(t.dataset.open)}
   else if(t.dataset.img){openImg(t.dataset.img)}
   else if(t.dataset.file){const a=findAdj(t.dataset.file);if(a)Adj.save(a)}
-  else if(t.dataset.rmadj){for(const L of [st.msgAdj,st.ent.adj]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
+  else if(t.dataset.rmadj){for(const L of [st.msgAdj,st.ent.adj,st.tf.adj,st.td.adj]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
   else if(t.dataset.gr){st.gRange=+t.dataset.gr;renderMain()}
   else if(t.dataset.mf!==undefined){st.msgF=t.dataset.mf;st.confirmDel=null;renderMain()}
   else if(t.dataset.act==='msg-send')sendMsg();
@@ -1473,6 +1548,16 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='msg-del'){st.confirmDel=t.dataset.id;renderMain()}
   else if(t.dataset.act==='msg-del-no'){st.confirmDel=null;renderMain()}
   else if(t.dataset.act==='msg-del-yes')delMsg(t.dataset.id);
+  else if(t.dataset.act==='t-nueva'){st.tf.open=true;if(!st.tf.finca&&st.finca)st.tf.finca=st.finca;renderMain();const i=$('#tf_titulo');if(i)i.focus()}
+  else if(t.dataset.act==='t-cerrar'){st.tf.open=false;renderMain()}
+  else if(t.dataset.act==='t-crear')crearTarea();
+  else if(t.dataset.act==='t-hecha'){st.td={id:t.dataset.id,nota:'',adj:[]};renderMain()}
+  else if(t.dataset.act==='t-cancel'){st.td={id:null,nota:'',adj:[]};st.confirmT=null;renderMain()}
+  else if(t.dataset.act==='t-ok')tareaHecha(t.dataset.id);
+  else if(t.dataset.act==='t-reabrir')tareaReabrir(t.dataset.id);
+  else if(t.dataset.act==='t-del'){st.confirmT=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='t-del-yes')tareaDel(t.dataset.id);
+  else if(t.dataset.tfil){st.tFil=t.dataset.tfil;renderMain()}
   else if(t.dataset.act==='priv-resp'){st.msgPara=t.dataset.em;renderMain();window.scrollTo(0,0);const x=$('#msg_txt');if(x)x.focus()}
   else if(t.dataset.act==='priv-del'){st.confirmDel=t.dataset.id;renderMain()}
   else if(t.dataset.act==='priv-del-yes'){const id=t.dataset.id,m=(st.priv||[]).find(x=>x.id===id);try{await Store.delPriv(id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.priv=st.priv.filter(x=>x.id!==id);st.confirmDel=null;renderMain();toast('Mensaje borrado')}catch(e){toast(errMsg(e))}}
@@ -1546,7 +1631,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 /* Con datos compartidos: al volver a la app, recarga lo que hayan guardado otros */
 setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
 let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(document.hidden||Store.mode!=='fb'||!st.ready||Date.now()-ultRec<30000)return;ultRec=Date.now();
-  if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();
+  if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
 
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
