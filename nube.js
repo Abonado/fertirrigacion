@@ -64,7 +64,7 @@ catch(e){console.error(e);N.ready=()=>new Promise(()=>mostrarSinSdk());return}
 /* Escrituras: sin cobertura Firestore las guarda en el dispositivo y las sube al volver; no esperamos más de 1,5 s */
 function espera(p){p.catch(e=>{console.error(e);aviso(e&&e.code==='permission-denied'?'Sin permiso para guardar: vuelve a entrar':'No se pudo guardar en la nube')});return Promise.race([p,new Promise(r=>setTimeout(r,1500))])}
 const D=ref=>({get:()=>ref.get(),set:d=>espera(ref.set(d)),update:d=>espera(ref.update(d)),delete:()=>espera(ref.delete())});
-const Q=q=>({orderBy:(f,o)=>Q(q.orderBy(f,o)),limit:n=>Q(q.limit(n)),get:()=>q.get()});
+const Q=q=>({orderBy:(f,o)=>Q(q.orderBy(f,o)),limit:n=>Q(q.limit(n)),where:(f,op,v)=>Q(q.where(f,op,v)),get:()=>q.get()});
 const C=n=>{const c=fs.collection(P+n);return{...Q(c),doc:id=>D(c.doc(id)),add:async d=>{const r=c.doc();await espera(r.set(d));return{id:r.id}}}};
 const DB={doc:p=>{const i=p.indexOf('/');return D(fs.collection(P+p.slice(0,i)).doc(p.slice(i+1)))},collection:C};
 

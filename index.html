@@ -480,6 +480,11 @@ const Store={db:null,mode:'local',
   async delMsg(id){if(this.db)return this.db.collection('mensajes').doc(id).delete();this.lsSet('abono.msgs',(this.lsGet('abono.msgs')||[]).filter(x=>x.id!==id))},
   async listCol(n,lim){if(this.db){const q=await this.db.collection(n).orderBy('ts','desc').limit(lim||500).get();return q.docs.map(d=>({...d.data(),id:d.id}))}return this.lsGet('abono.'+n)||[]},
   async addCol(n,doc){if(this.db){const r=await this.db.collection(n).add(doc);return r.id}const id=n[0]+Date.now().toString(36)+Math.random().toString(36).slice(2,6);const l=this.lsGet('abono.'+n)||[];l.unshift({...doc,id});this.lsSet('abono.'+n,l.slice(0,3000));return id},
+  /* Mensajes privados: solo los ven quien envía y quien recibe (reglas de Firestore) */
+  async listPriv(me){if(Store.mode!=='fb'||!me)return [];const q=await this.db.collection('privados').where('miembros','array-contains',me).get();return q.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>a.ts<b.ts?1:-1)},
+  async addPriv(m){const r=await this.db.collection('privados').add(m);return r.id},
+  async updPriv(id,p){return this.db.collection('privados').doc(id).update(p)},
+  async delPriv(id){return this.db.collection('privados').doc(id).delete()},
   async delCol(n,id){if(this.db)return this.db.collection(n).doc(id).delete();this.lsSet('abono.'+n,(this.lsGet('abono.'+n)||[]).filter(x=>x.id!==id))}
 };
 
@@ -796,7 +801,7 @@ const fHora=ts=>new Date(ts).toLocaleString('es-ES',{weekday:'short',day:'numeri
 function pendHTML(){if(!st.msgs)return '';const n=st.msgs.filter(m=>!m.resuelto&&(!m.cab||m.cab===st.cab)).length;
   return n?`<button class="banner msgbar" data-tab="mensajes">${n} ${n>1?'mensajes pendientes':'mensaje pendiente'} · ver</button>`:''}
 let msgLoading=false;
-async function loadMsgs(){if(msgLoading)return;msgLoading=true;try{st.msgs=await Store.listMsgs()}catch(e){st.msgs=[]}msgLoading=false;avisosMsgs();
+async function loadMsgs(){if(msgLoading)return;msgLoading=true;try{st.msgs=await Store.listMsgs()}catch(e){st.msgs=[]}msgLoading=false;if(miEmail())loadPriv();avisosMsgs();
   spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='mensajes')renderMain();else if(st.tab==='cuentas')softUpdate()}
 const autorActual=()=>((window.NUBE&&NUBE.user&&NUBE.user.nombre)||st.autor||'').trim();
 const autorEmail=()=>window.NUBE&&NUBE.user?{autorEmail:NUBE.user.email}:{};
@@ -805,22 +810,33 @@ const miEmail=()=>window.NUBE&&NUBE.user?NUBE.user.email:'';
 function equipo(){const a=window.NUBE&&NUBE.acc;if(!a)return [];const yo=miEmail();return (a.emails||[]).filter(e=>e!==yo).map(e=>({email:e,nombre:((a.info||{})[e]||{}).nombre||e.split('@')[0]})).sort((x,y)=>x.nombre.localeCompare(y.nombre))}
 const paraMi=m=>!!(m.para&&miEmail()&&m.para.includes(miEmail()));
 const pendParaMi=()=>(st.msgs||[]).filter(m=>paraMi(m)&&!m.resuelto&&m.autorEmail!==miEmail());
+const privSinLeer=()=>(st.priv||[]).filter(m=>m.para===miEmail()&&!m.leido);
+async function loadPriv(){try{st.priv=await Store.listPriv(miEmail())}catch(e){console.error(e);st.priv=st.priv||[];st.privErr=e&&e.code}avisosMsgs();spRes();if(st.tab==='mensajes')renderMain()}
+async function marcarLeidos(){for(const m of privSinLeer()){m.leido=true;try{await Store.updPriv(m.id,{leido:true,leidoTs:new Date().toISOString()})}catch(e){}}}
 async function avisosMsgs(){if(!notifOk()||Notification.permission!=='granted')return;let vis=[];try{vis=JSON.parse(localStorage.getItem('abono.notifm')||'[]')}catch(e){}
+  for(const m of privSinLeer()){if(vis.includes(m.id))continue;await notificar('Mensaje privado de '+(m.deNombre||'alguien'),(m.txt||'Foto o archivo adjunto').slice(0,140),'priv-'+m.id);vis.push(m.id)}
   for(const m of pendParaMi()){if(vis.includes(m.id))continue;await notificar('Mensaje de '+(m.autor||'alguien'),(m.txt||'Foto o archivo adjunto').slice(0,140),'msg-'+m.id);vis.push(m.id)}
   try{localStorage.setItem('abono.notifm',JSON.stringify(vis.slice(-300)))}catch(e){}}
+function privHTML(){const l=st.priv||[],yo=miEmail();if(st.privErr==='permission-denied')return `<section class="card"><div class="banner">Faltan las reglas de mensajes privados en Firebase. Pide al administrador que las actualice.</div></section>`;
+  setTimeout(marcarLeidos,1500);
+  let h=`<section class="card"><div><h3>Mensajes privados</h3><div class="sub">Solo los ve quien los envía y quien los recibe</div></div>`;
+  if(!l.length)return h+`<div class="note">Sin mensajes privados. Para enviar uno, elige a la persona en «Para».</div></section>`;
+  return h+`<div class="msgs">`+l.map(m=>{const rec=m.para===yo;return `<div class="msg ${rec&&!m.leido?'parami':''}"><div class="h"><b>${rec?esc(m.deNombre||m.de):'Tú'}</b><span class="pill ${rec?'para':'nd'}">${rec?'Para ti':'→ '+esc(m.paraNombre||m.para)}</span><span>${fHora(m.ts)}</span>${!rec?(m.leido?'<span class="pill ok">Leído</span>':'<span class="pill nd">No leído</span>'):''}</div>
+    ${m.txt?`<p>${esc(m.txt)}</p>`:''}${adjHTML(m.adjuntos,false)}<div class="row">${rec?`<button class="btn" data-act="priv-resp" data-em="${esc(m.de)}">Responder</button>`:''}${m.de===yo?(st.confirmDel===m.id?`<span class="note">¿Borrar?</span><button class="btn danger" data-act="priv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="msg-del-no">Cancelar</button>`:`<button class="btn" data-act="priv-del" data-id="${m.id}">Borrar</button>`):''}</div></div>`}).join('')+`</div></section>`}
 function vMensajes(){if(st.msgs===null){loadMsgs();return '<div class="card"><div class="note">Cargando mensajes…</div></div>'}
   const sel=st.msgCab??st.cab;
   let h=`<section class="card"><div><h3>Nuevo mensaje</h3><div class="sub">Avisos, incidencias y notas</div></div>
     <div class="row" style="align-items:flex-end">${window.NUBE&&NUBE.user?`<div class="field" style="flex:1 1 150px"><label>Escribes como</label><div class="yo"><b>${esc(NUBE.user.nombre)}</b></div></div>`:`<div class="field" style="flex:1 1 150px"><label for="msg_autor">Nombre</label><div class="inp"><input class="wide" id="msg_autor" data-m="autor" autocomplete="name" value="${esc(st.autor)}"></div></div>`}
-    ${equipo().length?`<div class="field" style="flex:1 1 150px"><label for="msg_para">Para</label><div class="inp"><select id="msg_para" data-m="para"><option value="">Todo el equipo</option>${equipo().map(u=>`<option value="${esc(u.email)}" ${st.msgPara===u.email?'selected':''}>${esc(u.nombre)}</option>`).join('')}</select></div></div>`:''}
+    ${equipo().length?`<div class="field" style="flex:1 1 150px"><label for="msg_para">Para</label><div class="inp"><select id="msg_para" data-m="para"><option value="">Todo el equipo</option><optgroup label="Privado a…">${equipo().map(u=>`<option value="${esc(u.email)}" ${st.msgPara===u.email?'selected':''}>${esc(u.nombre)} (privado)</option>`).join('')}</optgroup></select></div></div>`:''}
     <div class="field" style="flex:1 1 150px"><label for="msg_cab">Cabezal</label><div class="inp"><select id="msg_cab" data-m="cab"><option value="" ${sel===''?'selected':''}>General</option>${cabsFinca().map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div></div>
     <div class="field"><label for="msg_txt">Mensaje</label><textarea id="msg_txt" data-m="txt" rows="3">${esc(st.msgDraft)}</textarea></div>
     ${adjHTML(st.msgAdj,true)}
     <div class="row">${Adj.can()?`<label class="btn" for="msg_foto">Añadir foto</label><input type="file" id="msg_foto" data-m="file" accept="image/*" multiple hidden>
       <label class="btn" for="msg_arch">Añadir archivo</label><input type="file" id="msg_arch" data-m="file" ${Store.mode==='db'?'accept="image/*,video/mp4,video/webm,application/pdf,text/plain,text/csv,.pdf,.txt,.csv"':''} multiple hidden>`:''}
       <button class="btn pri" data-act="msg-send" ${st.msgAdj.some(a=>a.tmp)?'disabled':''}>Enviar mensaje</button></div></section>`;
-  const nm=pendParaMi().length,fs=[['todos','Todos'],...(miEmail()?[['mios','Para mí'+(nm?' ('+nm+')':'')],['envi','Enviados por mí']]:[]),['pend','Pendientes'],['','General'],...st.cfg.cabezales.map(c=>[c.id,c.nombre])];
+  const nm=pendParaMi().length,fs=[['todos','Todos'],...(miEmail()?[['priv','Privados'+(privSinLeer().length?' ('+privSinLeer().length+')':'')],...(nm?[['mios','Para mí ('+nm+')']]:[]),['envi','Enviados por mí']]:[]),['pend','Pendientes'],['','General'],...st.cfg.cabezales.map(c=>[c.id,c.nombre])];
   h+=`<div class="pick">${fs.map(([k,t])=>`<button class="chip" data-mf="${k}" aria-pressed="${st.msgF===k}">${esc(t)}</button>`).join('')}</div>`;
+  if(st.msgF==='priv')return h+privHTML();
   const list=st.msgs.filter(m=>st.msgF==='todos'||(st.msgF==='mios'?paraMi(m):st.msgF==='envi'?(m.autorEmail&&m.autorEmail===miEmail()):st.msgF==='pend'?!m.resuelto:(m.cab||'')===st.msgF));
   h+=`<section class="card"><div><h3>Mensajes</h3><div class="sub">${list.length} ${list.length===1?'mensaje':'mensajes'}</div></div>`;
   if(!list.length)h+=`<div class="note">Sin mensajes.</div>`;
@@ -830,8 +846,10 @@ function vMensajes(){if(st.msgs===null){loadMsgs();return '<div class="card"><di
   return h+`</section>`}
 async function sendMsg(){const txt=(st.msgDraft||'').trim();const adj=st.msgAdj.filter(a=>!a.tmp);if(!txt&&!adj.length){toast('Escribe el mensaje o añade una foto');return}
   const m={ts:new Date().toISOString(),fecha:hoy(),autor:autorActual(),...autorEmail(),cab:st.msgCab??st.cab,txt,resuelto:false,adjuntos:adj};
-  const dest=st.msgPara&&equipo().find(u=>u.email===st.msgPara);if(dest){m.para=[dest.email];m.paraNombre=dest.nombre}
-  try{const id=await Store.addMsg(m);st.msgs.unshift({...m,id});st.msgDraft='';st.msgAdj=[];renderMain();toast(dest?'Mensaje enviado a '+dest.nombre:'Mensaje guardado')}catch(e){toast(errMsg(e))}}
+  const dest=st.msgPara&&equipo().find(u=>u.email===st.msgPara);
+  if(dest){const p={ts:m.ts,fecha:m.fecha,de:miEmail(),deNombre:m.autor,para:dest.email,paraNombre:dest.nombre,miembros:[miEmail(),dest.email],txt,adjuntos:adj,leido:false};
+    try{const id=await Store.addPriv(p);st.priv=st.priv||[];st.priv.unshift({...p,id});st.msgDraft='';st.msgAdj=[];st.msgF='priv';renderMain();toast('Mensaje privado enviado a '+dest.nombre)}catch(e){toast(e&&e.code==='permission-denied'?'Faltan las reglas de mensajes privados en Firebase':errMsg(e))}return}
+  try{const id=await Store.addMsg(m);st.msgs.unshift({...m,id});st.msgDraft='';st.msgAdj=[];renderMain();toast('Mensaje guardado')}catch(e){toast(errMsg(e))}}
 async function toggleMsg(id){const m=st.msgs.find(x=>x.id===id);if(!m)return;try{await Store.updMsg(id,{resuelto:!m.resuelto});m.resuelto=!m.resuelto;renderMain()}catch(e){toast(errMsg(e))}}
 async function delMsg(id){try{const m=st.msgs.find(x=>x.id===id);await Store.delMsg(id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.msgs=st.msgs.filter(x=>x.id!==id);st.confirmDel=null;renderMain();toast('Mensaje borrado')}catch(e){toast(errMsg(e))}}
 $('#main').addEventListener('input',e=>{const k=e.target.dataset.m;if(!k)return;
@@ -1231,6 +1249,7 @@ function resumenHTML(){if(st.hist===null||st.llen===null||st.alm===null)return `
   if(st.hist.some(r=>r.fecha===hoyS))items.push(['ok','Cuentas de hoy guardadas','cuentas-hoy']);
   const dep=depsBajos();
   if(dep.length)items.push(['warn',`${dep.length===1?'1 depósito':dep.length+' depósitos'} para rellenar: ${dep.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')}`,'rellenar:'+dep[0].cabezales[0]]);
+  const pv=privSinLeer().length;if(pv)items.push(['bad',pv===1?'1 mensaje privado para ti':pv+' mensajes privados para ti','mensajes-priv']);
   const pm=pendParaMi().length;if(pm)items.push(['bad',pm===1?'1 mensaje para ti':pm+' mensajes para ti','mensajes-mios']);
   const pend=(st.msgs||[]).filter(m=>!m.resuelto).length;if(pend)items.push(['warn',pend===1?'1 mensaje pendiente':pend+' mensajes pendientes','mensajes']);
   const bajos=Object.keys(st.cfg.productos).filter(p=>{const m=st.cfg.stockMin[p];return m!=null&&stockDe(p)<=m});
@@ -1449,6 +1468,9 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='msg-del'){st.confirmDel=t.dataset.id;renderMain()}
   else if(t.dataset.act==='msg-del-no'){st.confirmDel=null;renderMain()}
   else if(t.dataset.act==='msg-del-yes')delMsg(t.dataset.id);
+  else if(t.dataset.act==='priv-resp'){st.msgPara=t.dataset.em;renderMain();window.scrollTo(0,0);const x=$('#msg_txt');if(x)x.focus()}
+  else if(t.dataset.act==='priv-del'){st.confirmDel=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='priv-del-yes'){const id=t.dataset.id,m=(st.priv||[]).find(x=>x.id===id);try{await Store.delPriv(id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.priv=st.priv.filter(x=>x.id!==id);st.confirmDel=null;renderMain();toast('Mensaje borrado')}catch(e){toast(errMsg(e))}}
   else if(t.dataset.act==='lf-open')lfOpen(t.dataset.t);
   else if(t.dataset.act==='llenar-arriba'||t.dataset.act==='ll-inferido'){const id=t.dataset.id;st.fillB[st.cab]=id;st.tab='rellenar';const o={bidon:id};if(t.dataset.f){o.fecha=t.dataset.f;o.add=+t.dataset.add}renderAll();lfOpen('llenado',o);window.scrollTo(0,0)}
   else if(t.dataset.act==='lf-save')lfSave();
@@ -1483,7 +1505,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='fu-save'){const u=coordsDe(($('#fu_'+t.dataset.id)||{}).value);if(!u){toast('No reconozco las coordenadas. Ejemplo: 37.4334, -1.6304');return}guardarUbic(t.dataset.id,u)}
   else if(t.dataset.act==='fu-gps'){if(!navigator.geolocation){toast('Este móvil no da la ubicación');return}toast('Buscando tu ubicación…');const id=t.dataset.id;
     navigator.geolocation.getCurrentPosition(p=>guardarUbic(id,{lat:p.coords.latitude,lon:p.coords.longitude}),()=>toast('No se pudo obtener la ubicación: revisa el permiso'),{enableHighAccuracy:true,timeout:15000})}
-  else if(t.dataset.go){const g=t.dataset.go;cerrarSplash();st.tab=g.startsWith('rellenar:')?'rellenar':g.startsWith('cuentas')?'cuentas':g.startsWith('mensajes')?'mensajes':g;if(g==='mensajes-mios')st.msgF='mios';if(g.startsWith('rellenar:'))st.cab=g.split(':')[1];
+  else if(t.dataset.go){const g=t.dataset.go;cerrarSplash();st.tab=g.startsWith('rellenar:')?'rellenar':g.startsWith('cuentas')?'cuentas':g.startsWith('mensajes')?'mensajes':g;if(g==='mensajes-mios')st.msgF='mios';if(g==='mensajes-priv')st.msgF='priv';if(g.startsWith('rellenar:'))st.cab=g.split(':')[1];
     if(g==='cuentas-ayer'){const d=new Date();d.setDate(d.getDate()-1);if(st.dirtyReg)await saveReg();await loadFecha(isoD(d))}else renderAll()}
   else if(t.dataset.act==='notif-on'){Notification.requestPermission().then(()=>{softUpdate();avisosLlenado()})}
   else if(t.dataset.act==='notif-test'){notificar('Abonado Pinta Santos','Las notificaciones funcionan en este dispositivo','prueba')}
