@@ -160,7 +160,7 @@ N.cardHTML=()=>{const u=N.user;if(!u)return '';const loc=datosLocales(),hay=loc.
 
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-nube]');if(!b)return;const a=b.dataset.nube,em=b.dataset.em;const re=()=>{try{renderMain()}catch(_){}};
   try{
-    if(a==='salir'){if(st.dirtyReg||st.dirtyCfg){aviso('Guarda los cambios antes de cerrar sesión');return}await N.salir()}
+    if(a==='salir'){if(st.dirtyReg||st.dirtyCfg){aviso('Guarda los cambios antes de cerrar sesión');return}try{if(window.pushBaja)await window.pushBaja()}catch(_){}await N.salir()}
     else if(a==='subir'){N.conf='subir';re()}
     else if(a==='no'){N.conf=null;re()}
     else if(a==='subir-si'){N.busy=true;re();const n=await N.subirLocal();N.busy=false;N.conf=null;aviso(n+' registros subidos a la nube');setTimeout(()=>location.reload(),1200)}

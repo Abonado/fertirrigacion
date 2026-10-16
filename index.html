@@ -790,7 +790,10 @@ function vAjustes(){const c=cabById(st.cab);let h=`<section class="card"><div><h
     <div class="field"><label for="al_phMax">pH máximo</label><div class="inp"><input id="al_phMax" data-k="cfg.al.phMax" inputmode="decimal" value="${inVal(al.phMax)}"></div></div></div></section>`;
   if(window.NUBE&&NUBE.user&&NUBE.user.admin)h+=`<section class="card"><div><h3>IA de incidencias</h3><div class="sub">Dirección del servidor de Claude (Cloudflare). Vacío: se usa Gemini</div></div>
     <div class="field"><label for="ia_url_cfg">Servidor de IA</label><div class="inp"><input class="wide" id="ia_url_cfg" data-k="cfg.ia.url" data-text="1" style="width:100%;text-transform:none" placeholder="https://abonado-ia.….workers.dev" value="${esc(st.cfg.iaUrl||'')}" autocomplete="off" spellcheck="false"></div></div>
-    <div class="note">Después pulsa «Guardar receta y ajustes». Vale para todo el equipo.</div></section>`;
+    <div class="note">Después pulsa «Guardar receta y ajustes». Vale para todo el equipo.</div></section>
+  <section class="card"><div><h3>Avisos con la app cerrada</h3><div class="sub">Dirección del servidor de avisos (Cloudflare)</div></div>
+    <div class="field"><label for="av_url_cfg">Servidor de avisos</label><div class="inp"><input class="wide" id="av_url_cfg" data-k="cfg.avisos.url" data-text="1" style="width:100%;text-transform:none" placeholder="https://abonado-avisos.….workers.dev" value="${esc(st.cfg.avisosUrl||'')}" autocomplete="off" spellcheck="false"></div></div>
+    <div class="note">Después pulsa «Guardar receta y ajustes». Cada persona tiene que activar los avisos en su móvil, en Ajustes → Aviso de llenado.</div></section>`;
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Copia de seguridad, recetas y ajustes</div></div>
     <div class="row"><button class="btn pri" data-act="backup">Descargar copia de seguridad</button><label class="btn" for="restore">Restaurar copia</label><input type="file" id="restore" accept="application/json,.json" hidden></div>
@@ -915,9 +918,9 @@ function vTareas(){if(st.tareas===null){loadTareas();return '<div class="card"><
 async function crearTarea(){const g=st.tf,titulo=g.titulo.trim();if(!titulo){toast('Escribe qué hay que hacer');return}const fs=fincasVis(),f=fs.find(x=>x.id===g.finca)||fincaAct()||fs.find(x=>x.cabezales.length);
   const dest=personas().find(u=>u.email===g.para);
   const t={ts:new Date().toISOString(),titulo,finca:f?f.id:'',cab:g.cab||'',para:dest?dest.email:'',paraNombre:dest?dest.nombre.replace(/ \(yo\)$/,''):'',fecha:g.fecha||hoy(),urg:!!g.urg,rep:g.rep||'',det:g.det.trim(),adjuntos:g.adj.filter(a=>!a.tmp),hecha:false,creadaPor:yoNombre(),creadaEmail:miEmail()};
-  try{const id=await Store.addCol('tareas',t);st.tareas.unshift({...t,id});st.tf={open:false,titulo:'',finca:t.finca,cab:'',para:'',fecha:hoy(),urg:false,rep:'',det:'',adj:[]};renderMain();toast(dest?'Tarea asignada a '+t.paraNombre:'Tarea creada')}catch(e){toast(errMsg(e))}}
+  try{const id=await Store.addCol('tareas',t);st.tareas.unshift({...t,id});pushEnviar(t.para?[t.para]:quienVeFinca(t.finca),(t.urg?'Tarea URGENTE: ':'Tarea nueva: ')+t.titulo,`${fFecha(t.fecha)}${t.para?'':' · para el equipo'} · de ${t.creadaPor||''}`,'tarea-'+id,'tareas');st.tf={open:false,titulo:'',finca:t.finca,cab:'',para:'',fecha:hoy(),urg:false,rep:'',det:'',adj:[]};renderMain();toast(dest?'Tarea asignada a '+t.paraNombre:'Tarea creada')}catch(e){toast(errMsg(e))}}
 async function tareaHecha(id){const t=st.tareas.find(x=>x.id===id);if(!t)return;const p={hecha:true,hechaTs:new Date().toISOString(),hechaPor:yoNombre(),nota:st.td.nota.trim(),adjHecha:st.td.adj.filter(a=>!a.tmp)};
-  try{await Store.updCol('tareas',id,p);Object.assign(t,p);st.td={id:null,nota:'',adj:[]};
+  try{await Store.updCol('tareas',id,p);Object.assign(t,p);st.td={id:null,nota:'',adj:[]};if(t.creadaEmail)pushEnviar([t.creadaEmail],'Tarea hecha: '+t.titulo,'Por '+p.hechaPor+(p.nota?' · '+p.nota:''),'tareahecha-'+id,'tareas',{urgente:false});
     if(t.rep){const n={...t,ts:new Date().toISOString(),fecha:sumaFecha(t.fecha<hoy()?hoy():t.fecha,t.rep),hecha:false,nota:'',adjHecha:[],hechaTs:null,hechaPor:null};delete n.id;const nid=await Store.addCol('tareas',n);st.tareas.unshift({...n,id:nid});toast('Hecha. La próxima queda para el '+fFecha(n.fecha))}else toast('Tarea hecha');renderMain()}catch(e){toast(errMsg(e))}}
 async function tareaReabrir(id){const t=st.tareas.find(x=>x.id===id);if(!t)return;const p={hecha:false,hechaTs:null,hechaPor:null};try{await Store.updCol('tareas',id,p);Object.assign(t,p);renderMain()}catch(e){toast(errMsg(e))}}
 async function tareaDel(id){const t=st.tareas.find(x=>x.id===id);try{await Store.delCol('tareas',id);for(const a of [...((t&&t.adjuntos)||[]),...((t&&t.adjHecha)||[])])await Adj.del(a);st.tareas=st.tareas.filter(x=>x.id!==id);st.confirmT=null;renderMain();toast('Tarea borrada')}catch(e){toast(errMsg(e))}}
@@ -966,7 +969,7 @@ async function wkEmpezar(){if(st.wkRec)return;if(!navigator.mediaDevices||!windo
     if(R.cancel){toast('Cancelado');return}if(dur<0.8){toast('Mantén pulsado mientras hablas');return}
     const type=(rec.mimeType||mime||'audio/webm').split(';')[0],ext=type.includes('mp4')?'m4a':type.includes('ogg')?'ogg':'webm';
     try{const a=await Adj.put(new File(trozos,'walkie.'+ext,{type}));const w={ts:new Date().toISOString(),de:miEmail(),deNombre:yoNombre(),canal:st.wkCanal,dur:+dur.toFixed(1),audio:a};
-      const id=await Store.addCol('walkie',w);if(!st.wk.find(x=>x.id===id))st.wk.unshift({...w,id});softUpdateWk();toast('Enviado a '+wkNombreCanal(w.canal))}catch(e){toast('No se pudo enviar el audio')}};
+      const id=await Store.addCol('walkie',w);if(!st.wk.find(x=>x.id===id))st.wk.unshift({...w,id});pushEnviar(w.canal==='todos'?todosEmails():quienVeFinca(w.canal),'Walkie: '+(w.deNombre||''),'Audio de '+Math.round(w.dur)+' s en '+wkNombreCanal(w.canal)+' · toca para escucharlo','wk-'+id,'walkie');softUpdateWk();toast('Enviado a '+wkNombreCanal(w.canal))}catch(e){toast('No se pudo enviar el audio')}};
   rec.start(250);st.wkRec.int=setInterval(()=>{const R=st.wkRec;if(!R)return;R.seg=Math.floor((Date.now()-R.t0)/1000);const b=$('#wkptt span');if(b)b.textContent='Hablando… '+R.seg+' s';if(R.seg>=WK_MAX)wkParar(false)},250);
   const b=$('#wkptt');if(b){b.classList.add('on');b.querySelector('span').textContent='Hablando… 0 s'}if(navigator.vibrate)navigator.vibrate(30)}
 function wkParar(cancel){const R=st.wkRec;if(!R)return;R.cancel=!!cancel;try{R.rec.stop()}catch(e){}if(navigator.vibrate)navigator.vibrate(20)}
@@ -1031,10 +1034,10 @@ function vMaterial(){if(st.mat===null){loadMat();return '<div class="card"><div 
   return h}
 async function crearMat(){const g=st.mf,art=g.art.trim();if(!art){toast('Escribe qué material necesitas');return}const fs=fincasVis().filter(f=>f.cabezales.length),f=fs.find(x=>x.id===g.finca)||fincaAct()||fs[0];const now=new Date().toISOString();
   const m={ts:now,art,cant:num(String(g.cant))??(g.cant||''),ud:g.ud,finca:f?f.id:'',cab:g.cab||'',urg:!!g.urg,cuando:g.cuando||'',nota:g.nota.trim(),adjuntos:g.adj.filter(a=>!a.tmp),estado:'pedido',pidePor:yoNombre(),pideEmail:miEmail(),hist:[{estado:'pedido',por:yoNombre(),ts:now}]};
-  try{const id=await Store.addCol('material',m);st.mat.unshift({...m,id});st.mf={open:false,art:'',cant:'',ud:'unidades',finca:m.finca,cab:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=esAdminU()?'pend':'mios';renderMain();toast('Pedido enviado')}catch(e){toast(errMsg(e))}}
+  try{const id=await Store.addCol('material',m);st.mat.unshift({...m,id});pushEnviar(adminsEmails(),'Pedido de material: '+art,`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`,'mat-'+id+':pedido','material');st.mf={open:false,art:'',cant:'',ud:'unidades',finca:m.finca,cab:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=esAdminU()?'pend':'mios';renderMain();toast('Pedido enviado')}catch(e){toast(errMsg(e))}}
 async function estadoMat(id,est){const m=st.mat.find(x=>x.id===id);if(!m)return;const r=$('#mr_txt'),now=new Date().toISOString();
   const p={estado:est,hist:[...(m.hist||[]),{estado:est,por:yoNombre(),ts:now}]};if(r){p.resp=r.value.trim();p.respPor=yoNombre()}
-  try{await Store.updCol('material',id,p);Object.assign(m,p);st.mEdit=null;renderMain();toast('Pedido: '+MEST[est][1].toLowerCase())}catch(e){toast(errMsg(e))}}
+  try{await Store.updCol('material',id,p);Object.assign(m,p);if(m.pideEmail)pushEnviar([m.pideEmail],'Tu pedido de '+m.art+': '+MEST[est][1].toLowerCase(),p.resp||('Por '+yoNombre()),'mat-'+id+':'+est,'material');st.mEdit=null;renderMain();toast('Pedido: '+MEST[est][1].toLowerCase())}catch(e){toast(errMsg(e))}}
 async function delMat(id){const m=st.mat.find(x=>x.id===id);try{await Store.delCol('material',id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.mat=st.mat.filter(x=>x.id!==id);st.confirmM=null;renderMain();toast('Pedido borrado')}catch(e){toast(errMsg(e))}}
 function onMInput(e){const t=e.target,k=t.dataset.mf;if(!k)return;const g=st.mf;if(k==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';addFiles(fs,g.adj)}return}
   if(k==='urg')g.urg=t.checked;else g[k]=t.value;if(k==='finca'&&e.type==='change'){g.cab='';renderMain()}}
@@ -1083,8 +1086,8 @@ async function sendMsg(){const txt=(st.msgDraft||'').trim();const adj=st.msgAdj.
   const m={ts:new Date().toISOString(),fecha:hoy(),autor:autorActual(),...autorEmail(),cab:st.msgCab??st.cab,txt,resuelto:false,adjuntos:adj};
   const dest=st.msgPara&&equipo().find(u=>u.email===st.msgPara);
   if(dest){const p={ts:m.ts,fecha:m.fecha,de:miEmail(),deNombre:m.autor,para:dest.email,paraNombre:dest.nombre,miembros:[miEmail(),dest.email],txt,adjuntos:adj,leido:false};
-    try{const id=await Store.addPriv(p);st.priv=st.priv||[];st.priv.unshift({...p,id});st.msgDraft='';st.msgAdj=[];st.msgF='priv';renderMain();toast('Mensaje privado enviado a '+dest.nombre)}catch(e){toast(e&&e.code==='permission-denied'?'Faltan las reglas de mensajes privados en Firebase':errMsg(e))}return}
-  try{const id=await Store.addMsg(m);st.msgs.unshift({...m,id});st.msgDraft='';st.msgAdj=[];renderMain();toast('Mensaje guardado')}catch(e){toast(errMsg(e))}}
+    try{const id=await Store.addPriv(p);st.priv=st.priv||[];st.priv.unshift({...p,id});pushEnviar([dest.email],'Mensaje privado de '+(m.autor||'alguien'),txt||'Foto o archivo adjunto','priv-'+id,'mensajes-priv');st.msgDraft='';st.msgAdj=[];st.msgF='priv';renderMain();toast('Mensaje privado enviado a '+dest.nombre)}catch(e){toast(e&&e.code==='permission-denied'?'Faltan las reglas de mensajes privados en Firebase':errMsg(e))}return}
+  try{const id=await Store.addMsg(m);st.msgs.unshift({...m,id});pushEnviar(quienVeCab(m.cab),'Mensaje de '+(m.autor||'alguien')+(m.cab?' · '+cabNombre(m.cab):''),txt||'Foto o archivo adjunto','msg-'+id,'mensajes');st.msgDraft='';st.msgAdj=[];renderMain();toast('Mensaje guardado')}catch(e){toast(errMsg(e))}}
 async function toggleMsg(id){const m=st.msgs.find(x=>x.id===id);if(!m)return;try{await Store.updMsg(id,{resuelto:!m.resuelto});m.resuelto=!m.resuelto;renderMain()}catch(e){toast(errMsg(e))}}
 async function delMsg(id){try{const m=st.msgs.find(x=>x.id===id);await Store.delMsg(id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.msgs=st.msgs.filter(x=>x.id!==id);st.confirmDel=null;renderMain();toast('Mensaje borrado')}catch(e){toast(errMsg(e))}}
 $('#main').addEventListener('input',e=>{const k=e.target.dataset.m;if(!k)return;
@@ -1162,11 +1165,76 @@ function nivelHTML(b){const n=nivel(b);if(!n)return `<div class="lvl"><span clas
 const notifOk=()=>'Notification' in window&&window.isSecureContext;
 function notifHTML(){if(!notifOk())return `<div class="note">Este navegador no permite notificaciones. En iPhone, instala la app en la pantalla de inicio y ábrela desde el icono.</div>`;
   const p=Notification.permission;
-  if(p==='granted')return `<div class="row"><span class="pill ok">Notificaciones activadas en este dispositivo</span><button class="btn" data-act="notif-test">Probar</button></div>`;
   if(p==='denied')return `<div class="note">Las notificaciones están bloqueadas para esta app. Actívalas en los ajustes del navegador o del móvil.</div>`;
-  return `<div class="row"><button class="btn pri" data-act="notif-on">Activar notificaciones en este dispositivo</button></div>`}
-async function notificar(t,body,tag){try{const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(reg)await reg.showNotification(t,{body,icon:'icon-192.png',badge:'icon-192.png',tag});else new Notification(t,{body,icon:'icon-192.png',tag})}catch(e){}}
-async function avisosLlenado(){if(!notifOk()||Notification.permission!=='granted'||st.llen===null||st.hist===null)return;const h=hoy();
+  let h='';
+  if(p==='granted')h+=`<div class="row"><span class="pill ok">Notificaciones activadas en este dispositivo</span><button class="btn" data-act="notif-test">Probar</button></div>`;
+  else h+=`<div class="row"><button class="btn pri" data-act="notif-on">Activar notificaciones en este dispositivo</button></div>`;
+  if(!pushListo())return h+(Store.mode==='fb'&&esAdminU()?`<div class="note">Avisos con la app cerrada: falta poner abajo la dirección del servidor de avisos.</div>`:'');
+  if(esIOS()&&!instalada())return h+`<div class="note"><b>Avisos con la app cerrada:</b> en iPhone solo funcionan con la app instalada. En Safari: Compartir → «Añadir a pantalla de inicio», ábrela desde el icono y activa aquí los avisos.</div>`;
+  if(!pushSoportado())return h+`<div class="note">Este navegador no admite avisos con la app cerrada.</div>`;
+  if(p!=='granted')return h+`<div class="note">Al activarlas, también te llegarán los avisos con la app cerrada.</div>`;
+  const e=st.push.estado;
+  if(e==='on')return h+`<div class="row"><span class="pill ok">Avisos con la app cerrada: activados</span><button class="btn" data-act="push-test">Probar con la app cerrada</button></div><div class="note">Mensajes, walkie, tareas, pedidos de material, llenado de depósitos y stock bajo.</div>`;
+  return h+`<div class="row"><button class="btn pri" data-act="push-on">Activar avisos con la app cerrada</button></div>${e==='err'?`<div class="note">No se pudieron activar (${esc(st.push.err||'error')}). Comprueba la cobertura y vuelve a intentarlo.</div>`:''}`}
+async function notificar(t,body,tag){try{const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(reg)await reg.showNotification(t,{body,icon:'icon-192.png',badge:'badge-96.png',tag});else new Notification(t,{body,icon:'icon-192.png',tag})}catch(e){}}
+/* ---------- Avisos con la app cerrada (Web Push a través del servidor de avisos en Cloudflare) ---------- */
+const VAPID_PUB='BH8Jm5HP_bXDhFs4e9_lwXiJ7n9YcmHtWzkjqKSx15ySOHDuYFgU2NXji0kaft9Orq4aOHqCYnoLveltvsOcc0I';
+const pushUrl=()=>(st.cfg&&st.cfg.avisosUrl)||'';
+const pushSoportado=()=>notifOk()&&'PushManager' in window&&'serviceWorker' in navigator;
+const pushListo=()=>!!(pushUrl()&&Store.mode==='fb'&&window.NUBE&&NUBE.user);
+const esIOS=()=>/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const instalada=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+const b64uDe=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');const b=atob(s+'==='.slice((s.length+3)%4)),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+const b64uA=buf=>{const u=new Uint8Array(buf);let x='';for(const c of u)x+=String.fromCharCode(c);return btoa(x).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')};
+async function pushApi(ruta,body){const u=pushUrl(),cu=window.NUBE&&NUBE.auth&&NUBE.auth.currentUser;if(!u||!cu)throw{code:'cfg'};const tk=await cu.getIdToken();
+  let r;try{r=await fetch(u.replace(/\/+$/,'')+'/'+ruta,{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify(body)})}catch(e){throw{code:'red'}}
+  const j=await r.json().catch(()=>null);if(!r.ok||!j)throw{code:(j&&j.error)||('http'+r.status)};return j}
+st.push={estado:null,err:null};
+async function pushSub(){const reg=await navigator.serviceWorker.ready;return{reg,sub:await reg.pushManager.getSubscription()}}
+/* Da de alta este dispositivo (y lo renueva una vez al día). Con «gesto», puede pedir el permiso */
+async function pushSuscribir(gesto){if(!pushSoportado()||!pushListo())return false;if(!gesto&&Notification.permission!=='granted')return false;
+  try{let{reg,sub}=await pushSub();const k=sub&&sub.options&&sub.options.applicationServerKey;if(sub&&k&&b64uA(k)!==VAPID_PUB){await sub.unsubscribe();sub=null}
+    if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64uDe(VAPID_PUB)});
+    const j=JSON.stringify(sub.toJSON()),lk='abono.push.'+miEmail();let prev='';try{prev=localStorage.getItem(lk)||''}catch(e){}
+    if(gesto||prev!==j+'|'+hoy()){await pushApi('suscribir',{sub:sub.toJSON(),disp:(esIOS()?'iPhone/iPad':/Android/.test(navigator.userAgent)?'Android':'Ordenador')});try{localStorage.setItem(lk,j+'|'+hoy())}catch(e){}}
+    st.push={estado:'on',err:null};return true}
+  catch(e){console.warn('push',e);st.push={estado:'err',err:(e&&(e.code||e.name||e.message))||'error'};return false}finally{try{const o=$('[data-out="notif"]');if(o)o.innerHTML=notifHTML()}catch(e){}}}
+async function pushBaja(){try{if(!pushSoportado()||!pushListo())return;const{sub}=await pushSub();if(!sub)return;await Promise.race([pushApi('baja',{endpoint:sub.endpoint}),new Promise(r=>setTimeout(r,2500))]);try{localStorage.removeItem('abono.push.'+miEmail())}catch(e){}}catch(e){}}
+window.pushBaja=pushBaja;
+async function pushEstado(){if(!pushSoportado()||!pushListo()||Notification.permission!=='granted'){return}try{const{sub}=await pushSub();const ant=st.push.estado;st.push.estado=sub?'on':st.push.estado==='err'?'err':'off';if(ant!==st.push.estado){const o=$('[data-out="notif"]');if(o)o.innerHTML=notifHTML()}}catch(e){}}
+/* Destinatarios */
+const accInfo=e=>((window.NUBE&&NUBE.acc&&NUBE.acc.info)||{})[e]||{};
+const todosEmails=()=>(window.NUBE&&NUBE.acc&&NUBE.acc.emails)||[];
+const veFinca=(e,fid)=>{const i=accInfo(e);return !fid||!!i.admin||!Array.isArray(i.fincas)||i.fincas.includes(fid)};
+const fincaDeCab=c=>(c&&((st.cfg.fincas||[]).find(f=>f.cabezales.includes(c))||{}).id)||'';
+const quienVeCab=c=>todosEmails().filter(e=>veFinca(e,fincaDeCab(c)));
+const quienVeFinca=f=>todosEmails().filter(e=>veFinca(e,f));
+const adminsEmails=()=>todosEmails().filter(e=>accInfo(e).admin);
+function pushEnviar(para,titulo,cuerpo,tag,tab,extra){if(!pushListo())return;para=[...new Set(para||[])].filter(e=>e&&e!==miEmail());if(!para.length)return;
+  pushApi('enviar',{para,titulo:String(titulo||'').slice(0,120),cuerpo:String(cuerpo||'').slice(0,280),tag,tab,...(extra||{})}).catch(e=>console.warn('push enviar',e))}
+/* Llenado: calcula a qué hora llegará cada depósito al aviso y se lo deja programado al servidor */
+function cuandoUmbral(b,n){const u=umbralLl(),falta=n.rest-u*n.max;if(falta<=0)return Date.now();const g=n.g&&n.g.v;if(!(g>0))return null;
+  const r=st.cfg.riego||{},a=minDe(r.ini)??510,z=minDe(r.fin)??1110,ven=z>a?z-a:1440,ini=z>a?a:0;
+  let f=hoy(),queda=falta,fr=cmDe(b,f)!=null?1:fracDia(f);
+  for(let i=0;i<90;i++){const disp=g*(1-fr);if(queda<=disp+1e-9){const d=new Date(f+'T00:00:00');d.setMinutes(Math.round(ini+(fr+queda/g)*ven));return Math.max(Date.now(),d.getTime())}queda-=disp;f=sigD(f);fr=0}
+  return null}
+let progEnCurso=false;
+async function pushProgramar(){if(!pushListo()||progEnCurso||st.fecha!==hoy()||!st.llen||!st.hist||!st.ready)return;progEnCurso=true;
+  try{let prev={};try{prev=JSON.parse(localStorage.getItem('abono.pushprog')||'{}')}catch(e){}
+    const ok=new Set(cabsVis().map(c=>c.id));
+    for(const b of st.cfg.bidones.filter(b=>b.cabezales.some(c=>ok.has(c)))){const n=nivel(b);if(!n||!(n.max>0))continue;const cu=cuandoUmbral(b,n);
+      const nom=b.nombre.replace(/^Depósito /,'').replace(/^./,x=>x.toUpperCase())+' · '+b.cabezales.map(cabNombre).join(' y ');
+      const para=[...new Set(b.cabezales.flatMap(quienVeCab))];
+      const it=cu==null?{id:b.id,borrar:true}:{id:b.id,cuando:cu,ref:n.ev?String(n.ev.ts):'sin',para,titulo:'Toca llenar: '+nom,
+        cuerpo:`Ha llegado al ${Math.round(umbralLl()*100)} % (≈ ${fmt(umbralLl()*n.max,0)} cm). Calculado con el gasto diario de ${fmt(n.g.v,1)} cm: mide para confirmar.`,tag:'llenado-'+b.id,tab:'rellenar:'+b.cabezales[0]};
+      const firma=JSON.stringify({...it,cuando:it.cuando?Math.round(it.cuando/1800000):0});if(prev[b.id]===firma)continue;
+      try{await pushApi('programar',it);prev[b.id]=firma}catch(e){console.warn('push programar',e);break}}
+    try{localStorage.setItem('abono.pushprog',JSON.stringify(prev))}catch(e){}}
+  finally{progEnCurso=false}}
+/* Stock: avisa a los administradores una vez al día por producto */
+function pushStock(prods,alm){for(const p of prods){const m=minStock(p,alm),s=stockDe(p,alm);if(m==null||s>m)continue;const a=almById(alm);
+  pushEnviar(adminsEmails(),'Stock bajo: '+pn(p),`Quedan ${fmt(Math.max(0,s),0)} kg en ${a?a.nombre:'el almacén'} (mínimo ${fmt(m,0)} kg)`,'stock-'+alm+'-'+p,'almacen',{unico:'stock-'+alm+'-'+p+'-'+hoy(),urgente:false})}}
+async function avisosLlenado(){pushProgramar();if(!notifOk()||Notification.permission!=='granted'||st.llen===null||st.hist===null)return;const h=hoy();
   for(const b of depsBajos()){const k='abono.avisado.'+b.id;let last='';try{last=localStorage.getItem(k)||''}catch(e){}if(last===h)continue;
     const n=nivel(b),r=Math.max(0,n.rest);
     await notificar('Toca llenar: '+b.nombre.replace(/^Depósito /,'').replace(/^./,x=>x.toUpperCase())+' · '+b.cabezales.map(cabNombre).join(' y '),'Quedan '+fmt(r,1)+' cm · '+fmt(r*b.lpcm,0)+' L ('+fmt(r*100/n.max,0)+' %)'+(n.dias!=null?' · ≈ '+fmt(n.dias,1)+' días':''),'llenado-'+b.id);
@@ -1180,7 +1248,7 @@ async function lfSave(){const L=st.lf,b=bid(L.bidon);if(L.final==null||L.final<0
   if(L.tipo==='llenado'){ev.cmAdd=L.add;ev.cantidades={};const lt=L.add*b.lpcm;for(const x of b.productos){if(!x.dosis)continue;ev.cantidades[x.p]=+(lt*conc(b,x)/1000).toFixed(2)}}
   try{const id=await Store.addCol('llenados',ev);st.llen.unshift({...ev,id});
     if(L.tipo==='llenado'&&L.desc)for(const[p,q]of Object.entries(ev.cantidades)){const m={ts:ev.ts,fecha:ev.fecha,tipo:'salida',alm:almDeCab(b.cabezales[0]),p,qty:-q,origen:b.id,llenado:id};const mid=await Store.addCol('almacen',m);st.alm.unshift({...m,id:mid})}
-    st.lf=null;renderMain();toast(L.tipo==='llenado'?'Llenado guardado'+(L.desc?' y descontado del almacén':''):'Nivel guardado')}catch(e){toast(errMsg(e))}}
+    if(L.tipo==='llenado'&&L.desc)pushStock(Object.keys(ev.cantidades),almDeCab(b.cabezales[0]));st.lf=null;renderMain();pushProgramar();toast(L.tipo==='llenado'?'Llenado guardado'+(L.desc?' y descontado del almacén':''):'Nivel guardado')}catch(e){toast(errMsg(e))}}
 async function llDel(id){try{await Store.delCol('llenados',id);st.llen=st.llen.filter(e=>e.id!==id);for(const m of st.alm.filter(m=>m.llenado===id)){await Store.delCol('almacen',m.id)}st.alm=st.alm.filter(m=>m.llenado!==id);st.confirmLl=null;renderMain();toast('Registro borrado')}catch(e){toast(errMsg(e))}}
 
 /* ---------- Almacén ---------- */
@@ -1409,7 +1477,7 @@ function posiblesHTML(r){return (r.posibles||[]).map((x,i)=>`<div class="dgp"><d
 async function dgMsg(id){const d=id==='cur'?{res:st.dg.res,cab:st.dg.cab??st.cab,sector:st.dg.sector,adjuntos:((st.diags||[]).find(x=>x.id===st.dg.resId)||{}).adjuntos||[]}:(st.diags||[]).find(x=>x.id===id);if(!d||!d.res)return;
   const txt=`Diagnóstico IA${d.sector?' · '+d.sector:''}: ${d.res.resumen||''}\nPosibles: ${(d.res.posibles||[]).map(x=>x.problema).join(', ')}`;
   const m={ts:new Date().toISOString(),fecha:hoy(),autor:autorActual(),...autorEmail(),cab:d.cab||'',txt,resuelto:false,adjuntos:d.adjuntos||[]};
-  try{const mid=await Store.addMsg(m);if(st.msgs)st.msgs.unshift({...m,id:mid});toast('Enviado a Mensajes')}catch(e){toast(errMsg(e))}}
+  try{const mid=await Store.addMsg(m);if(st.msgs)st.msgs.unshift({...m,id:mid});pushEnviar(quienVeCab(m.cab),'Mensaje de '+(m.autor||'alguien')+(m.cab?' · '+cabNombre(m.cab):''),txt,'msg-'+mid,'mensajes');toast('Enviado a Mensajes')}catch(e){toast(errMsg(e))}}
 async function dgDel(id){const d=(st.diags||[]).find(x=>x.id===id);try{await Store.delCol('diagnosticos',id);for(const a of (d&&d.adjuntos)||[])await Adj.del(a);st.diags=st.diags.filter(x=>x.id!==id);st.confirmDg=null;renderMain();toast('Diagnóstico borrado')}catch(e){toast(errMsg(e))}}
 function vDiagnostico(){const g=st.dg,cab=g.cab??st.cab;
   if(!smReady)return '<div class="card"><div class="note">Preparando la IA…</div></div>';
@@ -1682,6 +1750,8 @@ function renderFoot(){}
 function renderAll(){$('#fecha').value=st.fecha;renderCabs();renderTabs();renderMain();renderSave();renderFoot()}
 let tt;function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,2600)}
 
+async function irA(g){g=String(g||'cuentas-hoy');cerrarSplash();st.tab=g.startsWith('rellenar:')?'rellenar':g.startsWith('cuentas')?'cuentas':g.startsWith('mensajes')?'mensajes':g;if(g==='mensajes-mios')st.msgF='mios';if(g==='mensajes-priv')st.msgF='priv';if(g.startsWith('rellenar:'))st.cab=g.split(':')[1];if(!VIEWS[st.tab])st.tab='cuentas';
+  if(g==='cuentas-ayer'){const d=new Date();d.setDate(d.getDate()-1);if(st.dirtyReg)await saveReg();await loadFecha(isoD(d))}else renderAll()}
 /* ---------- Edición ---------- */
 const bid=id=>st.cfg.bidones.find(b=>b.id===id);
 function bandeja(id){for(const c of st.cfg.cabezales)for(const s of c.sectores)for(const b of s.bandejas)if(b.id===id)return b}
@@ -1689,7 +1759,7 @@ function applyCfg(p,v){const b=bid(p[2]);switch(p[1]){
   case 'kg':b.kgPrincipal=v;break;case 'dosis':b.productos[+p[3]].dosis=v??0;break;case 'lpcm':if(v)b.lpcm=v;break;
   case 'cap':if(v)b.capacidad=v;break;case 'vent':b.venturis=v?Math.max(1,Math.round(v)):1;break;case 'rep':b.reparto=!!v;break;
   case 'al':if(v!=null)st.cfg.alertas[p[2]]=v;break;case 'ub':st.cfg.ubic={...(st.cfg.ubic||{}),[p[2]]:v};st.wx=null;break;case 'min':if(v==null)delete st.cfg.stockMin[p[2]];else st.cfg.stockMin[p[2]]=v;break;case 'saco':if(!(v>0))delete st.cfg.saco[p[2]];else st.cfg.saco[p[2]]=v;break;
-  case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
+  case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'avisos':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.avisosUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.avisosUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
 function onInput(e){const t=e.target,k=t.dataset.k;if(!k)return;const p=k.split('.');const v=t.type==='checkbox'?t.checked:(t.dataset.text?t.value.trim():num(t.value));
   if(p[0]==='reg'){if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;st.dirtyReg=true;if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
   softUpdate();renderSave()}
@@ -1793,9 +1863,10 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='fu-save'){const u=coordsDe(($('#fu_'+t.dataset.id)||{}).value);if(!u){toast('No reconozco las coordenadas. Ejemplo: 37.4334, -1.6304');return}guardarUbic(t.dataset.id,u)}
   else if(t.dataset.act==='fu-gps'){if(!navigator.geolocation){toast('Este móvil no da la ubicación');return}toast('Buscando tu ubicación…');const id=t.dataset.id;
     navigator.geolocation.getCurrentPosition(p=>guardarUbic(id,{lat:p.coords.latitude,lon:p.coords.longitude}),()=>toast('No se pudo obtener la ubicación: revisa el permiso'),{enableHighAccuracy:true,timeout:15000})}
-  else if(t.dataset.go){const g=t.dataset.go;cerrarSplash();st.tab=g.startsWith('rellenar:')?'rellenar':g.startsWith('cuentas')?'cuentas':g.startsWith('mensajes')?'mensajes':g;if(g==='mensajes-mios')st.msgF='mios';if(g==='mensajes-priv')st.msgF='priv';if(g.startsWith('rellenar:'))st.cab=g.split(':')[1];
-    if(g==='cuentas-ayer'){const d=new Date();d.setDate(d.getDate()-1);if(st.dirtyReg)await saveReg();await loadFecha(isoD(d))}else renderAll()}
-  else if(t.dataset.act==='notif-on'){Notification.requestPermission().then(()=>{softUpdate();avisosLlenado()})}
+  else if(t.dataset.go){await irA(t.dataset.go)}
+  else if(t.dataset.act==='notif-on'){if(pushSoportado()&&pushListo()&&!(esIOS()&&!instalada())){await pushSuscribir(true);softUpdate();avisosLlenado()}else Notification.requestPermission().then(()=>{softUpdate();avisosLlenado()})}
+  else if(t.dataset.act==='push-on'){t.disabled=true;t.textContent='Activando…';const ok=await pushSuscribir(true);toast(ok?'Avisos con la app cerrada activados':'No se pudieron activar los avisos');pushProgramar()}
+  else if(t.dataset.act==='push-test'){try{await pushApi('enviar',{prueba:true,retraso:10});toast('Cierra la app: el aviso llega en unos 10 segundos')}catch(e){toast('No se pudo enviar la prueba ('+(e.code||'error')+')')}}
   else if(t.dataset.act==='notif-test'){notificar('Abonado Pinta Santos','Las notificaciones funcionan en este dispositivo','prueba')}
   else if(t.dataset.act==='usar-rec'){const b=bid(t.dataset.id);if(b){b.kgPrincipal=+t.dataset.v;st.dirtyCfg=true;renderMain();renderSave();toast('Cantidad aplicada: pulsa «Guardar receta y ajustes»')}}
   else if(t.dataset.act==='backup')backup();
@@ -1825,7 +1896,10 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
-  st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs();loadTareas();loadMat();wkIniciar();setTimeout(wkLimpiar,15000)})();
+  st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs();loadTareas();loadMat();wkIniciar();setTimeout(wkLimpiar,15000);
+  setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
+  const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}})();
+if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.abrir!=null&&st.ready)irA(d.abrir||'cuentas-hoy')});
 /* Con datos compartidos: al volver a la app, recarga lo que hayan guardado otros */
 setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
 let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(document.hidden||Store.mode!=='fb'||!st.ready||Date.now()-ultRec<30000)return;ultRec=Date.now();
