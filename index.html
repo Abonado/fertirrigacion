@@ -564,7 +564,8 @@ function fincaAvisos(f){const out=[],cabs=f.cabezales||[];if(!cabs.length)return
   if(ult){const a=st.cfg.alertas;for(const c of cabs){const z=ult.resumen[c];if(!z)continue;if(z.ceD!=null&&z.ceD>a.ceMax)out.push(['bad',`CE de drenaje alta en ${cabNombre(c)}: ${fmt(z.ceD,2)} mS`]);if(z.phD!=null&&(z.phD<a.phMin||z.phD>a.phMax))out.push(['bad',`pH de drenaje fuera de rango en ${cabNombre(c)}: ${fmt(z.phD,1)}`])}}
   const w=fwxDe(f);if(w&&w.daily){const sub={};for(const k in w.daily)sub[k]=w.daily[k].slice(0,2);for(const a of avisosWx(sub))out.push(a)}
   if(!out.length)out.push(['ok','Todo en orden']);return out}
-function fotoFinca(f,i){const ft=f.foto;if(!ft)return paisaje(f,i);if(typeof ft==='string')return `<img src="${esc(ft)}" alt="">`;
+const FOTO_DEF={pinta:'fincas/pinta-santos.jpg',palacias:'fincas/las-palacias.jpg',fuente:'fincas/la-fuente.jpg'};
+function fotoFinca(f,i){const ft=f.foto||FOTO_DEF[f.id];if(!ft)return paisaje(f,i);if(typeof ft==='string')return paisaje(f,i)+`<img src="${esc(ft)}" alt="" onerror="this.remove()">`;
   return (ft.local||ft.fb)?`<img alt="" data-local="${ft.id}">`:`<img alt="" src="${esc(Adj.src(ft))}">`}
 function renderFincas(){const fs=st.cfg.fincas||[],admin=!window.NUBE||(NUBE.user&&NUBE.user.admin),hoyTxt=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
   $('#fincas').innerHTML=`<div class="in"><div class="fhead"><div><div class="eyebrow">Fertirrigación · cabezales de riego</div><h2>Fincas</h2></div><div class="fecha">${esc(hoyTxt)}</div></div>
