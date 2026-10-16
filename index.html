@@ -1,0 +1,1374 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1b2f4a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Abonado">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head><body>
+<title>Abonado Pinta Santos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: herramienta de campo, móvil primero. Cabecera fija con día + cabezal + pestañas; tarjetas por depósito; barra de guardado inferior. */
+:root{
+  --bg:#eef2ef; --surface:#ffffff; --surface-2:#f6f8f6; --ink:#15222c; --muted:#5a6a70; --line:#d6dfda;
+  --accent:#1d6b47; --accent-ink:#ffffff; --navy:#1b2f4a;
+  --ok:#23704a; --ok-bg:#dcefe3; --warn:#8a5a0c; --warn-bg:#f8e8c8; --bad:#a3271b; --bad-bg:#f7d9d4;
+  --bar:#cfe0d6;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+:root,:root[data-theme="dark"]{color-scheme:light}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-text-size-adjust:100%;text-transform:uppercase}
+button,input,select,textarea,label{text-transform:inherit}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:.01em}
+.num,td,.stat b,.inp input{font-variant-numeric:tabular-nums}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.top .wrap{padding-block:12px 0;display:grid;gap:10px}
+.brandrow{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:600}
+h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
+.date{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.date input{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.scroller{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 calc(-1*max(16px,env(safe-area-inset-left,0px)));padding:0 max(16px,env(safe-area-inset-left,0px))}
+.scroller::-webkit-scrollbar{display:none}
+.scroller.drag{cursor:grabbing;user-select:none}
+@media (hover:hover) and (pointer:fine){.scroller{flex-wrap:wrap;overflow:visible;row-gap:2px}}
+.chip{flex:none;font:600 14px var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--bg)}
+.tabs .tab{flex:none;font:600 15px var(--f-display);letter-spacing:.04em;text-transform:uppercase;background:none;border:0;color:var(--muted);padding:8px 10px 10px;border-bottom:3px solid transparent;cursor:pointer}
+.tabs .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+main{padding-block:16px 120px;display:grid;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:12px;min-width:0}
+.card h3{font-size:20px;font-weight:600}
+.sub{font-size:13px;color:var(--muted)}
+.banner{background:var(--warn-bg);color:var(--ink);border-radius:10px;padding:10px 14px;font-size:14px}
+.banner b{color:var(--warn)}
+.note{font-size:13px;color:var(--muted)}
+
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px}
+.summary .wide{grid-column:1/-1}
+.summary td b{white-space:nowrap;font-size:18px}
+.stat{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.stat>span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.stat b{font:600 24px var(--f-display)}
+.stat small{font-size:12px;color:var(--muted)}
+
+.tank-h{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.field{display:grid;gap:4px}
+.field label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.inp{display:flex;align-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.inp input{font:600 18px var(--f-body);color:var(--ink);background:transparent;border:0;padding:7px 8px;width:7.5ch;text-align:right}
+.inp input.wide{width:14ch;text-align:left;font-size:16px}
+.nmf .inp input.wide{width:100%;min-width:0}
+.inp .u{font-size:13px;color:var(--muted);padding-right:9px}
+.field.big .inp input{font-size:24px;width:6ch}
+.inp.sm input{font-size:15px;width:6ch;padding:5px 6px}
+
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;padding-left:0}
+td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.u{color:var(--muted);font-size:12px}
+.pill{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.warn{background:var(--warn-bg);color:var(--warn)}
+.pill.bad{background:var(--bad-bg);color:var(--bad)}
+.pill.nd{background:var(--surface-2);color:var(--muted)}
+.line{font-size:14px;color:var(--muted)}
+.line b{color:var(--ink)}
+
+.sector-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.bj{display:grid;grid-template-columns:minmax(70px,1fr) auto minmax(90px,1.2fr);gap:10px;align-items:center;padding-block:8px;border-top:1px solid var(--line)}
+.bj .nm b{display:block;font-size:15px}
+.bj .nm small{color:var(--muted);font-size:12px}
+.bj,.bjh{grid-template-columns:minmax(70px,1fr) 100px 164px minmax(90px,1.2fr)}
+.bjce{display:flex;gap:6px}
+.meter .vt{font-size:14px;color:var(--ink);margin-left:2px}
+.bjce .inp{flex:1}.bjce .inp input{width:100%;min-width:0}
+.bjh{display:grid;gap:10px;font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted);padding-top:6px}
+.meter{display:grid;gap:3px;min-width:0}
+.meter .bar{height:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.meter .bar i{display:block;height:100%;background:var(--accent)}
+.meter .bar i.bad{background:var(--bad)}
+.meter .t{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);gap:6px}
+.meter .t b{font-size:15px;color:var(--ink)}
+
+.pick{display:flex;flex-wrap:wrap;gap:6px}
+.steps{display:grid;gap:0}
+.step{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px solid var(--line);align-items:baseline}
+.step:first-child{border-top:0}
+.step b{font:600 20px var(--f-display);white-space:nowrap}
+.step.water{background:var(--surface-2);margin:0 -14px;padding:10px 14px;border-radius:0 0 10px 10px}
+
+.btn{font:600 15px var(--f-body);border-radius:8px;padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn:disabled{opacity:.55;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+.hist{display:grid;gap:0}
+.hrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.hrow:first-child{border-top:0}
+.hrow .d{font:600 17px var(--f-display);white-space:nowrap}
+.hrow .cs{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.mini{font-size:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:2px 7px}
+.chg{padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.chg:first-child{border-top:0}
+.chg ul{margin:4px 0 0;padding-left:18px}
+
+.cfgrow{display:grid;grid-template-columns:1fr repeat(3,auto);gap:10px;align-items:end;padding-block:8px;border-top:1px solid var(--line)}
+.cfgrow:first-of-type{border-top:0}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+
+.savebar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--navy);color:var(--bg);padding-bottom:env(safe-area-inset-bottom,0px)}
+.savebar .wrap{padding-block:10px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.savebar .btn{border-color:transparent}
+.savebar .msg{font-size:14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:14px;z-index:7;max-width:calc(100% - 32px)}
+.foot{padding-block:0 24px;font-size:12px;color:var(--muted)}
+.card>*{min-width:0}
+.inp select{font:600 16px var(--f-body);color:var(--ink);background:transparent;border:0;padding:7px 8px;width:100%}
+textarea{width:100%;font:500 16px var(--f-body);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;resize:vertical;min-height:84px}
+.msgbar{border:0;width:100%;text-align:left;font:inherit;cursor:pointer;font-weight:600}
+.msgs{display:grid}
+.msg{display:grid;gap:5px;padding:12px 0;border-top:1px solid var(--line)}
+.msg:first-child{border-top:0}
+.msg.done{opacity:.6}
+.msg .h{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.msg .h b{color:var(--ink);font-size:14px}
+.msg p{margin:0;white-space:pre-wrap;font-size:15px;overflow-wrap:anywhere}
+.msg .row .btn{padding:5px 10px;font-size:13px}
+.adjs{display:flex;flex-wrap:wrap;gap:8px}
+.thumb{position:relative;padding:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;width:84px;height:84px;background:var(--surface-2);cursor:pointer}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.fchip{display:inline-flex;gap:6px;align-items:center;font:600 13px var(--f-body);border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:8px;padding:7px 10px;cursor:pointer;max-width:100%;text-align:left}
+.fchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px}
+.fchip small{color:var(--muted);font-weight:500}
+.adjwrap{position:relative;display:inline-flex}
+.rm{position:absolute;top:-6px;right:-6px;width:24px;height:24px;border-radius:50%;border:0;background:var(--ink);color:var(--bg);font:700 14px/24px var(--f-body);cursor:pointer;padding:0}
+.up{font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:8px 10px}
+.lb{position:fixed;inset:0;z-index:9;background:rgba(12,18,24,.9);display:flex;align-items:center;justify-content:center;padding:calc(56px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.lb[hidden],.savebar[hidden],.toast[hidden],.tip[hidden]{display:none}
+.chart{position:relative;min-height:220px}
+.chart svg{display:block;touch-action:pan-y}
+.ax{font:500 11px var(--f-body);fill:var(--muted)}
+.dl{font:600 11px var(--f-body);fill:var(--ink)}
+.bar.on{opacity:.7}
+.tip{position:absolute;top:6px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;box-shadow:0 4px 14px rgba(20,30,40,.14);font-size:12px;pointer-events:none;min-width:140px;z-index:2;display:grid;gap:3px}
+.tip .th{color:var(--muted);font-weight:600}
+.tip .tr{display:flex;gap:6px;align-items:center;white-space:nowrap}
+.tip .tr i{width:12px;height:2px;flex:none}
+.tip .tr b{font-size:14px;color:var(--ink);text-transform:none}
+.nt{text-transform:none}
+.tip .tr span{color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:600}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:14px;height:2px;display:inline-block}
+.legend i.dash{height:0;border-top:2px dashed var(--muted)}
+.legend i.band{height:10px;background:var(--ok-bg)}
+details.tv summary{cursor:pointer;font-size:13px;color:var(--muted);font-weight:600}
+details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
+.cerow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-width:420px}
+.cerow .inp input{width:100%}
+.lvl{display:grid;gap:4px}
+.lvl .bar{height:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden;position:relative}
+.lvl .bar .mk{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--ink);opacity:.45}
+.lvl .bar i{display:block;height:100%;background:var(--accent)}
+.lvl .bar i.warn{background:var(--warn)}
+.lvl .bar i.bad{background:var(--bad)}
+.lvl .t{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.lvl .t b{color:var(--ink)}
+.lrow{display:grid;grid-template-columns:minmax(150px,240px) 1fr;gap:12px;align-items:center;padding-block:8px;border-top:1px solid var(--line)}
+.lrow:first-child{border-top:0}
+.lrow .lnm{display:grid;gap:4px}
+.lrow .gd{display:flex;align-items:center;gap:8px}
+.lrow .lnm small{color:var(--muted);font-size:12px}
+.lvl .bar i.est{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 6px,transparent 6px 12px)}
+.srow{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
+.srow:first-child{border-top:0}
+.yo{min-height:42px;display:flex;align-items:center;padding:0 12px;border-radius:8px;background:var(--ok-bg);color:var(--ok);font-size:16px}
+.srow .nm b{display:block}
+.srow .nm small{color:var(--muted);font-size:12px}
+.srow .sv{white-space:nowrap}
+.srow .sv b{font:600 20px var(--f-display)}
+.srow .sv small{display:block;color:var(--muted);font-size:12px}
+.srow .flds{display:flex;gap:10px;flex-wrap:wrap}
+.frm{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.frm .inp input,.frm .inp select{width:100%}
+.panel{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:10px}
+.inp input[type=date],.inp input[type=month]{font:600 15px var(--f-body);width:100%;text-align:left}
+.ev{display:flex;justify-content:space-between;gap:10px;align-items:center;padding-block:7px;border-top:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.ev:first-child{border-top:0}
+.ev .btn{padding:4px 10px;font-size:13px}
+.lect{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-items:end}
+.lect .inp input{width:100%}
+.lbox{display:grid;gap:2px;align-content:start;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+.lbox span{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.lbox b{font:600 22px var(--f-display);white-space:nowrap}
+.lbox b small{font:500 12px var(--f-body);color:var(--muted)}
+.lbox>small{font-size:11px;color:var(--muted)}
+.lbox.res{background:var(--ok-bg);border-color:var(--accent)}
+.lbox.res b{color:var(--accent)}
+.lbox.res b.neg{color:var(--bad)}
+.radar{position:relative;height:340px;overflow:hidden;border-radius:8px;background:#dfe7e3;border:1px solid var(--line);touch-action:pan-y}
+.radar img{position:absolute;width:256px;height:256px;max-width:none;user-select:none;-webkit-user-drag:none}
+.rvbase,.rvf{position:absolute;inset:0}
+.rvf img{opacity:.8}
+.rvf[hidden]{display:none}
+.radar .pin{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--bad);border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.radar .attr{position:absolute;right:4px;bottom:4px;font-size:10px;background:rgba(255,255,255,.85);color:#333;padding:1px 5px;border-radius:3px;text-transform:none}
+.radar .nodata{position:absolute;inset:auto 8px 8px 8px;font-size:12px;background:rgba(255,255,255,.9);padding:6px 8px;border-radius:6px}
+.rvctl input[type=range]{flex:1 1 140px;min-width:120px;accent-color:var(--accent)}
+.rvctl .t{font-weight:600;min-width:46px}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{font:600 13px var(--f-body);color:var(--navy);border:1px solid var(--line);border-radius:8px;padding:7px 10px;text-decoration:none;background:var(--surface)}
+.avisos{display:flex;flex-wrap:wrap;gap:6px}
+.suma{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:center;border-radius:10px;padding:10px 12px;border:1px solid}
+.suma>div{display:grid;gap:2px;min-width:0}
+.suma span{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted)}
+.suma b{font:700 24px var(--f-display)}
+.suma small{font-size:12px;color:var(--muted)}
+.suma.ok{background:var(--ok-bg);border-color:var(--ok)}
+.suma.ok>div:first-child b{color:var(--ok)}
+.suma.bad{background:var(--bad-bg);border-color:var(--bad)}
+.suma.bad>div:first-child b{color:var(--bad)}
+@media (max-width:520px){.suma{grid-template-columns:1fr 1fr}.suma .btn{grid-column:1/-1}}
+.splash{position:fixed;inset:0;z-index:30;background:var(--bg);overflow:auto;padding:calc(24px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.splash[hidden]{display:none}
+a.btn{text-decoration:none;display:inline-flex;align-items:center}
+.splash .in{max-width:560px;margin:0 auto;min-height:100%;display:grid;gap:16px;align-content:center}
+.splash .hola{font:700 clamp(38px,11vw,64px)/.95 var(--f-display);color:var(--navy);margin:0;text-align:center}
+.splash .saludo{display:grid;gap:4px;text-align:center}
+.resumen{display:grid;gap:6px}
+.ritem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:600 14px var(--f-body);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.ritem span{flex:1;min-width:0}
+.ritem b{color:var(--muted);font-size:20px;line-height:1}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+.emblema .nube{animation:nube linear infinite}
+@keyframes nube{from{transform:translateX(-60px)}to{transform:translateX(390px)}}
+.emblema .lluvia line{animation:gota 1s linear infinite}
+@keyframes gota{from{transform:translateY(-12px);opacity:0}15%{opacity:.85}to{transform:translateY(150px);opacity:0}}
+.emblema .estrella{animation:brillo 3s ease-in-out infinite}
+@keyframes brillo{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.emblema *{animation:none!important}}
+.splash .emblema{width:min(380px,100%);height:auto;margin:0 auto;display:block}
+.splash .hoy{text-align:center}
+.viento{display:flex;gap:12px;align-items:center;border-top:1px solid var(--line);padding-top:10px}
+.viento .flecha{width:44px;height:44px;flex:none;transition:transform .6s}
+.viento span{display:block;font-size:11px;color:var(--muted);letter-spacing:.06em;font-weight:600}
+.viento b{display:block;font:600 19px var(--f-display)}
+.viento b small{font:500 12px var(--f-body);color:var(--muted)}
+.viento>div>small{font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.splash:not([hidden]) .in>*{animation:subir .6s both}.splash .in>*:nth-child(2){animation-delay:.08s}.splash .in>*:nth-child(3){animation-delay:.16s}.splash .in>*:nth-child(4){animation-delay:.24s}.splash .in>*:nth-child(5){animation-delay:.32s}.splash .in>*:nth-child(6){animation-delay:.4s}}
+@keyframes subir{from{opacity:.001;transform:translateY(10px)}to{opacity:1;transform:none}}
+.splash .hoy{font:600 20px/1.25 var(--f-display);color:var(--ink);letter-spacing:.02em}
+.splash .wx{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;align-items:center}
+.splash .wx .t{font:700 54px/1 var(--f-display);color:var(--navy)}
+.splash .wx .d{font-size:15px;line-height:1.45}
+.splash .wx .d b{display:block;font-size:17px}
+.splash .wx .full{grid-column:1/-1;font-size:14px;color:var(--muted);line-height:1.5}
+.splash .frase{font:500 22px/1.3 var(--f-display);color:var(--ink);text-align:center;padding-block:8px;margin:0}
+.splash .frase small{display:block;margin-top:6px;font:600 11px var(--f-body);letter-spacing:.12em;color:var(--muted)}
+.splash .entrar{width:100%;font:700 22px var(--f-display);letter-spacing:.06em;padding:16px;border-radius:12px}
+.dgp{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:5px}
+.dgp .h{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dgp p,.dgres{margin:0;font-size:14px;line-height:1.5}
+.dgres{font-size:15px}
+.dgwait{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fcr{display:grid;grid-template-columns:minmax(80px,120px) 1fr auto;gap:2px 10px;align-items:baseline;padding-block:9px;border-top:1px solid var(--line)}
+.fcr:first-child{border-top:0}
+.fcr .d{white-space:nowrap}
+.fcr .tm{font-weight:600;white-space:nowrap}
+.fcr small{grid-column:1/-1;color:var(--muted);font-size:12px}
+.lb img{max-width:100%;max-height:100%;border-radius:6px}
+.lb .btn{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px))}
+@media (max-width:520px){
+  h1{font-size:24px}
+  .stat b{font-size:20px}
+  .stat{padding:9px 10px}
+  table{font-size:13px}
+  th,td{padding-left:3px;padding-right:3px}
+  th{font-size:10px;letter-spacing:.04em}
+  .pill{padding:2px 4px;font-size:11px}
+  .cerow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .srow{grid-template-columns:1fr auto;row-gap:6px}
+  .srow .field{display:flex;align-items:center;gap:8px}
+  .srow .flds{grid-column:1/-1}
+  .srow .sv{text-align:right}
+  .lrow{grid-template-columns:1fr}
+  td:first-child{overflow-wrap:anywhere}
+  .cfgrow{grid-template-columns:1fr 1fr 1fr}
+  .cfgrow .nmf{grid-column:1/-1}
+  .bj{grid-template-columns:1fr auto}
+  .bj .meter,.bj .bjce{grid-column:1/-1}
+  .bjce .inp{flex:1}.bjce .inp input{width:100%}
+  .bjh{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
+<header class="top">
+  <div class="wrap">
+    <div class="brandrow">
+      <div><div class="eyebrow">Fertirrigación · cabezales de riego</div><h1>Abonado Pinta Santos</h1></div>
+      <label class="date"><span>Día</span><input type="date" id="fecha"></label>
+    </div>
+    <nav class="scroller" id="cabs" aria-label="Cabezal"></nav>
+    <nav class="scroller tabs" id="tabs" role="tablist" aria-label="Secciones"></nav>
+  </div>
+</header>
+<main class="wrap" id="main"></main>
+<div class="savebar" id="savebar" hidden><div class="wrap"><span class="msg" id="savemsg"></span><div class="row" id="savebtns"></div></div></div>
+<div class="toast" id="toast" hidden></div>
+<div class="lb" id="lb" hidden><img id="lbimg" alt="Foto del mensaje"><button class="btn" data-act="lb-close">Cerrar</button></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js">
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js">
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js">
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+</script>
+<script src="nube.js">
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+</script>
+<script>
+/* ---------- Datos de partida ---------- */
+const PRODUCTOS = {
+  kno3:{n:'Nitrato potásico',liq:false,ce:1.27,un:13},
+  k2so4:{n:'Sulfato potásico',liq:false,ce:1.41,un:0},
+  kcl:{n:'Cloruro potásico',liq:false,ce:0.6,un:0},
+  mkp:{n:'Fosfato mono­potásico',liq:false,ce:0.6,un:0},
+  nacl:{n:'Cloruro sódico',liq:false,ce:0,un:0},
+  zn:{n:'Sulfato de zinc',liq:false,ce:0,un:0},
+  mn:{n:'Sulfato de manganeso',liq:false,ce:0,un:0},
+  h3po4:{n:'Ácido fosfórico',liq:true,ce:0,un:0},
+  ca:{n:'Solución cálcica',liq:true,ce:0.8,un:11.52},
+  trad:{n:'Tradecorp calcio',liq:false,ce:0,un:0},
+  fe:{n:'Microstep especial Fe',liq:false,ce:0,un:0},
+  hno3:{n:'Ácido nítrico',liq:true,ce:0,un:15}
+};
+const POT=['kno3','k2so4','kcl','mkp','nacl','zn','mn','h3po4'];
+function pot(id,cabs,lpcm,kg,d,cmH,ej){return{id,nombre:'Depósito potásico',cabezales:cabs,lpcm,capacidad:5000,principal:'kno3',kgPrincipal:kg,venturis:2,reparto:true,cmHabitual:cmH,ejCm:ej,productos:POT.map((p,i)=>({p,dosis:d[i]}))}}
+function cal(id,cabs,lpcm,kg,dc,dt,cmH,ej){return{id,nombre:'Depósito solución cálcica',cabezales:cabs,lpcm,capacidad:5000,principal:'ca',kgPrincipal:kg,venturis:1,reparto:true,cmHabitual:cmH,ejCm:ej,productos:[{p:'ca',dosis:dc},{p:'trad',dosis:dt}]}}
+function fe(id,cabs,lpcm,cap,kg,d,cmH,ej){return{id,nombre:'Depósito Microstep Fe',cabezales:cabs,lpcm,capacidad:cap,principal:'fe',kgPrincipal:kg,venturis:1,reparto:true,cmHabitual:cmH,ejCm:ej,productos:[{p:'fe',dosis:d}]}}
+function nit(id,cabs,lpcm,cap,kg,d,cmH,ej){return{id,nombre:'Depósito ácido nítrico',cabezales:cabs,lpcm,capacidad:cap,principal:'hno3',kgPrincipal:kg,venturis:1,reparto:false,cmHabitual:cmH,ejCm:ej,productos:[{p:'hno3',dosis:d}]}}
+function sec(cab,n,min,bjs){return{id:cab+'_s'+n,nombre:'Sector '+n,ejMin:min,bandejas:bjs.map(b=>({id:cab+'_b'+b[0].replace('.','_'),nombre:'Bandeja '+b[0],caudal:b[1],ejDren:b[2]}))}}
+const T12=[['1.1',223,6750],['1.2',220,8000],['1.3',219,3500]], T22=[['2.1',207,7000],['2.2',224,8000],['2.3',202,9000]];
+const DEFAULT_CONFIG={v:1,productos:PRODUCTOS,alertas:{ceMax:4,dCE:1.5,phMin:5.5,phMax:7,llenado:33},riego:{ini:'08:30',fin:'18:30'},ubic:{lat:37.4063,lon:-1.5829},stockMin:{},saco:{},
+  cabezales:[
+    {id:'gas',nombre:'Gasolinera',ejM3:214,sectores:[sec('gas',3,130,[['3.1',209,10500],['3.2',210,11300]]),sec('gas',4,110,[['4.1',210,8750],['4.2',198,10250]])]},
+    {id:'pla',nombre:'Planos',ejM3:203,sectores:[sec('pla',1,120,[['1.1',192,9000],['1.2',204,7750],['1.3',195,10500]]),sec('pla',2,100,[['2.1',198,12700],['2.2',206,12800],['2.3',198,13500]])]},
+    {id:'fra',nombre:'Franco',ejM3:131,sectores:[sec('fra',1,112,[['1.1',237,6750],['1.2',234,8000]]),sec('fra',2,104,[['2.1',243,3500],['2.2',243,7000]]),sec('fra',3,80,[['3.1',200,1200],['3.2',209,1300]]),sec('fra',4,70,[['4.1',197,1400],['4.2',195,1600]])]},
+    {id:'mt2',nombre:'Multitúnel 2',ejM3:131,sectores:[sec('mt2',1,112,T12),sec('mt2',2,30,T22)]},
+    {id:'mt3',nombre:'Multitúnel 3',ejM3:131,sectores:[sec('mt3',1,112,T12),sec('mt3',2,30,T22),sec('mt3',3,45,T12.map(b=>['3'+b[0].slice(1),b[1],b[2]])),sec('mt3',4,37,T22.map(b=>['4'+b[0].slice(1),b[1],b[2]]))]}
+  ],
+  bidones:[
+    pot('pot_gas',['gas'],31,54,[35,25,0,5,0,0.75,0.75,8],162.8,38.3),
+    cal('cal_gas',['gas'],31,200,90,1,153.3,30.3),
+    pot('pot_pla',['pla'],31,66,[50,20,0,5,0,0.75,0.75,8],161.4,44.2),
+    cal('cal_pla',['pla'],31,200,80,1,125.4,25.9),
+    fe('fe_pito',['gas','pla'],8,1000,20,3,80.9,71.2),
+    nit('nit_pito',['gas','pla'],31,5000,100,9,140.2,9.9),
+    pot('pot_fra',['fra'],31,54,[35,25,0,5,0,0.5,0.75,8],150,24.6),
+    cal('cal_fra',['fra'],31,200,80,1,116,14.6),
+    fe('fe_fra',['fra'],15.6,2000,15,3,80.9,47.1),
+    nit('nit_fra',['fra'],15.6,5000,100,9,140.2,8.8),
+    pot('pot_mt2',['mt2'],32,83,[40,0,0,8,0,0.75,0.5,6],150,24.6),
+    cal('cal_mt2',['mt2'],32,300,80,1,116,14.6),
+    fe('fe_mt2',['mt2'],18,2000,15,3,57.8,47.1),
+    nit('nit_mt2',['mt2'],18,5000,100,18,140.2,8.8),
+    pot('pot_mt3',['mt3'],32,69,[45,15,0,5,0,0.75,0.75,8],150,24.6),
+    cal('cal_mt3',['mt3'],32,300,80,1,116,14.6),
+    fe('fe_mt3',['mt3'],18,2000,15,3,57.8,47.1),
+    nit('nit_mt3',['mt3'],18,5000,100,18,140.2,8.8)
+  ]};
+
+/* ---------- Utilidades ---------- */
+const $=s=>document.querySelector(s);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=v=>{if(v===''||v==null)return null;const n=parseFloat(String(v).trim().replace(',','.'));return isFinite(n)?n:null};
+const fmt=(n,d=1)=>n==null||!isFinite(n)?'—':n.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+const inVal=n=>n==null?'':String(n).replace('.',',');
+function hoy(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+const fFecha=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
+const fCorta=f=>{const p=f.split('-');return p[2]+'/'+p[1]};
+
+/* ---------- Almacenamiento: nube del artifact (db) o, si no hay, este navegador ---------- */
+const Store={db:null,mode:'local',
+  async init(){if(window.NUBE&&NUBE.db){this.db=NUBE.db;this.mode='fb';return}try{if(window.claude&&typeof window.claude.use==='function'){const db=await window.claude.use('db');if(db){this.db=db;this.mode='db'}}}catch(e){}},
+  lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}},
+  lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},
+  async getConfig(){if(this.db){const s=await this.db.doc('config/finca').get();return s.exists?s.data():null}return this.lsGet('abono.config')},
+  async setConfig(c){if(this.db)return this.db.doc('config/finca').set(c);this.lsSet('abono.config',c)},
+  async getReg(f){if(this.db){const s=await this.db.doc('registros/'+f).get();return s.exists?s.data():null}return this.lsGet('abono.reg.'+f)},
+  async setReg(f,r){if(this.db)return this.db.doc('registros/'+f).set(r);this.lsSet('abono.reg.'+f,r);const i=new Set(this.lsGet('abono.regs')||[]);i.add(f);this.lsSet('abono.regs',[...i])},
+  async listRegs(){if(this.db){const q=await this.db.collection('registros').orderBy('fecha','desc').limit(120).get();return q.docs.map(d=>d.data())}return(this.lsGet('abono.regs')||[]).sort().reverse().slice(0,120).map(f=>this.lsGet('abono.reg.'+f)).filter(Boolean)},
+  async addCambio(c){if(this.db)return this.db.collection('cambios').add(c);const l=this.lsGet('abono.cambios')||[];l.unshift(c);this.lsSet('abono.cambios',l.slice(0,200))},
+  async listCambios(){if(this.db){const q=await this.db.collection('cambios').orderBy('ts','desc').limit(60).get();return q.docs.map(d=>d.data())}return this.lsGet('abono.cambios')||[]},
+  async listMsgs(){if(this.db){const q=await this.db.collection('mensajes').orderBy('ts','desc').limit(200).get();return q.docs.map(d=>({...d.data(),id:d.id}))}return this.lsGet('abono.msgs')||[]},
+  async addMsg(m){if(this.db){const r=await this.db.collection('mensajes').add(m);return r.id}const id='m'+Date.now();const l=this.lsGet('abono.msgs')||[];l.unshift({...m,id});this.lsSet('abono.msgs',l.slice(0,500));return id},
+  async updMsg(id,patch){if(this.db)return this.db.collection('mensajes').doc(id).update(patch);this.lsSet('abono.msgs',(this.lsGet('abono.msgs')||[]).map(x=>x.id===id?{...x,...patch}:x))},
+  async delMsg(id){if(this.db)return this.db.collection('mensajes').doc(id).delete();this.lsSet('abono.msgs',(this.lsGet('abono.msgs')||[]).filter(x=>x.id!==id))},
+  async listCol(n,lim){if(this.db){const q=await this.db.collection(n).orderBy('ts','desc').limit(lim||500).get();return q.docs.map(d=>({...d.data(),id:d.id}))}return this.lsGet('abono.'+n)||[]},
+  async addCol(n,doc){if(this.db){const r=await this.db.collection(n).add(doc);return r.id}const id=n[0]+Date.now().toString(36)+Math.random().toString(36).slice(2,6);const l=this.lsGet('abono.'+n)||[];l.unshift({...doc,id});this.lsSet('abono.'+n,l.slice(0,3000));return id},
+  async delCol(n,id){if(this.db)return this.db.collection(n).doc(id).delete();this.lsSet('abono.'+n,(this.lsGet('abono.'+n)||[]).filter(x=>x.id!==id))}
+};
+
+/* ---------- Estado ---------- */
+const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fecha:hoy(),cab:'gas',tab:'cuentas',
+  dirtyReg:false,dirtyCfg:false,fill:{},fillB:{},hist:null,cambios:null,ready:false,saving:false,confirmReset:false,
+  gRange:30,dg:{cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
+  ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
+
+function ejemploReg(f){const r={fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},dren:{},ceE:{},phE:{},ceD:{},phD:{}};
+  for(const c of st.cfg.cabezales){r.m3[c.id]=c.ejM3;for(const s of c.sectores){r.min[s.id]=s.ejMin;}}
+  return r}
+function normReg(r,f){return{fecha:f,m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},guardado:r.guardado||null}}
+
+/* ---------- Cálculos ---------- */
+const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
+const cabById=id=>st.cfg.cabezales.find(c=>c.id===id);
+const bidonesDe=cab=>st.cfg.bidones.filter(b=>b.cabezales.includes(cab));
+const uDosis=p=>prod(p).liq?'cc/hL':'g/hL';
+const uCant=p=>prod(p).liq?'L':'kg';
+const SACO_DEF={fe:10,trad:5};
+function sacoDe(p){if(prod(p).liq)return 0;const c=st.cfg&&st.cfg.saco&&st.cfg.saco[p];return c>0?c:(SACO_DEF[p]||25)}
+const nSac=n=>n+(n===1?' saco':' sacos');
+function sacosTxt(p,kg){const z=sacoDe(p);if(!z||!(kg>0.001))return '';const n=Math.floor(kg/z+1e-6),r=kg-n*z;return (n?nSac(n):'')+(r>0.05?(n?' + ':'')+fmt(r,1)+' kg':'')}
+const sacIn=(p,kg)=>{const z=sacoDe(p);return kg==null||!z?'':inVal(+(kg/z).toFixed(2))};
+// kg (o L) del producto principal por 1000 L ÷ su salida deseada = dilución del depósito
+function factor(b){const pp=b.productos.find(x=>x.p===b.principal);return pp&&pp.dosis>0&&b.kgPrincipal?b.kgPrincipal/pp.dosis:0}
+const conc=(b,x)=>(x.dosis||0)*factor(b);                     // kg o L por 1000 L de depósito
+function m3Total(b){let s=0;for(const c of b.cabezales){const v=st.reg.m3[c];if(v==null)return null;s+=v}return s}
+// Depósito compartido: a cada cabezal le toca lo esperado por sus m³ y la receta,
+// y la diferencia con lo gastado de verdad se reparte a partes iguales
+function cmCab(b,cab){const cm=st.reg.cm[b.id];if(cm==null)return null;if(b.cabezales.length<2)return cm;
+  const pp=b.productos.find(x=>x.p===b.principal);if(!pp||!pp.dosis||!b.kgPrincipal||!b.lpcm)return null;
+  const esp=c=>{const m=st.reg.m3[c];return m==null?null:pp.dosis*(1000/b.kgPrincipal)*m/100/b.lpcm};
+  const es=b.cabezales.map(esp);if(es.some(v=>v==null))return null;
+  return esp(cab)+(cm-es.reduce((a,v)=>a+v,0))/b.cabezales.length}
+function litros(b,cab){const cm=cmCab(b,cab);return cm==null?null:cm*b.lpcm}
+// Dosis real (g/hL) = litros gastados × concentración ÷ 10 ÷ m³ regados por ese cabezal
+function dosisReal(b,x,cab){const L=litros(b,cab),m=st.reg.m3[cab];if(L==null||!m)return null;return L*conc(b,x)/10/m}
+function estado(real,des){if(real==null||!des)return{c:'nd',t:'—'};const d=(real-des)/des;const a=Math.abs(d);
+  return{c:a<=0.10?'ok':a<=0.20?'warn':'bad',t:(d>0?'+':d<0?'−':'')+fmt(Math.abs(d*100),0)+'%',d}}
+function ceEstimada(cab){let s=0;for(const b of bidonesDe(cab))for(const x of b.productos)s+=(x.dosis||0)*(prod(x.p).ce||0);return s/0.9*10}
+function reparto(cab){const bs=bidonesDe(cab).filter(b=>b.reparto);const v=bs.map(b=>{const f=factor(b);return f?1000/f:0});const t=v.reduce((a,c)=>a+c,0);return bs.map((b,i)=>({b,pct:t?v[i]*100/t:0}))}
+function drenPct(s,bj){const min=st.reg.min[s.id],ml=st.reg.dren[bj.id];if(min==null||ml==null||!min||!bj.caudal)return null;return ml*100/(min*bj.caudal)}
+function unidades(cab){let real=0,des=0,ok=true,any=false;for(const b of bidonesDe(cab))for(const x of b.productos){const u=prod(x.p).un;if(!u||!x.dosis)continue;any=true;des+=x.dosis*u;const r=dosisReal(b,x,cab);if(r==null)ok=false;else real+=r*u}return{real:ok&&any?real:null,des:any?des:null}}
+function resumen(cab){let fuera=0,total=0;for(const b of bidonesDe(cab))for(const x of b.productos){if(!x.dosis)continue;const r=dosisReal(b,x,cab);if(r==null)continue;total++;if(Math.abs((r-x.dosis)/x.dosis)>0.10)fuera++}
+  const ps=[];for(const s of cabById(cab).sectores)for(const bj of s.bandejas){const p=drenPct(s,bj);if(p!=null)ps.push(p)}
+  return{m3:st.reg.m3[cab]??null,drenaje:ps.length?ps.reduce((a,c)=>a+c,0)/ps.length:null,fuera,total,dosis:dosisPrincipales(cab),kg:kgDia(cab),
+    ceE:mediaSect(st.reg,cab,'ceE'),phE:mediaSect(st.reg,cab,'phE'),ceD:mediaSect(st.reg,cab,'ceD'),phD:mediaSect(st.reg,cab,'phD')}}
+function valSect(r,s,k){const m=r[k]||{},v=s.bandejas.map(bj=>m[bj.id]).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:(m[s.id]??null)}
+function mediaSect(r,cab,k){const v=cabById(cab).sectores.map(s=>valSect(r,s,k)).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
+function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,cab);if(L==null)continue;for(const x of b.productos){if(!x.dosis)continue;o[x.p]=(o[x.p]||0)+L*conc(b,x)/1000}}return o}
+function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
+
+/* ---------- Vistas ---------- */
+const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['almacen','Almacén'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
+function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico'].includes(st.tab);$('#cabs').innerHTML=st.cfg.cabezales.map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
+function renderTabs(){$('#tabs').innerHTML=TABS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
+/* Menús desplazables con ratón: rueda y arrastrar */
+function scrollRaton(el){if(!el)return;
+  el.addEventListener('wheel',e=>{if(el.scrollWidth<=el.clientWidth)return;if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){el.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
+  let x0=null,l0=0,mov=false;
+  el.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||el.scrollWidth<=el.clientWidth)return;x0=e.clientX;l0=el.scrollLeft;mov=false});
+  window.addEventListener('pointermove',e=>{if(x0==null)return;const dx=e.clientX-x0;if(Math.abs(dx)>5){mov=true;el.classList.add('drag')}if(mov)el.scrollLeft=l0-dx});
+  window.addEventListener('pointerup',()=>{if(x0==null)return;x0=null;el.classList.remove('drag');if(mov)setTimeout(()=>mov=false,0)});
+  el.addEventListener('click',e=>{if(mov){e.stopPropagation();e.preventDefault()}},true)}
+scrollRaton($('#tabs'));scrollRaton($('#cabs'));
+function banner(){return ''}
+
+function vCuentas(){const c=cabById(st.cab);let h=banner()+`<div data-out="pend" style="display:contents">${pendHTML()}${lvlBanner()}</div>`;
+  h+=`<section class="summary" data-out="sum">${sumCuentas()}</section>`;
+  h+=`<div class="card"><div class="tank-h"><div><h3>Agua regada</h3><div class="sub">${esc(c.nombre)} · total del día</div></div>
+    <div class="field big"><label for="m3_${c.id}">m³ del cabezal</label><div class="inp"><input id="m3_${c.id}" data-k="reg.m3.${c.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.m3[c.id])}"><span class="u">m³</span></div></div></div></div>`;
+  for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
+    h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}${fmt(b.lpcm,1)} L por cm</div></div></div>
+      ${lecturaBoxes(b,c)}
+      <div data-out="lec_${b.id}">${lecturaHTML(b)}</div>
+      <div data-out="t_${b.id}">${tankDose(b,c)}</div></section>`}
+  return h}
+function sumCuentas(){let ok=0,tot=0,peor=null;for(const b of bidonesDe(st.cab))for(const x of b.productos){if(!x.dosis)continue;const r=dosisReal(b,x,st.cab);if(r==null)continue;tot++;const e=estado(r,x.dosis);if(e.c==='ok')ok++;if(!peor||Math.abs(e.d)>Math.abs(peor.e.d))peor={x,e}}
+  const u=unidades(st.cab);
+  return `<div class="stat"><span>En dosis (±10 %)</span><b>${tot?ok+' de '+tot:'—'}</b><small>productos de la receta</small></div>
+  <div class="stat"><span>Mayor desviación</span><b>${peor?`<span class="pill ${peor.e.c}" style="font-size:16px">${peor.e.t}</span>`:'—'}</b><small>${peor?esc(prod(peor.x.p).n):'faltan datos'}</small></div>
+  <div class="stat"><span>Unidades aportadas</span><b>${fmt(u.real,0)}</b><small>objetivo ${fmt(u.des,0)}</small></div>`}
+function tankDose(b,c){const shared=b.cabezales.length>1,cm=cmCab(b,c.id),L=litros(b,c.id),m=st.reg.m3[c.id];
+  let h=nivelHTML(b);
+  h+=`<div class="tbl"><table><thead><tr><th>Producto</th><th>Deseada</th><th>Real</th><th>Desv.</th><th>× ${fmt(b.lpcm,b.lpcm%1?1:0)}</th></tr></thead><tbody>`;
+  for(const x of b.productos){if(!x.dosis)continue;const r=dosisReal(b,x,c.id),e=estado(r,x.dosis);
+    h+=`<tr><td>${esc(prod(x.p).n)}</td><td>${x.dosis.toLocaleString('es-ES',{maximumFractionDigits:2})}</td><td><b>${fmt(r,3)}</b></td><td><span class="pill ${e.c}">${e.t}</span></td><td>${x.p===b.principal?'<b>'+fmt(litros(b,c.id),1)+'</b>':''}</td></tr>`}
+  return h+`</tbody></table></div>`}
+
+function vDrenaje(){const c=cabById(st.cab);let h=banner();h+=`<section class="summary" data-out="dsum">${sumDren(c)}</section>`;
+  for(const s of c.sectores){h+=`<section class="card"><div class="sector-h"><div><h3>${esc(s.nombre)}</h3><div class="sub">${s.bandejas.length} bandejas de drenaje</div></div>
+    <div class="field"><label for="min_${s.id}">Tiempo de riego</label><div class="inp"><input id="min_${s.id}" data-k="reg.min.${s.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.min[s.id])}"><span class="u">min</span></div></div></div>
+    <div data-out="ce_${s.id}">${ceOut(s)}</div><div class="bjh"><span>Bandeja</span><span>Drenaje</span><span>CE · pH</span><span>Volumen total · % drenaje</span></div><div>`;
+    for(const bj of s.bandejas){h+=`<div class="bj"><div class="nm"><b>${esc(bj.nombre)}</b><small>${fmt(bj.caudal,0)} ml/min</small></div>
+      <div class="inp sm"><input id="dr_${bj.id}" data-k="reg.dren.${bj.id}" inputmode="decimal" autocomplete="off" aria-label="Drenaje ${esc(bj.nombre)}" value="${inVal(st.reg.dren[bj.id])}"><span class="u">ml</span></div>
+      <div class="bjce"><div class="inp sm"><input id="ceD_${bj.id}" data-k="reg.ceD.${bj.id}" inputmode="decimal" autocomplete="off" aria-label="CE drenaje ${esc(bj.nombre)}" value="${inVal(st.reg.ceD[bj.id])}"><span class="u nt">mS</span></div>
+      <div class="inp sm"><input id="phD_${bj.id}" data-k="reg.phD.${bj.id}" inputmode="decimal" autocomplete="off" aria-label="pH drenaje ${esc(bj.nombre)}" value="${inVal(st.reg.phD[bj.id])}"><span class="u nt">pH</span></div></div>
+      <div class="meter" data-out="m_${bj.id}">${meter(s,bj)}</div></div>`}
+    h+=`</div></section>`}
+  return h}
+function cePill(cd,ph,pre){const a=st.cfg.alertas,out=[];
+  if(cd!=null){const c=cd>a.ceMax?'bad':cd>a.ceMax*0.9?'warn':'ok';out.push(`<span class="pill ${c}">${pre||''}CE ${fmt(cd,2)} <span class="nt">mS</span>${c==='bad'?' alta':''}</span>`)}
+  if(ph!=null){const c=ph<a.phMin||ph>a.phMax?'bad':'ok';out.push(`<span class="pill ${c}">${pre||''}pH ${fmt(ph,1)}${c==='bad'?' fuera':''}</span>`)}return out}
+function meter(s,bj){const p=drenPct(s,bj),min=st.reg.min[s.id];const ap=min!=null?min*bj.caudal/1000:null;const bad=p!=null&&p>100;const pl=cePill(st.reg.ceD[bj.id],st.reg.phD[bj.id]).filter(x=>!x.includes('pill ok'));
+  return `<div class="t"><span>Volumen total <b class="vt">${fmt(ap,2)} L</b></span><b>${fmt(p,1)} %</b></div><div class="bar"><i class="${bad?'bad':''}" style="width:${p==null?0:Math.min(100,p)}%"></i></div>${bad?'<div class="t" style="color:var(--bad)">Más drenaje que volumen total: revisa minutos o ml</div>':''}${pl.length?`<div class="row" style="gap:4px;margin-top:4px">${pl.join('')}</div>`:''}`}
+function ceOut(s){const out=cePill(valSect(st.reg,s,'ceD'),valSect(st.reg,s,'phD'),'Media ');return out.length?`<div class="row">${out.join('')}</div>`:''}
+function sumDren(c){const r=resumen(c.id);const per=c.sectores.map(s=>{const ps=s.bandejas.map(bj=>drenPct(s,bj)).filter(p=>p!=null);return{s,m:ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null}});
+  return `<div class="stat"><span>Media del cabezal</span><b>${fmt(r.drenaje,1)} %</b><small>${esc(c.nombre)}</small></div>`+(r.ceD!=null?`<div class="stat"><span>CE drenaje</span><b>${fmt(r.ceD,2)}</b><small class="nt">mS/cm</small></div>`:'')+per.map(p=>`<div class="stat"><span>${esc(p.s.nombre)}</span><b>${fmt(p.m,1)} %</b><small>${fmt(st.reg.min[p.s.id],0)} min</small></div>`).join('')}
+
+function vRellenar(){const bs=bidonesDe(st.cab);let sel=st.fillB[st.cab];if(!bs.find(b=>b.id===sel))sel=bs[0].id;st.fillB[st.cab]=sel;const b=bs.find(x=>x.id===sel);
+  const cm=st.fill[b.id]!==undefined?st.fill[b.id]:b.cmHabitual;
+  let h=`<section class="card"><div><h3>Nivel de los depósitos</h3><div class="sub">${esc(cabById(st.cab).nombre)} · lo que queda y para cuántos días</div></div><div>${bs.map(x=>{const g=gastoDia(x);return `<div class="lrow"><div class="lnm"><b>${esc(x.nombre)}</b>
+    <div class="field gd"><label for="gd_${x.id}">Gasto diario</label><div class="inp sm"><input id="gd_${x.id}" data-k="cfg.cons.${x.id}" inputmode="decimal" autocomplete="off" placeholder="${g.med!=null?inVal(+g.med.toFixed(1)):''}" value="${inVal(x.consumoDia)}"><span class="u">cm/día</span></div></div>
+    <small data-out="gdn_${x.id}">${gdNota(x)}</small></div><div data-out="lvl_${x.id}">${nivelHTML(x)}</div></div>`}).join('')}</div></section>`;
+  h+=`<div class="pick">${bs.map(x=>`<button class="chip" data-fill="${x.id}" aria-pressed="${x.id===sel}">${esc(x.nombre)}</button>`).join('')}</div>`;
+  h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${fmt(b.lpcm,1)} L/cm · capacidad ${fmt(b.capacidad,0)} L</div></div>
+    <div class="field big"><label for="fill_${b.id}">cm a llenar</label><div class="inp"><input id="fill_${b.id}" data-k="fill.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(cm)}"><span class="u">cm</span></div></div></div>
+    <div data-out="fill">${fillOut(b)}</div>`;
+  const L=st.lf&&st.lf.bidon===b.id?st.lf:null;
+  if(!L)h+=`<div class="row"><button class="btn pri" data-act="lf-open" data-t="llenado">Registrar llenado</button><button class="btn" data-act="lf-open" data-t="medida">Medir nivel</button></div>`;
+  else h+=`<div class="panel"><div><h3>${L.tipo==='llenado'?'Registrar llenado':'Medir nivel'}</h3><div class="sub">${L.tipo==='llenado'?'Se descuenta del almacén lo que has echado':'Nivel real del depósito ahora'}</div></div><div class="frm">
+      <div class="field"><label for="lf_fecha">Fecha</label><div class="inp"><input type="date" id="lf_fecha" data-lf="fecha" value="${L.fecha}"></div></div>
+      ${L.tipo==='llenado'?`<div class="field"><label for="lf_add">cm añadidos</label><div class="inp"><input id="lf_add" data-lf="add" inputmode="decimal" value="${inVal(L.add)}"><span class="u">cm</span></div></div>`:''}
+      <div class="field"><label for="lf_final">${L.tipo==='llenado'?'Nivel final':'Nivel actual'}</label><div class="inp"><input id="lf_final" data-lf="final" inputmode="decimal" value="${inVal(L.final)}"><span class="u">cm</span></div></div></div>
+      ${L.tipo==='llenado'?`<label class="chk"><input type="checkbox" id="lf_desc" data-lf="desc" ${L.desc?'checked':''}> Descontar los abonos del almacén</label>`:''}
+      <div class="row"><button class="btn pri" data-act="lf-save">Guardar</button><button class="btn" data-act="lf-cancel">Cancelar</button></div></div>`;
+  const evs=(st.llen||[]).filter(e=>e.bidon===b.id).sort((a,c)=>a.ts<c.ts?1:-1).slice(0,6);
+  h+=`<div><h3 style="font-size:16px">Últimos llenados y medidas</h3>${evs.length?evs.map(e=>`<div class="ev"><span><b>${fFecha(e.fecha)}</b> · ${e.tipo==='llenado'?`Llenado +${fmt(e.cmAdd,1)} cm → ${fmt(e.cmFinal,1)} cm`:`Medida ${fmt(e.cmFinal,1)} cm`}</span>${st.confirmLl===e.id?`<span class="row"><button class="btn danger" data-act="ll-del-yes" data-id="${e.id}">Sí, borrar</button><button class="btn" data-act="ll-del-no">Cancelar</button></span>`:`<button class="btn" data-act="ll-del" data-id="${e.id}">Borrar</button>`}</div>`).join(''):'<div class="note">Sin registros.</div>'}</div></section>`;
+  return h}
+function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:b.cmHabitual;if(cm==null)return '';const L=cm*b.lpcm;let liqCm=0;
+  let h=`<div class="line">Volumen a preparar: <b>${fmt(L,0)} L</b></div><div class="steps">`;
+  for(const x of b.productos){if(!x.dosis)continue;const q=L*conc(b,x)/1000;let extra='';if(prod(x.p).liq){const c=q/b.lpcm;liqCm+=c;extra=` <span class="note">≈ ${fmt(c,1)} cm</span>`}
+    h+=`<div class="step"><span>${esc(prod(x.p).n)}${extra}</span><b>${fmt(q,1)} ${uCant(x.p)}</b></div>`}
+  if(cm*b.lpcm>b.capacidad*1.05)h+=`<div class="step" style="color:var(--bad)"><span>Pasas de la capacidad del depósito</span><b></b></div>`;
+  return h+`<div class="step water"><span>Agua (cm de depósito)</span><b>${fmt(cm-liqCm,1)} cm</b></div></div>`}
+
+function vReceta(){const c=cabById(st.cab);let h=`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
+  for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
+    h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}Capacidad ${fmt(b.capacidad,0)} L</div></div>
+      <div class="field"><label for="kg_${b.id}">${esc(prod(b.principal).n)} por 1000 L</label><div class="inp"><input id="kg_${b.id}" data-k="cfg.kg.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(b.kgPrincipal)}"><span class="u">${uCant(b.principal)}</span></div></div></div>
+      <div class="tbl"><table><thead><tr><th>Producto</th><th>Salida deseada</th><th>Por 1000 L</th><th>Por ${fmt(b.capacidad,0)} L</th><th>Constante</th></tr></thead><tbody>`;
+    b.productos.forEach((x,i)=>{h+=`<tr><td>${esc(prod(x.p).n)}</td><td><div class="inp sm" style="display:inline-flex"><input id="ds_${b.id}_${i}" data-k="cfg.dosis.${b.id}.${i}" inputmode="decimal" autocomplete="off" value="${inVal(x.dosis)}"><span class="u">${uDosis(x.p)}</span></div></td>
+      <td data-out="c1_${b.id}_${i}">${x.dosis?fmt(conc(b,x),2)+' '+uCant(x.p):'—'}</td><td data-out="c2_${b.id}_${i}">${x.dosis?fmt(conc(b,x)*b.capacidad/1000,1)+' '+uCant(x.p):'—'}</td><td data-out="c3_${b.id}_${i}">${x.dosis&&conc(b,x)?fmt(1000/conc(b,x),1):'—'}</td></tr>`});
+    h+=`</tbody></table></div>${b.principal==='kno3'?`<div data-out="suma_${b.id}">${sumaPotHTML(b)}</div>`:''}</section>`}
+  return h}
+const SUMA_MIN=505,SUMA_MAX=515;
+function sumaPotHTML(b){const pp=b.productos.find(x=>x.p===b.principal);if(!pp||!pp.dosis)return '';let r=0;for(const x of b.productos)if(x.dosis&&!prod(x.p).liq)r+=x.dosis/pp.dosis;
+  const k=r*b.capacidad/1000;if(!k)return '';const s=(b.kgPrincipal||0)*k,ok=s>=SUMA_MIN&&s<=SUMA_MAX,rec=Math.round((SUMA_MIN+SUMA_MAX)/2/k),sr=rec*k;
+  return `<div class="suma ${ok?'ok':'bad'}"><div><span>Suma de kg en ${fmt(b.capacidad,0)} L</span><b>${fmt(s,1)} kg</b><small>${ok?'Dentro':'Fuera'} de ${SUMA_MIN}–${SUMA_MAX} kg</small></div>
+    <div><span>Cantidad recomendada</span><b>${fmt(rec,0)} kg</b><small>${esc(pn(b.principal))} por 1000 L · la suma queda en ${fmt(sr,1)} kg</small></div>
+           ${Math.abs(rec-(b.kgPrincipal||0))>0.001?`<button class="btn" data-act="usar-rec" data-id="${b.id}" data-v="${rec}">Usar ${fmt(rec,0)} kg</button>`:''}</div>`}
+function sumReceta(c){const rp=reparto(c.id);
+  return `<div class="stat"><span>Incremento de CE estimado</span><b>${fmt(ceEstimada(c.id),0)}</b><small class="nt">µS/cm</small></div>
+  <div class="stat wide"><span>Reparto de venturis</span><div class="tbl"><table><tbody>${rp.map(r=>`<tr><td>${esc(r.b.nombre)}</td><td><b>${fmt(r.pct,1)} %</b></td><td class="u">${r.b.venturis>1?r.b.venturis+' venturis × '+fmt(r.pct/r.b.venturis,1)+' %':'1 venturi'}</td></tr>`).join('')}</tbody></table></div></div>`}
+
+function vAjustes(){const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
+  for(const b of bidonesDe(st.cab)){h+=`<div class="cfgrow"><div class="field nmf"><label for="bn_${b.id}">Nombre</label><div class="inp"><input class="wide" id="bn_${b.id}" data-k="cfg.bname.${b.id}" data-text="1" value="${esc(b.nombre)}"></div></div>
+    <div class="field"><label for="lp_${b.id}">L por cm</label><div class="inp sm"><input id="lp_${b.id}" data-k="cfg.lpcm.${b.id}" inputmode="decimal" value="${inVal(b.lpcm)}"></div></div>
+    <div class="field"><label for="cp_${b.id}">Capacidad</label><div class="inp sm"><input id="cp_${b.id}" data-k="cfg.cap.${b.id}" inputmode="decimal" value="${inVal(b.capacidad)}"><span class="u">L</span></div></div>
+    <div class="field"><label for="vt_${b.id}">Venturis</label><div class="inp sm"><input id="vt_${b.id}" data-k="cfg.vent.${b.id}" inputmode="numeric" value="${inVal(b.venturis)}"></div>
+      <label class="chk"><input type="checkbox" id="rp_${b.id}" data-k="cfg.rep.${b.id}" ${b.reparto?'checked':''}> en reparto</label></div></div>`}
+  h+=`</div></section><section class="card"><div><h3>Bandejas de drenaje</h3><div class="sub">Caudal de cada bandeja</div></div><div>`;
+  for(const s of c.sectores)for(const bj of s.bandejas){h+=`<div class="cfgrow" style="grid-template-columns:1fr auto"><div><b>${esc(bj.nombre)}</b> <span class="note">${esc(s.nombre)}</span></div>
+    <div class="inp sm"><input id="cq_${bj.id}" data-k="cfg.caudal.${bj.id}" inputmode="decimal" aria-label="Caudal ${esc(bj.nombre)}" value="${inVal(bj.caudal)}"><span class="u">ml/min</span></div></div>`}
+  const al=st.cfg.alertas;
+  h+=`</div></section><section class="card"><div><h3>Aviso de llenado</h3><div class="sub">Cuándo avisar de que hay que llenar un depósito</div></div><div class="frm">
+    <div class="field"><label for="al_llenado">Avisar cuando quede</label><div class="inp"><input id="al_llenado" data-k="cfg.al.llenado" inputmode="decimal" value="${inVal(al.llenado??33)}"><span class="u">%</span></div></div>
+    <div class="field"><label for="rg_ini">Riego desde</label><div class="inp"><input type="time" id="rg_ini" data-k="cfg.riego.ini" data-text="1" value="${esc((st.cfg.riego||{}).ini||'08:30')}"></div></div>
+    <div class="field"><label for="rg_fin">Riego hasta</label><div class="inp"><input type="time" id="rg_fin" data-k="cfg.riego.fin" data-text="1" value="${esc((st.cfg.riego||{}).fin||'18:30')}"></div></div></div>
+    <div class="note">Los días sin medir, el nivel baja solo con el gasto diario de cada depósito. Hoy baja poco a poco durante el horario de riego.</div>
+    <div data-out="notif">${notifHTML()}</div></section>
+  <section class="card"><div><h3>Avisos de drenaje</h3><div class="sub">Límites de CE y pH</div></div><div class="frm">
+    <div class="field"><label for="al_ceMax">CE drenaje máxima</label><div class="inp"><input id="al_ceMax" data-k="cfg.al.ceMax" inputmode="decimal" value="${inVal(al.ceMax)}"><span class="u nt">mS/cm</span></div></div>
+    <div class="field"><label for="al_phMin">pH mínimo</label><div class="inp"><input id="al_phMin" data-k="cfg.al.phMin" inputmode="decimal" value="${inVal(al.phMin)}"></div></div>
+    <div class="field"><label for="al_phMax">pH máximo</label><div class="inp"><input id="al_phMax" data-k="cfg.al.phMax" inputmode="decimal" value="${inVal(al.phMax)}"></div></div></div></section>`;
+  if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
+  h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Copia de seguridad, recetas y ajustes</div></div>
+    <div class="row"><button class="btn pri" data-act="backup">Descargar copia de seguridad</button><label class="btn" for="restore">Restaurar copia</label><input type="file" id="restore" accept="application/json,.json" hidden></div>
+    <div class="row">${st.confirmReset?`<span class="note">¿Restaurar recetas y ajustes iniciales?</span><button class="btn danger" data-act="reset-yes">Sí, restaurar</button><button class="btn" data-act="reset-no">Cancelar</button>`:`<button class="btn" data-act="reset">Restaurar recetas y ajustes iniciales</button>`}</div></section>`;
+  return h}
+
+function vHistorial(){if(st.hist===null){loadHist();return '<div class="card"><div class="note">Cargando historial…</div></div>'}
+  let h=`<section class="card"><div><h3>Días guardados</h3><div class="sub">M³, dosis y drenaje de cada día</div></div>`;
+  if(!st.hist.length)h+=`<div class="note">Sin días guardados.</div>`;
+  else{h+=`<div class="hist">`+st.hist.map(r=>`<div class="hrow"><div class="d">${fFecha(r.fecha)}</div><div class="cs">${st.cfg.cabezales.map(c=>{const z=(r.resumen||{})[c.id];if(!z||z.m3==null)return '';return `<span class="mini"><b>${esc(c.nombre)}</b> ${fmt(z.m3,0)} m³ · ${z.total?(z.fuera?z.fuera+' fuera':'en dosis'):'sin cuentas'} · dren ${fmt(z.drenaje,0)} %</span>`}).join('')}</div><button class="btn" data-open="${r.fecha}">Abrir</button></div>`).join('')+`</div>`}
+  h+=`</section><section class="card"><div><h3>Cambios de receta</h3><div class="sub">Qué se cambió y cuándo</div></div>`;
+  const cs=st.cambios||[];
+  if(!cs.length)h+=`<div class="note">Sin cambios de receta.</div>`;
+  else h+=`<div>`+cs.map(x=>`<div class="chg"><b>${fFecha(x.fecha)}</b><ul>${(x.lineas||[]).map(l=>`<li>${esc(String(l).replace(/Bid[oó]n/gi,'Depósito'))}</li>`).join('')}</ul></div>`).join('')+`</div>`;
+  return h+`</section>`}
+let histLoading=false;
+async function loadHist(){if(histLoading)return;histLoading=true;await loadHist_();histLoading=false;refreshTab()}
+function refreshTab(){spRes();avisosLlenado();if(['historial','graficas','almacen','informe','rellenar'].includes(st.tab))renderMain();else if(st.tab==='cuentas')softUpdate()}
+async function loadHist_(){try{const[a,b]=await Promise.all([Store.listRegs(),Store.listCambios()]);st.hist=a;st.cambios=b}catch(e){st.hist=[];st.cambios=[];toast('No se pudo leer el historial')}}
+
+/* ---------- Adjuntos (fotos y archivos) ---------- */
+const ASSET_TYPES=['image/png','image/jpeg','image/gif','image/webp','video/mp4','video/webm','application/pdf','text/plain','text/csv'];
+const EXT_TYPES={pdf:'application/pdf',jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp',mp4:'video/mp4',webm:'video/webm',txt:'text/plain',csv:'text/csv'};
+const fSize=b=>b<1048576?Math.max(1,Math.round(b/1024))+' KB':(b/1048576).toFixed(1).replace('.',',')+' MB';
+const CLIP='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12.5l-8.5 8.5a6 6 0 0 1-8.5-8.5l9-9a4 4 0 0 1 5.7 5.7l-9 9a2 2 0 0 1-2.8-2.8l8.3-8.3"/></svg>';
+async function compressImg(file){const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file)});
+  const M=1600,s=Math.min(1,M/Math.max(img.naturalWidth,img.naturalHeight));const w=Math.round(img.naturalWidth*s),h=Math.round(img.naturalHeight*s);
+  const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(img.src);
+  return new Promise((res,rej)=>c.toBlob(b=>b?res(b):rej(new Error('img')),'image/jpeg',0.8))}
+const Adj={assets:null,downloads:null,idb:null,urls:{},
+  async init(){if(Store.mode!=='db')return;try{this.assets=await window.claude.use('assets')}catch(e){}try{this.downloads=await window.claude.use('downloads')}catch(e){}},
+  can(){return Store.mode==='db'?!!this.assets:typeof indexedDB!=='undefined'},
+  async open_(){if(this.idb)return this.idb;this.idb=await new Promise((res,rej)=>{const r=indexedDB.open('abonado',1);r.onupgradeneeded=()=>r.result.createObjectStore('adjuntos');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});return this.idb},
+  async tx(mode,fn){const d=await this.open_();return new Promise((res,rej)=>{const t=d.transaction('adjuntos',mode);const q=fn(t.objectStore('adjuntos'));t.oncomplete=()=>res(q&&q.result);t.onerror=()=>rej(t.error)})},
+  idbPut(id,b){return this.tx('readwrite',s=>s.put(b,id))},idbGet(id){return this.tx('readonly',s=>s.get(id))},idbDel(id){return this.tx('readwrite',s=>s.delete(id))},
+  async put(file){let blob=file,type=file.type||'',name=file.name||'archivo';const ext=(name.split('.').pop()||'').toLowerCase();if(!type&&EXT_TYPES[ext])type=EXT_TYPES[ext];
+    if(/^image\/(jpeg|png|webp|heic|heif)$/.test(type)||/^(heic|heif)$/.test(ext)){try{blob=await compressImg(file);type='image/jpeg';name=name.replace(/\.[^.]+$/,'')+'.jpg'}catch(e){}}
+    const img=type.startsWith('image/');
+    if(Store.mode==='db'){if(!ASSET_TYPES.includes(type))throw{code:'tipo'};if(blob.size>20*1048576)throw{code:'too_large'};
+      const r=await this.assets.upload(blob,{type});this.urls[r.id]=r.url;return{id:r.id,name,type,size:r.sizeBytes,img}}
+    if(Store.mode==='fb'){if(blob.size>8*1048576)throw{code:'too_large'};const id='f'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);await this.idbPut(id,blob).catch(()=>{});await NUBE.putBlob(id,blob,type);return{id,name,type,size:blob.size,img,fb:true}}
+    if(blob.size>25*1048576)throw{code:'too_large'};
+    const id='a'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);await this.idbPut(id,blob);return{id,name,type,size:blob.size,img,local:true}},
+  src(a){return a.local||a.fb?(this.urls[a.id]||''):(this.urls[a.id]||'/_blob/'+a.id)},
+  async url(a){if(this.urls[a.id])return this.urls[a.id];if(!a.local&&!a.fb)return '/_blob/'+a.id;let b=await this.idbGet(a.id).catch(()=>null);if(!b&&window.NUBE&&NUBE.db){b=await NUBE.getBlob(a.id).catch(()=>null);if(b)this.idbPut(a.id,b).catch(()=>{})}if(!b)return null;return this.urls[a.id]=URL.createObjectURL(b)},
+  async save(a){if(a.local||a.fb){const u=await this.url(a);if(!u){toast('Archivo no encontrado en este dispositivo');return}const l=document.createElement('a');l.href=u;l.download=a.name;document.body.appendChild(l);l.click();l.remove();return}
+    if(!this.downloads){toast('Descarga no disponible aquí');return}
+    try{const r=await fetch(this.src(a));const b=await r.blob();await this.downloads.save({filename:a.name,data:b})}catch(e){if(!e||e.code!=='declined')toast('No se pudo descargar')}},
+  async del(a){try{if(a.local)await this.idbDel(a.id);else if(a.fb){await this.idbDel(a.id).catch(()=>{});await NUBE.delBlob(a.id)}else if(this.assets)await this.assets.delete(a.id)}catch(e){}}
+};
+function adjHTML(list,removable){if(!list||!list.length)return '';
+  return `<div class="adjs">`+list.map(a=>{if(a.tmp)return `<div class="up">Subiendo ${esc(a.name)}…</div>`;
+    const rm=removable?`<button class="rm" data-rmadj="${a.id}" aria-label="Quitar ${esc(a.name)}">×</button>`:'';
+    if(a.img)return `<span class="adjwrap"><button class="thumb" data-img="${a.id}" aria-label="Ver foto"><img alt="" ${a.local||a.fb?`data-local="${a.id}"`:''} src="${Adj.src(a)}"></button>${rm}</span>`;
+    return `<span class="adjwrap"><button class="fchip" data-file="${a.id}">${CLIP}<span>${esc(a.name)}</span><small>${fSize(a.size||0)}</small></button>${rm}</span>`}).join('')+`</div>`}
+async function hydrate(){for(const el of document.querySelectorAll('img[data-local]')){if(el.getAttribute('src'))continue;const u=await Adj.url(findAdj(el.dataset.local)||{id:el.dataset.local,local:true});if(u)el.src=u}}
+function findAdj(id){for(const a of [...st.msgAdj,...st.ent.adj])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[])])for(const a of m.adjuntos||[])if(a.id===id)return a;return null}
+async function addFiles(files,list){list=list||st.msgAdj;for(const f of files){const tmp={tmp:true,id:'t'+Math.random(),name:f.name||'archivo'};list.push(tmp);renderMain();
+  try{const a=await Adj.put(f);list[list.indexOf(tmp)]=a}catch(e){list.splice(list.indexOf(tmp),1);
+    toast(e&&e.code==='tipo'?'Aquí solo se pueden adjuntar fotos, PDF, vídeos y texto':e&&e.code==='too_large'?'El archivo es demasiado grande':'No se pudo adjuntar '+(f.name||'el archivo'))}
+  renderMain()}}
+async function openImg(id){const a=findAdj(id);if(!a)return;const u=await Adj.url(a);if(!u)return toast('Foto no encontrada en este dispositivo');$('#lbimg').src=u;$('#lb').hidden=false}
+
+/* ---------- Mensajes ---------- */
+const cabNombre=id=>id?(cabById(id)||{nombre:id}).nombre:'General';
+const fHora=ts=>new Date(ts).toLocaleString('es-ES',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+function pendHTML(){if(!st.msgs)return '';const n=st.msgs.filter(m=>!m.resuelto&&(!m.cab||m.cab===st.cab)).length;
+  return n?`<button class="banner msgbar" data-tab="mensajes">${n} ${n>1?'mensajes pendientes':'mensaje pendiente'} · ver</button>`:''}
+let msgLoading=false;
+async function loadMsgs(){if(msgLoading)return;msgLoading=true;try{st.msgs=await Store.listMsgs()}catch(e){st.msgs=[]}msgLoading=false;
+  spRes();if(st.tab==='mensajes')renderMain();else if(st.tab==='cuentas')softUpdate()}
+const autorActual=()=>((window.NUBE&&NUBE.user&&NUBE.user.nombre)||st.autor||'').trim();
+const autorEmail=()=>window.NUBE&&NUBE.user?{autorEmail:NUBE.user.email}:{};
+function vMensajes(){if(st.msgs===null){loadMsgs();return '<div class="card"><div class="note">Cargando mensajes…</div></div>'}
+  const sel=st.msgCab??st.cab;
+  let h=`<section class="card"><div><h3>Nuevo mensaje</h3><div class="sub">Avisos, incidencias y notas</div></div>
+    <div class="row" style="align-items:flex-end">${window.NUBE&&NUBE.user?`<div class="field" style="flex:1 1 150px"><label>Escribes como</label><div class="yo"><b>${esc(NUBE.user.nombre)}</b></div></div>`:`<div class="field" style="flex:1 1 150px"><label for="msg_autor">Nombre</label><div class="inp"><input class="wide" id="msg_autor" data-m="autor" autocomplete="name" value="${esc(st.autor)}"></div></div>`}
+    <div class="field" style="flex:1 1 150px"><label for="msg_cab">Cabezal</label><div class="inp"><select id="msg_cab" data-m="cab"><option value="" ${sel===''?'selected':''}>General</option>${st.cfg.cabezales.map(c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div></div>
+    <div class="field"><label for="msg_txt">Mensaje</label><textarea id="msg_txt" data-m="txt" rows="3">${esc(st.msgDraft)}</textarea></div>
+    ${adjHTML(st.msgAdj,true)}
+    <div class="row">${Adj.can()?`<label class="btn" for="msg_foto">Añadir foto</label><input type="file" id="msg_foto" data-m="file" accept="image/*" multiple hidden>
+      <label class="btn" for="msg_arch">Añadir archivo</label><input type="file" id="msg_arch" data-m="file" ${Store.mode==='db'?'accept="image/*,video/mp4,video/webm,application/pdf,text/plain,text/csv,.pdf,.txt,.csv"':''} multiple hidden>`:''}
+      <button class="btn pri" data-act="msg-send" ${st.msgAdj.some(a=>a.tmp)?'disabled':''}>Enviar mensaje</button></div></section>`;
+  const fs=[['todos','Todos'],['pend','Pendientes'],['','General'],...st.cfg.cabezales.map(c=>[c.id,c.nombre])];
+  h+=`<div class="pick">${fs.map(([k,t])=>`<button class="chip" data-mf="${k}" aria-pressed="${st.msgF===k}">${esc(t)}</button>`).join('')}</div>`;
+  const list=st.msgs.filter(m=>st.msgF==='todos'||(st.msgF==='pend'?!m.resuelto:(m.cab||'')===st.msgF));
+  h+=`<section class="card"><div><h3>Mensajes</h3><div class="sub">${list.length} ${list.length===1?'mensaje':'mensajes'}</div></div>`;
+  if(!list.length)h+=`<div class="note">Sin mensajes.</div>`;
+  else h+=`<div class="msgs">`+list.map(m=>`<div class="msg ${m.resuelto?'done':''}"><div class="h"><b>${esc(m.autor||'Sin nombre')}</b><span class="mini">${esc(cabNombre(m.cab))}</span><span>${fHora(m.ts)}</span>${m.resuelto?'<span class="pill ok">Resuelto</span>':'<span class="pill warn">Pendiente</span>'}</div>
+    ${m.txt?`<p>${esc(m.txt)}</p>`:''}${adjHTML(m.adjuntos,false)}<div class="row">${st.confirmDel===m.id?`<span class="note">¿Borrar este mensaje?</span><button class="btn danger" data-act="msg-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="msg-del-no">Cancelar</button>`
+    :`<button class="btn" data-act="msg-done" data-id="${m.id}">${m.resuelto?'Marcar pendiente':'Marcar resuelto'}</button><button class="btn" data-act="msg-del" data-id="${m.id}">Borrar</button>`}</div></div>`).join('')+`</div>`;
+  return h+`</section>`}
+async function sendMsg(){const txt=(st.msgDraft||'').trim();const adj=st.msgAdj.filter(a=>!a.tmp);if(!txt&&!adj.length){toast('Escribe el mensaje o añade una foto');return}
+  const m={ts:new Date().toISOString(),fecha:hoy(),autor:autorActual(),...autorEmail(),cab:st.msgCab??st.cab,txt,resuelto:false,adjuntos:adj};
+  try{const id=await Store.addMsg(m);st.msgs.unshift({...m,id});st.msgDraft='';st.msgAdj=[];renderMain();toast('Mensaje guardado')}catch(e){toast(errMsg(e))}}
+async function toggleMsg(id){const m=st.msgs.find(x=>x.id===id);if(!m)return;try{await Store.updMsg(id,{resuelto:!m.resuelto});m.resuelto=!m.resuelto;renderMain()}catch(e){toast(errMsg(e))}}
+async function delMsg(id){try{const m=st.msgs.find(x=>x.id===id);await Store.delMsg(id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.msgs=st.msgs.filter(x=>x.id!==id);st.confirmDel=null;renderMain();toast('Mensaje borrado')}catch(e){toast(errMsg(e))}}
+$('#main').addEventListener('input',e=>{const k=e.target.dataset.m;if(!k)return;
+  if(k==='autor'){st.autor=e.target.value;try{localStorage.setItem('abono.autor',st.autor)}catch(_){}}else if(k==='txt')st.msgDraft=e.target.value;else if(k==='cab')st.msgCab=e.target.value});
+$('#main').addEventListener('change',e=>{if(e.target.dataset.m==='cab')st.msgCab=e.target.value;
+  else if(e.target.dataset.m==='file'&&e.target.files.length){const fs=[...e.target.files];e.target.value='';addFiles(fs)}});
+$('#lb').addEventListener('click',e=>{if(e.target.id==='lb'||e.target.dataset.act==='lb-close'){$('#lb').hidden=true;$('#lbimg').removeAttribute('src')}});
+
+/* ---------- Nivel de depósitos ---------- */
+const isoD=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+let opsLoading=false;
+async function loadOps(){if(opsLoading)return;opsLoading=true;try{const[a,b]=await Promise.all([Store.listCol('llenados',1000),Store.listCol('almacen',3000)]);st.llen=a;st.alm=b}catch(e){st.llen=st.llen||[];st.alm=st.alm||[]}opsLoading=false;refreshTab()}
+function lecturaAnt(b,conHoy){if(conHoy&&st.reg.niv&&st.reg.niv[b.id]!=null)return{fecha:st.fecha,v:st.reg.niv[b.id]};let best=null;
+  for(const r of st.hist||[]){if(r.fecha>=st.fecha)continue;const v=(r.niv||{})[b.id];if(v!=null&&(!best||r.fecha>best.fecha))best={fecha:r.fecha,v}}return best}
+/* Gasto diario: el que pongas a mano o, si no, la media real de los últimos 7 días con dato */
+function gastoDia(b){const vs=(st.hist||[]).map(r=>(r.cm||{})[b.id]).filter(v=>v!=null&&v>=0).slice(0,7),med=vs.length?vs.reduce((a,c)=>a+c,0)/vs.length:null,man=b.consumoDia>0?b.consumoDia:null;return{man,med,v:man??med}}
+/* Parte del gasto de un día ya hecha: hoy va de 0 a 1 durante el horario de riego; los días pasados cuentan enteros */
+const minDe=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
+function fracDia(f){const h=hoy();if(f<h)return 1;if(f>h)return 0;const r=st.cfg.riego||{},a=minDe(r.ini)??510,b=minDe(r.fin)??1110,d=new Date(),m=d.getHours()*60+d.getMinutes();
+  if(b<=a)return 1;return Math.max(0,Math.min(1,(m-a)/(b-a)))}
+const sigD=f=>{const d=new Date(f+'T12:00:00');d.setDate(d.getDate()+1);return isoD(d)};
+function cmDe(b,f){if(f===st.fecha){const v=st.reg.cm[b.id];return v??null}const r=(st.hist||[]).find(x=>x.fecha===f);const v=r&&(r.cm||{})[b.id];return v??null}
+/* Nivel: parte de la última medida o llenado y resta lo gastado cada día; los días sin dato resta el gasto diario estimado */
+function nivel(b){let ev=null;for(const e of st.llen||[])if(e.bidon===b.id&&e.fecha<=st.fecha&&(!ev||e.ts>ev.ts))ev=e;const lec=lecturaAnt(b,true);if(!ev&&!lec)return null;
+  const g=gastoDia(b);let rest,est=0,n=0;
+  if(lec&&(!ev||lec.fecha>ev.fecha||lec.fecha===st.fecha)){rest=lec.v;
+    for(let d=sigD(lec.fecha);d<=st.fecha&&n<180;d=sigD(d),n++){const c=cmDe(b,d);if(c!=null)rest-=c;else if(g.v>0){const fr=fracDia(d);rest-=g.v*fr;if(fr>0)est++}}
+    for(const e of st.llen||[])if(e.bidon===b.id&&e.tipo==='llenado'&&e.fecha>lec.fecha&&e.fecha<=st.fecha)rest+=e.cmAdd||0}
+  else{rest=ev.cmFinal;for(let d=ev.fecha;d<=st.fecha&&n<180;d=sigD(d),n++){const c=cmDe(b,d);if(c!=null)rest-=c;else if(d>ev.fecha&&g.v>0){const fr=fracDia(d);rest-=g.v*fr;if(fr>0)est++}}}
+  return{rest,dias:g.v>0?Math.max(0,rest)/g.v:null,ev,max:b.capacidad/b.lpcm,est,g}}
+function cmAuto(b){const p=lecturaAnt(b,false),h=st.reg.niv&&st.reg.niv[b.id];if(!p||h==null)return null;let add=0;
+  for(const e of st.llen||[])if(e.bidon===b.id&&e.tipo==='llenado'&&e.fecha>p.fecha&&e.fecha<=st.fecha)add+=e.cmAdd||0;return{prev:p,add,g:+(p.v+add-h).toFixed(1)}}
+function autoCm(id){const b=bid(id),a=b&&cmAuto(b);if(!a||a.g<0){if(b&&lecturaAnt(b,false))st.reg.cm[id]=null;return}st.reg.cm[id]=a.g;document.querySelectorAll(`[data-k="reg.cm.${id}"]`).forEach(i=>{i.value=inVal(a.g)})}
+function lecturaBoxes(b,c){const prev=lecturaAnt(b,false);
+  const ant=`<div class="lbox"><span>Nivel anterior</span><b>${prev?fmt(prev.v,1):'—'} <small>cm</small></b><small>${prev?fFecha(prev.fecha):'sin lectura'}</small></div>`;
+  const hoyF=`<div class="field"><label for="nv_${b.id}_${c.id}">Nivel hoy</label><div class="inp"><input id="nv_${b.id}_${c.id}" data-k="reg.niv.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.niv[b.id])}"><span class="u">cm</span></div></div>`;
+  const res=prev?`<div class="lbox res" data-out="res_${b.id}">${resBox(b)}</div>`
+    :`<div class="field"><label for="cm_${b.id}_${c.id}">cm gastados</label><div class="inp"><input id="cm_${b.id}_${c.id}" data-k="reg.cm.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.cm[b.id])}"><span class="u">cm</span></div></div>`;
+  return `<div class="lect">${ant}${hoyF}${res}</div>`}
+function resBox(b){const a=cmAuto(b),v=st.reg.cm[b.id],neg=a&&a.g<0;
+  return `<span>cm gastados</span><b class="${neg?'neg':''}">${neg?fmt(a.g,1):fmt(v,1)} <small>cm</small></b><small>${neg?'revisa la lectura':v!=null?'= '+fmt(v*b.lpcm,0)+' L':'escribe el nivel de hoy'}</small>`}
+function lecturaHTML(b){const h=st.reg.niv&&st.reg.niv[b.id],p=lecturaAnt(b,false);if(h==null)return p?`<div class="note">Última lectura: ${fmt(p.v,1)} cm · ${fFecha(p.fecha)}</div>`:'';
+  const a=cmAuto(b);if(!a)return `<div class="note">Primera lectura: escribe hoy los cm gastados a mano. Desde la próxima se calculan solos.</div>`;
+  const neg=a.g<0;return `<div class="${neg?'banner':'note'}">${neg?'<b>El nivel ha subido.</b> Si has llenado, regístralo en «Rellenar depósito». ':''}${fFecha(a.prev.fecha)}: ${fmt(a.prev.v,1)} cm${a.add?` + llenado ${fmt(a.add,1)} cm`:''} − hoy ${fmt(h,1)} cm = <b>${fmt(a.g,1)} cm gastados</b></div>`}
+const umbralLl=()=>{const v=st.cfg.alertas.llenado;return (v>0&&v<100?v:33)/100};
+const bajoUmbral=n=>!!(n&&n.max>0&&Math.max(0,n.rest)/n.max<=umbralLl()+1e-9);
+const depsBajos=()=>st.cfg.bidones.filter(b=>bajoUmbral(nivel(b)));
+function gdNota(b){const g=gastoDia(b);if(g.man)return `= ${fmt(g.man*b.lpcm,0)} L/día · puesto a mano${g.med!=null?' (media real '+fmt(g.med,1)+' cm)':''}`;
+  return g.med!=null?`Vacío: uso la media real, ${fmt(g.med,1)} cm/día = ${fmt(g.med*b.lpcm,0)} L`:'Escribe lo que gasta al día para que el nivel baje solo'}
+function nivelHTML(b){const n=nivel(b);if(!n)return `<div class="lvl"><span class="note">Nivel sin registrar: escribe el nivel de hoy</span></div>`;
+  const r=Math.max(0,n.rest),pct=Math.min(100,r*100/n.max),u=umbralLl(),c=bajoUmbral(n)?'bad':pct/100<=u+0.1?'warn':'ok';
+  const fh=fracDia(hoy()),rg=st.cfg.riego||{},estT=n.est?`<div class="t"><span class="pill nd">Estimado · ${n.est===1?'1 día':n.est+' días'} sin medir${st.fecha===hoy()&&fh>0&&fh<1?' · regando ('+fmt(fh*100,0)+' % del día)':''}</span><span>mide el nivel para corregir</span></div>`:'';
+  return `<div class="lvl"><div class="bar"><i class="${c}${n.est?' est':''}" style="width:${pct}%"></i><span class="mk" style="left:${u*100}%" title="Aviso de llenado"></span></div><div class="t"><span>Quedan <b>${fmt(r,1)} cm</b> · ${fmt(r*b.lpcm,0)} L · ${fmt(pct,0)} %</span>${c==='bad'?'<span class="pill bad">Toca llenar</span>':''}${n.dias!=null?`<span class="pill ${c}">≈ ${fmt(n.dias,1)} días</span>`:''}</div>${estT}</div>`}
+const notifOk=()=>'Notification' in window&&window.isSecureContext;
+function notifHTML(){if(!notifOk())return `<div class="note">Este navegador no permite notificaciones. En iPhone, instala la app en la pantalla de inicio y ábrela desde el icono.</div>`;
+  const p=Notification.permission;
+  if(p==='granted')return `<div class="row"><span class="pill ok">Notificaciones activadas en este dispositivo</span><button class="btn" data-act="notif-test">Probar</button></div>`;
+  if(p==='denied')return `<div class="note">Las notificaciones están bloqueadas para esta app. Actívalas en los ajustes del navegador o del móvil.</div>`;
+  return `<div class="row"><button class="btn pri" data-act="notif-on">Activar notificaciones en este dispositivo</button></div>`}
+async function notificar(t,body,tag){try{const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(reg)await reg.showNotification(t,{body,icon:'icon-192.png',badge:'icon-192.png',tag});else new Notification(t,{body,icon:'icon-192.png',tag})}catch(e){}}
+async function avisosLlenado(){if(!notifOk()||Notification.permission!=='granted'||st.llen===null||st.hist===null)return;const h=hoy();
+  for(const b of depsBajos()){const k='abono.avisado.'+b.id;let last='';try{last=localStorage.getItem(k)||''}catch(e){}if(last===h)continue;
+    const n=nivel(b),r=Math.max(0,n.rest);
+    await notificar('Toca llenar: '+b.nombre.replace(/^Depósito /,'').replace(/^./,x=>x.toUpperCase())+' · '+b.cabezales.map(cabNombre).join(' y '),'Quedan '+fmt(r,1)+' cm · '+fmt(r*b.lpcm,0)+' L ('+fmt(r*100/n.max,0)+' %)'+(n.dias!=null?' · ≈ '+fmt(n.dias,1)+' días':''),'llenado-'+b.id);
+    try{localStorage.setItem(k,h)}catch(e){}}}
+function lvlBanner(){const bs=bidonesDe(st.cab).filter(b=>bajoUmbral(nivel(b)));
+  return bs.length?`<button class="banner msgbar" data-tab="rellenar">${bs.length===1?'1 depósito para rellenar':bs.length+' depósitos para rellenar'}: ${bs.map(b=>esc(b.nombre)).join(', ')} · ver</button>`:''}
+function lfOpen(tipo){const b=bid(st.fillB[st.cab]);const n=nivel(b),add=st.fill[b.id]!==undefined?st.fill[b.id]:b.cmHabitual;
+  st.lf={tipo,bidon:b.id,fecha:st.fecha,add:tipo==='llenado'?add:null,final:tipo==='llenado'?(add==null?null:+Math.min(b.capacidad/b.lpcm,(n?Math.max(0,n.rest):0)+add).toFixed(1)):(n?+Math.max(0,n.rest).toFixed(1):null),desc:true,finalTouched:false};renderMain()}
+async function lfSave(){const L=st.lf,b=bid(L.bidon);if(L.final==null||L.final<0){toast('Escribe el nivel en cm');return}if(L.tipo==='llenado'&&!(L.add>0)){toast('Escribe los cm añadidos');return}
+  const ev={ts:new Date().toISOString(),fecha:L.fecha||st.fecha,bidon:b.id,tipo:L.tipo,cmFinal:L.final};
+  if(L.tipo==='llenado'){ev.cmAdd=L.add;ev.cantidades={};const lt=L.add*b.lpcm;for(const x of b.productos){if(!x.dosis)continue;ev.cantidades[x.p]=+(lt*conc(b,x)/1000).toFixed(2)}}
+  try{const id=await Store.addCol('llenados',ev);st.llen.unshift({...ev,id});
+    if(L.tipo==='llenado'&&L.desc)for(const[p,q]of Object.entries(ev.cantidades)){const m={ts:ev.ts,fecha:ev.fecha,tipo:'salida',p,qty:-q,origen:b.id,llenado:id};const mid=await Store.addCol('almacen',m);st.alm.unshift({...m,id:mid})}
+    st.lf=null;renderMain();toast(L.tipo==='llenado'?'Llenado guardado'+(L.desc?' y descontado del almacén':''):'Nivel guardado')}catch(e){toast(errMsg(e))}}
+async function llDel(id){try{await Store.delCol('llenados',id);st.llen=st.llen.filter(e=>e.id!==id);for(const m of st.alm.filter(m=>m.llenado===id)){await Store.delCol('almacen',m.id)}st.alm=st.alm.filter(m=>m.llenado!==id);st.confirmLl=null;renderMain();toast('Registro borrado')}catch(e){toast(errMsg(e))}}
+
+/* ---------- Almacén ---------- */
+const pn=p=>prod(p).n.replace(/­/g,'');
+function stockDe(p){let s=0;for(const m of st.alm||[])if(m.p===p)s+=m.qty||0;return s}
+function consumoDia(p){const d=new Date();d.setDate(d.getDate()-30);const lim=isoD(d);let s=0;for(const m of st.alm||[])if(m.p===p&&m.tipo==='salida'&&m.fecha>=lim)s+=-m.qty;return s/30}
+function stockRow(p){const s=stockDe(p),c=consumoDia(p),min=st.cfg.stockMin[p],d=c>0?Math.max(0,s)/c:null,bajo=min!=null&&s<=min;
+  const k=s<-0.001?'bad':bajo?'bad':d!=null&&d<=7?'warn':'ok';return{s,c,min,d,k,t:s<-0.001?'Revisar':bajo?'Pedir':k==='warn'?'Pocos días':'Bien'}}
+function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div class="note">Cargando almacén…</div></div>'}
+  const ps=Object.keys(st.cfg.productos),mes=hoy().slice(0,7),ent=st.alm.filter(m=>m.tipo==='entrada'&&(m.fecha||'').slice(0,7)===mes),nb=ps.filter(p=>stockRow(p).k==='bad').length;
+  let h=`<section class="summary" data-out="asum"><div class="stat"><span>Para pedir</span><b>${nb}</b><small>bajo mínimo o en negativo</small></div><div class="stat"><span>Entradas del mes</span><b>${ent.length}</b><small>albaranes</small></div><div class="stat"><span>Movimientos</span><b>${st.alm.length}</b><small>registrados</small></div></section>`;
+  h+=`<section class="card"><div><h3>Stock</h3><div class="sub">Existencias, consumo de los últimos 30 días y mínimo para pedir</div></div><div>`+ps.map(p=>{const r=stockRow(p);return `<div class="srow"><div class="nm"><b>${esc(prod(p).n)}</b><small data-out="sc_${p}">${r.c>0?'consumo '+fmt(r.c,1)+' '+uCant(p)+'/día':'sin consumo reciente'}${r.d!=null?' · '+fmt(r.d,0)+' días':''}</small></div>
+    <div class="sv" data-out="sv_${p}">${sacoDe(p)&&r.s>0.001?(()=>{const z=sacoDe(p),n=Math.floor(r.s/z+1e-6),rr=r.s-n*z;return `<b>${n}</b> <span class="u">${n===1?'saco':'sacos'}</span>${rr>0.05?` <span class="u">+ ${fmt(rr,1)} kg</span>`:''}<small>${fmt(r.s,1)} kg en total</small>`})():`<b>${fmt(r.s,1)}</b> <span class="u">${uCant(p)}</span>`}</div>
+    <div class="flds"><div class="field"><label for="mn_${p}">Mínimo</label><div class="inp sm"><input id="mn_${p}" data-k="cfg.min.${p}" inputmode="decimal" value="${inVal(r.min)}"><span class="u">${uCant(p)}</span></div></div>
+    ${sacoDe(p)?`<div class="field"><label for="sz_${p}">Saco de</label><div class="inp sm"><input id="sz_${p}" data-k="cfg.saco.${p}" inputmode="decimal" value="${inVal(sacoDe(p))}"><span class="u">kg</span></div></div>`:''}</div>
+    <span data-out="sp_${p}"><span class="pill ${r.k}">${r.t}</span></span></div>`}).join('')+`</div></section>`;
+  const e=st.ent;
+  h+=`<section class="card"><div><h3>Nueva entrada</h3><div class="sub">Pedido recibido</div></div><div class="frm">
+    <div class="field"><label for="ae_p">Producto</label><div class="inp"><select id="ae_p" data-ae="p">${ps.map(p=>`<option value="${p}" ${e.p===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div></div>
+    ${sacoDe(e.p)?`<div class="field"><label for="ae_sacos">Sacos de ${fmt(sacoDe(e.p),0)} kg</label><div class="inp"><input id="ae_sacos" data-ae="sacos" inputmode="decimal" value="${sacIn(e.p,e.qty)}"></div></div>`:''}
+    <div class="field"><label for="ae_qty">${sacoDe(e.p)?'Kilos':'Cantidad'}</label><div class="inp"><input id="ae_qty" data-ae="qty" inputmode="decimal" value="${inVal(e.qty)}"><span class="u">${uCant(e.p)}</span></div></div>
+    <div class="field"><label for="ae_fecha">Fecha</label><div class="inp"><input type="date" id="ae_fecha" data-ae="fecha" value="${e.fecha}"></div></div>
+    <div class="field"><label for="ae_prov">Proveedor</label><div class="inp"><input class="wide" id="ae_prov" data-ae="prov" value="${esc(e.prov)}"></div></div>
+    <div class="field"><label for="ae_alb">Nº albarán</label><div class="inp"><input class="wide" id="ae_alb" data-ae="alb" value="${esc(e.alb)}"></div></div></div>
+    ${adjHTML(e.adj,true)}
+    <div class="row">${Adj.can()?`<label class="btn" for="ae_foto">Foto del albarán</label><input type="file" id="ae_foto" data-ae="file" accept="image/*,application/pdf" multiple hidden>`:''}<button class="btn pri" data-act="ent-save" ${e.adj.some(a=>a.tmp)?'disabled':''}>Guardar entrada</button></div></section>`;
+  const a=st.aj;
+  h+=`<section class="card"><div><h3>Ajustar inventario</h3><div class="sub">Cuando cuentes lo que hay de verdad en el almacén</div></div><div class="frm">
+    <div class="field"><label for="aj_p">Producto</label><div class="inp"><select id="aj_p" data-aj="p">${ps.map(p=>`<option value="${p}" ${a.p===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div></div>
+    ${sacoDe(a.p)?`<div class="field"><label for="aj_sacos">Sacos reales de ${fmt(sacoDe(a.p),0)} kg</label><div class="inp"><input id="aj_sacos" data-aj="sacos" inputmode="decimal" value="${sacIn(a.p,a.real)}"></div></div>`:''}
+    <div class="field"><label for="aj_real">${sacoDe(a.p)?'Kilos reales':'Stock real'}</label><div class="inp"><input id="aj_real" data-aj="real" inputmode="decimal" value="${inVal(a.real)}"><span class="u">${uCant(a.p)}</span></div></div></div>
+    <div class="row"><span class="note" data-out="ajn">En la app: ${fmt(stockDe(a.p),1)} ${uCant(a.p)}${sacosTxt(a.p,stockDe(a.p))?' ('+sacosTxt(a.p,stockDe(a.p))+')':''}${a.real!=null?' · diferencia '+(a.real-stockDe(a.p)>=0?'+':'')+fmt(a.real-stockDe(a.p),1)+' '+uCant(a.p):''}</span><button class="btn pri" data-act="aj-save">Ajustar</button></div></section>`;
+  const mv=st.alm.slice().sort((x,y)=>x.ts<y.ts?1:-1).slice(0,60);
+  h+=`<section class="card"><div><h3>Movimientos</h3><div class="sub">Entradas, salidas por llenado y ajustes</div></div>`+(mv.length?`<div class="msgs">`+mv.map(m=>{const o=m.origen&&bid(m.origen);
+    return `<div class="msg"><div class="h"><span class="pill ${m.tipo==='entrada'?'ok':m.tipo==='salida'?'nd':'warn'}">${m.tipo}</span><b>${m.qty>=0?'+':'−'}${fmt(Math.abs(m.qty),1)} ${uCant(m.p)}</b>${sacosTxt(m.p,Math.abs(m.qty))&&Math.abs(m.qty)>=sacoDe(m.p)?`<span>${sacosTxt(m.p,Math.abs(m.qty))}</span>`:''}<span>${esc(pn(m.p))}</span><span>${fFecha(m.fecha)}</span></div>
+    ${m.prov||m.alb?`<p>${esc([m.prov,m.alb?'Albarán '+m.alb:''].filter(Boolean).join(' · '))}</p>`:''}${o?`<p class="note">${esc(o.nombre)} · ${esc(o.cabezales.map(cabNombre).join(' + '))}</p>`:''}${adjHTML(m.adjuntos,false)}
+    <div class="row">${st.confirmMv===m.id?`<span class="note">¿Borrar movimiento?</span><button class="btn danger" data-act="mv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="mv-del-no">Cancelar</button>`:`<button class="btn" data-act="mv-del" data-id="${m.id}">Borrar</button>`}</div></div>`}).join('')+`</div>`:`<div class="note">Sin movimientos.</div>`)+`</section>`;
+  return h}
+async function entSave(){const e=st.ent;if(!(e.qty>0)){toast('Escribe la cantidad');return}
+  const m={ts:new Date().toISOString(),fecha:e.fecha||hoy(),tipo:'entrada',p:e.p,qty:e.qty,prov:e.prov.trim(),alb:e.alb.trim(),adjuntos:e.adj.filter(a=>!a.tmp)};
+  try{const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id});st.ent={p:e.p,qty:null,fecha:hoy(),prov:e.prov,alb:'',adj:[]};renderMain();toast('Entrada guardada')}catch(err){toast(errMsg(err))}}
+async function ajSave(){const a=st.aj;if(a.real==null){toast('Escribe el stock real');return}const q=+(a.real-stockDe(a.p)).toFixed(3);if(Math.abs(q)<0.001){toast('No hay diferencia');return}
+  const m={ts:new Date().toISOString(),fecha:hoy(),tipo:'ajuste',p:a.p,qty:q};try{const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id});st.aj={p:a.p,real:null};renderMain();toast('Inventario ajustado')}catch(err){toast(errMsg(err))}}
+async function mvDel(id){const m=st.alm.find(x=>x.id===id);try{await Store.delCol('almacen',id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.alm=st.alm.filter(x=>x.id!==id);st.confirmMv=null;renderMain();toast('Movimiento borrado')}catch(e){toast(errMsg(e))}}
+
+/* ---------- Informe mensual ---------- */
+function drenDia(r,cab){const z=r.resumen&&r.resumen[cab];if(z&&z.drenaje!=null)return z.drenaje;const ps=[];for(const s of cabById(cab).sectores)for(const bj of s.bandejas){const min=(r.min||{})[s.id],ml=(r.dren||{})[bj.id];if(min&&ml!=null&&bj.caudal)ps.push(ml*100/(min*bj.caudal))}return ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null}
+function kgCab(r,cab){const z=r.resumen&&r.resumen[cab];if(z&&z.kg)return z.kg;return withReg(r,()=>kgDia(cab))}
+function informeData(mes){const regs=(st.hist||[]).filter(r=>r.fecha.slice(0,7)===mes).sort((a,b)=>a.fecha<b.fecha?-1:1);
+  const av=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+  const cabs=st.cfg.cabezales.map(c=>{const rs=regs.filter(r=>r.m3&&r.m3[c.id]!=null),kg={},dr=[],ce=[],cd=[],ph=[];let m3=0;
+    for(const r of rs){m3+=r.m3[c.id]||0;const k=kgCab(r,c.id);for(const p in k)kg[p]=(kg[p]||0)+k[p];const d=drenDia(r,c.id);if(d!=null)dr.push(d);
+      for(const[arr,key]of[[ce,'ceE'],[cd,'ceD'],[ph,'phD']]){const v=mediaSect(r,c.id,key);if(v!=null)arr.push(v)}}
+    return{c,dias:rs.length,m3,kg,dren:av(dr),ceE:av(ce),ceD:av(cd),phD:av(ph)}});
+  const alm=(st.alm||[]).filter(m=>(m.fecha||'').slice(0,7)===mes),ent={},sal={};for(const m of alm){if(m.tipo==='entrada')ent[m.p]=(ent[m.p]||0)+m.qty;else if(m.tipo==='salida')sal[m.p]=(sal[m.p]||0)-m.qty}
+  const tot={};for(const x of cabs)for(const p in x.kg)tot[p]=(tot[p]||0)+x.kg[p];
+  return{mes,regs,cabs,ent,sal,tot,alm}}
+const nomMes=m=>new Date(m+'-15T12:00:00').toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+function vInforme(){if(st.hist===null||st.alm===null){if(st.hist===null)loadHist();if(st.alm===null)loadOps();return '<div class="card"><div class="note">Cargando datos…</div></div>'}
+  const d=informeData(st.mes);
+  let h=`<section class="card"><div class="tank-h"><div><h3>Informe de ${nomMes(st.mes)}</h3><div class="sub">Agua, abonos, drenaje y almacén</div></div>
+    <div class="field"><label for="inf_mes">Mes</label><div class="inp"><input type="month" id="inf_mes" data-inf="mes" value="${st.mes}"></div></div></div>
+    <div class="row"><button class="btn pri" data-act="inf-pdf" ${d.regs.length?'':'disabled'}>Descargar PDF</button><button class="btn" data-act="inf-xlsx" ${d.regs.length?'':'disabled'}>Descargar Excel</button></div></section>`;
+  if(!d.regs.length)return h+`<section class="card"><div class="note">Sin días guardados en este mes.</div></section>`;
+  const cu=d.cabs.filter(x=>x.dias),ps=Object.keys(d.tot).filter(p=>d.tot[p]>0.0001),pa=[...new Set([...Object.keys(d.ent),...Object.keys(d.sal)])];
+  h+=`<section class="summary"><div class="stat"><span>Días guardados</span><b>${d.regs.length}</b><small>${nomMes(st.mes)}</small></div><div class="stat"><span>Agua regada</span><b>${fmt(cu.reduce((a,x)=>a+x.m3,0),0)} m³</b><small>toda la finca</small></div><div class="stat"><span>Abono aplicado</span><b>${fmt(ps.reduce((a,p)=>a+d.tot[p],0),0)}</b><small>kg + L en total</small></div></section>`;
+  h+=`<section class="card"><div><h3>Por cabezal</h3><div class="sub">Medias del mes</div></div><div class="tbl"><table><thead><tr><th>Cabezal</th><th>Días</th><th>m³</th><th>Dren. %</th><th>CE dren.</th><th>pH dren.</th></tr></thead><tbody>${cu.map(x=>`<tr><td>${esc(x.c.nombre)}</td><td>${x.dias}</td><td>${fmt(x.m3,0)}</td><td>${fmt(x.dren,1)}</td><td>${fmt(x.ceD,2)}</td><td>${fmt(x.phD,1)}</td></tr>`).join('')}</tbody></table></div></section>`;
+  h+=`<section class="card"><div><h3>Abono aplicado</h3><div class="sub">Kg o litros por cabezal</div></div><div class="tbl"><table><thead><tr><th>Producto</th>${cu.map(x=>`<th>${esc(x.c.nombre)}</th>`).join('')}<th>Total</th></tr></thead><tbody>${ps.map(p=>`<tr><td>${esc(prod(p).n)}</td>${cu.map(x=>`<td>${fmt(x.kg[p]||0,1)}</td>`).join('')}<td><b>${fmt(d.tot[p],1)} ${uCant(p)}</b></td></tr>`).join('')}</tbody></table></div></section>`;
+  h+=`<section class="card"><div><h3>Almacén</h3><div class="sub">Entradas y salidas del mes</div></div>${pa.length?`<div class="tbl"><table><thead><tr><th>Producto</th><th>Entradas</th><th>Salidas</th><th>Stock hoy</th></tr></thead><tbody>${pa.map(p=>`<tr><td>${esc(prod(p).n)}</td><td>${fmt(d.ent[p]||0,1)}</td><td>${fmt(d.sal[p]||0,1)}</td><td>${fmt(stockDe(p),1)} ${uCant(p)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="note">Sin movimientos este mes.</div>'}</section>`;
+  return h}
+const rN=(v,d)=>v==null||!isFinite(v)?'':+v.toFixed(d);
+const fD=f=>f.split('-').reverse().join('/');
+function informeTablas(d){const cu=d.cabs.filter(x=>x.dias),ps=Object.keys(d.tot).filter(p=>d.tot[p]>0.0001),pa=[...new Set([...Object.keys(d.ent),...Object.keys(d.sal)])];
+  return[{hoja:'Resumen',titulo:'Resumen por cabezal',cab:['Cabezal','Días','m³','Drenaje %','CE drenaje','pH drenaje'],filas:cu.map(x=>[x.c.nombre,x.dias,rN(x.m3,0),rN(x.dren,1),rN(x.ceD,2),rN(x.phD,1)])},
+    {hoja:'Abonos',titulo:'Abono aplicado (kg o L)',cab:['Producto',...cu.map(x=>x.c.nombre),'Total'],filas:ps.map(p=>[pn(p)+' ('+uCant(p)+')',...cu.map(x=>rN(x.kg[p]||0,1)),rN(d.tot[p],1)])},
+    {hoja:'Almacén',titulo:'Almacén del mes',cab:['Producto','Entradas','Salidas','Stock hoy'],filas:pa.map(p=>[pn(p)+' ('+uCant(p)+')',rN(d.ent[p]||0,1),rN(d.sal[p]||0,1),rN(stockDe(p),1)])},
+    {hoja:'Diario',titulo:'Detalle diario',cab:['Día','Cabezal','m³','Drenaje %','CE drenaje','pH drenaje'],filas:d.regs.flatMap(r=>cu.filter(x=>r.m3&&r.m3[x.c.id]!=null).map(x=>[fD(r.fecha),x.c.nombre,rN(r.m3[x.c.id],0),rN(drenDia(r,x.c.id),1),rN(mediaSect(r,x.c.id,'ceD'),2),rN(mediaSect(r,x.c.id,'phD'),1)]))},
+    {hoja:'Bandejas',titulo:'Drenaje por bandeja',cab:['Día','Cabezal','Sector','Bandeja','Minutos','Volumen total L','Drenaje ml','Drenaje %','CE drenaje','pH drenaje'],filas:d.regs.flatMap(r=>cu.flatMap(x=>x.c.sectores.flatMap(s=>s.bandejas.map(bj=>{const ml=(r.dren||{})[bj.id],min=(r.min||{})[s.id],ce=(r.ceD||{})[bj.id],ph=(r.phD||{})[bj.id];
+      if(ml==null&&ce==null&&ph==null)return null;return[fD(r.fecha),x.c.nombre,s.nombre,bj.nombre.replace('Bandeja ',''),rN(min,0),rN(min&&bj.caudal?min*bj.caudal/1000:null,2),rN(ml,0),rN(ml!=null&&min&&bj.caudal?ml*100/(min*bj.caudal):null,1),rN(ce,2),rN(ph,1)]}).filter(Boolean))))},
+    {hoja:'Movimientos',titulo:'Movimientos de almacén',cab:['Día','Tipo','Producto','Cantidad','Proveedor','Albarán'],filas:d.alm.slice().sort((a,b)=>a.ts<b.ts?-1:1).map(m=>[fD(m.fecha),m.tipo,pn(m.p),rN(m.qty,2),m.prov||'',m.alb||''])}]}
+async function saveBlob(blob,name){if(Store.mode==='db'){if(!Adj.downloads){toast('Descarga no disponible aquí');return}try{await Adj.downloads.save({filename:name,data:blob})}catch(e){if(!e||e.code!=='declined')toast('No se pudo descargar')}return}
+  const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}
+// Excel (.xlsx) sin librerías: XML + zip sin compresión
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u){let c=~0;for(let i=0;i<u.length;i++)c=CRC[(c^u[i])&255]^(c>>>8);return(~c)>>>0}
+function zipStore(files){const enc=new TextEncoder(),parts=[],cd=[];let off=0;const now=new Date(),tm=(now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1),dt=((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate();
+  for(const f of files){const name=enc.encode(f.name),data=typeof f.data==='string'?enc.encode(f.data):f.data,crc=crc32(data);
+    const h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,tm,true);h.setUint16(12,dt,true);h.setUint32(14,crc,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,name.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),name,data);
+    const c=new DataView(new ArrayBuffer(46));c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);c.setUint16(12,tm,true);c.setUint16(14,dt,true);c.setUint32(16,crc,true);c.setUint32(20,data.length,true);c.setUint32(24,data.length,true);c.setUint16(28,name.length,true);c.setUint32(42,off,true);
+    cd.push(new Uint8Array(c.buffer),name);off+=30+name.length+data.length}
+  const cdSize=cd.reduce((a,p)=>a+p.length,0),e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cdSize,true);e.setUint32(16,off,true);
+  return new Blob([...parts,...cd,new Uint8Array(e.buffer)],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'})}
+const xe=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+const colL=i=>{let s='';i++;while(i>0){const m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26)}return s};
+function xlsxBlob(sheets){const NS='http://schemas.openxmlformats.org/spreadsheetml/2006/main',RNS='http://schemas.openxmlformats.org/officeDocument/2006/relationships',XH='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  const sx=sheets.map(sh=>{const rows=sh.rows.map((r,ri)=>`<row r="${ri+1}">${r.map((v,ci)=>{const ref=colL(ci)+(ri+1),s=sh.bold.includes(ri)?' s="1"':'';if(v===''||v==null)return '';return typeof v==='number'?`<c r="${ref}"${s}><v>${v}</v></c>`:`<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${xe(v)}</t></is></c>`}).join('')}</row>`).join('');
+    const ncol=Math.max(...sh.rows.map(r=>r.length),1);return `${XH}<worksheet xmlns="${NS}"><cols>${Array.from({length:ncol},(_,i)=>`<col min="${i+1}" max="${i+1}" width="${i===0?28:15}" customWidth="1"/>`).join('')}</cols><sheetData>${rows}</sheetData></worksheet>`});
+  const files=[{name:'[Content_Types].xml',data:`${XH}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
+    {name:'_rels/.rels',data:`${XH}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${RNS}/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:'xl/workbook.xml',data:`${XH}<workbook xmlns="${NS}" xmlns:r="${RNS}"><sheets>${sheets.map((s,i)=>`<sheet name="${xe(s.name.slice(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`},
+    {name:'xl/_rels/workbook.xml.rels',data:`${XH}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="${RNS}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="${RNS}/styles" Target="styles.xml"/></Relationships>`},
+    {name:'xl/styles.xml',data:`${XH}<styleSheet xmlns="${NS}"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`},
+    ...sx.map((x,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:x}))];
+  return zipStore(files)}
+async function exportXlsx(){const d=informeData(st.mes),ts=informeTablas(d);
+  const sheets=ts.map(t=>({name:t.hoja,rows:[[t.titulo+' · '+nomMes(st.mes)],[],t.cab,...t.filas],bold:[0,2]}));
+  await saveBlob(xlsxBlob(sheets),`informe-abonado-${st.mes}.xlsx`)}
+// PDF con pdf-lib
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>{s.remove();rej(new Error('lib'))};document.head.appendChild(s)})}
+async function pdfLib(){if(window.PDFLib)return window.PDFLib;const cdn='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
+  try{await loadScript(window.claude?cdn:'pdf-lib.min.js')}catch(e){await loadScript(cdn)}return window.PDFLib}
+const pdfTxt=s=>String(s??'').replace(/­/g,'').replace(/[−–—]/g,'-').replace(/≈/g,'~').replace(/[^\x20-\x7E\xA0-\xFF]/g,'?');
+async function exportPdf(){let L;try{L=await pdfLib()}catch(e){toast('Hace falta conexión a internet para crear el PDF');return}
+  const d=informeData(st.mes),ts=informeTablas(d).slice(0,4),{PDFDocument,StandardFonts,rgb}=L;const doc=await PDFDocument.create();
+  const f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
+  const PW=595.28,PH=841.89,M=40,IW=PW-2*M,ink=rgb(.082,.133,.173),mut=rgb(.35,.42,.44),navy=rgb(.106,.184,.29),lin=rgb(.84,.87,.85),bg=rgb(.933,.949,.937);
+  let page=doc.addPage([PW,PH]),y=PH-M;
+  const T=(t,x,yy,o)=>page.drawText(pdfTxt(t),{x,y:yy,size:o.size,font:o.bold?fb:f,color:o.color||ink});
+  const fit=(t,w,size,bold)=>{let s=pdfTxt(t);const fo=bold?fb:f;while(s.length>1&&fo.widthOfTextAtSize(s,size)>w)s=s.slice(0,-1);return s};
+  T('INFORME DE ABONADO · PINTA SANTOS',M,y-16,{size:17,bold:true,color:navy});y-=36;
+  T((nomMes(st.mes)+' · '+d.regs.length+' días guardados').toUpperCase(),M,y,{size:10,color:mut});y-=24;
+  const fmtC=v=>typeof v==='number'?v.toLocaleString('es-ES',{maximumFractionDigits:2}):String(v);
+  for(const t of ts){if(!t.filas.length)continue;const n=t.cab.length,first=Math.min(150,IW*.32),cw=[first,...Array(n-1).fill((IW-first)/(n-1))],rh=17;
+    if(y<M+60){page=doc.addPage([PW,PH]);y=PH-M}
+    T(t.titulo.toUpperCase(),M,y-12,{size:11,bold:true});y-=22;
+    const head=()=>{page.drawRectangle({x:M,y:y-rh,width:IW,height:rh,color:bg});let x=M;t.cab.forEach((hh,j)=>{const s=fit(String(hh).toUpperCase(),cw[j]-6,7.5,true);const w=fb.widthOfTextAtSize(s,7.5);page.drawText(s,{x:j===0?x+4:x+cw[j]-4-w,y:y-rh+5.5,size:7.5,font:fb,color:mut});x+=cw[j]});y-=rh};
+    head();
+    for(const r of t.filas){if(y-rh<M){page=doc.addPage([PW,PH]);y=PH-M;head()}let x=M;
+      r.forEach((v,j)=>{const s=fit(fmtC(v),cw[j]-6,9,false),w=f.widthOfTextAtSize(s,9);page.drawText(s,{x:j===0?x+4:x+cw[j]-4-w,y:y-rh+5,size:9,font:f,color:ink});x+=cw[j]});
+      page.drawLine({start:{x:M,y:y-rh},end:{x:M+IW,y:y-rh},thickness:.5,color:lin});y-=rh}
+    y-=18}
+  const pages=doc.getPages();pages.forEach((p,i)=>p.drawText(`${i+1} / ${pages.length}`,{x:PW-M-30,y:22,size:8,font:f,color:mut}));
+  const bytes=await doc.save();await saveBlob(new Blob([bytes],{type:'application/pdf'}),`informe-abonado-${st.mes}.pdf`)}
+function onOpInput(e){const t=e.target,ae=t.dataset.ae,aj=t.dataset.aj,lf=t.dataset.lf,inf=t.dataset.inf;if(!ae&&!aj&&!lf&&!inf)return;
+  if(inf){if(e.type==='change'&&t.value){st.mes=t.value;renderMain()}return}
+  if(ae){if(ae==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';addFiles(fs,st.ent.adj)}return}
+    if(ae==='qty'){st.ent.qty=num(t.value);const o=$('#ae_sacos');if(o)o.value=sacIn(st.ent.p,st.ent.qty)}
+    else if(ae==='sacos'){const n=num(t.value);st.ent.qty=n==null?null:+(n*sacoDe(st.ent.p)).toFixed(3);const o=$('#ae_qty');if(o)o.value=inVal(st.ent.qty)}
+    else st.ent[ae]=t.value;if(ae==='p'&&e.type==='change')renderMain();return}
+  if(aj){if(aj==='real'){st.aj.real=num(t.value);const o=$('#aj_sacos');if(o)o.value=sacIn(st.aj.p,st.aj.real)}
+    else if(aj==='sacos'){const n=num(t.value);st.aj.real=n==null?null:+(n*sacoDe(st.aj.p)).toFixed(3);const o=$('#aj_real');if(o)o.value=inVal(st.aj.real)}
+    else st.aj.p=t.value;if(aj==='p'&&e.type==='change')renderMain();else softUpdate();return}
+  if(lf){const L=st.lf;if(!L)return;if(lf==='fecha')L.fecha=t.value;else if(lf==='desc')L.desc=t.checked;else if(lf==='final'){L.final=num(t.value);L.finalTouched=true}
+    else if(lf==='add'){L.add=num(t.value);if(!L.finalTouched){const n=nivel(bid(L.bidon));const bb=bid(L.bidon);L.final=L.add==null?null:+Math.min(bb.capacidad/bb.lpcm,(n?Math.max(0,n.rest):0)+L.add).toFixed(1);const fi=$('#lf_final');if(fi)fi.value=inVal(L.final)}}}}
+$('#main').addEventListener('input',onOpInput);$('#main').addEventListener('change',onOpInput);
+
+/* ---------- Diagnóstico con IA ---------- */
+let SM=null,smImgs=false,smReady=false;
+async function initSample(){if(!window.claude||typeof window.claude.use!=='function'){smReady=true;return}try{SM=await window.claude.use('sample');if(SM){const l=await SM.limits().catch(()=>null);smImgs=!!(l&&l.images)}}catch(e){SM=null}smReady=true;if(st.tab==='diagnostico')renderMain()}
+const URG={alta:'bad',media:'warn',baja:'ok'};
+const iaCfg=()=>{try{return JSON.parse(localStorage.getItem('abono.ia')||'null')}catch(e){return null}};
+const iaOk=()=>{const c=iaCfg();return !!(c&&c.url&&c.pin)};
+const iaModo=()=>SM?'claude':iaOk()?'servidor':null;
+const b64=blob=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob)});
+function jsonSuelto(t){try{return JSON.parse(t)}catch(e){}const m=t.match(/```(?:json)?\s*([\s\S]*?)```/);if(m){try{return JSON.parse(m[1])}catch(e){}}const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(t.slice(a,b+1))}catch(e){}}return null}
+async function iaServidor(prompt,blobs,signal){const c=iaCfg(),images=[];for(const b of blobs)images.push(await b64(b));let r;
+  try{r=await fetch(c.url,{method:'POST',headers:{'content-type':'application/json','x-app-pin':c.pin},body:JSON.stringify({prompt,images}),signal})}catch(e){if(signal.aborted)throw{code:'cancelled'};throw{code:'red'}}
+  const j=await r.json().catch(()=>null);if(r.status===401)throw{code:'pin'};if(!r.ok||!j||!j.text)throw{code:'servidor',detail:j&&(j.detail||j.error)};
+  const o=jsonSuelto(j.text);if(!o)throw{code:'invalid_json'};return o}
+function iaForm(){const c=iaCfg()||{};return `<div class="frm"><div class="field"><label for="ia_url">Dirección del servidor IA</label><div class="inp"><input class="wide" id="ia_url" data-ia="url" value="${esc(c.url||'')}" placeholder="https://….workers.dev" autocomplete="off"></div></div>
+  <div class="field"><label for="ia_pin">Clave de acceso</label><div class="inp"><input class="wide" id="ia_pin" data-ia="pin" type="password" value="${esc(c.pin||'')}" autocomplete="off"></div></div></div>
+  <div class="row"><button class="btn pri" data-act="ia-save">Guardar</button>${c.url?'<button class="btn" data-act="ia-del">Quitar</button>':''}</div>`}
+function datosCab(cab){const r=resumen(cab),L=[];L.push(`Agua regada en el día: ${r.m3??'sin dato'} m³`);if(r.drenaje!=null)L.push(`Drenaje medio: ${r.drenaje.toFixed(1)} %`);
+  if(r.ceE!=null||r.ceD!=null)L.push(`CE gotero ${r.ceE!=null?r.ceE.toFixed(2):'sin dato'} mS/cm · CE drenaje ${r.ceD!=null?r.ceD.toFixed(2):'sin dato'} mS/cm`);
+  if(r.phE!=null||r.phD!=null)L.push(`pH gotero ${r.phE!=null?r.phE.toFixed(1):'sin dato'} · pH drenaje ${r.phD!=null?r.phD.toFixed(1):'sin dato'}`);
+  for(const b of bidonesDe(cab))for(const x of b.productos){if(!x.dosis)continue;const d=dosisReal(b,x,cab);L.push(`${pn(x.p)}: salida deseada ${x.dosis} ${uDosis(x.p)}${d!=null?`, real ${d.toFixed(2)}`:''}`)}
+  L.push(`Incremento de CE estimado por el abonado: ${Math.round(ceEstimada(cab))} µS/cm`);return L.join('\n')}
+function dgPrompt(){const g=st.dg,cab=g.cab??st.cab;
+  return `Eres un técnico agrónomo con mucha experiencia en cultivos hortícolas de invernadero del sureste de España con fertirrigación.
+Analiza ${g.fotos.length?`las ${g.fotos.length} foto(s) adjuntas de una planta de ${g.cultivo||'tomate'}`:`el caso de una planta de ${g.cultivo||'tomate'} (no hay fotos)`} y la información de abajo. Identifica los problemas más probables: carencias o excesos de nutrientes, plagas, enfermedades, fisiopatías, problemas de riego o de salinidad.
+Reglas:
+- Como máximo 4 posibles problemas, del más probable al menos probable.
+- Sé prudente: si con las fotos no se puede estar seguro, dilo y explica qué foto o dato haría falta.
+- Usa los datos de fertirrigación si los hay (CE y pH de gotero y drenaje, % de drenaje, dosis reales frente a deseadas) para apoyar o descartar causas nutricionales o de salinidad.
+- En "actuacion" da medidas concretas de manejo, riego y abonado. Para plagas y enfermedades no indiques productos ni dosis de fitosanitarios: di que el tratamiento lo debe prescribir el asesor y qué tipo de medida conviene (cultural, biológica…).
+- Español de España, frases cortas y claras para alguien de campo.
+Responde solo con un objeto JSON con esta forma exacta:
+{"resumen":"2-3 frases","urgencia":"baja|media|alta","posibles":[{"problema":"nombre","tipo":"carencia|exceso|plaga|enfermedad|fisiopatía|riego|salinidad|otro","probabilidad":"alta|media|baja","senales":"lo que se ve que apunta a esto","comprobar":"cómo confirmarlo en campo","actuacion":"qué hacer"}],"faltan":"fotos o datos que ayudarían, o cadena vacía"}
+
+Cultivo: ${g.cultivo||'tomate'}
+Cabezal: ${cabNombre(cab)}${g.sector?` · ${g.sector}`:''}
+Síntomas descritos: ${g.sint.trim()||'no se han descrito'}
+${g.datos?`Datos de fertirrigación del ${fFecha(st.fecha)}:\n${datosCab(cab)}`:'Sin datos de fertirrigación.'}`}
+function dgErr(e){const c=e&&e.code;return c==='not_granted'?'No has dado permiso para usar Claude desde esta página.':c==='rate_limited'?'Has llegado al límite de uso de Claude. Prueba más tarde.':c==='image_rejected'?'Alguna foto no se pudo leer. Prueba con otra.':c==='refused'?'La IA no ha analizado este caso. Cambia la descripción o las fotos.':c==='session_expired'?'Vuelve a iniciar sesión en Claude.':c==='images_unavailable'?'Aquí no se pueden enviar fotos a la IA.':c==='invalid_json'?'La respuesta no salió bien. Vuelve a intentarlo.':c==='red'?'Sin conexión con el servidor de IA.':c==='pin'?'La clave de acceso no coincide con la del servidor.':c==='servidor'?'El servidor de IA ha dado un error'+(e.detail?': '+e.detail:'')+'.':'No se pudo analizar. Inténtalo de nuevo.'}
+async function dgAddFotos(files){for(const f of files){if(st.dg.fotos.length>=3){toast('Máximo 3 fotos');break}let b=f;try{b=await compressImg(f)}catch(e){}st.dg.fotos.push({blob:b,url:URL.createObjectURL(b)})}renderMain()}
+async function dgRun(){const g=st.dg;if(g.busy)return;if(!g.fotos.length&&!g.sint.trim()){toast('Añade una foto o describe los síntomas');return}
+  const modo=iaModo();if(!modo)return;if(modo==='claude'&&g.fotos.length&&!smImgs){toast('Aquí no se pueden enviar fotos a la IA');return}
+  g.busy=true;g.err=null;g.res=null;g.ctl=new AbortController();renderMain();
+  try{let r;if(modo==='claude'){const opts={signal:g.ctl.signal,modelTier:'default',cache:false};if(g.fotos.length)opts.images=g.fotos.map(f=>f.blob);r=await SM.json(dgPrompt(),opts)}
+    else r=await iaServidor(dgPrompt(),g.fotos.map(f=>f.blob),g.ctl.signal);if(!r||typeof r!=='object'||!Array.isArray(r.posibles))throw{code:'invalid_json'};g.res=r;await dgSave(r)}
+  catch(e){if(!e||e.code!=='cancelled')g.err=dgErr(e)}
+  g.busy=false;g.ctl=null;renderMain()}
+async function dgSave(r){const g=st.dg,adj=[];if(Adj.can())for(let i=0;i<g.fotos.length;i++){try{adj.push(await Adj.put(new File([g.fotos[i].blob],`planta-${i+1}.jpg`,{type:'image/jpeg'})))}catch(e){}}
+  const d={ts:new Date().toISOString(),fecha:st.fecha,cultivo:g.cultivo,cab:g.cab??st.cab,sector:g.sector,sint:g.sint.trim(),adjuntos:adj,res:r};
+  try{const id=await Store.addCol('diagnosticos',d);g.resId=id;if(st.diags)st.diags.unshift({...d,id})}catch(e){toast('El diagnóstico no se pudo guardar en el historial')}}
+async function loadDiags(){try{st.diags=await Store.listCol('diagnosticos',100)}catch(e){st.diags=[]}if(st.tab==='diagnostico')renderMain()}
+function posiblesHTML(r){return (r.posibles||[]).map((x,i)=>`<div class="dgp"><div class="h"><b>${i+1}. ${esc(x.problema||'')}</b>${x.tipo?`<span class="pill nd">${esc(x.tipo)}</span>`:''}${x.probabilidad?`<span class="pill nd">Prob. ${esc(x.probabilidad)}</span>`:''}</div>
+  ${x.senales?`<p><b>Señales:</b> ${esc(x.senales)}</p>`:''}${x.comprobar?`<p><b>Comprobar:</b> ${esc(x.comprobar)}</p>`:''}${x.actuacion?`<p><b>Qué hacer:</b> ${esc(x.actuacion)}</p>`:''}</div>`).join('')+(r.faltan?`<p class="note"><b>Ayudaría:</b> ${esc(r.faltan)}</p>`:'')}
+async function dgMsg(id){const d=id==='cur'?{res:st.dg.res,cab:st.dg.cab??st.cab,sector:st.dg.sector,adjuntos:((st.diags||[]).find(x=>x.id===st.dg.resId)||{}).adjuntos||[]}:(st.diags||[]).find(x=>x.id===id);if(!d||!d.res)return;
+  const txt=`Diagnóstico IA${d.sector?' · '+d.sector:''}: ${d.res.resumen||''}\nPosibles: ${(d.res.posibles||[]).map(x=>x.problema).join(', ')}`;
+  const m={ts:new Date().toISOString(),fecha:hoy(),autor:autorActual(),...autorEmail(),cab:d.cab||'',txt,resuelto:false,adjuntos:d.adjuntos||[]};
+  try{const mid=await Store.addMsg(m);if(st.msgs)st.msgs.unshift({...m,id:mid});toast('Enviado a Mensajes')}catch(e){toast(errMsg(e))}}
+async function dgDel(id){const d=(st.diags||[]).find(x=>x.id===id);try{await Store.delCol('diagnosticos',id);for(const a of (d&&d.adjuntos)||[])await Adj.del(a);st.diags=st.diags.filter(x=>x.id!==id);st.confirmDg=null;renderMain();toast('Diagnóstico borrado')}catch(e){toast(errMsg(e))}}
+function vDiagnostico(){const g=st.dg,cab=g.cab??st.cab;
+  if(!smReady)return '<div class="card"><div class="note">Preparando la IA…</div></div>';
+  const modo=iaModo();
+  if(!modo)return window.claude?`<section class="card"><div><h3>Diagnóstico con IA</h3><div class="sub">No disponible en esta vista</div></div><div class="note">La IA de Claude no está disponible ahora mismo en esta página.</div></section>`
+    :`<section class="card"><div><h3>Conectar la IA</h3><div class="sub">Servidor de IA y clave de acceso</div></div>${iaForm()}</section>`;
+  const fotosOk=modo==='servidor'||smImgs;
+  if(st.diags===null)loadDiags();
+  let h=`<section class="card"><div><h3>Analizar una planta</h3><div class="sub">Fotos de la planta, la hoja y el detalle del daño</div></div>
+    <div class="frm"><div class="field"><label for="dg_cultivo">Cultivo</label><div class="inp"><input class="wide" id="dg_cultivo" data-dg="cultivo" value="${esc(g.cultivo)}"></div></div>
+    <div class="field"><label for="dg_cab">Cabezal</label><div class="inp"><select id="dg_cab" data-dg="cab">${st.cfg.cabezales.map(c=>`<option value="${c.id}" ${cab===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div>
+    <div class="field"><label for="dg_sector">Sector</label><div class="inp"><input class="wide" id="dg_sector" data-dg="sector" value="${esc(g.sector)}" placeholder="Opcional"></div></div></div>
+    <div class="field"><label for="dg_sint">Qué le notas</label><textarea id="dg_sint" data-dg="sint" rows="3" placeholder="Ej.: hojas de abajo amarillas entre los nervios desde hace una semana">${esc(g.sint)}</textarea></div>
+    ${g.fotos.length?`<div class="adjs">${g.fotos.map((f,i)=>`<span class="adjwrap"><span class="thumb"><img alt="Foto ${i+1}" src="${f.url}"></span><button class="rm" data-rmfoto="${i}" aria-label="Quitar foto ${i+1}">×</button></span>`).join('')}</div>`:''}
+    <label class="chk"><input type="checkbox" id="dg_datos" data-dg="datos" ${g.datos?'checked':''}> Incluir los datos de fertirrigación del ${fFecha(st.fecha)}</label>
+    <div class="row">${fotosOk?`<label class="btn" for="dg_foto">Añadir foto</label><input type="file" id="dg_foto" data-dg="file" accept="image/*" multiple hidden>`:''}
+      ${g.busy?`<button class="btn" data-act="dg-stop">Parar</button>`:`<button class="btn pri" data-act="dg-run">Analizar con IA</button>`}</div></section>`;
+  if(g.busy)h+=`<section class="card"><div class="dgwait"><b>Analizando…</b><span class="note">Puede tardar hasta un minuto.</span></div></section>`;
+  if(g.err)h+=`<div class="banner">${esc(g.err)}</div>`;
+  if(g.res){const r=g.res;h+=`<section class="card"><div class="tank-h"><div><h3>Resultado</h3><div class="sub">Orientativo: confírmalo en campo y con tu técnico</div></div>${r.urgencia?`<span class="pill ${URG[r.urgencia]||'nd'}">Urgencia ${esc(r.urgencia)}</span>`:''}</div>
+    ${r.resumen?`<p class="dgres">${esc(r.resumen)}</p>`:''}${posiblesHTML(r)}<div class="row"><button class="btn" data-act="dg-msg" data-id="cur">Enviar a Mensajes</button></div></section>`}
+  const ds=st.diags||[];
+  h+=`<section class="card"><div><h3>Diagnósticos anteriores</h3><div class="sub">${ds.length} guardados</div></div>`+(ds.length?`<div class="msgs">${ds.map(d=>`<div class="msg"><div class="h"><b>${fFecha(d.fecha)}</b><span class="mini">${esc(cabNombre(d.cab))}${d.sector?' · '+esc(d.sector):''}</span>${d.res&&d.res.urgencia?`<span class="pill ${URG[d.res.urgencia]||'nd'}">Urgencia ${esc(d.res.urgencia)}</span>`:''}</div>
+    ${d.res&&d.res.resumen?`<p>${esc(d.res.resumen)}</p>`:''}${adjHTML(d.adjuntos,false)}<details class="tv"><summary>Ver detalle</summary>${d.res?posiblesHTML(d.res):''}</details>
+    <div class="row">${st.confirmDg===d.id?`<span class="note">¿Borrar diagnóstico?</span><button class="btn danger" data-act="dg-del-yes" data-id="${d.id}">Sí, borrar</button><button class="btn" data-act="dg-del-no">Cancelar</button>`:`<button class="btn" data-act="dg-msg" data-id="${d.id}">Enviar a Mensajes</button><button class="btn" data-act="dg-del" data-id="${d.id}">Borrar</button>`}</div></div>`).join('')}</div>`:`<div class="note">Sin diagnósticos.</div>`)+`</section>`;
+  if(modo==='servidor')h+=`<section class="card"><details class="tv"><summary>Servidor de IA</summary>${iaForm()}</details></section>`;
+  return h}
+function onDgInput(e){const t=e.target,k=t.dataset.dg;if(!k)return;const g=st.dg;
+  if(k==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';dgAddFotos(fs)}return}
+  if(k==='datos')g.datos=t.checked;else if(k==='cab')g.cab=t.value;else g[k]=t.value}
+$('#main').addEventListener('input',onDgInput);$('#main').addEventListener('change',onDgInput);
+
+/* ---------- Pantalla de bienvenida ---------- */
+const AGUILAS={lat:37.4063,lon:-1.5829,nombre:'Águilas (Murcia)'};
+const FRASES=[["Cada día que te levantas a pesar del cansancio ya es una pequeña victoria.", ""], ["Lo que hoy cuesta, mañana es costumbre y pasado es fuerza.", ""], ["El campo enseña que nada crece de golpe: se riega cada día.", ""], ["La constancia de hoy es la cosecha de mañana.", ""], ["Cuando el trabajo pese, recuerda para quién lo haces.", ""], ["Un mal día no borra todo lo que has avanzado.", ""], ["Las raíces más fuertes se forman en la tierra más dura.", ""], ["Tus manos cansadas también están construyendo tu futuro.", ""], ["Caminante, no hay camino, se hace camino al andar.", "Antonio Machado"], ["Paso a paso, surco a surco, se llega lejos.", ""], ["La disciplina es regar aunque todavía no veas brotar nada.", ""], ["No compitas con nadie: supera a quien eras ayer.", ""], ["Que algo cueste no significa que vayas mal; significa que estás creciendo.", ""], ["Cada problema que resuelves hoy es experiencia para siempre.", ""], ["El esfuerzo que nadie ve es el que más te cambia.", ""], ["Si hoy solo avanzas un poco, sigue siendo avanzar.", ""], ["Las tormentas pasan; lo que siembras se queda.", ""], ["Cae siete veces, levántate ocho.", "Proverbio japonés"], ["Empezar cuesta; seguir es lo que marca la diferencia.", ""], ["Tu mejor herramienta es no rendirte.", ""], ["Lo que cuidas cada día acaba dando fruto.", ""], ["No esperes el momento perfecto: empieza con el que tienes.", ""], ["Un sueño grande se construye con tareas pequeñas bien hechas.", ""], ["Hoy es una buena oportunidad para hacerlo un poco mejor que ayer.", ""], ["Cada amanecer en el campo es una nueva oportunidad.", ""], ["Quien trabaja la tierra sabe que todo llega a su tiempo.", ""], ["El éxito es la suma de pequeños esfuerzos repetidos día tras día.", "Robert Collier"], ["Detrás de cada cosecha hay muchos días que nadie aplaudió.", ""], ["El cansancio se va; el orgullo del trabajo bien hecho se queda.", ""], ["Las metas no se cumplen pensando, se cumplen haciendo.", ""], ["Sé como la planta: busca la luz aunque el día esté nublado.", ""], ["Lo que hoy aprendes con esfuerzo, mañana lo harás con facilidad.", ""], ["Nadie recoge sin antes sembrar. Hoy toca sembrar.", ""], ["Mantén el rumbo: los resultados llegan a quien persiste.", ""], ["Si el viento sopla en contra, agárrate fuerte y sigue.", ""], ["Solos podemos hacer muy poco; juntos podemos hacer mucho.", "Helen Keller"], ["Tu historia de superación se escribe en días como hoy.", ""], ["Cuidar los detalles es la forma más seria de cuidar el futuro.", ""], ["Un paso firme vale más que cien prisas.", ""], ["Las dificultades de hoy serán las anécdotas de mañana.", ""], ["Confía en tu trabajo: la tierra devuelve el esfuerzo.", ""], ["Ser constante no es fácil, pero siempre merece la pena.", ""], ["Lo que hoy parece lejos se acerca un poco con cada día de trabajo.", ""], ["Un equipo unido convierte un día duro en un día más.", ""], ["No cuentes los días, haz que los días cuenten.", "Muhammad Ali"], ["Nadie llega lejos solo; todos llegamos lejos juntos.", ""], ["Ayudar a un compañero también es hacer tu trabajo.", ""], ["La fuerza de un equipo se nota cuando las cosas se tuercen.", ""], ["Cuando uno flojea, el equipo empuja; mañana empujarás tú.", ""], ["Una cuadrilla que se respeta trabaja el doble y se cansa la mitad.", ""], ["El mejor equipo no es el que nunca falla, sino el que se levanta junto.", ""], ["Comparte lo que sabes: el equipo crece y tú también.", ""], ["Una palabra de ánimo a tiempo vale tanto como un par de manos.", ""], ["Somos lo que hacemos repetidamente. La excelencia no es un acto, sino un hábito.", "Will Durant"], ["Trabajar en equipo es remar todos hacia el mismo lado.", ""], ["El respeto entre compañeros es la base de todo buen trabajo.", ""], ["Si cada uno hace bien su parte, el conjunto sale solo.", ""], ["Hoy alguien necesitará tu ayuda; que te encuentre dispuesto.", ""], ["Un buen ambiente de trabajo se construye entre todos, cada día.", ""], ["Las cosechas grandes siempre tienen muchas manos detrás.", ""], ["Juntos se carga mejor cualquier peso.", ""], ["Celebrar los logros del compañero también es ganar.", ""], ["He fallado una y otra vez en mi vida, y por eso he tenido éxito.", "Michael Jordan"], ["El que enseña con paciencia multiplica el trabajo bien hecho.", ""], ["En un buen equipo nadie sobra y todos suman.", ""], ["La confianza se gana con hechos pequeños y repetidos.", ""], ["Escuchar a tus compañeros también es trabajar.", ""], ["Cuando el equipo gana, ganas tú.", ""], ["Un error compartido pesa la mitad; un logro compartido vale el doble.", ""], ["El orgullo de un equipo se ve en el trabajo bien acabado.", ""], ["Hoy suma, aunque sea un poco.", ""], ["Si quieres ir rápido, ve solo; si quieres llegar lejos, ve acompañado.", "Proverbio africano"], ["Hazlo bien aunque nadie esté mirando.", ""], ["La calidad está en los detalles que otros no ven.", ""], ["Pequeñas mejoras cada día hacen grandes diferencias al año.", ""], ["El trabajo bien hecho habla por ti.", ""], ["Sé el compañero que te gustaría tener.", ""], ["No te compares con el ritmo de otros; mantén el tuyo y no pares.", ""], ["Las ganas mueven más que las fuerzas.", ""], ["Hoy es un buen día para aprender algo nuevo.", ""], ["El fracaso es simplemente la oportunidad de empezar de nuevo, esta vez de forma más inteligente.", "Henry Ford"], ["Preguntar no es de débiles; es de quien quiere hacerlo bien.", ""], ["Cada error trae una lección si sabes buscarla.", ""], ["Lo difícil se vuelve fácil a fuerza de hacerlo.", ""], ["La paciencia también es trabajo.", ""], ["Nada que merezca la pena sale a la primera.", ""], ["La motivación te pone en marcha; el hábito te mantiene.", ""], ["Los días duros forman a la gente fuerte.", ""], ["Si te caes, que sea hacia delante.", ""], ["Un viaje de mil millas comienza con un solo paso.", "Lao-Tse"], ["La actitud con la que empiezas el día decide cómo lo terminas.", ""], ["Una sonrisa también ayuda a sacar el trabajo adelante.", ""], ["Agradece lo que tienes mientras trabajas por lo que quieres.", ""], ["No hay atajos para los resultados que duran.", ""], ["Termina lo que empiezas, aunque cueste.", ""], ["El orden de hoy evita los problemas de mañana.", ""], ["Planifica el día y el día no te arrastrará a ti.", ""], ["Lo urgente no debe tapar lo importante.", ""], ["El trabajo duro vence al talento cuando el talento no trabaja duro.", "Tim Notke"], ["Un buen trabajo empieza por una buena preparación.", ""], ["El que mide, mejora.", ""], ["Anota, revisa y aprende: así se crece en el campo.", ""], ["Un depósito bien preparado es un día bien empezado.", ""], ["Mirar la planta cada día evita sorpresas mañana.", ""], ["El ojo del agricultor es el mejor abono.", ""], ["Cada riego bien hecho es una inversión en la cosecha.", ""], ["Las plantas no entienden de excusas; entienden de cuidados.", ""], ["El talento gana partidos, pero el trabajo en equipo y la inteligencia ganan campeonatos.", "Michael Jordan"], ["Si cuidas el suelo, el suelo cuidará de ti.", ""], ["La cosecha se gana en los días que nadie ve.", ""], ["Cada surco recto empieza con una buena intención.", ""], ["Hoy siembras esfuerzo, mañana recoges confianza.", ""], ["El buen trabajo se reconoce desde lejos.", ""], ["No hay invernadero que se levante solo.", ""], ["La experiencia es la suma de todos los días que no abandonaste.", ""], ["Cuando el día se haga largo, piensa en lo que ya has hecho.", ""], ["La disciplina es el puente entre las metas y los logros.", "Jim Rohn"], ["Un descanso a tiempo también es parte del trabajo.", ""], ["Cuídate: eres la herramienta más importante de la finca.", ""], ["Bebe agua, protégete del sol y trabaja con cabeza.", ""], ["La seguridad no es una pérdida de tiempo; es volver a casa entero.", ""], ["Hacer las cosas bien a la primera ahorra el doble de trabajo.", ""], ["Lo que no se cuida se pierde; lo que se cuida, crece.", ""], ["Tu esfuerzo de hoy es el orgullo de mañana.", ""], ["No dejes que un mal momento te estropee un buen día.", ""], ["Haz lo que puedas, con lo que tengas, donde estés.", "Theodore Roosevelt"], ["Las grandes cosas se hacen con calma y sin pausa.", ""], ["Haz de la constancia tu mejor costumbre.", ""], ["El progreso no siempre se ve, pero siempre se nota.", ""], ["Sigue sembrando aunque no veas la cosecha todavía.", ""], ["La tierra premia a quien vuelve cada día.", ""], ["Un día de trabajo honrado nunca es un día perdido.", ""], ["Quien persevera, alcanza.", ""], ["Los obstáculos son parte del camino, no el final.", ""], ["Nunca os rindáis, nunca, nunca, nunca.", "Winston Churchill"], ["Cada mañana es una página en blanco: escríbela bien.", ""], ["Hoy tienes otra oportunidad de demostrar lo que vales.", ""], ["El valor no es no tener miedo, sino seguir adelante con él.", ""], ["Tus límites están más lejos de lo que crees.", ""], ["Lo que hoy te parece imposible, mañana será tu rutina.", ""], ["Si no sale hoy, saldrá mañana; pero inténtalo hoy.", ""], ["Sé paciente con los resultados y exigente con el esfuerzo.", ""], ["No te rindas por un mal día; date otra oportunidad.", ""], ["La fuerza del equipo está en cada miembro; la fuerza de cada miembro es el equipo.", "Phil Jackson"], ["El camino se hace más corto cuando se anda con ganas.", ""], ["Hoy no hace falta ser perfecto; hace falta estar.", ""], ["Los resultados siempre llegan a quien no deja de trabajar.", ""], ["Tu esfuerzo cuenta, aunque hoy nadie lo diga.", ""], ["Haz que hoy merezca la pena.", ""], ["Pon cabeza, pon corazón y pon manos.", ""], ["Con ganas, lo difícil se hace posible.", ""], ["Ser fuerte también es pedir ayuda cuando hace falta.", ""], ["La gota de agua horada la piedra.", "Ovidio"], ["Valora lo que haces: sin tu trabajo nada crecería.", ""], ["Cada día cuenta, también los días grises.", ""], ["Mejorar un poco cada día es la forma más segura de llegar lejos.", ""], ["La energía que pones contagia a los que tienes al lado.", ""], ["Que tu trabajo hable más alto que tus palabras.", ""], ["Empieza fuerte, sigue firme y acaba bien.", ""], ["Las buenas costumbres hacen fácil lo que antes costaba.", ""], ["El compromiso es cumplir aunque las ganas se hayan ido.", ""], ["Lo que no me mata me hace más fuerte.", "Friedrich Nietzsche"], ["Vale más un trabajo constante que un esfuerzo de un día.", ""], ["La humildad para aprender es la mitad del éxito.", ""], ["Escucha a los que saben y enseña a los que empiezan.", ""], ["El conocimiento compartido no se gasta: se multiplica.", ""], ["No subestimes el poder de un trabajo bien organizado.", ""], ["El que llega preparado trabaja tranquilo.", ""], ["A veces avanzar es simplemente no rendirse.", ""], ["Una buena jornada empieza con buena actitud.", ""], ["Es duro fracasar, pero es peor no haber intentado nunca triunfar.", "Theodore Roosevelt"], ["Cada planta sana es fruto de muchas decisiones bien tomadas.", ""], ["Aprende del ayer, trabaja el hoy y prepara el mañana.", ""], ["El éxito se esconde en la rutina bien hecha.", ""], ["Haz lo que tengas que hacer, aunque no te apetezca: luego te alegrarás.", ""], ["Ningún esfuerzo honesto se pierde del todo.", ""], ["Cuando creas que no puedes más, da un paso más.", ""], ["Lo bueno tarda, pero llega.", ""], ["No hay día malo que dure para siempre.", ""], ["Ninguno de nosotros es tan inteligente como todos nosotros juntos.", "Ken Blanchard"], ["El sol sale para todos, pero solo aprovecha la mañana quien madruga.", ""], ["Cree en lo que haces y hazlo lo mejor que sepas.", ""], ["Tu actitud es lo único que siempre depende de ti.", ""], ["Cambia el «no puedo» por el «todavía no».", ""], ["Cada error corregido es un paso adelante.", ""], ["La perfección no existe; la mejora sí.", ""], ["Hoy puedes ser un poco mejor que ayer: con eso basta.", ""], ["El que no arriesga, no avanza.", ""], ["El precio del éxito es el trabajo duro y la dedicación a la tarea de cada día.", "Vince Lombardi"], ["La rutina bien hecha también es un logro.", ""], ["Quien tiene un objetivo encuentra fuerzas donde no las había.", ""], ["Los equipos fuertes se forman en los días difíciles.", ""], ["Con buena compañía, el trabajo pesa menos.", ""], ["Uno solo puede ir rápido; un equipo llega más lejos.", ""], ["Cuando todos empujan, el carro avanza.", ""], ["El mejor jefe es el que trabaja con su gente.", ""], ["Un «gracias» a tiempo motiva más que cualquier orden.", ""], ["Odiaba cada minuto de entrenamiento, pero me decía: no abandones, sufre ahora y vive el resto de tu vida como un campeón.", "Muhammad Ali"], ["Reconocer el trabajo de otros también es liderar.", ""], ["La unión de la cuadrilla es la fuerza de la finca.", ""], ["Si hay que repartir el trabajo, que también se reparta la alegría.", ""], ["Los problemas se resuelven antes cuando se hablan.", ""], ["Un equipo que se comunica no se equivoca dos veces.", ""], ["Todos sabemos algo que el otro no sabe: compártelo.", ""], ["El buen compañero avisa, ayuda y no deja a nadie atrás.", ""], ["En el campo, como en la vida, nadie se salva solo.", ""], ["La vida es como montar en bicicleta: para mantener el equilibrio hay que seguir moviéndose.", "Albert Einstein"], ["Hoy es un buen día para dar lo mejor de ti.", ""], ["El éxito no es un lugar al que se llega, sino una forma de trabajar.", ""], ["Disfruta del camino: la cosecha es solo una parte.", ""], ["Haz lo de siempre, pero con más ganas que nunca.", ""], ["Lo que siembras con cariño crece más fuerte.", ""], ["No midas tu día por lo que costó, sino por lo que lograste.", ""], ["Hasta la planta más pequeña necesita su tiempo.", ""], ["Si fallas, aprende; si aciertas, comparte.", ""], ["Una flecha sola se rompe con facilidad; diez juntas, no.", "Proverbio japonés"], ["Tus decisiones de hoy son la cosecha de mañana.", ""], ["La organización es la mejor amiga del trabajo duro.", ""], ["Un objetivo claro hace más ligero el camino.", ""], ["Hoy cuenta más de lo que crees.", ""], ["La paciencia y el trabajo hacen crecer lo que parecía imposible.", ""], ["No mires cuánto falta; mira cuánto has avanzado.", ""], ["Las ganas de mejorar valen más que el talento sin trabajo.", ""], ["El cansancio es la prueba de que lo has dado todo.", ""], ["Quien quiere hacer algo encuentra un medio; quien no quiere, encuentra una excusa.", "Proverbio árabe"], ["Cada día bien trabajado es un ladrillo de tu futuro.", ""], ["Que el miedo a fallar no te impida intentarlo.", ""], ["Las mejores lecciones vienen de los días más duros.", ""], ["Si el plan no funciona, cambia el plan, no el objetivo.", ""], ["Trabaja en silencio y deja que los resultados hablen.", ""], ["Pon tu mejor versión en cada tarea, por pequeña que sea.", ""], ["La fuerza no viene del cuerpo, viene de las ganas.", ""], ["Nunca subestimes lo que puede hacer un día de trabajo bien hecho.", ""], ["Solo quienes se arriesgan a ir demasiado lejos descubren hasta dónde pueden llegar.", "T. S. Eliot"], ["Lo que haces con ilusión se nota en el resultado.", ""], ["Las personas comprometidas cambian cualquier equipo.", ""], ["Pide ayuda, ofrece ayuda: así funciona un buen equipo.", ""], ["El trabajo compartido se termina antes y sale mejor.", ""], ["Hoy alguien aprenderá de tu ejemplo.", ""], ["No basta con empezar: hay que terminar bien.", ""], ["El que se esfuerza nunca pierde del todo.", ""], ["Hay días para sembrar y días para recoger; hoy toca trabajar.", ""], ["El optimismo es la fe que conduce al logro.", "Helen Keller"], ["La tierra no se apura y aun así todo lo hace crecer.", ""], ["Lo que se riega con constancia, florece.", ""], ["La calma también es una forma de fuerza.", ""], ["Antes de quejarte, busca una solución.", ""], ["La responsabilidad es hacer lo correcto aunque nadie lo pida.", ""], ["Tu trabajo importa, aunque a veces no lo parezca.", ""], ["Los pequeños logros también merecen celebrarse.", ""], ["El esfuerzo de hoy es la tranquilidad de mañana.", ""], ["Muchas manos hacen ligero el trabajo.", "Proverbio inglés"], ["Haz que tu palabra valga tanto como tu trabajo.", ""], ["La puntualidad también es respeto por el equipo.", ""], ["Cuida las herramientas y ellas te cuidarán a ti.", ""], ["Cada día es una nueva oportunidad para hacerlo mejor.", ""], ["Una jornada larga se hace corta con un buen equipo.", ""], ["Tus ganas de hoy son el motor de mañana.", ""], ["Detrás de cada fruto hay una mano que no se rindió.", ""], ["Haz bien lo pequeño y lo grande llegará.", ""], ["La vida es un diez por ciento lo que me ocurre y un noventa por ciento cómo reacciono.", "Charles R. Swindoll"], ["Sé firme en tus metas y flexible en el camino.", ""], ["El que trabaja con pasión no cuenta las horas, cuenta los logros.", ""], ["No hay mejor fertilizante que el esfuerzo diario.", ""], ["Una buena cosecha empieza mucho antes de recoger.", ""], ["Si el día empieza torcido, enderézalo con buena actitud.", ""], ["Ser constante es ganar sin hacer ruido.", ""], ["Trabaja como si cada detalle importara, porque importa.", ""], ["Las ideas sin acción no dan fruto.", ""], ["El mejor momento para plantar un árbol fue hace veinte años. El segundo mejor momento es ahora.", "Proverbio chino"], ["Hoy da un paso, aunque sea pequeño, hacia lo que quieres.", ""], ["Tu valor no está en no caer, sino en no quedarte en el suelo.", ""], ["Respira, organiza y sigue: todo tiene solución.", ""], ["El esfuerzo compartido se convierte en orgullo compartido.", ""], ["Un buen trabajo en equipo empieza por un buen saludo.", ""], ["Juntos aprendemos más rápido y fallamos menos.", ""], ["Cuando el grupo confía, el trabajo fluye.", ""], ["Ayudar no te quita tiempo; te da equipo.", ""], ["Ganar no lo es todo, pero querer ganar sí.", "Vince Lombardi"], ["La mejor manera de mejorar el equipo es mejorar uno mismo.", ""], ["Valora a quien trabaja a tu lado: es parte de tu éxito.", ""], ["El equipo que se apoya no conoce días imposibles.", ""], ["Cada persona del equipo es una pieza necesaria.", ""], ["Nada une más que superar juntos un día difícil.", ""], ["El respeto y el compañerismo también se cultivan.", ""], ["Lo que se construye entre todos dura más.", ""], ["Hoy, como cada día, el equipo te necesita.", ""], ["Individualmente somos una gota; juntos somos un océano.", "Ryunosuke Satoro"], ["Las metas compartidas pesan menos y valen más.", ""], ["Un buen equipo se nota en cómo trata al que llega nuevo.", ""], ["Sé parte de la solución, no del problema.", ""], ["La alegría en el trabajo es contagiosa: repártela.", ""], ["Un equipo motivado no tiene techo.", ""], ["Confía en tu gente y tu gente confiará en ti.", ""], ["Lo que logramos juntos nadie nos lo puede quitar.", ""], ["Mañana agradecerás el esfuerzo de hoy.", ""], ["Confía en el tiempo, que suele dar dulces salidas a muchas amargas dificultades.", "Miguel de Cervantes"], ["No hay mejor momento que ahora para empezar.", ""], ["Cada día trae su propio reto; acéptalo con ganas.", ""], ["Sé constante incluso cuando no veas resultados.", ""], ["La fe en uno mismo es el primer paso de cualquier logro.", ""], ["Lo importante no es la velocidad, sino no detenerse.", ""], ["Los sueños se cumplen trabajando despiertos.", ""], ["Cuanto más difícil es el camino, más bonita es la llegada.", ""], ["Haz hoy algo que tu yo de mañana te agradezca.", ""], ["El genio es un uno por ciento de inspiración y un noventa y nueve por ciento de transpiración.", "Thomas Edison"], ["Las excusas no riegan, no abonan y no cosechan.", ""], ["Cuando el trabajo se hace con amor, se nota.", ""], ["No pierdas la ilusión: es el combustible de los días largos.", ""], ["El buen humor también es una herramienta de trabajo.", ""], ["Un día difícil no define tu camino.", ""], ["Cada esfuerzo suma, aunque hoy no lo veas.", ""], ["Lo extraordinario está hecho de muchos días normales bien trabajados.", ""], ["Que tu constancia sea más fuerte que tus excusas.", ""], ["Hoy es siempre todavía.", "Antonio Machado"], ["El que aprende cada día nunca se queda atrás.", ""], ["Hoy puedes cambiar algo, aunque sea pequeño.", ""], ["No esperes motivación: crea el hábito y la motivación llegará.", ""], ["Si lo haces, hazlo bien; si lo haces bien, hazlo con orgullo.", ""], ["Lo que importa no es cuántas veces caes, sino cuántas te levantas.", ""], ["Cuida a tu equipo como cuidas tus cultivos.", ""], ["Con trabajo y paciencia, todo florece.", ""], ["El día de hoy no se repite: aprovéchalo.", ""], ["Dar ejemplo no es la principal manera de influir en los demás: es la única.", "Albert Schweitzer"], ["Hay que tener paciencia con la tierra y con uno mismo.", ""], ["Una meta sin esfuerzo es solo un deseo.", ""], ["Hoy siembra con la misma ilusión del primer día.", ""], ["El trabajo duro abre puertas que el talento solo no abre.", ""], ["Si crees en lo que haces, nada te parecerá demasiado.", ""], ["Cada mañana es una nueva siembra.", ""], ["Levántate, organízate y gana el día.", ""], ["No se trata de hacerlo rápido, sino de hacerlo bien.", ""], ["Poco a poco se va lejos.", "Refrán español"], ["Cuando cuesta, es cuando más vale la pena.", ""], ["Tus manos hacen posible lo que otros solo imaginan.", ""], ["Lo que se empieza con ganas se termina con orgullo.", ""], ["Un pequeño avance diario vence a un gran esfuerzo aislado.", ""], ["Avanzar despacio sigue siendo avanzar.", ""], ["Hoy da lo mejor de ti, mañana también.", ""], ["La paciencia es la compañera fiel del buen agricultor.", ""], ["El ánimo también se riega: cuídalo cada día.", ""], ["El mérito pertenece a quien está de verdad en la arena, con la cara manchada de polvo y sudor.", "Theodore Roosevelt"], ["Con orden y constancia no hay trabajo que se resista.", ""], ["Cada jornada bien hecha te acerca a tus metas.", ""], ["Agradece el trabajo de tus compañeros; ellos también agradecerán el tuyo.", ""], ["Si un compañero cae, ayúdale a levantarse.", ""], ["El equipo es más fuerte que la suma de sus partes.", ""], ["Un buen ambiente rinde más que cualquier máquina.", ""], ["La colaboración convierte los problemas en soluciones.", ""], ["Cuando el equipo rema unido, no hay ola que lo frene.", ""], ["Paciencia y barajar.", "Miguel de Cervantes"], ["La confianza en el equipo es la mejor herramienta de trabajo.", ""], ["Comparte tus ideas: una buena idea puede mejorar el trabajo de todos.", ""], ["El trabajo en equipo empieza por escuchar.", ""], ["Cada día es una oportunidad para ser mejor compañero.", ""], ["El que ayuda hoy será ayudado mañana.", ""], ["No hay montaña demasiado alta para un equipo que sube junto.", ""], ["Las mejores cosechas son las que se recogen entre todos.", ""], ["Hoy es un buen día para empezar de nuevo.", ""], ["Las grandes cosas nunca las hace una sola persona; las hace un equipo.", "Steve Jobs"], ["Persiste: el éxito suele llegar justo después de querer abandonar.", ""], ["Tú decides cómo afrontar el día.", ""], ["Cada esfuerzo deja huella, aunque no se vea.", ""], ["No te rindas antes de intentarlo de verdad.", ""], ["Haz cada tarea como si fuera la más importante del día.", ""], ["La superación empieza cuando decides no conformarte.", ""], ["El progreso está en la repetición bien hecha.", ""], ["Lo que hoy es esfuerzo, mañana será experiencia.", ""], ["Una mente tranquila trabaja mejor que mil prisas.", ""], ["Siembra paciencia y cosecharás tranquilidad.", ""], ["Trabaja duro, sé amable y el resto llegará.", ""], ["Un buen final de jornada empieza con un buen principio.", ""]];
+function fraseHoy(){const d=new Date(),i=Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(d.getFullYear(),0,0))/864e5);return FRASES[(i+d.getFullYear())%FRASES.length]}
+st.splashWx=null;
+async function loadSplashWx(){if(enClaude())return;try{const u=AGUILAS;const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${u.lat}&longitude=${u.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,et0_fao_evapotranspiration,sunrise,sunset&timezone=Europe%2FMadrid&forecast_days=2`);
+    if(!r.ok)throw 0;const j=await r.json();if(!j.daily||!j.current)throw 0;st.splashWx={...j,t:Date.now()};try{localStorage.setItem('abono.wxhoy',JSON.stringify(st.splashWx))}catch(e){}}
+  catch(e){try{const c=JSON.parse(localStorage.getItem('abono.wxhoy')||'null');st.splashWx=c?{...c,viejo:true}:{fallo:true}}catch(_){st.splashWx={fallo:true}}}
+  if(!$('#splash').hidden)renderSplash()}
+function splashWxHTML(){if(enClaude())return `<div class="note">El tiempo de Águilas se ve en la app del móvil.</div>`;
+  const w=st.splashWx;if(!w)return `<div class="note">Cargando el tiempo…</div>`;if(w.fallo||!w.daily)return `<div class="note">No se pudo cargar el tiempo. Comprueba la conexión.</div>`;
+  const c=w.current,d=w.daily,desc=WX_TXT[c.weather_code]||WX_TXT[d.weather_code[0]]||'';
+  const sub={};for(const k in d)sub[k]=d[k].slice(0,2);const av=avisosWx(sub);
+  const lluvia=(d.precipitation_probability_max[0]??0)>=30?`Probabilidad de lluvia del ${fmt(d.precipitation_probability_max[0],0)} %${d.precipitation_sum[0]?` (${fmt(d.precipitation_sum[0],1)} mm)`:''}.`:'Sin lluvia prevista.';
+  return `<div class="wx"><div class="t">${fmt(c.temperature_2m,0)}°</div><div class="d"><b>${esc(desc)}</b>Máx. ${fmt(d.temperature_2m_max[0],0)}° · mín. ${fmt(d.temperature_2m_min[0],0)}°</div>
+    <div class="full">${esc(lluvia)} Humedad ${fmt(c.relative_humidity_2m,0)} %. ET0 ${fmt(d.et0_fao_evapotranspiration[0],1)} mm.${w.viejo?' (última previsión guardada)':''}</div></div>
+    ${vientoHTML(c)}
+    <div class="avisos">${av.length?av.map(([k,t])=>`<span class="pill ${k}">${esc(t)}</span>`).join(''):'<span class="pill ok">Sin alertas para hoy y mañana</span>'}</div>`}
+const VIENTOS=[['N','Tramontana'],['NE','Gregal'],['E','Levante'],['SE','Siroco'],['S','Mediodía'],['SO','Lebeche'],['O','Poniente'],['NO','Mistral']];
+function vientoHTML(c){const dir=c.wind_direction_10m;if(dir==null)return '';const v=VIENTOS[Math.round(((dir%360)+360)%360/45)%8];
+  return `<div class="viento"><svg class="flecha" viewBox="0 0 40 40" aria-hidden="true" style="transform:rotate(${(dir+180)%360}deg)"><circle cx="20" cy="20" r="18" fill="var(--surface-2)" stroke="var(--line)"/><path d="M20 7 L27 25 L20 21 L13 25 Z" fill="var(--navy)"/></svg>
+    <div><span>Viento</span><b>${fmt(c.wind_speed_10m,0)} <small>km/h</small> · ${v[1]} <small>(${v[0]})</small></b><small>Rachas de ${fmt(c.wind_gusts_10m,0)} km/h · viene del ${v[0]} (${fmt(dir,0)}°)</small></div></div>`}
+const EMBLEMA=`<svg class="emblema" viewBox="0 0 240 150" role="img" aria-label="Invernadero al amanecer">
+  <circle cx="168" cy="58" r="40" fill="#f6c453" opacity=".22"/><circle cx="168" cy="58" r="26" fill="#f2b33d"/>
+  <path d="M0 118 Q60 100 120 112 T240 108 V150 H0Z" fill="#cfe5d8"/>
+  <path d="M18 122 V92 Q40 58 62 92 Q84 58 106 92 Q128 58 150 92 V122 Z" fill="#ffffff" opacity=".9"/>
+  <path d="M18 122 V92 Q40 58 62 92 Q84 58 106 92 Q128 58 150 92 V122" fill="none" stroke="#1b2f4a" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M62 92 V122 M106 92 V122" stroke="#1b2f4a" stroke-width="2.5"/>
+  <path d="M28 122 q6 -14 12 0 M44 122 q6 -14 12 0 M72 122 q6 -14 12 0 M88 122 q6 -14 12 0 M116 122 q6 -14 12 0 M132 122 q6 -14 12 0" fill="none" stroke="#1d6b47" stroke-width="3" stroke-linecap="round"/>
+  <path d="M0 132 Q60 118 120 128 T240 124 V150 H0Z" fill="#1d6b47"/>
+  <g transform="translate(196 92)"><path d="M0 -26 C10 -12 14 -4 14 4 A14 14 0 0 1 -14 4 C-14 -4 -10 -12 0 -26Z" fill="#2a78d6"/><path d="M-5 6 q5 -10 10 -14" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".85"/></g>
+</svg>`;
+function saludo(){const h=new Date().getHours();return h>=6&&h<14?'Buenos días':h>=14&&h<21?'Buenas tardes':'Buenas noches'}
+function momento(){const now=new Date(),m=now.getHours()*60+now.getMinutes();const w=st.splashWx,d=w&&w.daily;
+  const hm=t=>{const x=new Date(t);return x.getHours()*60+x.getMinutes()};let sr=7*60+45,ss=19*60+15;
+  if(d&&d.sunrise&&d.sunset){sr=hm(d.sunrise[0]);ss=hm(d.sunset[0])}
+  if(m<sr-30||m>ss+40)return 'noche';if(m<sr+90)return 'amanecer';if(m>ss-120)return 'tarde';return 'dia'}
+function emblema(){const mo=momento(),w=st.splashWx,c=w&&w.current,code=c?c.weather_code:null,gust=c?(c.wind_gusts_10m||0):0;
+  const lluvia=code!=null&&((code>=51&&code<=67)||(code>=80&&code<=82)||code>=95),cubierto=lluvia||[3,45,48].includes(code),nubes=code==null?(mo==='noche'?0:1):code===0?0:code===1?1:code===2?2:3;
+  const CI={amanecer:['#f4a261','#fde2c4'],dia:['#6fb8ea','#d6ecfa'],tarde:['#e9784a','#f9cf8f'],noche:['#14243a','#34507a']}[mo];
+  const cielo=cubierto&&mo!=='noche'?['#93a8b8','#dfe6eb']:CI;
+  const astro=mo==='noche'?`<g transform="translate(250 46)"><circle r="17" fill="#f3efd9"/><circle cx="7" cy="-5" r="15" fill="${cielo[0]}"/></g>`
+    :`<g transform="translate(${mo==='amanecer'?78:mo==='tarde'?248:236} ${mo==='dia'?48:98})" opacity="${cubierto?.45:1}"><circle r="34" fill="#f6c453" opacity=".25"/><circle r="22" fill="${mo==='dia'?'#f2b33d':'#ef8f3a'}"/></g>`;
+  const estrellas=mo==='noche'?[[30,22],[64,48],[110,18],[150,40],[188,16],[290,30],[205,62],[40,80],[300,78]].map(([x,y],i)=>`<circle class="estrella" cx="${x}" cy="${y}" r="${i%3?1.3:1.9}" fill="#fff" style="animation-delay:${i*.4}s"/>`).join(''):'';
+  const nube=(y,s,dur,del,col)=>`<g class="nube" style="animation-duration:${dur}s;animation-delay:-${del}s"><g transform="translate(0 ${y}) scale(${s})" fill="${col}"><ellipse cx="0" cy="10" rx="34" ry="12"/><ellipse cx="-14" cy="2" rx="16" ry="13"/><ellipse cx="10" cy="-2" rx="20" ry="17"/></g></g>`;
+  const ncol=mo==='noche'?'#6c7f99':cubierto?'#c9d3da':'#ffffff',vel=gust>=40?16:34;
+  const nubesHTML=[nube(30,1,vel,vel*.2,ncol),nube(60,.8,vel*1.3,vel*.7,ncol),nube(18,.7,vel*1.15,vel*1.05,ncol)].slice(0,nubes).join('');
+  const gotas=lluvia?`<g class="lluvia" stroke="#5b8fc9" stroke-width="2" stroke-linecap="round">${Array.from({length:22},(_,i)=>`<line x1="${8+i*14.5}" y1="0" x2="${4+i*14.5}" y2="10" style="animation-delay:${(i*37%100)/100}s"/>`).join('')}</g>`:'';
+  const noche=mo==='noche',inv=noche?'#c3cfdd':'#ffffff',g1=noche?'#7f9f8f':'#cfe5d8',g2=noche?'#12452f':'#1d6b47',linea=noche?'#0e1d30':'#1b2f4a';
+  return `<svg class="emblema" viewBox="0 0 320 170" role="img" aria-label="${{amanecer:'Amanecer',dia:'Día',tarde:'Atardecer',noche:'Noche'}[mo]} sobre el invernadero">
+  <defs><linearGradient id="sp_cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${cielo[0]}"/><stop offset="1" stop-color="${cielo[1]}"/></linearGradient><clipPath id="sp_marco"><rect width="320" height="170" rx="18"/></clipPath></defs>
+  <g clip-path="url(#sp_marco)"><rect width="320" height="170" fill="url(#sp_cielo)"/>${estrellas}${astro}${nubesHTML}${gotas}
+  <path d="M0 128 Q80 110 160 122 T320 118 V170 H0Z" fill="${g1}"/>
+  <g transform="translate(70 18)"><path d="M18 122 V92 Q40 58 62 92 Q84 58 106 92 Q128 58 150 92 V122 Z" fill="${inv}" opacity=".92"/>
+  <path d="M18 122 V92 Q40 58 62 92 Q84 58 106 92 Q128 58 150 92 V122" fill="none" stroke="${linea}" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M62 92 V122 M106 92 V122" stroke="${linea}" stroke-width="2.5"/>
+  <path d="M28 122 q6 -14 12 0 M44 122 q6 -14 12 0 M72 122 q6 -14 12 0 M88 122 q6 -14 12 0 M116 122 q6 -14 12 0 M132 122 q6 -14 12 0" fill="none" stroke="${g2}" stroke-width="3" stroke-linecap="round"/></g>
+  <path d="M0 146 Q80 132 160 142 T320 138 V170 H0Z" fill="${g2}"/>
+  <g transform="translate(272 128) scale(.8)"><path d="M0 -26 C10 -12 14 -4 14 4 A14 14 0 0 1 -14 4 C-14 -4 -10 -12 0 -26Z" fill="#2a78d6"/><path d="M-5 6 q5 -10 10 -14" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".85"/></g></g>
+  <rect width="320" height="170" rx="18" fill="none" stroke="var(--line)"/></svg>`}
+function resumenHTML(){if(st.hist===null||st.llen===null||st.alm===null)return `<div><h3>Tu día</h3></div><div class="note">Cargando el resumen…</div>`;
+  const d=new Date();d.setDate(d.getDate()-1);const ayer=isoD(d),hoyS=hoy(),items=[];
+  items.push(st.hist.some(r=>r.fecha===ayer)?['ok','Cuentas de ayer guardadas','cuentas-ayer']:['bad','Falta guardar las cuentas de ayer','cuentas-ayer']);
+  if(st.hist.some(r=>r.fecha===hoyS))items.push(['ok','Cuentas de hoy guardadas','cuentas-hoy']);
+  const dep=depsBajos();
+  if(dep.length)items.push(['warn',`${dep.length===1?'1 depósito':dep.length+' depósitos'} para rellenar: ${dep.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')}`,'rellenar:'+dep[0].cabezales[0]]);
+  const pend=(st.msgs||[]).filter(m=>!m.resuelto).length;if(pend)items.push(['warn',pend===1?'1 mensaje pendiente':pend+' mensajes pendientes','mensajes']);
+  const bajos=Object.keys(st.cfg.productos).filter(p=>{const m=st.cfg.stockMin[p];return m!=null&&stockDe(p)<=m});
+  if(bajos.length)items.push(['bad','Bajo mínimo en el almacén: '+bajos.map(pn).join(', '),'almacen']);
+  if(items.every(i=>i[0]==='ok'))items.push(['ok','Todo al día','cuentas-hoy']);
+  return `<div><h3>Tu día</h3><div class="sub">Toca para ir directo</div></div><div class="resumen">${items.map(([k,t,go])=>`<button class="ritem" data-go="${go}"><i class="dot ${k}"></i><span>${esc(t)}</span><b aria-hidden="true">›</b></button>`).join('')}</div>`}
+function spRes(){const el=$('#sp_res');if(el&&!$('#splash').hidden)el.innerHTML=resumenHTML()}
+function cerrarSplash(){$('#splash').hidden=true;document.documentElement.style.overflow='';window.scrollTo(0,0)}
+function renderSplash(){const hoyTxt=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const nom=(st.autor||'').trim().split(/\s+/)[0];
+  $('#splash').innerHTML=`<div class="in">${emblema()}<div class="saludo"><div class="eyebrow">Bienvenido</div><h1 class="hola">${saludo()}${nom?`, ${esc(nom)}`:''}</h1></div>
+    ${(f=>`<p class="frase">«${esc(f[0])}»<small>${esc(f[1]||'Frase del día')}</small></p>`)(fraseHoy())}
+    <div class="hoy">Hoy es ${esc(hoyTxt)}</div>
+    <section class="card"><div class="tank-h"><div><h3>El tiempo hoy</h3><div class="sub">${AGUILAS.nombre}</div></div>${enClaude()?'':`<a class="btn" href="https://www.aemet.es/es/eltiempo/prediccion/avisos" target="_blank" rel="noopener">Avisos AEMET</a>`}</div>${splashWxHTML()}</section>
+    <section class="card" id="sp_res">${resumenHTML()}</section>
+    <button class="btn pri entrar" data-act="entrar">Entrar</button></div>`}
+function abrirSplash(){renderSplash();$('#splash').hidden=false;document.documentElement.style.overflow='hidden';loadSplashWx()}
+
+/* ---------- Tiempo: radar y previsión ---------- */
+const WX_TXT={0:'Despejado',1:'Poco nuboso',2:'Nubes y claros',3:'Cubierto',45:'Niebla',48:'Niebla',51:'Llovizna',53:'Llovizna',55:'Llovizna',56:'Llovizna helada',57:'Llovizna helada',61:'Lluvia débil',63:'Lluvia',65:'Lluvia fuerte',66:'Lluvia helada',67:'Lluvia helada',71:'Nieve',73:'Nieve',75:'Nieve fuerte',77:'Nieve',80:'Chubascos débiles',81:'Chubascos',82:'Chubascos fuertes',85:'Chubascos de nieve',86:'Chubascos de nieve',95:'Tormenta',96:'Tormenta con granizo',99:'Tormenta con granizo'};
+const enClaude=()=>!!window.claude;
+const ubicOk=()=>{const u=st.cfg.ubic;return u&&u.lat!=null&&u.lon!=null&&Math.abs(u.lat)<=85&&Math.abs(u.lon)<=180};
+let wxLoading=false;
+async function loadWx(){if(!ubicOk()||wxLoading)return;wxLoading=true;st.wxErr=null;const u=st.cfg.ubic;
+  try{const url=`https://api.open-meteo.com/v1/forecast?latitude=${u.lat}&longitude=${u.lon}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,et0_fao_evapotranspiration&hourly=precipitation,precipitation_probability&timezone=Europe%2FMadrid&forecast_days=7`;
+    const r=await fetch(url);if(!r.ok)throw new Error(r.status);const j=await r.json();if(!j.daily)throw new Error('datos');st.wx={...j,t:Date.now()};try{localStorage.setItem('abono.wx',JSON.stringify(st.wx))}catch(e){}}
+  catch(e){st.wxErr='Sin conexión: se muestra la última previsión guardada';try{const c=JSON.parse(localStorage.getItem('abono.wx')||'null');st.wx=c||{fallo:true}}catch(_){st.wx={fallo:true}}}
+  try{const r=await fetch('https://api.rainviewer.com/public/weather-maps.json');const j=await r.json();const past=(j.radar&&j.radar.past)||[];const fr=past.filter((_,i)=>(past.length-1-i)%2===0);st.rv={host:j.host,frames:fr};st.rvI=fr.length-1}catch(e){st.rv={frames:[]}}
+  wxLoading=false;if(st.tab==='tiempo')renderMain()}
+function geoUbic(){if(!navigator.geolocation){toast('Este dispositivo no da la ubicación');return}toast('Buscando ubicación…');
+  navigator.geolocation.getCurrentPosition(p=>{st.cfg.ubic={lat:+p.coords.latitude.toFixed(4),lon:+p.coords.longitude.toFixed(4)};st.dirtyCfg=true;st.wx=null;st.rv=null;renderMain();renderSave();toast('Ubicación puesta: pulsa «Guardar receta y ajustes»')},
+    ()=>toast('No se pudo obtener la ubicación. Escríbela a mano.'),{enableHighAccuracy:false,timeout:15000})}
+function ubicHTML(){const u=st.cfg.ubic||{};return `<div class="frm"><div class="field"><label for="ub_lat">Latitud</label><div class="inp"><input id="ub_lat" data-k="cfg.ub.lat" inputmode="decimal" value="${inVal(u.lat)}"></div></div>
+  <div class="field"><label for="ub_lon">Longitud</label><div class="inp"><input id="ub_lon" data-k="cfg.ub.lon" inputmode="decimal" value="${inVal(u.lon)}"></div></div></div>
+  <div class="row"><button class="btn" data-act="geo">Usar mi ubicación</button></div>`}
+function linksHTML(){const u=ubicOk()?st.cfg.ubic:null;return `<div class="links"><a href="https://www.aemet.es/es/eltiempo/observacion/radar" target="_blank" rel="noopener">Radar AEMET</a><a href="https://www.aemet.es/es/eltiempo/prediccion/avisos" target="_blank" rel="noopener">Avisos AEMET</a><a href="https://www.windy.com/-Radar+-radar?radar${u?`,${u.lat},${u.lon},8`:''}" target="_blank" rel="noopener">Windy</a></div>`}
+function lonLatPx(lat,lon,z){const n=256*Math.pow(2,z),s=Math.sin(lat*Math.PI/180);return{x:(lon+180)/360*n,y:(0.5-Math.log((1+s)/(1-s))/(4*Math.PI))*n}}
+const rvHora=f=>f?new Date(f.time*1000).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}):'—';
+function drawRadar(){const el=document.getElementById('radar');if(!el||!ubicOk())return;const u=st.cfg.ubic,z=st.rvZ,W=el.clientWidth,H=el.clientHeight,c=lonLatPx(u.lat,u.lon,z),x0=c.x-W/2,y0=c.y-H/2,n=Math.pow(2,z),tiles=[];
+  for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+H)/256);ty++)for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+W)/256);tx++){if(ty<0||ty>=n)continue;tiles.push({x:((tx%n)+n)%n,y:ty,l:Math.round(tx*256-x0),t:Math.round(ty*256-y0)})}
+  const fr=(st.rv&&st.rv.frames)||[];
+  el.innerHTML=`<div class="rvbase">${tiles.map(t=>`<img alt="" src="https://tile.openstreetmap.org/${z}/${t.x}/${t.y}.png" style="left:${t.l}px;top:${t.t}px">`).join('')}</div>`+
+    fr.map((f,i)=>`<div class="rvf" data-i="${i}" ${i===st.rvI?'':'hidden'}>${tiles.map(t=>`<img alt="" src="${st.rv.host}${f.path}/256/${z}/${t.x}/${t.y}/2/1_1.png" style="left:${t.l}px;top:${t.t}px">`).join('')}</div>`).join('')+
+    `<span class="pin" style="left:${Math.round(W/2)}px;top:${Math.round(H/2)}px"></span><span class="attr">© OpenStreetMap · radar RainViewer</span>`+(st.rv&&!fr.length?'<div class="nodata">Radar no disponible ahora mismo</div>':'')}
+function rvShow(i){st.rvI=i;document.querySelectorAll('#radar .rvf').forEach(f=>f.hidden=+f.dataset.i!==i);const fr=(st.rv&&st.rv.frames)||[];const t=$('#rv_t');if(t)t.textContent=rvHora(fr[i]);const r=$('#rv_i');if(r)r.value=i}
+function rvStop(){if(st.rvTimer){clearInterval(st.rvTimer);st.rvTimer=null;const b=document.querySelector('[data-act="rv-play"]');if(b)b.textContent='Animar'}}
+function rvToggle(){const fr=(st.rv&&st.rv.frames)||[];if(!fr.length)return;if(st.rvTimer){rvStop();return}
+  st.rvTimer=setInterval(()=>rvShow((st.rvI+1)%fr.length),700);const b=document.querySelector('[data-act="rv-play"]');if(b)b.textContent='Pausa'}
+$('#main').addEventListener('input',e=>{if(e.target.dataset.rv==='i'){rvStop();rvShow(+e.target.value)}});
+function avisosWx(d){const out=[],nom=i=>i===0?'hoy':i===1?'mañana':new Date(d.time[i]+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long'});
+  d.time.forEach((_,i)=>{if((d.precipitation_probability_max[i]??0)>=60||(d.precipitation_sum[i]??0)>=5)out.push(['warn',`Lluvia ${nom(i)}: ${fmt(d.precipitation_sum[i],1)} mm`]);
+    if((d.wind_gusts_10m_max[i]??0)>=50)out.push(['bad',`Rachas de ${fmt(d.wind_gusts_10m_max[i],0)} km/h ${nom(i)}`]);
+    if((d.temperature_2m_min[i]??99)<=3)out.push(['bad',`Riesgo de helada ${nom(i)}: ${fmt(d.temperature_2m_min[i],0)} °C`]);
+    if((d.temperature_2m_max[i]??0)>=35)out.push(['warn',`Calor ${nom(i)}: ${fmt(d.temperature_2m_max[i],0)} °C`])});return out}
+function vTiempo(){for(const k in G)delete G[k];
+  if(enClaude())return `<section class="card"><div><h3>Radar y previsión</h3><div class="sub">Funciona en la app instalada en el móvil</div></div><div class="note">Esta página de Claude no puede cargar mapas ni datos de otras webs. Abre la app del móvil o consulta aquí:</div>${linksHTML()}</section>`;
+  if(!ubicOk())return `<section class="card"><div><h3>Ubicación de la finca</h3><div class="sub">Para el radar y la previsión</div></div>${ubicHTML()}</section>`;
+  if(!st.wx||!st.rv){loadWx();return '<div class="card"><div class="note">Cargando el tiempo…</div></div>'}
+  const fr=st.rv.frames||[];let h='';
+  h+=`<section class="card"><div class="tank-h"><div><h3>Radar de lluvia</h3><div class="sub">Últimas 2 horas${fr.length?'':' · sin datos'}</div></div><div class="pick"><button class="chip" data-rvz="6" aria-pressed="${st.rvZ===6}">Región</button><button class="chip" data-rvz="7" aria-pressed="${st.rvZ===7}">Zona</button></div></div>
+    <div class="radar" id="radar"></div>
+    ${fr.length?`<div class="row rvctl"><button class="btn" data-act="rv-play">${st.rvTimer?'Pausa':'Animar'}</button><input type="range" id="rv_i" data-rv="i" min="0" max="${fr.length-1}" value="${st.rvI}" aria-label="Hora del radar"><span class="t" id="rv_t">${rvHora(fr[st.rvI])}</span></div>`:''}</section>`;
+  const d=st.wx.daily;
+  if(!d){h+=`<section class="card"><div class="note">No se pudo cargar la previsión. Comprueba la conexión.</div><div class="row"><button class="btn" data-act="wx-reload">Reintentar</button></div></section>`;return h+`<section class="card"><div><h3>Más información</h3></div>${linksHTML()}</section>`}
+  const av=avisosWx(d),et7=d.et0_fao_evapotranspiration.reduce((a,b)=>a+(b||0),0),ll7=d.precipitation_sum.reduce((a,b)=>a+(b||0),0);
+  h+=`<section class="summary"><div class="stat"><span>Hoy</span><b>${fmt(d.temperature_2m_max[0],0)}° / ${fmt(d.temperature_2m_min[0],0)}°</b><small>${esc(WX_TXT[d.weather_code[0]]||'')}</small></div>
+    <div class="stat"><span>ET0 hoy</span><b>${fmt(d.et0_fao_evapotranspiration[0],1)} mm</b><small>${fmt(et7,0)} mm en 7 días</small></div>
+    <div class="stat"><span>Lluvia 7 días</span><b>${fmt(ll7,1)} mm</b><small>máx. ${fmt(Math.max(...d.precipitation_probability_max.map(v=>v||0)),0)} % de probabilidad</small></div></section>`;
+  if(st.wxErr)h+=`<div class="banner">${esc(st.wxErr)}</div>`;
+  if(av.length)h+=`<section class="card"><div><h3>Avisos</h3><div class="sub">Próximos 7 días</div></div><div class="avisos">${av.map(([c,t])=>`<span class="pill ${c}">${esc(t)}</span>`).join('')}</div></section>`;
+  const hr=st.wx.hourly,now=Date.now(),idx=[];if(hr)hr.time.forEach((t,i)=>{const ms=new Date(t).getTime();if(ms>=now-3600e3&&ms<now+24*3600e3)idx.push(i)});
+  const pr=idx.map(i=>hr.precipitation[i]??0);
+  h+=`<section class="card"><div><h3>Lluvia próximas 24 horas</h3><div class="sub">mm por hora</div></div>`;
+  if(pr.some(v=>v>0)){G.g_lluvia={fechas:idx.map(i=>hr.time[i]),bars:true,values:pr,zero:true,dec:1,suffix:' mm',barName:'Lluvia',aria:'Lluvia por hora',xlab:t=>t.slice(11,16),tlab:t=>new Date(t).toLocaleString('es-ES',{weekday:'short',hour:'2-digit',minute:'2-digit'})};h+=`<div class="chart" id="g_lluvia"></div>`}
+  else h+=`<div class="note">Sin lluvia prevista.</div>`;
+  h+=`</section><section class="card"><div class="tank-h"><div><h3>Previsión 7 días</h3><div class="sub">Actualizada a las ${new Date(st.wx.t).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}</div></div><button class="btn" data-act="wx-reload">Actualizar</button></div>
+    <div class="fc">${d.time.map((t,i)=>`<div class="fcr"><b class="d">${i===0?'Hoy':i===1?'Mañana':new Date(t+'T12:00:00').toLocaleDateString('es-ES',{weekday:'short',day:'numeric'})}</b><span>${esc(WX_TXT[d.weather_code[i]]||'—')}</span><span class="tm">${fmt(d.temperature_2m_max[i],0)}° / ${fmt(d.temperature_2m_min[i],0)}°</span>
+      <small>Lluvia ${fmt(d.precipitation_sum[i],1)} mm (${fmt(d.precipitation_probability_max[i],0)} %) · racha ${fmt(d.wind_gusts_10m_max[i],0)} km/h · ET0 ${fmt(d.et0_fao_evapotranspiration[i],1)} mm</small></div>`).join('')}</div></section>`;
+  h+=`<section class="card"><div><h3>Más información</h3><div class="sub">AEMET y Windy</div></div>${linksHTML()}<details class="tv"><summary>Cambiar ubicación</summary>${ubicHTML()}</details></section>`;
+  return h}
+
+/* ---------- Gráficas ---------- */
+const SERIE=['#2a78d6','#eb6834','#1baf7a','#eda100'];
+const CORTO={kno3:'Nitrato',ca:'Calcio',fe:'Microstep',hno3:'Nítrico'};
+const G={};
+function withReg(r,fn){const o=st.reg;st.reg=normReg(r,r.fecha);try{return fn()}finally{st.reg=o}}
+function datosGraf(){const cab=st.cab,c=cabById(cab);const d=new Date();d.setDate(d.getDate()-st.gRange+1);
+  const lim=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const regs=(st.hist||[]).filter(r=>r.fecha>=lim&&r.m3&&r.m3[cab]!=null).sort((a,b)=>a.fecha<b.fecha?-1:1);
+  const fechas=regs.map(r=>r.fecha),m3=regs.map(r=>r.m3[cab]);
+  const dren=c.sectores.map((s,i)=>({name:s.nombre.replace('Sector ','S'),full:s.nombre,color:SERIE[i%4],values:regs.map(r=>{
+    const ps=s.bandejas.map(bj=>{const min=(r.min||{})[s.id],ml=(r.dren||{})[bj.id];return min&&ml!=null&&bj.caudal?ml*100/(min*bj.caudal):null}).filter(v=>v!=null);
+    return ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null})}));
+  const bs=bidonesDe(cab).filter(b=>b.productos.some(p=>p.p===b.principal&&p.dosis));
+  const dos=bs.map((b,i)=>({name:CORTO[b.principal]||prod(b.principal).n,full:prod(b.principal).n,color:SERIE[i%4],values:regs.map(r=>{
+    const z=r.resumen&&r.resumen[cab]&&r.resumen[cab].dosis&&r.resumen[cab].dosis[b.id];let real,des;
+    if(z){real=z.real;des=z.des}else{const x=b.productos.find(p=>p.p===b.principal);des=x.dosis;real=withReg(r,()=>dosisReal(b,x,cab))}
+    return real!=null&&des?real*100/des:null})}));
+  const ser=(k,full,i)=>({name:full.split(' ')[1]==='gotero'?'Gotero':'Drenaje',full,color:SERIE[i],values:regs.map(r=>mediaSect(r,cab,k))});
+  const ce=[ser('ceD','CE drenaje',0)],ph=[ser('phD','pH drenaje',0)];
+  return{fechas,m3,dren,dos,ce,ph}}
+function legendHTML(series,extra){return `<div class="legend">${series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.full)}</span>`).join('')}${extra||''}</div>`}
+function tablaHTML(fechas,cols){return `<details class="tv"><summary>Ver datos</summary><div class="tbl"><table><thead><tr><th>Día</th>${cols.map(c=>`<th>${esc(c.h)}</th>`).join('')}</tr></thead><tbody>${fechas.map((f,i)=>`<tr><td>${fFecha(f)}</td>${cols.map(c=>`<td>${fmt(c.v[i],c.d)}</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>`}
+function vGraficas(){if(st.hist===null){loadHist();return '<div class="card"><div class="note">Cargando datos…</div></div>'}
+  const c=cabById(st.cab),d=datosGraf();for(const k in G)delete G[k];
+  let h=`<div class="pick">${[[14,'14 días'],[30,'30 días'],[90,'90 días']].map(([k,t])=>`<button class="chip" data-gr="${k}" aria-pressed="${st.gRange===k}">${t}</button>`).join('')}</div>`;
+  if(d.fechas.length<2)return h+`<section class="card"><div><h3>Gráficas de ${esc(c.nombre)}</h3><div class="sub">Evolución día a día</div></div><div class="note">Hacen falta al menos dos días guardados en este periodo.</div></section>`;
+  const tot=d.m3.reduce((a,b)=>a+(b||0),0),dv=d.dren.flatMap(s=>s.values).filter(v=>v!=null),md=dv.length?dv.reduce((a,b)=>a+b,0)/dv.length:null;
+  const dosAll=d.dos.flatMap(s=>s.values).filter(v=>v!=null),enD=dosAll.filter(v=>Math.abs(v-100)<=10).length;
+  h+=`<section class="summary"><div class="stat"><span>Agua regada</span><b>${fmt(tot,0)} m³</b><small>${d.fechas.length} días · ${fmt(tot/d.fechas.length,0)} m³/día</small></div>
+    <div class="stat"><span>Drenaje medio</span><b>${fmt(md,1)} %</b><small>todos los sectores</small></div>
+    <div class="stat"><span>Dosis en rango</span><b>${dosAll.length?Math.round(enD*100/dosAll.length)+' %':'—'}</b><small>de las mediciones (±10 %)</small></div></section>`;
+  G.g_m3={fechas:d.fechas,bars:true,values:d.m3,zero:true,dec:0,suffix:' m³',barName:'Agua regada',aria:'Agua regada por día'};
+  h+=`<section class="card"><div><h3>Agua regada</h3><div class="sub">${esc(c.nombre)} · m³ por día</div></div><div class="chart" id="g_m3"></div>${tablaHTML(d.fechas,[{h:'m³',v:d.m3,d:0}])}</section>`;
+  G.g_dren={fechas:d.fechas,series:d.dren,zero:true,dec:1,suffix:' %',aria:'Drenaje por sector'};
+  h+=`<section class="card"><div><h3>Drenaje</h3><div class="sub">% medio de las bandejas de cada sector</div></div>${d.dren.length>1?legendHTML(d.dren):''}<div class="chart" id="g_dren"></div>${tablaHTML(d.fechas,d.dren.map(s=>({h:s.name+' %',v:s.values,d:1})))}</section>`;
+  if(d.dos.length){G.g_dos={fechas:d.fechas,series:d.dos,ref:100,band:[90,110],dec:0,suffix:' %',aria:'Dosis real frente a deseada'};
+    h+=`<section class="card"><div><h3>Dosis real / deseada</h3><div class="sub">100 % = salida deseada de la receta</div></div>${legendHTML(d.dos,'<span><i class="band"></i>±10 %</span>')}<div class="chart" id="g_dos"></div>${tablaHTML(d.fechas,d.dos.map(s=>({h:s.name+' %',v:s.values,d:0})))}</section>`}
+  const hay=ss=>ss.some(s=>s.values.some(v=>v!=null));
+  if(hay(d.ce)){const al0=st.cfg.alertas;G.g_ce={fechas:d.fechas,series:d.ce,ref:al0.ceMax,dec:2,suffix:' mS',aria:'CE del drenaje'};
+    h+=`<section class="card"><div><h3>CE drenaje</h3><div class="sub nt">mS/cm</div></div><div class="chart" id="g_ce"></div>${tablaHTML(d.fechas,d.ce.map(s=>({h:s.full,v:s.values,d:2})))}</section>`}
+  if(hay(d.ph)){const al=st.cfg.alertas;G.g_ph={fechas:d.fechas,series:d.ph,band:[al.phMin,al.phMax],dec:1,suffix:'',aria:'pH del drenaje'};
+    h+=`<section class="card"><div><h3>pH drenaje</h3><div class="sub">Día a día</div></div>${legendHTML([],`<span><i class="band"></i>${fmt(al.phMin,1)}–${fmt(al.phMax,1)}</span>`)}<div class="chart" id="g_ph"></div>${tablaHTML(d.fechas,d.ph.map(s=>({h:s.full,v:s.values,d:1})))}</section>`}
+  return h}
+function niceTicks(lo,hi){if(lo===hi){lo-=1;hi+=1}const s0=(hi-lo)/4,mag=Math.pow(10,Math.floor(Math.log10(s0))),e=s0/mag;const st_=(e>=7.5?10:e>=3.5?5:e>=1.5?2:1)*mag;
+  const a=Math.floor(lo/st_)*st_,b=Math.ceil(hi/st_)*st_,t=[];for(let v=a;v<=b+st_*1e-6;v+=st_)t.push(+v.toFixed(6));return t}
+function drawCharts(){for(const id in G){const el=document.getElementById(id);if(el)drawChart(el,G[id])}}
+function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.bars?10:88,T=12,B=26,iw=W-L-R,ih=H-T-B,n=sp.fechas.length;
+  const vals=(sp.bars?sp.values:sp.series.flatMap(s=>s.values)).filter(v=>v!=null);if(!vals.length){el.innerHTML='<div class="note">Sin datos.</div>';return}
+  const ext=[...vals,...(sp.ref!=null?[sp.ref]:[]),...(sp.band||[])];const ticks=niceTicks(sp.zero?0:Math.min(...ext),Math.max(...ext));const lo=ticks[0],hi=ticks[ticks.length-1];
+  const y=v=>T+ih-(v-lo)/(hi-lo)*ih,step=sp.bars?iw/n:iw/Math.max(1,n-1),x=i=>sp.bars?L+step*(i+.5):L+step*i;
+  let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sp.aria)}">`;
+  if(sp.band)s+=`<rect x="${L}" y="${y(sp.band[1])}" width="${iw}" height="${y(sp.band[0])-y(sp.band[1])}" fill="var(--ok-bg)"/>`;
+  const tsp=ticks.length>1?ticks[1]-ticks[0]:1,td=tsp>=1?0:tsp>=0.1?1:2;
+  for(const t of ticks)s+=`<line x1="${L}" x2="${L+iw}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${L-6}" y="${y(t)+4}" text-anchor="end" class="ax">${fmt(t,td)}</text>`;
+  if(sp.ref!=null)s+=`<line x1="${L}" x2="${L+iw}" y1="${y(sp.ref)}" y2="${y(sp.ref)}" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/>`;
+  const every=Math.ceil(n/Math.max(2,Math.floor(iw/64)));for(let i=0;i<n;i+=every)s+=`<text x="${x(i)}" y="${H-6}" text-anchor="middle" class="ax">${(sp.xlab||fCorta)(sp.fechas[i])}</text>`;
+  if(sp.bars){const bw=Math.max(3,Math.min(28,step*.7)),base=y(lo);sp.values.forEach((v,i)=>{if(v==null)return;const x0=x(i)-bw/2,y0=y(v),r=Math.min(4,bw/2,base-y0);
+    s+=`<path class="bar" data-i="${i}" fill="${SERIE[0]}" d="M${x0},${base}V${y0+r}Q${x0},${y0} ${x0+r},${y0}H${x0+bw-r}Q${x0+bw},${y0} ${x0+bw},${y0+r}V${base}Z"/>`})}
+  else{const labs=[];for(const se of sp.series){let d='',pen=false;se.values.forEach((v,i)=>{if(v==null){pen=false;return}d+=(pen?'L':'M')+x(i).toFixed(1)+','+y(v).toFixed(1);pen=true});
+      s+=`<path d="${d}" fill="none" stroke="${se.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+      se.values.forEach((v,i)=>{if(v!=null&&se.values[i-1]==null&&se.values[i+1]==null)s+=`<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${se.color}"/>`});
+      let li=-1;for(let i=n-1;i>=0;i--)if(se.values[i]!=null){li=i;break}
+      if(li>=0){s+=`<circle cx="${x(li)}" cy="${y(se.values[li])}" r="4" fill="${se.color}" stroke="var(--surface)" stroke-width="2"/>`;labs.push({y:y(se.values[li]),t:se.name,c:se.color})}}
+    labs.sort((a,b)=>a.y-b.y);for(let i=1;i<labs.length;i++)if(labs[i].y-labs[i-1].y<15)labs[i].y=labs[i-1].y+15;
+    for(const l of labs)s+=`<line x1="${L+iw+8}" x2="${L+iw+16}" y1="${l.y}" y2="${l.y}" stroke="${l.c}" stroke-width="2"/><text x="${L+iw+20}" y="${l.y+4}" class="dl">${esc(l.t)}</text>`}
+  s+=`<line class="xh" x1="0" x2="0" y1="${T}" y2="${T+ih}" stroke="var(--muted)" visibility="hidden"/><g class="hd"></g><rect x="${L}" y="${T}" width="${iw}" height="${ih}" fill="transparent"/></svg><div class="tip" hidden></div>`;
+  el.innerHTML=s;const svg=el.querySelector('svg'),tip=el.querySelector('.tip'),xh=el.querySelector('.xh'),hd=el.querySelector('.hd');
+  const show=i=>{tip.textContent='';const th=document.createElement('div');th.className='th';th.textContent=(sp.tlab||fFecha)(sp.fechas[i]);tip.appendChild(th);
+    const rows=sp.bars?[{name:sp.barName,color:SERIE[0],v:sp.values[i]}]:sp.series.map(se=>({name:se.full,color:se.color,v:se.values[i]}));
+    for(const r of rows){const d=document.createElement('div');d.className='tr';const k=document.createElement('i');k.style.background=r.color;const b=document.createElement('b');b.textContent=r.v==null?'—':fmt(r.v,sp.dec)+sp.suffix;const sp_=document.createElement('span');sp_.textContent=r.name;d.append(k,b,sp_);tip.appendChild(d)}
+    if(sp.bars){el.querySelectorAll('.bar').forEach(b=>b.classList.toggle('on',+b.dataset.i===i))}
+    else{xh.setAttribute('x1',x(i));xh.setAttribute('x2',x(i));xh.setAttribute('visibility','visible');
+      hd.innerHTML=sp.series.map(se=>se.values[i]==null?'':`<circle cx="${x(i)}" cy="${y(se.values[i])}" r="4" fill="${se.color}" stroke="var(--surface)" stroke-width="2"/>`).join('')}
+    tip.hidden=false;const tw=tip.offsetWidth;let left=x(i)+12;if(left+tw>W)left=Math.max(0,x(i)-12-tw);tip.style.left=left+'px'};
+  const hide=()=>{tip.hidden=true;xh.setAttribute('visibility','hidden');hd.innerHTML='';el.querySelectorAll('.bar.on').forEach(b=>b.classList.remove('on'))};
+  svg.addEventListener('pointermove',e=>{const r=svg.getBoundingClientRect(),px=e.clientX-r.left;let i=sp.bars?Math.floor((px-L)/step):Math.round((px-L)/step);show(Math.max(0,Math.min(n-1,i)))});
+  svg.addEventListener('pointerleave',hide)}
+let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()},150)});
+
+const VIEWS={cuentas:vCuentas,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
+function renderMain(){$('#main').innerHTML=VIEWS[st.tab]();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
+function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=VIEWS[st.tab]();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
+  if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
+function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCfg;bar.hidden=!show;if(!show)return;
+  $('#savemsg').textContent=st.saving?'Guardando…':'Cambios sin guardar';
+  $('#savebtns').innerHTML=(st.dirtyCfg?`<button class="btn" data-act="save-cfg" ${st.saving?'disabled':''}>Guardar receta y ajustes</button>`:'')+(st.dirtyReg?`<button class="btn pri" data-act="save-reg" ${st.saving?'disabled':''}>Guardar día ${fCorta(st.fecha)}</button>`:'')}
+function renderFoot(){}
+function renderAll(){$('#fecha').value=st.fecha;renderCabs();renderTabs();renderMain();renderSave();renderFoot()}
+let tt;function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,2600)}
+
+/* ---------- Edición ---------- */
+const bid=id=>st.cfg.bidones.find(b=>b.id===id);
+function bandeja(id){for(const c of st.cfg.cabezales)for(const s of c.sectores)for(const b of s.bandejas)if(b.id===id)return b}
+function applyCfg(p,v){const b=bid(p[2]);switch(p[1]){
+  case 'kg':b.kgPrincipal=v;break;case 'dosis':b.productos[+p[3]].dosis=v??0;break;case 'lpcm':if(v)b.lpcm=v;break;
+  case 'cap':if(v)b.capacidad=v;break;case 'vent':b.venturis=v?Math.max(1,Math.round(v)):1;break;case 'rep':b.reparto=!!v;break;
+  case 'al':if(v!=null)st.cfg.alertas[p[2]]=v;break;case 'ub':st.cfg.ubic={...(st.cfg.ubic||{}),[p[2]]:v};st.wx=null;break;case 'min':if(v==null)delete st.cfg.stockMin[p[2]];else st.cfg.stockMin[p[2]]=v;break;case 'saco':if(!(v>0))delete st.cfg.saco[p[2]];else st.cfg.saco[p[2]]=v;break;
+  case 'bname':b.nombre=v||b.nombre;break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
+function onInput(e){const t=e.target,k=t.dataset.k;if(!k)return;const p=k.split('.');const v=t.type==='checkbox'?t.checked:(t.dataset.text?t.value.trim():num(t.value));
+  if(p[0]==='reg'){if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;st.dirtyReg=true;if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
+  softUpdate();renderSave()}
+$('#main').addEventListener('input',onInput);
+$('#main').addEventListener('change',e=>{if(e.target.type==='checkbox')onInput(e)});
+
+function diffCfg(a,b){const L=[];for(const nb of b.bidones){const ob=a.bidones.find(x=>x.id===nb.id);if(!ob)continue;const cabs=nb.cabezales.map(x=>(b.cabezales.find(c=>c.id===x)||{}).nombre).join(' + ');
+  if(ob.kgPrincipal!==nb.kgPrincipal)L.push(`${cabs} · ${nb.nombre}: ${prod(nb.principal).n} por 1000 L ${fmt(ob.kgPrincipal,2)} → ${fmt(nb.kgPrincipal,2)}`);
+  nb.productos.forEach((x,i)=>{const o=ob.productos[i];if(o&&o.dosis!==x.dosis)L.push(`${cabs} · ${prod(x.p).n}: ${fmt(o.dosis,2)} → ${fmt(x.dosis,2)} ${uDosis(x.p)}`)})}
+  return L}
+function errMsg(e){return e&&e.code==='quota_exceeded'?'No queda espacio en la base de datos de la página.':'No se pudo guardar'+(e&&e.code?' ('+e.code+')':'')+'. Prueba otra vez.'}
+async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{const r=normReg(st.reg,st.fecha);r.resumen={};for(const c of st.cfg.cabezales)r.resumen[c.id]=resumen(c.id);r.guardado=new Date().toISOString();
+  await Store.setReg(st.fecha,r);st.reg.ejemplo=false;st.dirtyReg=false;st.hist=null;loadHist();toast('Día '+fCorta(st.fecha)+' guardado');if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
+  st.saving=false;renderSave();if(st.tab==='cuentas'||st.tab==='drenaje'){const bn=$('.banner');if(bn&&!st.reg.ejemplo)bn.remove()}}
+async function saveCfg(){if(st.saving)return;st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
+  if(lineas.length)await Store.addCambio({ts:new Date().toISOString(),fecha:hoy(),lineas});st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
+  st.saving=false;renderSave()}
+
+async function loadFecha(f){st.fecha=f;let r=null;try{r=await Store.getReg(f)}catch(e){}
+  if(r){st.reg=normReg(r,f)}else{let last=null;try{last=(await Store.listRegs()).find(x=>x.fecha<f)}catch(e){}
+    st.reg=last?{fecha:f,m3:{...last.m3},cm:{},niv:{},min:{...last.min},dren:{},ceE:{},phE:{},ceD:{},phD:{}}:ejemploReg(f)}
+  st.dirtyReg=false;renderAll()}
+
+document.addEventListener('click',async e=>{const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.cab){st.cab=t.dataset.cab;renderCabs();renderMain()}
+  else if(t.dataset.rvz){st.rvZ=+t.dataset.rvz;renderMain()}
+  else if(t.dataset.tab){rvStop();st.tab=t.dataset.tab;st.confirmReset=false;renderCabs();renderTabs();renderMain();window.scrollTo(0,0)}
+  else if(t.dataset.fill){st.fillB[st.cab]=t.dataset.fill;st.lf=null;renderMain()}
+  else if(t.dataset.open){if(st.dirtyReg)await saveReg();st.tab='cuentas';await loadFecha(t.dataset.open)}
+  else if(t.dataset.img){openImg(t.dataset.img)}
+  else if(t.dataset.file){const a=findAdj(t.dataset.file);if(a)Adj.save(a)}
+  else if(t.dataset.rmadj){for(const L of [st.msgAdj,st.ent.adj]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
+  else if(t.dataset.gr){st.gRange=+t.dataset.gr;renderMain()}
+  else if(t.dataset.mf!==undefined){st.msgF=t.dataset.mf;st.confirmDel=null;renderMain()}
+  else if(t.dataset.act==='msg-send')sendMsg();
+  else if(t.dataset.act==='msg-done')toggleMsg(t.dataset.id);
+  else if(t.dataset.act==='msg-del'){st.confirmDel=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='msg-del-no'){st.confirmDel=null;renderMain()}
+  else if(t.dataset.act==='msg-del-yes')delMsg(t.dataset.id);
+  else if(t.dataset.act==='lf-open')lfOpen(t.dataset.t);
+  else if(t.dataset.act==='lf-save')lfSave();
+  else if(t.dataset.act==='lf-cancel'){st.lf=null;renderMain()}
+  else if(t.dataset.act==='ll-del'){st.confirmLl=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='ll-del-no'){st.confirmLl=null;renderMain()}
+  else if(t.dataset.act==='ll-del-yes')llDel(t.dataset.id);
+  else if(t.dataset.act==='ent-save')entSave();
+  else if(t.dataset.act==='aj-save')ajSave();
+  else if(t.dataset.act==='mv-del'){st.confirmMv=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='mv-del-no'){st.confirmMv=null;renderMain()}
+  else if(t.dataset.act==='mv-del-yes')mvDel(t.dataset.id);
+  else if(t.dataset.act==='inf-xlsx')exportXlsx();
+  else if(t.dataset.act==='inf-pdf'){t.disabled=true;exportPdf().finally(()=>{t.disabled=false})}
+  else if(t.dataset.act==='rv-play')rvToggle();
+  else if(t.dataset.act==='wx-reload'){st.wx=null;st.rv=null;renderMain()}
+  else if(t.dataset.act==='geo')geoUbic();
+  else if(t.dataset.act==='ia-save'){const u=($('#ia_url')||{}).value||'',k=($('#ia_pin')||{}).value||'';if(!/^https:\/\//.test(u.trim())||!k.trim()){toast('Pon la dirección (https://…) y la clave');}else{try{localStorage.setItem('abono.ia',JSON.stringify({url:u.trim(),pin:k.trim()}))}catch(e){}toast('Servidor de IA guardado');renderMain()}}
+  else if(t.dataset.act==='ia-del'){try{localStorage.removeItem('abono.ia')}catch(e){}renderMain()}
+  else if(t.dataset.act==='dg-run')dgRun();
+  else if(t.dataset.act==='dg-stop'){if(st.dg.ctl)st.dg.ctl.abort()}
+  else if(t.dataset.rmfoto!==undefined){const f=st.dg.fotos.splice(+t.dataset.rmfoto,1)[0];if(f)URL.revokeObjectURL(f.url);renderMain()}
+  else if(t.dataset.act==='dg-msg')dgMsg(t.dataset.id);
+  else if(t.dataset.act==='dg-del'){st.confirmDg=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='dg-del-no'){st.confirmDg=null;renderMain()}
+  else if(t.dataset.act==='dg-del-yes')dgDel(t.dataset.id);
+  else if(t.dataset.act==='entrar')cerrarSplash();
+  else if(t.dataset.go){const g=t.dataset.go;cerrarSplash();st.tab=g.startsWith('rellenar:')?'rellenar':g.startsWith('cuentas')?'cuentas':g;if(g.startsWith('rellenar:'))st.cab=g.split(':')[1];
+    if(g==='cuentas-ayer'){const d=new Date();d.setDate(d.getDate()-1);if(st.dirtyReg)await saveReg();await loadFecha(isoD(d))}else renderAll()}
+  else if(t.dataset.act==='notif-on'){Notification.requestPermission().then(()=>{softUpdate();avisosLlenado()})}
+  else if(t.dataset.act==='notif-test'){notificar('Abonado Pinta Santos','Las notificaciones funcionan en este dispositivo','prueba')}
+  else if(t.dataset.act==='usar-rec'){const b=bid(t.dataset.id);if(b){b.kgPrincipal=+t.dataset.v;st.dirtyCfg=true;renderMain();renderSave();toast('Cantidad aplicada: pulsa «Guardar receta y ajustes»')}}
+  else if(t.dataset.act==='backup')backup();
+  else if(t.dataset.act==='save-reg')saveReg();
+  else if(t.dataset.act==='save-cfg')saveCfg();
+  else if(t.dataset.act==='reset'){st.confirmReset=true;renderMain()}
+  else if(t.dataset.act==='reset-no'){st.confirmReset=false;renderMain()}
+  else if(t.dataset.act==='reset-yes'){st.cfg=clone(DEFAULT_CONFIG);st.dirtyCfg=true;st.confirmReset=false;renderAll();toast('Valores iniciales cargados: pulsa «Guardar receta y ajustes»')}});
+$('#fecha').addEventListener('change',async e=>{const f=e.target.value;if(!f||f===st.fecha)return;if(st.dirtyReg)await saveReg();await loadFecha(f)});
+
+/* ---------- Copia de seguridad ---------- */
+async function backup(){toast('Preparando copia…');if(Store.mode==='fb'){try{const x=await NUBE.exportAll();await saveBlob(new Blob([JSON.stringify({app:'abonado-pinta-santos',v:2,exportado:new Date().toISOString(),ls:x.ls,adjuntos:x.adjuntos})],{type:'application/json'}),'abonado-copia-'+hoy()+'.json');toast('Copia descargada: '+x.dias+' días y '+Object.keys(x.adjuntos).length+' adjuntos')}catch(e){toast('Necesitas conexión para descargar la copia')}return}
+  const ls={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('abono.'))ls[k]=localStorage.getItem(k)}}catch(e){}
+  const data={app:'abonado-pinta-santos',v:2,exportado:new Date().toISOString(),ls,adjuntos:{}};
+  const docs=[...(Store.lsGet('abono.msgs')||[]),...(Store.lsGet('abono.almacen')||[]),...(Store.lsGet('abono.diagnosticos')||[])];
+  for(const m of docs)for(const a of m.adjuntos||[]){if(!a.local)continue;const bl=await Adj.idbGet(a.id).catch(()=>null);if(bl)data.adjuntos[a.id]=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(bl)})}
+  const regs=Object.keys(ls).filter(k=>k.startsWith('abono.reg.')).length;
+  await saveBlob(new Blob([JSON.stringify(data)],{type:'application/json'}),'abonado-copia-'+hoy()+'.json');
+  toast('Copia descargada: '+regs+' días y '+Object.keys(data.adjuntos).length+' adjuntos')}
+document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.files[0])return;const fr=new FileReader();fr.onload=async()=>{try{const d=JSON.parse(fr.result);if(d.app!=='abonado-pinta-santos')throw 0;
+  if(d.ls){for(const[k,v]of Object.entries(d.ls))if(k.startsWith('abono.'))localStorage.setItem(k,v)}
+  else{if(d.config)Store.lsSet('abono.config',d.config);for(const r of d.registros||[])if(r&&r.fecha)await Store.setReg(r.fecha,r);if(Array.isArray(d.cambios))Store.lsSet('abono.cambios',d.cambios);if(Array.isArray(d.mensajes))Store.lsSet('abono.msgs',d.mensajes)}
+  for(const[id,u]of Object.entries(d.adjuntos||{})){try{const bl=await (await fetch(u)).blob();await Adj.idbPut(id,bl)}catch(_){}}
+  if(window.NUBE&&NUBE.user){toast('Subiendo la copia a la nube…');await NUBE.subirLocal(true)}
+  toast('Copia restaurada');setTimeout(()=>location.reload(),900)}catch(err){toast('Ese archivo no es una copia de esta app')}};fr.readAsText(e.target.files[0]);e.target.value=''});
+
+/* ---------- Arranque ---------- */
+(async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;renderSplash()}await Store.init();await Adj.init();
+  try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
+  st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs()})();
+/* Con datos compartidos: al volver a la app, recarga lo que hayan guardado otros */
+setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
+let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(document.hidden||Store.mode!=='fb'||!st.ready||Date.now()-ultRec<30000)return;ultRec=Date.now();
+  if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();
+  if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
+
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+</script>
+
+</body></html>
