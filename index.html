@@ -160,6 +160,8 @@ textarea{width:100%;font:500 16px var(--f-body);color:var(--ink);background:var(
 .tarea .tm{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.tarea .tm b{color:var(--accent)}.tarea .tm .de{opacity:.8}
 .tarea p{margin:0}
 .tarea .hecho{background:var(--ok-bg);border-radius:8px;padding:8px 10px;font-size:13px}
+.tarea .mcant{font:600 15px var(--f-display);color:var(--accent)}
+.tarea.mat.pedido{border-left-color:var(--warn)}.tarea.mat.encargado{border-left-color:var(--navy)}.tarea.mat.recibido{border-left-color:var(--ok);opacity:.85}.tarea.mat.rechazado{border-left-color:var(--bad);opacity:.7}
 .tarea .tdone{display:grid;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px}
 .msg.parami{border-left:3px solid var(--accent);padding-left:10px;background:linear-gradient(90deg,var(--ok-bg),transparent 60%)}
 .pill.para{background:var(--accent);color:#fff}
@@ -550,7 +552,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['tareas','Tareas'],['almacen','Almacén'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
+const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['tareas','Tareas'],['material','Material'],['almacen','Almacén'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -583,6 +585,7 @@ function fincaAvisos(f){const out=[],cabs=f.cabezales||[];if(!cabs.length)return
   if(!ra||!cabs.some(c=>ra.m3&&ra.m3[c]!=null))out.push(['bad','Faltan las cuentas de ayer']);
   const deps=st.cfg.bidones.filter(b=>b.cabezales.some(c=>cabs.includes(c))&&bajoUmbral(nivel(b)));
   if(deps.length)out.push(['warn','Rellenar: '+deps.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')]);
+  const mpf=(st.mat||[]).filter(m=>m.finca===f.id&&m.estado==='pedido').length;if(mpf)out.push(['warn',mpf===1?'1 pedido de material pendiente':mpf+' pedidos de material pendientes']);
   const ta=(st.tareas||[]).filter(t=>t.finca===f.id&&!t.hecha&&t.fecha<hoy()).length;if(ta)out.push(['bad',ta===1?'1 tarea atrasada':ta+' tareas atrasadas']);
   const pmi=pendParaMi().filter(m=>cabs.includes(m.cab)).length;if(pmi)out.push(['bad',pmi===1?'1 mensaje para ti':pmi+' mensajes para ti']);
   const pend=(st.msgs||[]).filter(m=>!m.resuelto&&cabs.includes(m.cab)).length;if(pend)out.push(['warn',pend===1?'1 mensaje pendiente':pend+' mensajes pendientes']);
@@ -610,7 +613,7 @@ function renderFincas(){const fs=fincasVis(),admin=!window.NUBE||(NUBE.user&&NUB
       <div class="avs"><h4>Avisos</h4>${av.slice(0,mx).map(([k,t])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span>${esc(t)}</span></div>`).join('')}${av.length>mx?`<div class="av note">y ${av.length-mx} más</div>`:''}</div>
       <button class="btn pri go" data-act="finca-go" data-id="${f.id}" ${off?'disabled':''}>${off?'Sin datos todavía':'Entrar en '+esc(f.nombre)}</button></div></article>`}).join('')}</div></div>`;
   hydrate()}
-function abrirFincas(){if(st.tareas===null)loadTareas();renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs()}
+function abrirFincas(){if(st.tareas===null)loadTareas();if(st.mat===null)loadMat();renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs()}
 function coordsDe(t){t=String(t||'');let m=/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/.exec(t)||/@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(t)||/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/.exec(t);
   if(!m)return null;const lat=+m[1],lon=+m[2];return Math.abs(lat)<=90&&Math.abs(lon)<=180?{lat,lon}:null}
 async function guardarUbic(id,u){for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.ubic={lat:+u.lat.toFixed(5),lon:+u.lon.toFixed(5)}}
@@ -620,7 +623,7 @@ function elegirFinca(id){const f=fincasVis().find(x=>x.id===id);if(!f||!f.cabeza
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico','tareas'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado Pinta Santos'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
+function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado Pinta Santos'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 function renderTabs(){$('#tabs').innerHTML=TABS.map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
 /* Menús desplazables con ratón: rueda y arrastrar */
 function scrollRaton(el){if(!el)return;
@@ -804,7 +807,7 @@ function adjHTML(list,removable){if(!list||!list.length)return '';
     if(a.img)return `<span class="adjwrap"><button class="thumb" data-img="${a.id}" aria-label="Ver foto"><img alt="" ${a.local||a.fb?`data-local="${a.id}"`:''} src="${Adj.src(a)}"></button>${rm}</span>`;
     return `<span class="adjwrap"><button class="fchip" data-file="${a.id}">${CLIP}<span>${esc(a.name)}</span><small>${fSize(a.size||0)}</small></button>${rm}</span>`}).join('')+`</div>`}
 async function hydrate(){for(const el of document.querySelectorAll('img[data-local]')){if(el.getAttribute('src'))continue;const u=await Adj.url(findAdj(el.dataset.local)||{id:el.dataset.local,local:true});if(u)el.src=u}}
-function findAdj(id){for(const a of [...st.msgAdj,...st.ent.adj,...st.tf.adj,...st.td.adj])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[]),...(st.priv||[]),...(st.tareas||[])])for(const a of [...(m.adjuntos||[]),...(m.adjHecha||[])])if(a.id===id)return a;return null}
+function findAdj(id){for(const a of [...st.msgAdj,...st.ent.adj,...st.tf.adj,...st.td.adj,...st.mf.adj])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[]),...(st.priv||[]),...(st.tareas||[]),...(st.mat||[])])for(const a of [...(m.adjuntos||[]),...(m.adjHecha||[])])if(a.id===id)return a;return null}
 async function addFiles(files,list){list=list||st.msgAdj;for(const f of files){const tmp={tmp:true,id:'t'+Math.random(),name:f.name||'archivo'};list.push(tmp);renderMain();
   try{const a=await Adj.put(f);list[list.indexOf(tmp)]=a}catch(e){list.splice(list.indexOf(tmp),1);
     toast(e&&e.code==='tipo'?'Aquí solo se pueden adjuntar fotos, PDF, vídeos y texto':e&&e.code==='too_large'?'El archivo es demasiado grande':'No se pudo adjuntar '+(f.name||'el archivo'))}
@@ -883,6 +886,70 @@ function onTInput(e){const t=e.target,k=t.dataset.tf,kd=t.dataset.td;if(!k&&!kd)
     if(k==='urg')g.urg=t.checked;else g[k]=t.value;if(k==='finca'&&e.type==='change'){g.cab='';renderMain()}return}
   if(kd==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';addFiles(fs,st.td.adj)}return}st.td[kd]=t.value}
 $('#main').addEventListener('input',onTInput);$('#main').addEventListener('change',onTInput);
+
+/* ---------- Material: pedidos de material ---------- */
+st.mat=null;st.mf={open:false,art:'',cant:'',ud:'unidades',finca:'',cab:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=null;st.mEdit=null;st.confirmM=null;
+const MEST={pedido:['warn','Pedido'],encargado:['nd','Encargado'],recibido:['ok','Recibido'],rechazado:['bad','Rechazado']};
+const UDS=['unidades','metros','rollos','cajas','paquetes','sacos','litros','kg','juegos'];
+const MAT_SUG=['Goteros','Tubería PE 16 mm','Tubería PE 20 mm','Tubería PE 32 mm','Tubería PE 50 mm','Tes 16 mm','Codos 16 mm','Enlaces 16 mm','Tapones final de línea','Collarín de toma','Filtro de malla','Filtro de anillas','Juntas','Cinta de teflón','Válvula de bola','Electroválvula','Manómetro','Sonda de CE','Sonda de pH','Solución de calibración','Rafia','Clips de entutorar','Ganchos','Cuerda','Guantes','Tijeras de poda','Cajas de recolección','Plástico de invernadero','Malla de sombreo','Bridas','Pilas'];
+const esAdminU=()=>!window.NUBE||!!(NUBE.user&&NUBE.user.admin);
+let mLoading=false;
+async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
+const mVisible=m=>!restringido()||m.pideEmail===miEmail()||fincasVis().some(f=>f.id===m.finca);
+const mMio=m=>!!(miEmail()&&m.pideEmail===miEmail());
+const matPend=()=>(st.mat||[]).filter(m=>m.estado==='pedido');
+async function avisosMat(){if(!notifOk()||Notification.permission!=='granted')return;let vis=[];try{vis=JSON.parse(localStorage.getItem('abono.notifmat')||'[]')}catch(e){}
+  for(const m of st.mat||[]){let k=null,t=null,b=null;
+    if(esAdminU()&&m.estado==='pedido'&&!mMio(m)){k=m.id+':pedido';t='Pedido de material: '+m.art;b=`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`}
+    else if(mMio(m)&&m.estado!=='pedido'){k=m.id+':'+m.estado;t='Tu pedido de '+m.art+': '+MEST[m.estado][1].toLowerCase();b=m.resp||''}
+    if(!k||vis.includes(k))continue;await notificar(t,b,'mat-'+k);vis.push(k)}
+  try{localStorage.setItem('abono.notifmat',JSON.stringify(vis.slice(-400)))}catch(e){}}
+function matHTML(m){const e=MEST[m.estado]||MEST.pedido,f=(st.cfg.fincas||[]).find(x=>x.id===m.finca),adm=esAdminU(),ed=st.mEdit===m.id;
+  return `<div class="tarea mat ${m.estado}${m.urg&&m.estado==='pedido'?' urg':''}"><div class="tt"><b>${esc(m.art)}</b><span class="mcant">${esc(String(m.cant||''))} ${esc(m.ud||'')}</span>${m.urg&&(m.estado==='pedido'||m.estado==='encargado')?'<span class="pill bad">Urgente</span>':''}<span class="pill ${e[0]}">${e[1]}</span></div>
+    <div class="tm">${f?`<span class="mini">${esc(f.nombre)}${m.cab?' · '+esc(cabNombre(m.cab)):''}</span>`:''}<span>Pide ${mMio(m)?'<b>tú</b>':esc(m.pidePor||'')} · ${fHora(m.ts)}</span>${m.cuando?`<span>Lo necesita para el ${fFecha(m.cuando)}</span>`:''}</div>
+    ${m.nota?`<p>${esc(m.nota)}</p>`:''}${adjHTML(m.adjuntos,false)}
+    ${m.resp?`<div class="hecho"><b>${esc(m.respPor||'Respuesta')}:</b> ${esc(m.resp)}</div>`:''}
+    ${(m.hist||[]).length>1?`<details class="tv"><summary>Historial</summary><div class="note">${m.hist.map(h=>`${fHora(h.ts)} · ${esc(MEST[h.estado]?MEST[h.estado][1]:h.estado)} · ${esc(h.por||'')}`).join('<br>')}</div></details>`:''}
+    ${ed?`<div class="tdone"><div class="field"><label for="mr_txt">Respuesta (proveedor, fecha prevista, motivo…)</label><textarea id="mr_txt" rows="2" placeholder="Ej.: Pedido a Riegos del Sureste, llega el martes">${esc(m.resp||'')}</textarea></div>
+      <div class="row"><button class="btn pri" data-act="m-est" data-id="${m.id}" data-e="encargado">Encargado</button><button class="btn" data-act="m-est" data-id="${m.id}" data-e="recibido">Recibido</button><button class="btn danger" data-act="m-est" data-id="${m.id}" data-e="rechazado">Rechazar</button><button class="btn" data-act="m-cancel">Cancelar</button></div></div>`
+    :`<div class="row">${adm&&m.estado!=='recibido'?`<button class="btn pri" data-act="m-edit" data-id="${m.id}">Gestionar</button>`:''}${!adm&&mMio(m)&&m.estado==='encargado'?`<button class="btn pri" data-act="m-est" data-id="${m.id}" data-e="recibido">Ya lo tengo</button>`:''}
+      ${adm&&m.estado==='recibido'?`<button class="btn" data-act="m-est" data-id="${m.id}" data-e="pedido">Volver a pedir</button>`:''}
+      ${(adm||(mMio(m)&&m.estado==='pedido'))?(st.confirmM===m.id?`<span class="note">¿Borrar pedido?</span><button class="btn danger" data-act="m-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="m-cancel">Cancelar</button>`:`<button class="btn" data-act="m-del" data-id="${m.id}">${mMio(m)&&m.estado==='pedido'&&!adm?'Anular':'Borrar'}</button>`):''}</div>`}</div>`}
+function vMaterial(){if(st.mat===null){loadMat();return '<div class="card"><div class="note">Cargando material…</div></div>'}
+  if(st.mFil===null)st.mFil=esAdminU()?'pend':'mios';
+  const g=st.mf,fs=fincasVis().filter(f=>f.cabezales.length),fsel=fs.find(x=>x.id===g.finca)||fincaAct()||fs[0],cabsF=fsel?fsel.cabezales:[];
+  const all=(st.mat||[]).filter(mVisible).filter(m=>!st.finca||!fincaAct()||m.finca===st.finca||mMio(m));
+  const pend=all.filter(m=>m.estado==='pedido'),enc=all.filter(m=>m.estado==='encargado');
+  let h=`<section class="summary"><div class="stat"><span>Por gestionar</span><b>${pend.length}</b><small>pedidos nuevos</small></div><div class="stat"><span>Encargados</span><b>${enc.length}</b><small>en camino</small></div><div class="stat"><span>Urgentes</span><b>${pend.concat(enc).filter(m=>m.urg).length}</b><small>sin recibir</small></div></section>`;
+  if(!g.open)h+=`<div class="row"><button class="btn pri" data-act="m-nuevo">+ Pedir material</button></div>`;
+  else h+=`<section class="card"><div><h3>Pedir material</h3><div class="sub">Qué necesitas, cuánto y para dónde</div></div>
+    <div class="field"><label for="mf_art">Material</label><div class="inp"><input id="mf_art" data-mf="art" list="mf_sug" style="width:100%;text-align:left" placeholder="Ej.: Goteros, tubería PE 16 mm…" value="${esc(g.art)}" autocomplete="off"></div></div>
+    <datalist id="mf_sug">${[...new Set([...(st.mat||[]).map(m=>m.art),...MAT_SUG])].slice(0,80).map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+    <div class="frm"><div class="field"><label for="mf_cant">Cantidad</label><div class="inp"><input id="mf_cant" data-mf="cant" inputmode="decimal" value="${esc(g.cant)}"></div></div>
+      <div class="field"><label for="mf_ud">Unidad</label><div class="inp"><select id="mf_ud" data-mf="ud">${UDS.map(u=>`<option ${g.ud===u?'selected':''}>${u}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="mf_finca">Finca</label><div class="inp"><select id="mf_finca" data-mf="finca">${fs.map(f=>`<option value="${f.id}" ${fsel&&fsel.id===f.id?'selected':''}>${esc(f.nombre)}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="mf_cab">Cabezal</label><div class="inp"><select id="mf_cab" data-mf="cab"><option value="">Toda la finca</option>${cabsF.map(c=>`<option value="${c}" ${g.cab===c?'selected':''}>${esc(cabNombre(c))}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="mf_cuando">Lo necesito para</label><div class="inp"><input type="date" id="mf_cuando" data-mf="cuando" value="${g.cuando}"></div></div></div>
+    <label class="chk"><input type="checkbox" data-mf="urg" ${g.urg?'checked':''}> Urgente</label>
+    <div class="field"><label for="mf_nota">Detalles (medida, marca, para qué…)</label><textarea id="mf_nota" data-mf="nota" rows="2">${esc(g.nota)}</textarea></div>
+    ${adjHTML(g.adj,true)}
+    <div class="row">${Adj.can()?`<label class="btn" for="mf_foto">Añadir foto</label><input type="file" id="mf_foto" data-mf="file" accept="image/*" multiple hidden>`:''}<button class="btn pri" data-act="m-crear" ${g.adj.some(a=>a.tmp)?'disabled':''}>Enviar pedido</button><button class="btn" data-act="m-cerrar">Cancelar</button></div></section>`;
+  const fil=[['pend','Por gestionar'+(pend.length?' ('+pend.length+')':'')],['enc','Encargados'],...(miEmail()?[['mios','Mis pedidos']]:[]),['rec','Recibidos'],['todos','Todos']];
+  h+=`<div class="pick">${fil.map(([k,t])=>`<button class="chip" data-mfil="${k}" aria-pressed="${st.mFil===k}">${esc(t)}</button>`).join('')}</div>`;
+  let l=st.mFil==='pend'?pend:st.mFil==='enc'?enc:st.mFil==='mios'?all.filter(mMio):st.mFil==='rec'?all.filter(m=>m.estado==='recibido'||m.estado==='rechazado'):all;
+  l=l.slice().sort((a,b)=>(st.mFil==='pend'||st.mFil==='enc')?((b.urg?1:0)-(a.urg?1:0))||(a.ts<b.ts?-1:1):(a.ts<b.ts?1:-1)).slice(0,80);
+  h+=`<section class="card"><div><h3>${{pend:'Pedidos por gestionar',enc:'Encargados',mios:'Mis pedidos',rec:'Recibidos y rechazados',todos:'Todos los pedidos'}[st.mFil]}</h3><div class="sub">${l.length} ${l.length===1?'pedido':'pedidos'}${fincaAct()?' · '+esc(fincaAct().nombre):''}</div></div>${l.length?`<div class="tareas">${l.map(matHTML).join('')}</div>`:'<div class="note">Nada por aquí.</div>'}</section>`;
+  return h}
+async function crearMat(){const g=st.mf,art=g.art.trim();if(!art){toast('Escribe qué material necesitas');return}const fs=fincasVis().filter(f=>f.cabezales.length),f=fs.find(x=>x.id===g.finca)||fincaAct()||fs[0];const now=new Date().toISOString();
+  const m={ts:now,art,cant:num(String(g.cant))??(g.cant||''),ud:g.ud,finca:f?f.id:'',cab:g.cab||'',urg:!!g.urg,cuando:g.cuando||'',nota:g.nota.trim(),adjuntos:g.adj.filter(a=>!a.tmp),estado:'pedido',pidePor:yoNombre(),pideEmail:miEmail(),hist:[{estado:'pedido',por:yoNombre(),ts:now}]};
+  try{const id=await Store.addCol('material',m);st.mat.unshift({...m,id});st.mf={open:false,art:'',cant:'',ud:'unidades',finca:m.finca,cab:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=esAdminU()?'pend':'mios';renderMain();toast('Pedido enviado')}catch(e){toast(errMsg(e))}}
+async function estadoMat(id,est){const m=st.mat.find(x=>x.id===id);if(!m)return;const r=$('#mr_txt'),now=new Date().toISOString();
+  const p={estado:est,hist:[...(m.hist||[]),{estado:est,por:yoNombre(),ts:now}]};if(r){p.resp=r.value.trim();p.respPor=yoNombre()}
+  try{await Store.updCol('material',id,p);Object.assign(m,p);st.mEdit=null;renderMain();toast('Pedido: '+MEST[est][1].toLowerCase())}catch(e){toast(errMsg(e))}}
+async function delMat(id){const m=st.mat.find(x=>x.id===id);try{await Store.delCol('material',id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.mat=st.mat.filter(x=>x.id!==id);st.confirmM=null;renderMain();toast('Pedido borrado')}catch(e){toast(errMsg(e))}}
+function onMInput(e){const t=e.target,k=t.dataset.mf;if(!k)return;const g=st.mf;if(k==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';addFiles(fs,g.adj)}return}
+  if(k==='urg')g.urg=t.checked;else g[k]=t.value;if(k==='finca'&&e.type==='change'){g.cab='';renderMain()}}
+$('#main').addEventListener('input',onMInput);$('#main').addEventListener('change',onMInput);
 
 /* Mensajes dirigidos a una persona */
 const miEmail=()=>window.NUBE&&NUBE.user?NUBE.user.email:'';
@@ -1328,6 +1395,7 @@ function resumenHTML(){if(st.hist===null||st.llen===null||st.alm===null)return `
   if(st.hist.some(r=>r.fecha===hoyS))items.push(['ok','Cuentas de hoy guardadas','cuentas-hoy']);
   const dep=depsBajos();
   if(dep.length)items.push(['warn',`${dep.length===1?'1 depósito':dep.length+' depósitos'} para rellenar: ${dep.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')}`,'rellenar:'+dep[0].cabezales[0]]);
+  if(st.mat===null)loadMat();if(esAdminU()&&miEmail()){const mp=matPend().filter(mVisible).length;if(mp)items.push(['warn',mp===1?'1 pedido de material por gestionar':mp+' pedidos de material por gestionar','material'])}
   if(st.tareas===null)loadTareas();const tm=tareasMias();if(tm.length)items.push([tm.some(t=>t.fecha<hoy()||t.urg)?'bad':'warn',tm.length===1?'1 tarea para ti hoy':tm.length+' tareas para ti hoy','tareas']);
   const pv=privSinLeer().length;if(pv)items.push(['bad',pv===1?'1 mensaje privado para ti':pv+' mensajes privados para ti','mensajes-priv']);
   const pm=pendParaMi().length;if(pm)items.push(['bad',pm===1?'1 mensaje para ti':pm+' mensajes para ti','mensajes-mios']);
@@ -1490,7 +1558,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()},150)});
 
-const VIEWS={cuentas:vCuentas,tareas:vTareas,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
+const VIEWS={cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
 function renderMain(){$('#main').innerHTML=VIEWS[st.tab]();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
 function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=VIEWS[st.tab]();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
@@ -1540,7 +1608,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.open){if(st.dirtyReg)await saveReg();st.tab='cuentas';await loadFecha(t.dataset.open)}
   else if(t.dataset.img){openImg(t.dataset.img)}
   else if(t.dataset.file){const a=findAdj(t.dataset.file);if(a)Adj.save(a)}
-  else if(t.dataset.rmadj){for(const L of [st.msgAdj,st.ent.adj,st.tf.adj,st.td.adj]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
+  else if(t.dataset.rmadj){for(const L of [st.msgAdj,st.ent.adj,st.tf.adj,st.td.adj,st.mf.adj]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
   else if(t.dataset.gr){st.gRange=+t.dataset.gr;renderMain()}
   else if(t.dataset.mf!==undefined){st.msgF=t.dataset.mf;st.confirmDel=null;renderMain()}
   else if(t.dataset.act==='msg-send')sendMsg();
@@ -1558,6 +1626,15 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='t-del'){st.confirmT=t.dataset.id;renderMain()}
   else if(t.dataset.act==='t-del-yes')tareaDel(t.dataset.id);
   else if(t.dataset.tfil){st.tFil=t.dataset.tfil;renderMain()}
+  else if(t.dataset.mfil){st.mFil=t.dataset.mfil;renderMain()}
+  else if(t.dataset.act==='m-nuevo'){st.mf.open=true;if(!st.mf.finca&&st.finca)st.mf.finca=st.finca;renderMain();const i=$('#mf_art');if(i)i.focus()}
+  else if(t.dataset.act==='m-cerrar'){st.mf.open=false;renderMain()}
+  else if(t.dataset.act==='m-crear')crearMat();
+  else if(t.dataset.act==='m-edit'){st.mEdit=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='m-cancel'){st.mEdit=null;st.confirmM=null;renderMain()}
+  else if(t.dataset.act==='m-est')estadoMat(t.dataset.id,t.dataset.e);
+  else if(t.dataset.act==='m-del'){st.confirmM=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='m-del-yes')delMat(t.dataset.id);
   else if(t.dataset.act==='priv-resp'){st.msgPara=t.dataset.em;renderMain();window.scrollTo(0,0);const x=$('#msg_txt');if(x)x.focus()}
   else if(t.dataset.act==='priv-del'){st.confirmDel=t.dataset.id;renderMain()}
   else if(t.dataset.act==='priv-del-yes'){const id=t.dataset.id,m=(st.priv||[]).find(x=>x.id===id);try{await Store.delPriv(id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.priv=st.priv.filter(x=>x.id!==id);st.confirmDel=null;renderMain();toast('Mensaje borrado')}catch(e){toast(errMsg(e))}}
@@ -1631,7 +1708,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 /* Con datos compartidos: al volver a la app, recarga lo que hayan guardado otros */
 setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
 let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(document.hidden||Store.mode!=='fb'||!st.ready||Date.now()-ultRec<30000)return;ultRec=Date.now();
-  if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();
+  if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
 
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
