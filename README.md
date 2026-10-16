@@ -1,3 +1,5 @@
 # Abonado Pinta Santos
 
-App de fertirrigación (cabezales de riego). Publicada con GitHub Pages.
+App de fertirrigación (cabezales de riego).
+
+Dirección: https://abonado.github.io/fertirrigacion/
