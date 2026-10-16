@@ -283,6 +283,8 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .fcard .av{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.35}
 .fcard .av .dot{margin-top:4px}
 .fcard .go{margin-top:auto;justify-content:center;width:100%}
+.fcard .lnk.fu{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;font:600 12px var(--f-body);cursor:pointer;justify-self:start;text-transform:uppercase}
+.fcard .fubic{display:grid;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px}
 .fcard.off .ph>*:not(.ttl):not(.nfin):not(.cam){filter:grayscale(.55)}
 .fcard .ribbon{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;background:rgba(8,16,24,.6);color:#fff;font:700 13px var(--f-display);letter-spacing:.1em;padding:6px 14px;border-radius:999px;white-space:nowrap}
 .brandl{display:flex;align-items:center;gap:12px}
@@ -536,11 +538,11 @@ const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Re
 const fincaAct=()=>(st.cfg.fincas||[]).find(f=>f.id===st.finca)||null;
 function cabsFinca(){const f=fincaAct();return f&&f.cabezales.length?f.cabezales.map(id=>st.cfg.cabezales.find(c=>c.id===id)).filter(Boolean):st.cfg.cabezales}
 st.fwx={};st.finca=(()=>{try{return localStorage.getItem('abono.finca')}catch(e){return null}})();
-async function loadFincaWx(f){if(enClaude())return;const u=f.ubic||AGUILAS,k=u.lat.toFixed(3)+','+u.lon.toFixed(3);if(st.fwx[k]&&!st.fwx[k].viejo&&Date.now()-st.fwx[k].t<30*60000)return;
+async function loadFincaWx(f){if(enClaude())return;const u=f.ubic||AGUILAS,k=u.lat.toFixed(3)+','+u.lon.toFixed(3);if(st.fwx[k]&&!st.fwx[k].viejo&&Date.now()-st.fwx[k].t<30*60000)return;st.fwxP=st.fwxP||{};if(st.fwxP[k])return;st.fwxP[k]=1;
   try{const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${u.lat}&longitude=${u.lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max&timezone=Europe%2FMadrid&forecast_days=2`);
     if(!r.ok)throw 0;const j=await r.json();if(!j.current||!j.daily)throw 0;st.fwx[k]={...j,t:Date.now()};try{localStorage.setItem('abono.wxf.'+k,JSON.stringify(st.fwx[k]))}catch(e){}}
   catch(e){try{const c=JSON.parse(localStorage.getItem('abono.wxf.'+k)||'null');st.fwx[k]=c?{...c,viejo:true}:{fallo:true,t:Date.now()}}catch(_){st.fwx[k]={fallo:true,t:Date.now()}}}
-  if(!$('#fincas').hidden)renderFincas()}
+  st.fwxP[k]=0;if(!$('#fincas').hidden)renderFincas()}
 const fwxDe=f=>{const u=f.ubic||AGUILAS;return st.fwx[u.lat.toFixed(3)+','+u.lon.toFixed(3)]||null};
 function wxIcon(code){const sol='<circle cx="12" cy="12" r="4.2" fill="#f2b632"/><g stroke="#f2b632" stroke-width="1.8" stroke-linecap="round"><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></g>',
     nube=(x=0,y=0,c='#9aa9b4')=>`<path transform="translate(${x} ${y})" d="M7 18h10a4 4 0 0 0 .4-8 5.5 5.5 0 0 0-10.6 1.4A3.3 3.3 0 0 0 7 18z" fill="${c}"/>`,
@@ -577,10 +579,18 @@ function renderFincas(){const fs=st.cfg.fincas||[],admin=!window.NUBE||(NUBE.use
       ${admin&&Adj.can()?`<label class="btn cam" for="ff_${f.id}">Cambiar foto</label><input type="file" id="ff_${f.id}" data-ffoto="${f.id}" accept="image/*" hidden>`:''}</div>
       <div class="bd">${cabs.length?`<div class="cabs">${cabs.map(n=>`<span>${esc(n)}</span>`).join('')}</div>`:''}
       ${enClaude()?'':c&&dd?`<div class="wxl"><div><span>Cielo</span><b>${esc(WX_TXT[c.weather_code]||'—')}</b></div><div><span>Máx / mín</span><b>${fmt(dd.temperature_2m_max[0],0)}° / ${fmt(dd.temperature_2m_min[0],0)}°</b></div><div><span>Viento</span><b>${fmt(c.wind_speed_10m,0)} km/h${vto?' '+vto[0]:''}</b></div></div>`:`<div class="note">${w&&w.fallo?'Sin datos del tiempo':'Cargando el tiempo…'}</div>`}
+      ${f.ubic?'':`<div class="note">Tiempo de Águilas por defecto${admin?': fija la ubicación de la finca':''}</div>`}
+      ${admin?(st.fUbic===f.id?`<div class="fubic"><div class="field"><label for="fu_${f.id}">Coordenadas o enlace largo de Google Maps</label><div class="inp"><input id="fu_${f.id}" placeholder="37.4334, -1.6304" style="width:100%;text-align:left;text-transform:none" autocomplete="off"></div></div>
+        <div class="row"><button class="btn pri" data-act="fu-save" data-id="${f.id}">Guardar</button><button class="btn" data-act="fu-gps" data-id="${f.id}">Estoy en la finca: usar mi ubicación</button><button class="btn" data-act="fu-no">Cancelar</button></div></div>`
+        :`<button class="lnk fu" data-act="fu-open" data-id="${f.id}">${f.ubic?`Ubicación: ${f.ubic.lat.toFixed(4)}, ${f.ubic.lon.toFixed(4)} · cambiar`:'Fijar ubicación de la finca'}</button>`):''}
       <div class="avs"><h4>Avisos</h4>${av.slice(0,mx).map(([k,t])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span>${esc(t)}</span></div>`).join('')}${av.length>mx?`<div class="av note">y ${av.length-mx} más</div>`:''}</div>
       <button class="btn pri go" data-act="finca-go" data-id="${f.id}" ${off?'disabled':''}>${off?'Sin datos todavía':'Entrar en '+esc(f.nombre)}</button></div></article>`}).join('')}</div></div>`;
   hydrate()}
 function abrirFincas(){renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs()}
+function coordsDe(t){t=String(t||'');let m=/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/.exec(t)||/@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(t)||/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/.exec(t);
+  if(!m)return null;const lat=+m[1],lon=+m[2];return Math.abs(lat)<=90&&Math.abs(lon)<=180?{lat,lon}:null}
+async function guardarUbic(id,u){for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.ubic={lat:+u.lat.toFixed(5),lon:+u.lon.toFixed(5)}}
+  try{await Store.setConfig(st.savedCfg);st.fUbic=null;toast('Ubicación guardada');const f=st.cfg.fincas.find(x=>x.id===id);renderFincas();if(f)loadFincaWx(f)}catch(e){toast(errMsg(e))}}
 function elegirFinca(id){const f=(st.cfg.fincas||[]).find(x=>x.id===id);if(!f||!f.cabezales.length)return;st.finca=id;try{localStorage.setItem('abono.finca',id)}catch(e){}
   if(!f.cabezales.includes(st.cab))st.cab=f.cabezales[0];$('#fincas').hidden=true;document.documentElement.style.overflow='';renderAll();window.scrollTo(0,0)}
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
@@ -1454,6 +1464,11 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='entrar'){cerrarSplash();abrirFincas()}
   else if(t.dataset.act==='fincas')abrirFincas();
   else if(t.dataset.act==='finca-go')elegirFinca(t.dataset.id);
+  else if(t.dataset.act==='fu-open'){st.fUbic=t.dataset.id;renderFincas();const i=$('#fu_'+t.dataset.id);if(i)i.focus()}
+  else if(t.dataset.act==='fu-no'){st.fUbic=null;renderFincas()}
+  else if(t.dataset.act==='fu-save'){const u=coordsDe(($('#fu_'+t.dataset.id)||{}).value);if(!u){toast('No reconozco las coordenadas. Ejemplo: 37.4334, -1.6304');return}guardarUbic(t.dataset.id,u)}
+  else if(t.dataset.act==='fu-gps'){if(!navigator.geolocation){toast('Este móvil no da la ubicación');return}toast('Buscando tu ubicación…');const id=t.dataset.id;
+    navigator.geolocation.getCurrentPosition(p=>guardarUbic(id,{lat:p.coords.latitude,lon:p.coords.longitude}),()=>toast('No se pudo obtener la ubicación: revisa el permiso'),{enableHighAccuracy:true,timeout:15000})}
   else if(t.dataset.go){const g=t.dataset.go;cerrarSplash();st.tab=g.startsWith('rellenar:')?'rellenar':g.startsWith('cuentas')?'cuentas':g;if(g.startsWith('rellenar:'))st.cab=g.split(':')[1];
     if(g==='cuentas-ayer'){const d=new Date();d.setDate(d.getDate()-1);if(st.dirtyReg)await saveReg();await loadFecha(isoD(d))}else renderAll()}
   else if(t.dataset.act==='notif-on'){Notification.requestPermission().then(()=>{softUpdate();avisosLlenado()})}
