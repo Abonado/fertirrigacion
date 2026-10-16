@@ -160,6 +160,12 @@ textarea{width:100%;font:500 16px var(--f-body);color:var(--ink);background:var(
 .tarea .tm{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.tarea .tm b{color:var(--accent)}.tarea .tm .de{opacity:.8}
 .tarea p{margin:0}
 .tarea .hecho{background:var(--ok-bg);border-radius:8px;padding:8px 10px;font-size:13px}
+.almh{margin:4px 0 10px}
+.cleg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.cleg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.crows{display:grid}.crow{display:grid;gap:5px;padding:10px 0;border-top:1px solid var(--line)}.crow:first-child{border-top:0}
+.crow .cn{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}.crow .cn span{font-size:12px;color:var(--muted)}.crow .cn span b{color:var(--ink)}
+.cbar{display:flex;height:8px;border-radius:5px;overflow:hidden;background:var(--surface-2)}.cbar i{display:block;height:100%}
+.crow .cv{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}.crow .cv b{color:var(--ink)}.almh h2{font:700 24px var(--f-display);color:var(--navy);margin:0}
 .tarea .mcant{font:600 15px var(--f-display);color:var(--accent)}
 .tarea.mat.pedido{border-left-color:var(--warn)}.tarea.mat.encargado{border-left-color:var(--navy)}.tarea.mat.recibido{border-left-color:var(--ok);opacity:.85}.tarea.mat.rechazado{border-left-color:var(--bad);opacity:.7}
 .tarea .tdone{display:grid;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px}
@@ -433,6 +439,7 @@ function nit(id,cabs,lpcm,cap,kg,d,cmH,ej){return{id,nombre:'Depósito ácido n�
 function sec(cab,n,min,bjs){return{id:cab+'_s'+n,nombre:'Sector '+n,ejMin:min,bandejas:bjs.map(b=>({id:cab+'_b'+b[0].replace('.','_'),nombre:'Bandeja '+b[0],caudal:b[1],ejDren:b[2]}))}}
 const T12=[['1.1',223,6750],['1.2',220,8000],['1.3',219,3500]], T22=[['2.1',207,7000],['2.2',224,8000],['2.3',202,9000]];
 const DEFAULT_CONFIG={v:1,productos:PRODUCTOS,alertas:{ceMax:4,dCE:1.5,phMin:5.5,phMax:7,llenado:33},riego:{ini:'08:30',fin:'18:30'},medida:'cm',medidaV:2,
+  almacenes:[{id:'gaspla',nombre:'Gasolinera y Planos',cabezales:['gas','pla']},{id:'fra',nombre:'Franco',cabezales:['fra']},{id:'fuente',nombre:'La Fuente',cabezales:['mt2','mt3']}],
   fincas:[{id:'pinta',nombre:'Pinta Santos',cabezales:['pla','gas','fra']},{id:'palacias',nombre:'Las Palacias',cabezales:[]},{id:'fuente',nombre:'La Fuente',cabezales:['mt2','mt3']}],ubic:{lat:37.4063,lon:-1.5829},stockMin:{},saco:{},
   cabezales:[
     {id:'gas',nombre:'Gasolinera',ejM3:214,sectores:[sec('gas',3,130,[['3.1',209,10500],['3.2',210,11300]]),sec('gas',4,110,[['4.1',210,8750],['4.2',198,10250]])]},
@@ -1090,26 +1097,50 @@ async function lfSave(){const L=st.lf,b=bid(L.bidon);if(L.final==null||L.final<0
   const ev={ts:new Date().toISOString(),fecha:L.fecha||st.fecha,bidon:b.id,tipo:L.tipo,cmFinal:L.final};
   if(L.tipo==='llenado'){ev.cmAdd=L.add;ev.cantidades={};const lt=L.add*b.lpcm;for(const x of b.productos){if(!x.dosis)continue;ev.cantidades[x.p]=+(lt*conc(b,x)/1000).toFixed(2)}}
   try{const id=await Store.addCol('llenados',ev);st.llen.unshift({...ev,id});
-    if(L.tipo==='llenado'&&L.desc)for(const[p,q]of Object.entries(ev.cantidades)){const m={ts:ev.ts,fecha:ev.fecha,tipo:'salida',p,qty:-q,origen:b.id,llenado:id};const mid=await Store.addCol('almacen',m);st.alm.unshift({...m,id:mid})}
+    if(L.tipo==='llenado'&&L.desc)for(const[p,q]of Object.entries(ev.cantidades)){const m={ts:ev.ts,fecha:ev.fecha,tipo:'salida',alm:almDeCab(b.cabezales[0]),p,qty:-q,origen:b.id,llenado:id};const mid=await Store.addCol('almacen',m);st.alm.unshift({...m,id:mid})}
     st.lf=null;renderMain();toast(L.tipo==='llenado'?'Llenado guardado'+(L.desc?' y descontado del almacén':''):'Nivel guardado')}catch(e){toast(errMsg(e))}}
 async function llDel(id){try{await Store.delCol('llenados',id);st.llen=st.llen.filter(e=>e.id!==id);for(const m of st.alm.filter(m=>m.llenado===id)){await Store.delCol('almacen',m.id)}st.alm=st.alm.filter(m=>m.llenado!==id);st.confirmLl=null;renderMain();toast('Registro borrado')}catch(e){toast(errMsg(e))}}
 
 /* ---------- Almacén ---------- */
 const pn=p=>prod(p).n.replace(/­/g,'');
-function stockDe(p){let s=0;for(const m of st.alm||[])if(m.p===p)s+=m.qty||0;return s}
-function consumoDia(p){const d=new Date();d.setDate(d.getDate()-30);const lim=isoD(d);let s=0;for(const m of st.alm||[])if(m.p===p&&m.tipo==='salida'&&m.fecha>=lim)s+=-m.qty;return s/30}
-function stockRow(p){const s=stockDe(p),c=consumoDia(p),min=st.cfg.stockMin[p],d=c>0?Math.max(0,s)/c:null,bajo=min!=null&&s<=min;
+/* Almacenes: cada uno da servicio a unos cabezales (Gasolinera y Planos comparten) */
+const almacenes=()=>st.cfg.almacenes||DEFAULT_CONFIG.almacenes;
+const almById=id=>almacenes().find(a=>a.id===id)||null;
+const almDeCab=cab=>(almacenes().find(a=>a.cabezales.includes(cab))||almacenes()[0]).id;
+function almDeMov(m){if(m.alm)return m.alm;const b=m.origen&&bid(m.origen);return b?almDeCab(b.cabezales[0]):almacenes()[0].id}
+function almsVis(){const ok=new Set(cabsVis().map(c=>c.id));return almacenes().filter(a=>a.cabezales.some(c=>ok.has(c)))}
+function almAct(){const vs=almsVis();if(!vs.find(a=>a.id===st.almSel))st.almSel=(vs.find(a=>a.cabezales.includes(st.cab))||vs[0]||almacenes()[0]).id;return st.almSel}
+const minStock=(p,a)=>{const v=st.cfg.stockMin[a+'|'+p];return v!=null?v:(a===almacenes()[0].id?st.cfg.stockMin[p]:undefined)};
+function stockDe(p,a){let s=0;for(const m of st.alm||[])if(m.p===p&&(!a||almDeMov(m)===a))s+=m.qty||0;return s}
+function consumoDia(p,a){const d=new Date();d.setDate(d.getDate()-30);const lim=isoD(d);let s=0;for(const m of st.alm||[])if(m.p===p&&m.tipo==='salida'&&m.fecha>=lim&&(!a||almDeMov(m)===a))s+=-m.qty;return s/30}
+function stockRow(p){const a=almAct(),s=stockDe(p,a),c=consumoDia(p,a),min=minStock(p,a),d=c>0?Math.max(0,s)/c:null,bajo=min!=null&&s<=min;
   const k=s<-0.001?'bad':bajo?'bad':d!=null&&d<=7?'warn':'ok';return{s,c,min,d,k,t:s<-0.001?'Revisar':bajo?'Pedir':k==='warn'?'Pocos días':'Bien'}}
-function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div class="note">Cargando almacén…</div></div>'}
-  const ps=Object.keys(st.cfg.productos),mes=hoy().slice(0,7),ent=st.alm.filter(m=>m.tipo==='entrada'&&(m.fecha||'').slice(0,7)===mes),nb=ps.filter(p=>stockRow(p).k==='bad').length;
-  let h=`<section class="summary" data-out="asum"><div class="stat"><span>Para pedir</span><b>${nb}</b><small>bajo mínimo o en negativo</small></div><div class="stat"><span>Entradas del mes</span><b>${ent.length}</b><small>albaranes</small></div><div class="stat"><span>Movimientos</span><b>${st.alm.length}</b><small>registrados</small></div></section>`;
+st.almPer=st.almPer||30;
+function consumoCabHTML(a){const al=almById(a);if(!al)return '';if(st.hist===null){loadHist();return ''}const per=st.almPer,d=new Date();let desde;
+  if(per==='mes')desde=hoy().slice(0,7)+'-01';else{d.setDate(d.getDate()-per+1);desde=isoD(d)}
+  const regs=(st.hist||[]).filter(r=>r.fecha>=desde&&r.fecha<=hoy()),cabs=al.cabezales.filter(c=>cabsVis().some(x=>x.id===c)),kg={},dias={};
+  for(const c of cabs){kg[c]={};dias[c]=0;for(const r of regs){if(!r.m3||r.m3[c]==null)continue;dias[c]++;const k=kgCab(r,c);for(const p in k)kg[c][p]=(kg[c][p]||0)+k[p]}}
+  const sal={};for(const m of st.alm||[])if(m.tipo==='salida'&&m.fecha>=desde&&almDeMov(m)===a)sal[m.p]=(sal[m.p]||0)-m.qty;
+  const ps=Object.keys(st.cfg.productos).filter(p=>cabs.some(c=>(kg[c][p]||0)>0.0001)||(sal[p]||0)>0.0001);
+  return `<section class="card"><div class="tank-h"><div><h3>Consumo por cabezal</h3><div class="sub">Lo que ha gastado cada uno según las cuentas del día${cabs.length>1?' · el stock es común':''}</div></div>
+    <div class="row">${[[7,'7 días'],[30,'30 días'],['mes','Este mes']].map(([k,t])=>`<button class="chip" data-aper="${k}" aria-pressed="${String(per)===String(k)}">${t}</button>`).join('')}</div></div>
+    ${ps.length?`${cabs.length>1?`<div class="cleg">${cabs.map((c,k)=>`<span><i style="background:${['var(--accent)','#c98a2b','var(--navy)'][k%3]}"></i>${esc(cabNombre(c))} · ${dias[c]} días</span>`).join('')}</div>`:''}<div class="crows">${ps.map(p=>{const t=cabs.reduce((x,c)=>x+(kg[c][p]||0),0);
+      return `<div class="crow"><div class="cn"><b>${esc(pn(p))}</b><span>Total <b>${fmt(t,1)} ${uCant(p)}</b> · salido del almacén ${fmt(sal[p]||0,1)} ${uCant(p)}</span></div>
+        ${cabs.length>1&&t>0?`<div class="cbar">${cabs.map((c,k)=>`<i style="width:${(kg[c][p]||0)*100/t}%;background:${['var(--accent)','#c98a2b','var(--navy)'][k%3]}"></i>`).join('')}</div>`:''}
+        <div class="cv">${cabs.map(c=>`<span>${esc(cabNombre(c))} <b>${fmt(kg[c][p]||0,1)} ${uCant(p)}</b>${cabs.length>1&&t>0?' · '+fmt((kg[c][p]||0)*100/t,0)+' %':''}</span>`).join('')}</div></div>`}).join('')}</div>
+      <div class="note">«Salido del almacén» son los abonos descontados al registrar llenados. Si difiere mucho del total gastado, revisa llenados o cuentas.</div>`:'<div class="note">Sin datos de consumo en este periodo.</div>'}</section>`}
+function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div class="note">Cargando almacén…</div></div>'}const aid=almAct(),alm=almById(aid),avs=almsVis();
+  const ps=Object.keys(st.cfg.productos),mes=hoy().slice(0,7),movA=st.alm.filter(m=>almDeMov(m)===aid),ent=movA.filter(m=>m.tipo==='entrada'&&(m.fecha||'').slice(0,7)===mes),nb=ps.filter(p=>stockRow(p).k==='bad').length;
+  let h=(avs.length>1?`<div class="pick">${avs.map(a=>`<button class="chip" data-almsel="${a.id}" aria-pressed="${a.id===aid}">Almacén ${esc(a.nombre)}</button>`).join('')}</div>`:'')+`<div class="almh"><h2>Almacén ${esc(alm.nombre)}</h2><div class="sub">Da servicio a ${esc(alm.cabezales.map(cabNombre).join(', '))}${alm.cabezales.length>1?' · stock común':''}</div></div>`;
+  h+=`<section class="summary" data-out="asum"><div class="stat"><span>Para pedir</span><b>${nb}</b><small>bajo mínimo o en negativo</small></div><div class="stat"><span>Entradas del mes</span><b>${ent.length}</b><small>albaranes</small></div><div class="stat"><span>Movimientos</span><b>${movA.length}</b><small>registrados</small></div></section>`;
   h+=`<section class="card"><div><h3>Stock</h3><div class="sub">Existencias, consumo de los últimos 30 días y mínimo para pedir</div></div><div>`+ps.map(p=>{const r=stockRow(p);return `<div class="srow"><div class="nm"><b>${esc(prod(p).n)}</b><small data-out="sc_${p}">${r.c>0?'consumo '+fmt(r.c,1)+' '+uCant(p)+'/día':'sin consumo reciente'}${r.d!=null?' · '+fmt(r.d,0)+' días':''}</small></div>
     <div class="sv" data-out="sv_${p}">${sacoDe(p)&&r.s>0.001?(()=>{const z=sacoDe(p),n=Math.floor(r.s/z+1e-6),rr=r.s-n*z;return `<b>${n}</b> <span class="u">${n===1?'saco':'sacos'}</span>${rr>0.05?` <span class="u">+ ${fmt(rr,1)} kg</span>`:''}<small>${fmt(r.s,1)} kg en total</small>`})():`<b>${fmt(r.s,1)}</b> <span class="u">${uCant(p)}</span>`}</div>
-    <div class="flds"><div class="field"><label for="mn_${p}">Mínimo</label><div class="inp sm"><input id="mn_${p}" data-k="cfg.min.${p}" inputmode="decimal" value="${inVal(r.min)}"><span class="u">${uCant(p)}</span></div></div>
+    <div class="flds"><div class="field"><label for="mn_${p}">Mínimo</label><div class="inp sm"><input id="mn_${p}" data-k="cfg.min.${aid}|${p}" inputmode="decimal" value="${inVal(r.min)}"><span class="u">${uCant(p)}</span></div></div>
     ${sacoDe(p)?`<div class="field"><label for="sz_${p}">Saco de</label><div class="inp sm"><input id="sz_${p}" data-k="cfg.saco.${p}" inputmode="decimal" value="${inVal(sacoDe(p))}"><span class="u">kg</span></div></div>`:''}</div>
     <span data-out="sp_${p}"><span class="pill ${r.k}">${r.t}</span></span></div>`}).join('')+`</div></section>`;
+  h+=consumoCabHTML(aid);
   const e=st.ent;
-  h+=`<section class="card"><div><h3>Nueva entrada</h3><div class="sub">Pedido recibido</div></div><div class="frm">
+  h+=`<section class="card"><div><h3>Nueva entrada</h3><div class="sub">Pedido recibido en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
     <div class="field"><label for="ae_p">Producto</label><div class="inp"><select id="ae_p" data-ae="p">${ps.map(p=>`<option value="${p}" ${e.p===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div></div>
     ${sacoDe(e.p)?`<div class="field"><label for="ae_sacos">Sacos de ${fmt(sacoDe(e.p),0)} kg</label><div class="inp"><input id="ae_sacos" data-ae="sacos" inputmode="decimal" value="${sacIn(e.p,e.qty)}"></div></div>`:''}
     <div class="field"><label for="ae_qty">${sacoDe(e.p)?'Kilos':'Cantidad'}</label><div class="inp"><input id="ae_qty" data-ae="qty" inputmode="decimal" value="${inVal(e.qty)}"><span class="u">${uCant(e.p)}</span></div></div>
@@ -1119,22 +1150,22 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
     ${adjHTML(e.adj,true)}
     <div class="row">${Adj.can()?`<label class="btn" for="ae_foto">Foto del albarán</label><input type="file" id="ae_foto" data-ae="file" accept="image/*,application/pdf" multiple hidden>`:''}<button class="btn pri" data-act="ent-save" ${e.adj.some(a=>a.tmp)?'disabled':''}>Guardar entrada</button></div></section>`;
   const a=st.aj;
-  h+=`<section class="card"><div><h3>Ajustar inventario</h3><div class="sub">Cuando cuentes lo que hay de verdad en el almacén</div></div><div class="frm">
+  h+=`<section class="card"><div><h3>Ajustar inventario</h3><div class="sub">Cuando cuentes lo que hay de verdad en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
     <div class="field"><label for="aj_p">Producto</label><div class="inp"><select id="aj_p" data-aj="p">${ps.map(p=>`<option value="${p}" ${a.p===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div></div>
     ${sacoDe(a.p)?`<div class="field"><label for="aj_sacos">Sacos reales de ${fmt(sacoDe(a.p),0)} kg</label><div class="inp"><input id="aj_sacos" data-aj="sacos" inputmode="decimal" value="${sacIn(a.p,a.real)}"></div></div>`:''}
     <div class="field"><label for="aj_real">${sacoDe(a.p)?'Kilos reales':'Stock real'}</label><div class="inp"><input id="aj_real" data-aj="real" inputmode="decimal" value="${inVal(a.real)}"><span class="u">${uCant(a.p)}</span></div></div></div>
-    <div class="row"><span class="note" data-out="ajn">En la app: ${fmt(stockDe(a.p),1)} ${uCant(a.p)}${sacosTxt(a.p,stockDe(a.p))?' ('+sacosTxt(a.p,stockDe(a.p))+')':''}${a.real!=null?' · diferencia '+(a.real-stockDe(a.p)>=0?'+':'')+fmt(a.real-stockDe(a.p),1)+' '+uCant(a.p):''}</span><button class="btn pri" data-act="aj-save">Ajustar</button></div></section>`;
-  const mv=st.alm.slice().sort((x,y)=>x.ts<y.ts?1:-1).slice(0,60);
+    <div class="row"><span class="note" data-out="ajn">En la app: ${fmt(stockDe(a.p,aid),1)} ${uCant(a.p)}${sacosTxt(a.p,stockDe(a.p,aid))?' ('+sacosTxt(a.p,stockDe(a.p,aid))+')':''}${a.real!=null?' · diferencia '+(a.real-stockDe(a.p,aid)>=0?'+':'')+fmt(a.real-stockDe(a.p,aid),1)+' '+uCant(a.p):''}</span><button class="btn pri" data-act="aj-save">Ajustar</button></div></section>`;
+  const mv=movA.slice().sort((x,y)=>x.ts<y.ts?1:-1).slice(0,60);
   h+=`<section class="card"><div><h3>Movimientos</h3><div class="sub">Entradas, salidas por llenado y ajustes</div></div>`+(mv.length?`<div class="msgs">`+mv.map(m=>{const o=m.origen&&bid(m.origen);
     return `<div class="msg"><div class="h"><span class="pill ${m.tipo==='entrada'?'ok':m.tipo==='salida'?'nd':'warn'}">${m.tipo}</span><b>${m.qty>=0?'+':'−'}${fmt(Math.abs(m.qty),1)} ${uCant(m.p)}</b>${sacosTxt(m.p,Math.abs(m.qty))&&Math.abs(m.qty)>=sacoDe(m.p)?`<span>${sacosTxt(m.p,Math.abs(m.qty))}</span>`:''}<span>${esc(pn(m.p))}</span><span>${fFecha(m.fecha)}</span></div>
     ${m.prov||m.alb?`<p>${esc([m.prov,m.alb?'Albarán '+m.alb:''].filter(Boolean).join(' · '))}</p>`:''}${o?`<p class="note">${esc(o.nombre)} · ${esc(o.cabezales.map(cabNombre).join(' + '))}</p>`:''}${adjHTML(m.adjuntos,false)}
     <div class="row">${st.confirmMv===m.id?`<span class="note">¿Borrar movimiento?</span><button class="btn danger" data-act="mv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="mv-del-no">Cancelar</button>`:`<button class="btn" data-act="mv-del" data-id="${m.id}">Borrar</button>`}</div></div>`}).join('')+`</div>`:`<div class="note">Sin movimientos.</div>`)+`</section>`;
   return h}
 async function entSave(){const e=st.ent;if(!(e.qty>0)){toast('Escribe la cantidad');return}
-  const m={ts:new Date().toISOString(),fecha:e.fecha||hoy(),tipo:'entrada',p:e.p,qty:e.qty,prov:e.prov.trim(),alb:e.alb.trim(),adjuntos:e.adj.filter(a=>!a.tmp)};
+  const m={ts:new Date().toISOString(),fecha:e.fecha||hoy(),tipo:'entrada',alm:almAct(),p:e.p,qty:e.qty,prov:e.prov.trim(),alb:e.alb.trim(),adjuntos:e.adj.filter(a=>!a.tmp)};
   try{const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id});st.ent={p:e.p,qty:null,fecha:hoy(),prov:e.prov,alb:'',adj:[]};renderMain();toast('Entrada guardada')}catch(err){toast(errMsg(err))}}
-async function ajSave(){const a=st.aj;if(a.real==null){toast('Escribe el stock real');return}const q=+(a.real-stockDe(a.p)).toFixed(3);if(Math.abs(q)<0.001){toast('No hay diferencia');return}
-  const m={ts:new Date().toISOString(),fecha:hoy(),tipo:'ajuste',p:a.p,qty:q};try{const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id});st.aj={p:a.p,real:null};renderMain();toast('Inventario ajustado')}catch(err){toast(errMsg(err))}}
+async function ajSave(){const a=st.aj,aid=almAct();if(a.real==null){toast('Escribe el stock real');return}const q=+(a.real-stockDe(a.p,aid)).toFixed(3);if(Math.abs(q)<0.001){toast('No hay diferencia');return}
+  const m={ts:new Date().toISOString(),fecha:hoy(),tipo:'ajuste',alm:aid,p:a.p,qty:q};try{const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id});st.aj={p:a.p,real:null};renderMain();toast('Inventario ajustado')}catch(err){toast(errMsg(err))}}
 async function mvDel(id){const m=st.alm.find(x=>x.id===id);try{await Store.delCol('almacen',id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.alm=st.alm.filter(x=>x.id!==id);st.confirmMv=null;renderMain();toast('Movimiento borrado')}catch(e){toast(errMsg(e))}}
 
 /* ---------- Informe mensual ---------- */
@@ -1400,8 +1431,8 @@ function resumenHTML(){if(st.hist===null||st.llen===null||st.alm===null)return `
   const pv=privSinLeer().length;if(pv)items.push(['bad',pv===1?'1 mensaje privado para ti':pv+' mensajes privados para ti','mensajes-priv']);
   const pm=pendParaMi().length;if(pm)items.push(['bad',pm===1?'1 mensaje para ti':pm+' mensajes para ti','mensajes-mios']);
   const pend=(st.msgs||[]).filter(m=>!m.resuelto).length;if(pend)items.push(['warn',pend===1?'1 mensaje pendiente':pend+' mensajes pendientes','mensajes']);
-  const bajos=Object.keys(st.cfg.productos).filter(p=>{const m=st.cfg.stockMin[p];return m!=null&&stockDe(p)<=m});
-  if(bajos.length)items.push(['bad','Bajo mínimo en el almacén: '+bajos.map(pn).join(', '),'almacen']);
+  const bajos=[];for(const a of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,a.id);if(m!=null&&stockDe(p,a.id)<=m)bajos.push(p+'@'+a.id)}
+  if(bajos.length)items.push(['bad','Bajo mínimo: '+bajos.map(x=>{const[p,a]=x.split('@');return pn(p)+' ('+(almById(a)||{}).nombre+')'}).join(', '),'almacen']);
   if(items.every(i=>i[0]==='ok'))items.push(['ok','Todo al día','cuentas-hoy']);
   return `<div><h3>Tu día</h3><div class="sub">Toca para ir directo</div></div><div class="resumen">${items.map(([k,t,go])=>`<button class="ritem" data-go="${go}"><i class="dot ${k}"></i><span>${esc(t)}</span><b aria-hidden="true">›</b></button>`).join('')}</div>`}
 function spRes(){const el=$('#sp_res');if(el&&!$('#splash').hidden)el.innerHTML=resumenHTML()}
@@ -1627,6 +1658,8 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='t-del-yes')tareaDel(t.dataset.id);
   else if(t.dataset.tfil){st.tFil=t.dataset.tfil;renderMain()}
   else if(t.dataset.mfil){st.mFil=t.dataset.mfil;renderMain()}
+  else if(t.dataset.almsel){st.almSel=t.dataset.almsel;st.confirmMv=null;renderMain()}
+  else if(t.dataset.aper){st.almPer=t.dataset.aper==='mes'?'mes':+t.dataset.aper;renderMain()}
   else if(t.dataset.act==='m-nuevo'){st.mf.open=true;if(!st.mf.finca&&st.finca)st.mf.finca=st.finca;renderMain();const i=$('#mf_art');if(i)i.focus()}
   else if(t.dataset.act==='m-cerrar'){st.mf.open=false;renderMain()}
   else if(t.dataset.act==='m-crear')crearMat();
@@ -1703,7 +1736,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
-  try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
+  try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
   st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs()})();
 /* Con datos compartidos: al volver a la app, recarga lo que hayan guardado otros */
 setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
