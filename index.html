@@ -1526,7 +1526,7 @@ function vCultivo(){if(st.crec===null){loadCrec();return '<section class="card">
     <div class="cvslide"><input type="range" id="cv_dia" data-cv="dia" min="0" max="${diasEntre(ini,fin)}" value="${diasEntre(ini,f)}" aria-label="Día"><div class="t"><span>${esc(fCorta(ini))}</span><span>${esc(fCorta(fin))}</span></div></div></section>`;
   h+=`<section class="card"><div><h3>Altura y riego</h3><div class="sub">Línea: altura de la planta · barras: m³ regados cada día</div></div><div id="cvgraf">${cvGrafica(cab,ini,fin,f)}</div></section>`;
   // nueva medida
-  const g=st.cf&&st.cf.cab===cab?st.cf:(st.cf={cab,fecha:hoy(),altura:'',ram:'',guias:String(cu.guias||(ms.length?ms[ms.length-1].guias:'')||''),flor:'',pint:'',cos:'',diam:'',nota:'',adj:[]});
+  const g=st.cf&&st.cf.cab===cab?st.cf:(st.cf={cab,fecha:hoy(),...(cab==='gas'&&!ms.length?{altura:'3',ram:'8'}:{altura:'',ram:''}),guias:String(cu.guias||(ms.length?ms[ms.length-1].guias:'')||''),flor:'',pint:'',cos:'',diam:'',nota:'',adj:[]});
   const fl=(id,lab,u,attrs)=>`<div class="field"><label for="cf_${id}">${lab}</label><div class="inp"><input id="cf_${id}" data-cf="${id}" ${attrs||'inputmode="decimal"'} autocomplete="off" value="${esc(g[id]??'')}">${u?`<span class="u">${u}</span>`:''}</div></div>`;
   h+=`<section class="card"><div><h3>Apuntar medida</h3><div class="sub">Mide siempre la misma planta (o la media de varias marcadas). Una vez a la semana basta.</div></div>
     <div class="frm">${fl('fecha','Fecha','','type="date"')}${fl('altura','Altura','m')}${fl('ram','Ramilletes (por guía)','','inputmode="numeric"')}${fl('guias','Guías','','inputmode="numeric"')}
