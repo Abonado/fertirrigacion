@@ -6,12 +6,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Abonado">
+<meta name="application-name" content="Abonado-Fertirrigación">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head><body>
-<title>Abonado Pinta Santos</title>
+<title>Abonado-Fertirrigación</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -536,7 +537,7 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
 function ejemploReg(f){const r={fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},dren:{},ceE:{},phE:{},ceD:{},phD:{}};
   for(const c of st.cfg.cabezales){r.m3[c.id]=c.ejM3;for(const s of c.sectores){r.min[s.id]=s.ejMin;}}
   return r}
-function normReg(r,f){return{fecha:f,m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -579,7 +580,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['walkie','Walkie'],['tiempo','Tiempo'],['ajustes','Ajustes']];
+const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['walkie','Walkie'],['tiempo','Tiempo'],['ajustes','Ajustes']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -650,9 +651,9 @@ function elegirFinca(id){const f=fincasVis().find(x=>x.id===id);if(!f||!f.cabeza
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','walkie'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado Pinta Santos'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
+function renderCabs(){$('#cabs').hidden=['historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','walkie'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
-const GRUPOS=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+const GRUPOS=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','parte'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','walkie'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['historial','graficas','informe','diagnostico','tiempo'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
@@ -1381,6 +1382,96 @@ function xlsxBlob(sheets){const NS='http://schemas.openxmlformats.org/spreadshee
 async function exportXlsx(){const d=informeData(st.mes),ts=informeTablas(d);
   const sheets=ts.map(t=>({name:t.hoja,rows:[[t.titulo+' · '+nomMes(st.mes)],[],t.cab,...t.filas],bold:[0,2]}));
   await saveBlob(xlsxBlob(sheets),`informe-abonado-${st.mes}.xlsx`)}
+/* ---------- Parte diario por cabezal (PDF): cuentas, drenaje y receta del día ---------- */
+function fotoReceta(){const o={};for(const b of st.cfg.bidones)o[b.id]={kg:b.kgPrincipal,cap:b.capacidad,lpcm:b.lpcm,prods:b.productos.map(x=>({...x}))};return o}
+/* Calcula con la receta guardada ese día (si la hay); si no, con la actual */
+function conReceta(r,fn){const rc=r&&r.receta;if(!rc)return fn();const orig=st.cfg;
+  st.cfg={...orig,bidones:orig.bidones.map(b=>{const x=rc[b.id];return x?{...b,kgPrincipal:x.kg,capacidad:x.cap||b.capacidad,lpcm:x.lpcm||b.lpcm,productos:(x.prods||b.productos).map(y=>({...y}))}:b})};
+  try{return fn()}finally{st.cfg=orig}}
+function parteData(cabId){const r=st.reg;return conReceta(r,()=>{const c=cabById(cabId),f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(cabId)),R=resumen(cabId),u=unidades(cabId);
+  let ok=0,tot=0;const deps=bidonesDe(cabId).map(b=>{const L=litros(b,cabId);return{nombre:b.nombre,otros:b.cabezales.filter(x=>x!==cabId).map(cabNombre),cmTotal:r.cm[b.id],cm:cmCab(b,cabId),L,
+    filas:b.productos.filter(x=>x.dosis).map(x=>{const real=dosisReal(b,x,cabId),e=estado(real,x.dosis);if(real!=null){tot++;if(e.c==='ok')ok++}
+      return{n:pn(x.p),ud:uDosis(x.p),des:x.dosis,real,dev:e.t,c:e.c,cant:L!=null?L*conc(b,x)/1000:null,uc:uCant(x.p)}})}});
+  const sect=c.sectores.map(s=>{const min=r.min[s.id];return{nombre:s.nombre,min,ce:valSect(r,s,'ceD'),ph:valSect(r,s,'phD'),
+    band:s.bandejas.map(bj=>({nombre:bj.nombre,caudal:bj.caudal,vol:min!=null&&bj.caudal?min*bj.caudal/1000:null,ml:r.dren[bj.id],pct:drenPct(s,bj),ce:r.ceD[bj.id],ph:r.phD[bj.id]}))}});
+  const receta=bidonesDe(cabId).map(b=>({nombre:b.nombre,principal:pn(b.principal),kg:b.kgPrincipal,uP:uCant(b.principal),cap:b.capacidad,lpcm:b.lpcm,
+    filas:b.productos.filter(x=>x.dosis).map(x=>{const k=conc(b,x);return{n:pn(x.p),des:x.dosis,ud:uDosis(x.p),c1:k,c2:k*b.capacidad/1000,uc:uCant(x.p),cte:k?1000/k:null}})}));
+  return{fecha:st.fecha,finca:f?f.nombre:'',cab:c.nombre,cabId,sectores:c.sectores.map(s=>s.nombre),m3:r.m3[cabId],dren:R.drenaje,ceD:R.ceD,phD:R.phD,ok,tot,u,ce:ceEstimada(cabId),
+    rep:reparto(cabId).map(x=>({n:x.b.nombre,pct:x.pct,v:x.b.venturis})),deps,sect,receta,guardado:r.guardado,recetaDia:!!r.receta,provisional:!!(r.ejemplo||!r.guardado||st.dirtyReg)}})}
+const parteCabs=()=>{const f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(st.cab)),ok=new Set(cabsVis().map(c=>c.id));return (f?f.cabezales:[st.cab]).filter(id=>ok.has(id))};
+const fLarga=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+const pillC={ok:'ok',warn:'warn',bad:'bad',nd:'nd'};
+function vParte(){if(st.cfg.cabezales.length&&!cabById(st.cab))return '';const d=parteData(st.cab),fs=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(st.cab)),nCab=parteCabs().length;
+  let h=`<section class="card"><div><h3>Parte diario · ${esc(d.cab)}</h3><div class="sub">${esc(d.finca)} · ${esc(fLarga(d.fecha))} · Sectores: ${esc(d.sectores.join(', '))}</div></div>
+    ${d.provisional?`<div class="banner">${st.dirtyReg?'Hay cambios sin guardar en este día: el parte sale con lo que ves ahora. Guarda el día para que quede igual para todos.':'Este día aún no está guardado: el parte saldría con datos provisionales.'}</div>`:''}
+    ${d.recetaDia?'':`<div class="note">${d.fecha<hoy()?'Este día se guardó antes de que la app apuntara la receta de cada día: sale la receta actual.':'La receta queda apuntada con el parte al guardar el día.'}</div>`}
+    <div class="row"><button class="btn pri" data-act="parte-pdf">Descargar PDF · ${esc(d.cab)}</button>${nCab>1?`<button class="btn" data-act="parte-pdf" data-todos="1">Todos los cabezales de ${esc(fs?fs.nombre:'la finca')}</button>`:''}</div>
+    <div class="note">Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`;
+  h+=`<section class="summary"><div class="stat"><span>Agua regada</span><b>${fmt(d.m3,0)} m³</b><small>${esc(d.cab)}</small></div><div class="stat"><span>En dosis (±10 %)</span><b>${d.tot?d.ok+' de '+d.tot:'—'}</b><small>productos</small></div><div class="stat"><span>Drenaje medio</span><b>${fmt(d.dren,1)} %</b><small>${d.ceD!=null?'CE '+fmt(d.ceD,2)+' mS/cm':'sin CE'}${d.phD!=null?' · pH '+fmt(d.phD,1):''}</small></div></section>`;
+  h+=`<section class="card"><div><h3>1. Cuentas del día</h3><div class="sub">Gasto de los depósitos y dosis real</div></div>`+d.deps.map(b=>`<div><b>${esc(b.nombre)}</b> <span class="note">${b.cm!=null?fmt(b.cm,1)+' cm · '+fmt(b.L,0)+' L':'sin cm gastados'}${b.otros.length?' · compartido con '+esc(b.otros.join(', ')):''}</span></div>
+    <div class="tbl"><table><thead><tr><th>Producto</th><th>Deseada</th><th>Real</th><th>Desv.</th><th>Aplicado</th></tr></thead><tbody>${b.filas.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmt(x.des,2)} <span class="u">${x.ud}</span></td><td><b>${fmt(x.real,2)}</b></td><td><span class="pill ${pillC[x.c]}">${x.dev}</span></td><td>${x.cant!=null?fmt(x.cant,2)+' '+x.uc:'—'}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
+  h+=`<section class="card"><div><h3>2. Drenaje</h3><div class="sub">Por sector y bandeja</div></div>`+d.sect.map(s=>`<div><b>${esc(s.nombre)}</b> <span class="note">${s.min!=null?fmt(s.min,0)+' min de riego':'sin minutos'}</span></div>
+    <div class="tbl"><table><thead><tr><th>Bandeja</th><th>Vol. total</th><th>Drenaje</th><th>%</th><th>CE</th><th>pH</th></tr></thead><tbody>${s.band.map(x=>`<tr><td>${esc(x.nombre)}</td><td>${fmt(x.vol,2)} L</td><td>${x.ml!=null?fmt(x.ml,0)+' ml':'—'}</td><td><b>${fmt(x.pct,1)}</b></td><td>${fmt(x.ce,2)}</td><td>${fmt(x.ph,1)}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
+  h+=`<section class="card"><div><h3>3. Receta ${d.recetaDia?'de ese día':'(actual)'}</h3><div class="sub">Incremento de CE estimado ${fmt(d.ce,0)} µS/cm</div></div>`+d.receta.map(b=>`<div><b>${esc(b.nombre)}</b> <span class="note">${esc(b.principal)}: ${fmt(b.kg,1)} ${b.uP} por 1000 L · ${fmt(b.cap,0)} L</span></div>
+    <div class="tbl"><table><thead><tr><th>Producto</th><th>Salida deseada</th><th>Por 1000 L</th><th>Por ${fmt(b.cap,0)} L</th></tr></thead><tbody>${b.filas.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmt(x.des,2)} <span class="u">${x.ud}</span></td><td>${fmt(x.c1,2)} ${x.uc}</td><td>${fmt(x.c2,1)} ${x.uc}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
+  return h}
+async function partePdf(cabs){let L;try{L=await pdfLib()}catch(e){toast('Hace falta conexión a internet para crear el PDF');return}
+  const{PDFDocument,StandardFonts,rgb}=L,doc=await PDFDocument.create(),f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
+  doc.setTitle(pdfTxt('Parte diario '+fD(st.fecha)));doc.setAuthor(pdfTxt(yoNombre()));doc.setCreator('Abonado-Fertirrigacion');
+  const PW=595.28,PH=841.89,M=36,IW=PW-2*M,ink=rgb(.08,.13,.17),mut=rgb(.36,.42,.45),navy=rgb(.106,.184,.29),acc=rgb(.114,.42,.278),lin=rgb(.85,.88,.86),bg=rgb(.94,.955,.945),wh=rgb(1,1,1);
+  const COL={ok:rgb(.11,.48,.28),warn:rgb(.7,.45,.02),bad:rgb(.75,.15,.12),nd:mut};
+  const fmtP=(v,d)=>v==null||!isFinite(v)?'-':v.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fit=(t,w,size,bold)=>{let s=pdfTxt(t);const fo=bold?fb:f;while(s.length>1&&fo.widthOfTextAtSize(s,size)>w)s=s.slice(0,-1);return s};
+  const ahora=new Date().toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  for(const cabId of cabs){const d=parteData(cabId);let page,y;
+    const T=(t,x,yy,o={})=>page.drawText(fit(t,o.w||IW,o.size||9,o.bold),{x,y:yy,size:o.size||9,font:o.bold?fb:f,color:o.color||ink});
+    const nueva=()=>{page=doc.addPage([PW,PH]);page.drawRectangle({x:0,y:PH-6,width:PW,height:6,color:acc});y=PH-M;
+      T('Parte diario · '+d.cab+' · '+fD(d.fecha),M,y-6,{size:8,color:mut});y-=20};
+    const sitio=h=>{if(y-h<M+18)nueva()};
+    const titulo=t=>{sitio(60);page.drawRectangle({x:M,y:y-20,width:IW,height:20,color:navy});T(t.toUpperCase(),M+8,y-14,{size:10,bold:true,color:wh});y-=30};
+    const sub=t=>{sitio(44);T(t,M,y-10,{size:10,bold:true});y-=16};
+    const nota=(t,c)=>{sitio(14);T(t,M,y-9,{size:8,color:c||mut});y-=13};
+    const tabla=(cab,filas,cw,colores)=>{const rh=16,ws=cw.map(x=>x*IW);
+      const head=()=>{page.drawRectangle({x:M,y:y-rh,width:IW,height:rh,color:bg});let x=M;cab.forEach((hh,j)=>{const s=fit(String(hh).toUpperCase(),ws[j]-8,7,true),w=fb.widthOfTextAtSize(s,7);page.drawText(s,{x:j===0?x+5:x+ws[j]-5-w,y:y-rh+5.5,size:7,font:fb,color:mut});x+=ws[j]});y-=rh};
+      sitio(rh*2+4);head();
+      filas.forEach((r,i)=>{if(y-rh<M+18){nueva();head()}let x=M;r.forEach((v,j)=>{const bold=colores&&colores[i]&&colores[i][j];const s=fit(v,ws[j]-8,8.5,!!bold),fo=bold?fb:f,w=fo.widthOfTextAtSize(s,8.5);
+          page.drawText(s,{x:j===0?x+5:x+ws[j]-5-w,y:y-rh+5,size:8.5,font:fo,color:bold?(COL[bold]||ink):ink});x+=ws[j]});
+        page.drawLine({start:{x:M,y:y-rh},end:{x:M+IW,y:y-rh},thickness:.5,color:lin});y-=rh});y-=10};
+    // Cabecera
+    page=doc.addPage([PW,PH]);page.drawRectangle({x:0,y:PH-92,width:PW,height:92,color:navy});page.drawRectangle({x:0,y:PH-96,width:PW,height:4,color:acc});
+    T('PARTE DIARIO DE FERTIRRIGACIÓN',M,PH-38,{size:17,bold:true,color:wh});
+    T(d.cab+'  ·  '+d.finca,M,PH-58,{size:12,bold:true,color:wh});
+    T(fLarga(d.fecha).replace(/^./,x=>x.toUpperCase()),M,PH-76,{size:10,color:rgb(.82,.87,.92)});
+    y=PH-112;
+    const datos=[['Finca',d.finca||'-'],['Cabezal',d.cab],['Sectores',d.sectores.join(', ')||'-'],['Fecha',fD(d.fecha)],['Agua regada',fmtP(d.m3,0)+' m³'],['Generado',ahora+' por '+yoNombre()]];
+    const cw2=IW/3;datos.forEach((kv,i)=>{const x=M+(i%3)*cw2,yy=y-Math.floor(i/3)*30;T(kv[0].toUpperCase(),x,yy-8,{size:7,bold:true,color:mut,w:cw2-10});T(kv[1],x,yy-21,{size:10,bold:true,w:cw2-10})});
+    y-=66;
+    if(d.provisional){page.drawRectangle({x:M,y:y-18,width:IW,height:18,color:rgb(1,.95,.86)});T(st.dirtyReg?'Atención: incluye cambios que aún no se han guardado en la app.':'Atención: este día no está guardado en la app; datos provisionales.',M+6,y-12.5,{size:8.5,bold:true,color:COL.warn});y-=28}
+    // Resumen
+    const st4=[['Agua regada',fmtP(d.m3,0)+' m³'],['En dosis (±10 %)',d.tot?d.ok+' de '+d.tot:'-'],['Drenaje medio',fmtP(d.dren,1)+' %'],['CE / pH drenaje',fmtP(d.ceD,2)+' / '+fmtP(d.phD,1)]],bw=(IW-18)/4;
+    st4.forEach((x,i)=>{const bx=M+i*(bw+6);page.drawRectangle({x:bx,y:y-44,width:bw,height:44,color:bg});T(x[0].toUpperCase(),bx+8,y-14,{size:7,bold:true,color:mut,w:bw-14});T(x[1],bx+8,y-34,{size:13,bold:true,w:bw-14})});y-=58;
+    // 1. Cuentas
+    titulo('1. Cuentas del día');
+    if(d.u.des!=null)nota('Unidades fertilizantes aportadas: '+fmtP(d.u.real,0)+' (objetivo '+fmtP(d.u.des,0)+')');
+    for(const b of d.deps){sub(b.nombre);nota((b.cm!=null?'Gastado: '+fmtP(b.cm,1)+' cm = '+fmtP(b.L,0)+' L':'Sin cm gastados apuntados')+(b.otros.length?'  ·  Compartido con '+b.otros.join(', ')+(b.cmTotal!=null?' (total depósito '+fmtP(b.cmTotal,1)+' cm)':''):''));
+      tabla(['Producto','Salida deseada','Real','Desviación','Aplicado'],b.filas.map(x=>[x.n,fmtP(x.des,2)+' '+x.ud,fmtP(x.real,2)+' '+x.ud,x.dev==='—'?'-':x.dev,x.cant!=null?fmtP(x.cant,2)+' '+x.uc:'-']),[.34,.18,.18,.13,.17],b.filas.map(x=>[0,0,0,x.c!=='nd'?x.c:0,0]))}
+    // 2. Drenaje
+    titulo('2. Drenaje');
+    for(const s of d.sect){sub(s.nombre);nota((s.min!=null?'Tiempo de riego: '+fmtP(s.min,0)+' min':'Sin minutos de riego')+(s.ce!=null?'  ·  CE media '+fmtP(s.ce,2)+' mS/cm':'')+(s.ph!=null?'  ·  pH medio '+fmtP(s.ph,1):''));
+      const a=st.cfg.alertas;tabla(['Bandeja','Caudal','Volumen total','Drenaje','% drenaje','CE','pH'],s.band.map(x=>[x.nombre,fmtP(x.caudal,0)+' ml/min',fmtP(x.vol,2)+' L',x.ml!=null?fmtP(x.ml,0)+' ml':'-',fmtP(x.pct,1)+(x.pct!=null?' %':''),fmtP(x.ce,2),fmtP(x.ph,1)]),[.22,.13,.14,.12,.13,.13,.13],
+        s.band.map(x=>[0,0,0,0,x.pct!=null&&x.pct>100?'bad':0,x.ce!=null&&x.ce>a.ceMax?'bad':0,x.ph!=null&&(x.ph<a.phMin||x.ph>a.phMax)?'bad':0]))}
+    // 3. Receta
+    titulo('3. Receta '+(d.recetaDia?'de ese día':'actual'));
+    if(!d.recetaDia)nota('Este día no tiene la receta apuntada: se muestra la receta actual.',COL.warn);
+    nota('Incremento de CE estimado: '+fmtP(d.ce,0)+' µS/cm'+(d.rep.length?'  ·  Reparto de venturis: '+d.rep.map(x=>x.n.replace(/^Depósito /,'')+' '+fmtP(x.pct,1)+' %').join(', '):''));
+    for(const b of d.receta){sub(b.nombre);nota(b.principal+': '+fmtP(b.kg,1)+' '+b.uP+' por 1000 L  ·  Capacidad '+fmtP(b.cap,0)+' L  ·  '+fmtP(b.lpcm,1)+' L por cm');
+      tabla(['Producto','Salida deseada','Por 1000 L','Por '+fmtP(b.cap,0)+' L','Constante'],b.filas.map(x=>[x.n,fmtP(x.des,2)+' '+x.ud,fmtP(x.c1,2)+' '+x.uc,fmtP(x.c2,1)+' '+x.uc,fmtP(x.cte,1)]),[.32,.18,.17,.17,.16])}
+    // Firma
+    sitio(60);y-=8;page.drawLine({start:{x:M,y:y-36},end:{x:M+200,y:y-36},thickness:.6,color:mut});T('Revisado por',M,y-48,{size:8,color:mut});
+    page.drawLine({start:{x:M+IW-200,y:y-36},end:{x:M+IW,y:y-36},thickness:.6,color:mut});T('Observaciones',M+IW-200,y-48,{size:8,color:mut});y-=60}
+  const pages=doc.getPages();pages.forEach((p,i)=>{p.drawText(pdfTxt('Abonado-Fertirrigación'),{x:M,y:20,size:7.5,font:f,color:mut});p.drawText(`${i+1} / ${pages.length}`,{x:PW-M-24,y:20,size:7.5,font:f,color:mut})});
+  const bytes=await doc.save(),nom=cabs.length>1?((st.cfg.fincas||[]).find(x=>x.cabezales.includes(cabs[0]))||{nombre:'finca'}).nombre:cabNombre(cabs[0]);
+  await saveBlob(new Blob([bytes],{type:'application/pdf'}),`parte-diario-${nom.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-')}-${st.fecha}.pdf`);toast('Parte diario descargado')}
 // PDF con pdf-lib
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>{s.remove();rej(new Error('lib'))};document.head.appendChild(s)})}
 async function pdfLib(){if(window.PDFLib)return window.PDFLib;const cdn='https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js';
@@ -1739,7 +1830,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()},150)});
 
-const VIEWS={walkie:vWalkie,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
+const VIEWS={parte:vParte,walkie:vWalkie,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
 function renderMain(){$('#main').innerHTML=VIEWS[st.tab]();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
 function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=VIEWS[st.tab]();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
@@ -1771,7 +1862,7 @@ function diffCfg(a,b){const L=[];for(const nb of b.bidones){const ob=a.bidones.f
   nb.productos.forEach((x,i)=>{const o=ob.productos[i];if(o&&o.dosis!==x.dosis)L.push(`${cabs} · ${prod(x.p).n}: ${fmt(o.dosis,2)} → ${fmt(x.dosis,2)} ${uDosis(x.p)}`)})}
   return L}
 function errMsg(e){return e&&e.code==='quota_exceeded'?'No queda espacio en la base de datos de la página.':'No se pudo guardar'+(e&&e.code?' ('+e.code+')':'')+'. Prueba otra vez.'}
-async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{const r=normReg(st.reg,st.fecha);r.resumen={};for(const c of st.cfg.cabezales)r.resumen[c.id]=resumen(c.id);r.guardado=new Date().toISOString();
+async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{const r=normReg(st.reg,st.fecha);r.resumen={};for(const c of st.cfg.cabezales)r.resumen[c.id]=resumen(c.id);r.guardado=new Date().toISOString();if(st.fecha>=hoy()||(!r.receta&&st.fecha>=isoD(new Date(Date.now()-86400000))))r.receta=fotoReceta();st.reg.receta=r.receta;st.reg.guardado=r.guardado;
   await Store.setReg(st.fecha,r);st.reg.ejemplo=false;st.dirtyReg=false;st.hist=null;loadHist();toast('Día '+fCorta(st.fecha)+' guardado');if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave();if(st.tab==='cuentas'||st.tab==='drenaje'){const bn=$('.banner');if(bn&&!st.reg.ejemplo)bn.remove()}}
 async function saveCfg(){if(st.saving)return;st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
@@ -1842,6 +1933,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='mv-del-no'){st.confirmMv=null;renderMain()}
   else if(t.dataset.act==='mv-del-yes')mvDel(t.dataset.id);
   else if(t.dataset.act==='inf-xlsx')exportXlsx();
+  else if(t.dataset.act==='parte-pdf'){t.disabled=true;partePdf(t.dataset.todos?parteCabs():[st.cab]).finally(()=>{t.disabled=false})}
   else if(t.dataset.act==='inf-pdf'){t.disabled=true;exportPdf().finally(()=>{t.disabled=false})}
   else if(t.dataset.act==='rv-play')rvToggle();
   else if(t.dataset.act==='wx-reload'){st.wx=null;st.rv=null;renderMain()}
@@ -1867,7 +1959,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='notif-on'){if(pushSoportado()&&pushListo()&&!(esIOS()&&!instalada())){await pushSuscribir(true);softUpdate();avisosLlenado()}else Notification.requestPermission().then(()=>{softUpdate();avisosLlenado()})}
   else if(t.dataset.act==='push-on'){t.disabled=true;t.textContent='Activando…';const ok=await pushSuscribir(true);toast(ok?'Avisos con la app cerrada activados':'No se pudieron activar los avisos');pushProgramar()}
   else if(t.dataset.act==='push-test'){try{await pushApi('enviar',{prueba:true,retraso:10});toast('Cierra la app: el aviso llega en unos 10 segundos')}catch(e){toast('No se pudo enviar la prueba ('+(e.code||'error')+')')}}
-  else if(t.dataset.act==='notif-test'){notificar('Abonado Pinta Santos','Las notificaciones funcionan en este dispositivo','prueba')}
+  else if(t.dataset.act==='notif-test'){notificar('Abonado-Fertirrigación','Las notificaciones funcionan en este dispositivo','prueba')}
   else if(t.dataset.act==='usar-rec'){const b=bid(t.dataset.id);if(b){b.kgPrincipal=+t.dataset.v;st.dirtyCfg=true;renderMain();renderSave();toast('Cantidad aplicada: pulsa «Guardar receta y ajustes»')}}
   else if(t.dataset.act==='backup')backup();
   else if(t.dataset.act==='save-reg')saveReg();
