@@ -61,13 +61,13 @@ if(!window.firebase||!firebase.initializeApp){N.ready=()=>new Promise(()=>mostra
 
 /* ---------- Firebase ---------- */
 let fs;
-try{firebase.initializeApp(CFG);N.auth=firebase.auth();N.auth.languageCode='es';fs=firebase.firestore();fs.settings({ignoreUndefinedProperties:true});fs.enablePersistence({synchronizeTabs:true}).catch(()=>{})}
+try{firebase.initializeApp(CFG);N.auth=firebase.auth();N.auth.languageCode='es';fs=firebase.firestore();fs.settings({ignoreUndefinedProperties:true});fs.enablePersistence({synchronizeTabs:true}).then(()=>{N.persist=true}).catch(()=>{N.persist=false})}
 catch(e){console.error(e);N.ready=()=>new Promise(()=>mostrarSinSdk());return}
 
 /* Escrituras: sin cobertura Firestore las guarda en el dispositivo y las sube al volver; no esperamos más de 1,5 s */
 function espera(p){p.catch(e=>{console.error(e);aviso(e&&e.code==='permission-denied'?'Sin permiso para guardar: vuelve a entrar':'No se pudo guardar en la nube')});return Promise.race([p,new Promise(r=>setTimeout(r,1500))])}
-const D=ref=>({get:()=>ref.get(),set:d=>espera(ref.set(d)),merge:d=>espera(ref.set(d,{merge:true})),update:d=>espera(ref.update(d)),delete:()=>espera(ref.delete())});
-const Q=q=>({orderBy:(f,o)=>Q(q.orderBy(f,o)),limit:n=>Q(q.limit(n)),where:(f,op,v)=>Q(q.where(f,op,v)),get:()=>q.get()});
+const D=ref=>({get:o=>ref.get(o),set:d=>espera(ref.set(d)),merge:d=>espera(ref.set(d,{merge:true})),update:d=>espera(ref.update(d)),delete:()=>espera(ref.delete())});
+const Q=q=>({orderBy:(f,o)=>Q(q.orderBy(f,o)),limit:n=>Q(q.limit(n)),where:(f,op,v)=>Q(q.where(f,op,v)),get:o=>q.get(o)});
 const C=n=>{const c=fs.collection(P+n);return{...Q(c),doc:id=>D(c.doc(id)),add:async d=>{const r=c.doc();await espera(r.set(d));return{id:r.id}}}};
 const DB={doc:p=>{const i=p.indexOf('/');return D(fs.collection(P+p.slice(0,i)).doc(p.slice(i+1)))},collection:C};
 
@@ -120,25 +120,26 @@ N.setEncargado=async(email,si)=>{const acc=(await leerAcceso(true))||N.acc;if(!a
 N.renombrar=async(email,nombre)=>{nombre=(nombre||'').trim();if(!nombre)throw{msg:'Escribe el nombre'};const acc=(await leerAcceso(true))||N.acc;if(!acc||!acc.info||!acc.info[email])return;acc.info={...acc.info,[email]:{...acc.info[email],nombre}};await guardarAcc(acc);if(email===N.user.email){N.user.nombre=nombre;try{st.autor=nombre}catch(e){}}};
 
 /* ---------- Subir lo guardado en este dispositivo ---------- */
+const COLS=[['msgs','mensajes'],['llenados','llenados'],['almacen','almacen'],['diagnosticos','diagnosticos'],['tareas','tareas'],['material','material'],['partes','partes'],['crecimiento','crecimiento']];
 const lsJ=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
-function datosLocales(){const r=lsJ('abono.regs')||[],c=['msgs','llenados','almacen','diagnosticos'].reduce((s,k)=>s+((lsJ('abono.'+k)||[]).length),0);return{dias:r.length,otros:c,config:!!lsJ('abono.config'),cambios:(lsJ('abono.cambios')||[]).length}}
+function datosLocales(){const r=lsJ('abono.regs')||[],c=COLS.map(x=>x[0]).reduce((s,k)=>s+((lsJ('abono.'+k)||[]).length),0);return{dias:r.length,otros:c,config:!!lsJ('abono.config'),cambios:(lsJ('abono.cambios')||[]).length}}
 async function subirAdj(list){const out=[];for(const a of list||[]){if(a.local||a.fb){let b=null;try{b=await Adj.idbGet(a.id)}catch(e){}if(b){await N.putBlob(a.id,b,a.type);const x={...a,fb:true};delete x.local;out.push(x);continue}}out.push(a)}return out}
 N.subirLocal=async(silencio)=>{if(!navigator.onLine)throw{msg:'Necesitas conexión para subir los datos'};
   const ops=[];const cfg=lsJ('abono.config');if(cfg)ops.push(()=>fs.collection(P+'config').doc('finca').set(cfg));
   for(const f of lsJ('abono.regs')||[]){const r=lsJ('abono.reg.'+f);if(r)ops.push(()=>fs.collection(P+'registros').doc(f).set(r))}
   (lsJ('abono.cambios')||[]).forEach((c,i)=>{const id='c'+String(c.ts||i).replace(/[^0-9A-Za-z]/g,'');ops.push(()=>fs.collection(P+'cambios').doc(id).set(c))});
-  for(const[k,col]of[['msgs','mensajes'],['llenados','llenados'],['almacen','almacen'],['diagnosticos','diagnosticos']])
-    for(const m of lsJ('abono.'+k)||[]){if(!m)continue;const id=m.id||(col[0]+Date.now().toString(36)+Math.random().toString(36).slice(2,6));ops.push(async()=>{const d={...m};delete d.id;if(d.adjuntos)d.adjuntos=await subirAdj(d.adjuntos);if(!d.ts)d.ts=new Date().toISOString();return fs.collection(P+col).doc(id).set(d)})}
+  for(const[k,col]of COLS)
+    for(const m of lsJ('abono.'+k)||[]){if(!m)continue;const id=m.id||(col[0]+Date.now().toString(36)+Math.random().toString(36).slice(2,6));ops.push(async()=>{const d={...m};delete d.id;for(const f of ['adjuntos','adjHecha','fotos'])if(d[f])d[f]=await subirAdj(d[f]);if(!d.ts)d.ts=new Date().toISOString();d.mod=new Date().toISOString();return fs.collection(P+col).doc(id).set(d)})}
   let hechos=0;for(let i=0;i<ops.length;i+=20){await Promise.all(ops.slice(i,i+20).map(f=>f()));hechos=Math.min(ops.length,i+20);if(!silencio)aviso('Subiendo… '+hechos+' de '+ops.length)}
   try{localStorage.setItem('abono.subido',new Date().toISOString())}catch(e){}return ops.length};
 
 /* ---------- Copia de seguridad desde la nube ---------- */
-N.exportAll=async()=>{const ls={},adj={};const all=async c=>(await fs.collection(P+c).get({source:'server'})).docs.map(d=>({...d.data(),id:d.id}));
+N.exportAll=async()=>{const ls={},adj={};const all=async c=>{try{return (await fs.collection(P+c).get({source:'server'})).docs.map(d=>({...d.data(),id:d.id})).filter(x=>!x.borrado)}catch(e){if(e&&e.code==='permission-denied')return [];throw e}};
   const cs=await fs.collection(P+'config').doc('finca').get();if(cs.exists)ls['abono.config']=JSON.stringify(cs.data());
-  const regs=await all('registros');const fechas=[];for(const r of regs){const f=r.id;delete r.id;ls['abono.reg.'+f]=JSON.stringify(r);fechas.push(f)}ls['abono.regs']=JSON.stringify(fechas);
+  const regs=await all('registros');let priv=[];try{priv=(await fs.collection(P+'privados').where('miembros','array-contains',N.user.email).get({source:'server'})).docs.map(d=>({...d.data(),id:d.id}))}catch(e){}ls['abono.privados.copia']=JSON.stringify(priv);const fechas=[];for(const r of regs){const f=r.id;delete r.id;ls['abono.reg.'+f]=JSON.stringify(r);fechas.push(f)}ls['abono.regs']=JSON.stringify(fechas);
   const cam=(await all('cambios')).map(c=>{delete c.id;return c}).sort((a,b)=>a.ts<b.ts?1:-1);ls['abono.cambios']=JSON.stringify(cam);
-  for(const[k,col]of[['msgs','mensajes'],['llenados','llenados'],['almacen','almacen'],['diagnosticos','diagnosticos']]){const l=(await all(col)).sort((a,b)=>a.ts<b.ts?1:-1);
-    for(const m of l)for(const a of m.adjuntos||[])if(a.fb&&!adj[a.id]){const b=await N.getBlob(a.id).catch(()=>null);if(b)adj[a.id]=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(b)})}
+  for(const[k,col]of COLS){const l=(await all(col)).sort((a,b)=>a.ts<b.ts?1:-1);
+    for(const m of l)for(const a of [...(m.adjuntos||[]),...(m.adjHecha||[]),...(m.fotos||[])])if(a.fb&&!adj[a.id]){const b=await N.getBlob(a.id).catch(()=>null);if(b)adj[a.id]=await new Promise(r=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.readAsDataURL(b)})}
     ls['abono.'+k]=JSON.stringify(l)}
   return{ls,adjuntos:adj,dias:fechas.length}};
 

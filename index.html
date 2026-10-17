@@ -517,30 +517,43 @@ const fFecha=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'sho
 const fCorta=f=>{const p=f.split('-');return p[2]+'/'+p[1]};
 
 /* ---------- Almacenamiento: nube del artifact (db) o, si no hay, este navegador ---------- */
+const SYNC=new Set(['almacen','llenados','tareas','material','mensajes','crecimiento','partes','registros','cambios']);
+const ahoraISO=()=>new Date().toISOString();
 const Store={db:null,mode:'local',
+  /* En la nube: la primera vez descarga todo y lo guarda en el móvil; las siguientes solo pide lo cambiado (campo «mod»).
+     Una vez a la semana, o si la caché del móvil está incompleta, vuelve a descargar todo. */
+  async sync(n){const col=this.db.collection(n),u=(window.NUBE&&NUBE.user&&NUBE.user.email)||'',key='abono.sync.'+n+'.'+u,meta=this.lsGet(key)||{},inicio=ahoraISO();let docs=null;
+    const semana=!meta.full||Date.now()-Date.parse(meta.full)>7*864e5;
+    if(meta.last&&!semana&&window.NUBE&&NUBE.persist){try{const c=await col.get({source:'cache'});if(c.docs.length>=(meta.n||0))docs=new Map(c.docs.map(d=>[d.id,{...d.data(),id:d.id}]))}catch(e){docs=null}}
+    if(docs){const desde=new Date(Date.parse(meta.last)-30*60e3).toISOString(),q=await col.where('mod','>',desde).get();for(const d of q.docs)docs.set(d.id,{...d.data(),id:d.id});this.lsSet(key,{...meta,last:inicio,n:docs.size})}
+    else{const q=await col.get();docs=new Map(q.docs.map(d=>[d.id,{...d.data(),id:d.id}]));this.lsSet(key,{last:inicio,full:inicio,n:docs.size})}
+    return [...docs.values()].filter(x=>!x.borrado)},
+  async listado(n,lim,orden){orden=orden||'ts';const l=(await this.sync(n)).sort((a,b)=>(a[orden]||'')<(b[orden]||'')?1:-1);return lim?l.slice(0,lim):l},
   async init(){if(window.NUBE&&NUBE.db){this.db=NUBE.db;this.mode='fb';return}try{if(window.claude&&typeof window.claude.use==='function'){const db=await window.claude.use('db');if(db){this.db=db;this.mode='db'}}}catch(e){}},
   lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}},
   lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},
   async getConfig(){if(this.db){const s=await this.db.doc('config/finca').get();return s.exists?s.data():null}return this.lsGet('abono.config')},
   async setConfig(c){if(this.db)return this.db.doc('config/finca').set(c);this.lsSet('abono.config',c)},
   async getReg(f){if(this.db){const s=await this.db.doc('registros/'+f).get();return s.exists?s.data():null}return this.lsGet('abono.reg.'+f)},
-  async setReg(f,r){if(this.db)return this.db.doc('registros/'+f).set(r);this.lsSet('abono.reg.'+f,r);const i=new Set(this.lsGet('abono.regs')||[]);i.add(f);this.lsSet('abono.regs',[...i])},
-  async listRegs(){if(this.db){const q=await this.db.collection('registros').orderBy('fecha','desc').limit(120).get();return q.docs.map(d=>d.data())}return(this.lsGet('abono.regs')||[]).sort().reverse().slice(0,120).map(f=>this.lsGet('abono.reg.'+f)).filter(Boolean)},
-  async addCambio(c){if(this.db)return this.db.collection('cambios').add(c);const l=this.lsGet('abono.cambios')||[];l.unshift(c);this.lsSet('abono.cambios',l.slice(0,200))},
-  async listCambios(){if(this.db){const q=await this.db.collection('cambios').orderBy('ts','desc').limit(60).get();return q.docs.map(d=>d.data())}return this.lsGet('abono.cambios')||[]},
-  async listMsgs(){if(this.db){const q=await this.db.collection('mensajes').orderBy('ts','desc').limit(200).get();return q.docs.map(d=>({...d.data(),id:d.id}))}return this.lsGet('abono.msgs')||[]},
-  async addMsg(m){if(this.db){const r=await this.db.collection('mensajes').add(m);return r.id}const id='m'+Date.now();const l=this.lsGet('abono.msgs')||[];l.unshift({...m,id});this.lsSet('abono.msgs',l.slice(0,500));return id},
-  async updCol(n,id,patch){if(this.db)return this.db.collection(n).doc(id).update(patch);this.lsSet('abono.'+n,(this.lsGet('abono.'+n)||[]).map(x=>x.id===id?{...x,...patch}:x))},
-  async updMsg(id,patch){if(this.db)return this.db.collection('mensajes').doc(id).update(patch);this.lsSet('abono.msgs',(this.lsGet('abono.msgs')||[]).map(x=>x.id===id?{...x,...patch}:x))},
-  async delMsg(id){if(this.db)return this.db.collection('mensajes').doc(id).delete();this.lsSet('abono.msgs',(this.lsGet('abono.msgs')||[]).filter(x=>x.id!==id))},
-  async listCol(n,lim){if(this.db){const q=await this.db.collection(n).orderBy('ts','desc').limit(lim||500).get();return q.docs.map(d=>({...d.data(),id:d.id}))}return this.lsGet('abono.'+n)||[]},
-  async addCol(n,doc){if(this.db){const r=await this.db.collection(n).add(doc);return r.id}const id=n[0]+Date.now().toString(36)+Math.random().toString(36).slice(2,6);const l=this.lsGet('abono.'+n)||[];l.unshift({...doc,id});this.lsSet('abono.'+n,l.slice(0,3000));return id},
+  async setReg(f,r){if(this.db)return this.db.doc('registros/'+f).set({...r,mod:ahoraISO()});this.lsSet('abono.reg.'+f,r);const i=new Set(this.lsGet('abono.regs')||[]);i.add(f);this.lsSet('abono.regs',[...i])},
+  /* Guarda solo los campos que ha cambiado esta persona (no pisa lo que hayan apuntado otros ese día) */
+  async mergeReg(f,parcial){if(this.mode==='fb')return this.db.doc('registros/'+f).merge({...parcial,mod:ahoraISO()});const r=this.lsGet('abono.reg.'+f)||{fecha:f};for(const[k,v]of Object.entries(parcial))r[k]=v&&typeof v==='object'&&!Array.isArray(v)?{...(r[k]||{}),...v}:v;return this.setReg(f,r)},
+  async listRegs(){if(this.mode==='fb')return this.listado('registros',0,'fecha');if(this.db){const q=await this.db.collection('registros').orderBy('fecha','desc').limit(120).get();return q.docs.map(d=>d.data())}return(this.lsGet('abono.regs')||[]).sort().reverse().slice(0,120).map(f=>this.lsGet('abono.reg.'+f)).filter(Boolean)},
+  async addCambio(c){if(this.db)return this.db.collection('cambios').add({...c,mod:ahoraISO()});const l=this.lsGet('abono.cambios')||[];l.unshift(c);this.lsSet('abono.cambios',l.slice(0,200))},
+  async listCambios(){if(this.mode==='fb')return this.listado('cambios',200);if(this.db){const q=await this.db.collection('cambios').orderBy('ts','desc').limit(60).get();return q.docs.map(d=>d.data())}return this.lsGet('abono.cambios')||[]},
+  async listMsgs(){if(this.mode==='fb')return this.listado('mensajes',300);if(this.db){const q=await this.db.collection('mensajes').orderBy('ts','desc').limit(200).get();return q.docs.map(d=>({...d.data(),id:d.id}))}return this.lsGet('abono.msgs')||[]},
+  async addMsg(m){if(this.db){const r=await this.db.collection('mensajes').add({...m,mod:ahoraISO()});return r.id}const id='m'+Date.now();const l=this.lsGet('abono.msgs')||[];l.unshift({...m,id});this.lsSet('abono.msgs',l.slice(0,500));return id},
+  async updCol(n,id,patch){if(this.db)return this.db.collection(n).doc(id).update({...patch,mod:ahoraISO()});this.lsSet('abono.'+n,(this.lsGet('abono.'+n)||[]).map(x=>x.id===id?{...x,...patch}:x))},
+  async updMsg(id,patch){if(this.db)return this.db.collection('mensajes').doc(id).update({...patch,mod:ahoraISO()});this.lsSet('abono.msgs',(this.lsGet('abono.msgs')||[]).map(x=>x.id===id?{...x,...patch}:x))},
+  async delMsg(id){if(this.mode==='fb')return this.db.collection('mensajes').doc(id).update({borrado:true,mod:ahoraISO()});if(this.db)return this.db.collection('mensajes').doc(id).delete();this.lsSet('abono.msgs',(this.lsGet('abono.msgs')||[]).filter(x=>x.id!==id))},
+  async listCol(n,lim){if(this.mode==='fb'&&SYNC.has(n))return this.listado(n,lim);if(this.db){const q=await this.db.collection(n).orderBy('ts','desc').limit(lim===0?10000:(lim||500)).get();return q.docs.map(d=>({...d.data(),id:d.id}))}return this.lsGet('abono.'+n)||[]},
+  async addCol(n,doc){if(this.db){const r=await this.db.collection(n).add({...doc,mod:ahoraISO()});return r.id}const id=n[0]+Date.now().toString(36)+Math.random().toString(36).slice(2,6);const l=this.lsGet('abono.'+n)||[];l.unshift({...doc,id});this.lsSet('abono.'+n,l.slice(0,3000));return id},
   /* Mensajes privados: solo los ven quien envía y quien recibe (reglas de Firestore) */
   async listPriv(me){if(Store.mode!=='fb'||!me)return [];const q=await this.db.collection('privados').where('miembros','array-contains',me).get();return q.docs.map(d=>({...d.data(),id:d.id})).sort((a,b)=>a.ts<b.ts?1:-1)},
   async addPriv(m){const r=await this.db.collection('privados').add(m);return r.id},
   async updPriv(id,p){return this.db.collection('privados').doc(id).update(p)},
   async delPriv(id){return this.db.collection('privados').doc(id).delete()},
-  async delCol(n,id){if(this.db)return this.db.collection(n).doc(id).delete();this.lsSet('abono.'+n,(this.lsGet('abono.'+n)||[]).filter(x=>x.id!==id))}
+  async delCol(n,id){if(this.mode==='fb'&&SYNC.has(n))return this.db.collection(n).doc(id).update({borrado:true,mod:ahoraISO()});if(this.db)return this.db.collection(n).doc(id).delete();this.lsSet('abono.'+n,(this.lsGet('abono.'+n)||[]).filter(x=>x.id!==id))}
 };
 
 /* ---------- Estado ---------- */
@@ -549,10 +562,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){const r={fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},ceB:{},ceR:{},inc:{},phS:{}};
-  for(const c of st.cfg.cabezales){r.m3[c.id]=c.ejM3;for(const s of c.sectores){r.min[s.id]=s.ejMin;}}
-  return r}
-function normReg(r,f){return{fecha:f,...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},guardado:r.guardado||null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},ceB:{},ceR:{},inc:{},phS:{},sug:null}}
+/* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
+const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
+const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
+st.regMod=new Set();
+const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -700,7 +716,7 @@ function banner(){return ''}
 function vCuentas(){const c=cabById(st.cab);let h=banner()+`<div data-out="pend" style="display:contents">${pendHTML()}${lvlBanner()}</div>`;
   h+=`<section class="summary" data-out="sum">${sumCuentas()}</section>`;
   h+=`<div class="card"><div class="tank-h"><div><h3>Agua regada</h3><div class="sub">${esc(c.nombre)} · total del día</div></div>
-    <div class="field big"><label for="m3_${c.id}">m³ del cabezal</label><div class="inp"><input id="m3_${c.id}" data-k="reg.m3.${c.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.m3[c.id])}"><span class="u">m³</span></div></div></div></div>`;
+    <div class="field big"><label for="m3_${c.id}">m³ del cabezal</label><div class="inp"><input id="m3_${c.id}" data-k="reg.m3.${c.id}" inputmode="decimal" autocomplete="off"${sugPh('m3',c.id)} value="${inVal(st.reg.m3[c.id])}"><span class="u">m³</span></div>${st.reg.m3[c.id]==null&&sugDe('m3',c.id)!=null?`<button class="btn sm" data-act="sug-m3" data-id="${c.id}">Igual que el ${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(sugDe('m3',c.id)))} m³</button>`:''}</div></div></div>`;
   for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}${fmt(b.lpcm,1)} L por cm</div></div></div>
       ${lecturaBoxes(b,c)}
@@ -726,8 +742,8 @@ function vDrenaje(){const c=cabById(st.cab);let h=banner();h+=`<section class="s
     <div class="frm">${fld('ceB','CE balsa','mS/cm')}${fld('ceR','CE reciclada','mS/cm')}${fld('inc','Incremento salida','mS/cm')}${fld('phS','pH salida','')}</div>
     <div data-out="salida_${c.id}">${salidaHTML(c.id)}</div></section>`;
   for(const s of c.sectores){h+=`<section class="card"><div class="sector-h"><div><h3>${esc(s.nombre)}</h3><div class="sub">${s.bandejas.length} bandejas de drenaje</div></div>
-    <div class="row" style="align-items:flex-end"><div class="field"><label for="min_${s.id}">Tiempo de riego (total del día)</label><div class="inp"><input id="min_${s.id}" data-k="reg.min.${s.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.min[s.id])}"><span class="u">min</span></div></div>
-      <div class="field"><label for="rie_${s.id}">Nº de riegos</label><div class="inp sm"><input id="rie_${s.id}" data-k="reg.rie.${s.id}" inputmode="numeric" autocomplete="off" value="${inVal((st.reg.rie||{})[s.id])}"><span class="u">riegos</span></div></div></div></div>
+    <div class="row" style="align-items:flex-end"><div class="field"><label for="min_${s.id}">Tiempo de riego (total del día)</label><div class="inp"><input id="min_${s.id}" data-k="reg.min.${s.id}" inputmode="decimal" autocomplete="off"${sugPh('min',s.id)} value="${inVal(st.reg.min[s.id])}"><span class="u">min</span></div></div>
+      <div class="field"><label for="rie_${s.id}">Nº de riegos</label><div class="inp sm"><input id="rie_${s.id}" data-k="reg.rie.${s.id}" inputmode="numeric" autocomplete="off"${sugPh('rie',s.id)} value="${inVal((st.reg.rie||{})[s.id])}"><span class="u">riegos</span></div></div></div></div>
     <div class="note" data-out="pr_${s.id}">${porRiego(s)!=null?`≈ ${fmt(porRiego(s),1)} min por riego`:''}</div>
     <div data-out="ce_${s.id}">${ceOut(s)}</div><div class="bjh"><span>Bandeja</span><span>Drenaje</span><span>CE · pH</span><span>Volumen total · % drenaje</span></div><div>`;
     for(const bj of s.bandejas){h+=`<div class="bj"><div class="nm"><b>${esc(bj.nombre)}</b><small>${fmt(bj.caudal,0)} ml/min</small></div>
@@ -1127,7 +1143,7 @@ $('#lb').addEventListener('click',e=>{if(e.target.id==='lb'||e.target.dataset.ac
 /* ---------- Nivel de depósitos ---------- */
 const isoD=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 let opsLoading=false;
-async function loadOps(){if(opsLoading)return;opsLoading=true;try{const[a,b]=await Promise.all([Store.listCol('llenados',1000),Store.listCol('almacen',3000)]);st.llen=a;st.alm=b}catch(e){st.llen=st.llen||[];st.alm=st.alm||[]}opsLoading=false;refreshTab()}
+async function loadOps(){if(opsLoading)return;opsLoading=true;try{const[a,b]=await Promise.all([Store.listCol('llenados',0),Store.listCol('almacen',0)]);st.llen=a;st.alm=b}catch(e){st.llen=st.llen||[];st.alm=st.alm||[]}opsLoading=false;refreshTab()}
 /* Medida del depósito: «gaste» = cm que ha bajado desde lleno (regla desde arriba); «nivel» = cm de líquido desde el fondo.
    Por dentro todo se calcula en nivel (lo que queda). */
 const esDirecto=()=>(st.cfg.medida||'cm')==='cm';
@@ -1171,7 +1187,7 @@ function cmAuto(b){const p=lecturaAnt(b,false),hr=st.reg.niv&&st.reg.niv[b.id];i
   if(ul)base={fecha:ul.fecha,v:ul.cmFinal,raw:aLectura(b,ul.cmFinal),tras:ul.tipo};
   let g=+(base.v-h).toFixed(1),relleno=false;if(g<0){relleno=true;g=+Math.max(0,maxCm(b)-h).toFixed(1)}
   return{prev:base,add:0,g,relleno}}
-function autoCm(id){const b=bid(id),a=b&&cmAuto(b);if(!a){if(b&&lecturaAnt(b,false))st.reg.cm[id]=null;return}st.reg.cm[id]=a.g;document.querySelectorAll(`[data-k="reg.cm.${id}"]`).forEach(i=>{i.value=inVal(a.g)})}
+function autoCm(id){const b=bid(id),a=b&&cmAuto(b);if(!a){if(b&&lecturaAnt(b,false)){st.reg.cm[id]=null;marcaReg('cm.'+id)}return}st.reg.cm[id]=a.g;marcaReg('cm.'+id);document.querySelectorAll(`[data-k="reg.cm.${id}"]`).forEach(i=>{i.value=inVal(a.g)})}
 function lecturaBoxes(b,c){if(esDirecto())return `<div class="lect lsim"><div class="field"><label for="cm_${b.id}_${c.id}">cm gastados</label><div class="inp"><input id="cm_${b.id}_${c.id}" data-k="reg.cm.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.cm[b.id])}"><span class="u">cm</span></div></div><div class="lbox res" data-out="res_${b.id}"><span>Son</span><b>${st.reg.cm[b.id]!=null?fmt(st.reg.cm[b.id]*b.lpcm,0):'—'} <small>L</small></b><small>${fmt(b.lpcm,1)} L por cm</small></div></div>`;
   const prev=lecturaAnt(b,false);
   const ant=`<div class="lbox"><span>${txtMed()} anterior</span><b>${prev?fmt(prev.raw,1):'—'} <small>cm</small></b><small>${prev?fFecha(prev.fecha):'sin lectura'}</small></div>`;
@@ -1385,7 +1401,7 @@ function informeTablas(d){const cu=d.cabs.filter(x=>x.dias),ps=Object.keys(d.tot
     {hoja:'Abonos',titulo:'Abono aplicado (kg o L)',cab:['Producto',...cu.map(x=>x.c.nombre),'Total'],filas:ps.map(p=>[pn(p)+' ('+uCant(p)+')',...cu.map(x=>rN(x.kg[p]||0,1)),rN(d.tot[p],1)])},
     {hoja:'Almacén',titulo:'Almacén del mes',cab:['Producto','Entradas','Salidas','Stock hoy'],filas:pa.map(p=>[pn(p)+' ('+uCant(p)+')',rN(d.ent[p]||0,1),rN(d.sal[p]||0,1),rN(stockDe(p),1)])},
     {hoja:'Diario',titulo:'Detalle diario',cab:['Día','Cabezal','m³','Drenaje %','CE drenaje','pH drenaje'],filas:d.regs.flatMap(r=>cu.filter(x=>r.m3&&r.m3[x.c.id]!=null).map(x=>[fD(r.fecha),x.c.nombre,rN(r.m3[x.c.id],0),rN(drenDia(r,x.c.id),1),rN(mediaSect(r,x.c.id,'ceD'),2),rN(mediaSect(r,x.c.id,'phD'),1)]))},
-    {hoja:'Salida',titulo:'Agua de riego (salida) y riegos',cab:['Día','Cabezal','CE balsa','CE recicl.','Increm.','Total sal.','pH sal.','Riegos'],filas:d.regs.flatMap(r=>cu.map(x=>{const g=k=>(r[k]||{})[x.c.id],b=g('ceB'),i=g('inc'),rg=x.c.sectores.map(s=>(r.rie||{})[s.id]).filter(v=>v!=null);
+    {hoja:'Salida',titulo:'Agua de riego (salida) y riegos',cab:['Día','Cabezal','CE balsa','CE recicl.','Increm.','Total sal.','pH sal.','Riegos'],filas:d.regs.flatMap(r=>d.cabs.map(x=>{const g=k=>(r[k]||{})[x.c.id],b=g('ceB'),i=g('inc'),rg=x.c.sectores.map(s=>(r.rie||{})[s.id]).filter(v=>v!=null);
       if([b,g('ceR'),i,g('phS')].every(v=>v==null)&&!rg.length)return null;return[fD(r.fecha),x.c.nombre,rN(b,2),rN(g('ceR'),2),rN(i,2),rN(b!=null&&i!=null?b+i:null,2),rN(g('phS'),1),rg.length?rg.join(' / '):'']}).filter(Boolean))},
     {hoja:'Bandejas',titulo:'Drenaje por bandeja',cab:['Día','Cabezal','Sector','Bandeja','Minutos','Volumen total L','Drenaje ml','Drenaje %','CE drenaje','pH drenaje'],filas:d.regs.flatMap(r=>cu.flatMap(x=>x.c.sectores.flatMap(s=>s.bandejas.map(bj=>{const ml=(r.dren||{})[bj.id],min=(r.min||{})[s.id],ce=(r.ceD||{})[bj.id],ph=(r.phD||{})[bj.id];
       if(ml==null&&ce==null&&ph==null)return null;return[fD(r.fecha),x.c.nombre,s.nombre,bj.nombre.replace('Bandeja ',''),rN(min,0),rN(min&&bj.caudal?min*bj.caudal/1000:null,2),rN(ml,0),rN(ml!=null&&min&&bj.caudal?ml*100/(min*bj.caudal):null,1),rN(ce,2),rN(ph,1)]}).filter(Boolean))))},
@@ -1572,7 +1588,7 @@ const horaTxt=ts=>new Date(ts).toLocaleString('es-ES',{day:'2-digit',month:'2-di
 async function enviarPartes(){if(Store.mode!=='fb'||!window.NUBE||!NUBE.user)return;const ts=new Date().toISOString();
   for(const c of st.cfg.cabezales){if(!cabConDatos(c.id))continue;const d=parteData(c.id);d.provisional=false;
     const doc={fecha:st.fecha,cab:c.id,finca:d.fincaId,ts,por:yoNombre(),porEmail:miEmail(),d:JSON.parse(JSON.stringify(d))};
-    try{await NUBE.db.collection('partes').doc(st.fecha+'_'+c.id).merge(doc)}catch(e){console.warn('parte',e);continue}
+    try{await NUBE.db.collection('partes').doc(st.fecha+'_'+c.id).merge({...doc,mod:ahoraISO()})}catch(e){console.warn('parte',e);continue}
     let para=encargadosDe(d.fincaId);if(!para.length)para=adminsEmails();
     pushEnviar(para,'Parte diario: '+c.nombre+' · '+fD(st.fecha),`Guardado por ${yoNombre()}${d.m3!=null?' · '+fmt(d.m3,0)+' m³':''}${d.dren!=null?' · drenaje '+fmt(d.dren,1)+' %':''}${d.tot?' · en dosis '+d.ok+' de '+d.tot:''}`,'parte-'+st.fecha+'-'+c.id,'partes',{unico:'parte-'+st.fecha+'-'+c.id})}
   if(st.partes)loadPartes()}
@@ -2083,7 +2099,7 @@ function applyCfg(p,v){const b=bid(p[2]);switch(p[1]){
   case 'al':if(v!=null)st.cfg.alertas[p[2]]=v;break;case 'ub':st.cfg.ubic={...(st.cfg.ubic||{}),[p[2]]:v};st.wx=null;break;case 'min':if(v==null)delete st.cfg.stockMin[p[2]];else st.cfg.stockMin[p[2]]=v;break;case 'saco':if(!(v>0))delete st.cfg.saco[p[2]];else st.cfg.saco[p[2]]=v;break;
   case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'avisos':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.avisosUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.avisosUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
 function onInput(e){const t=e.target,k=t.dataset.k;if(!k)return;const p=k.split('.');const v=t.type==='checkbox'?t.checked:(t.dataset.text?t.value.trim():num(t.value));
-  if(p[0]==='reg'){if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;st.dirtyReg=true;if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
+  if(p[0]==='reg'){if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
   softUpdate();renderSave()}
 $('#main').addEventListener('input',onInput);
 $('#main').addEventListener('change',e=>{if(e.target.type==='checkbox')onInput(e)});
@@ -2093,16 +2109,29 @@ function diffCfg(a,b){const L=[];for(const nb of b.bidones){const ob=a.bidones.f
   nb.productos.forEach((x,i)=>{const o=ob.productos[i];if(o&&o.dosis!==x.dosis)L.push(`${cabs} · ${prod(x.p).n}: ${fmt(o.dosis,2)} → ${fmt(x.dosis,2)} ${uDosis(x.p)}`)})}
   return L}
 function errMsg(e){return e&&e.code==='quota_exceeded'?'No queda espacio en la base de datos de la página.':'No se pudo guardar'+(e&&e.code?' ('+e.code+')':'')+'. Prueba otra vez.'}
-async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{const r=normReg(st.reg,st.fecha);r.resumen={};for(const c of st.cfg.cabezales)r.resumen[c.id]=resumen(c.id);r.guardado=new Date().toISOString();if(st.fecha>=hoy()||(!r.receta&&st.fecha>=isoD(new Date(Date.now()-86400000))))r.receta=fotoReceta();st.reg.receta=r.receta;st.reg.guardado=r.guardado;
-  await Store.setReg(st.fecha,r);st.reg.ejemplo=false;st.dirtyReg=false;enviarPartes();st.hist=null;loadHist();toast('Día '+fCorta(st.fecha)+' guardado');if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
+/* Qué cabezales se ven afectados por un campo del día */
+function cabsDeCampo(k){const[g,id]=k.split('.');if(['m3','ceB','ceR','inc','phS'].includes(g))return [id];if(g==='cm'||g==='niv'){const b=bid(id);return b?b.cabezales:[]}
+  for(const c of st.cfg.cabezales)for(const s of c.sectores){if(s.id===id)return [c.id];if(s.bandejas.some(bj=>bj.id===id))return [c.id]}return []}
+async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{const f=st.fecha,mods=[...st.regMod],ahora=new Date().toISOString();
+  let srv=null;try{srv=await Store.getReg(f)}catch(e){}
+  const base=normReg(srv||st.reg||{},f);const rb=(srv||st.reg||{}).receta;if(rb)base.receta=rb;
+  for(const k of mods){const[g,id]=k.split('.');base[g]={...(base[g]||{})};base[g][id]=(st.reg[g]||{})[id]??null}
+  const sug=st.reg.sug;st.reg={...base,sug};
+  const parcial={fecha:f,guardado:ahora};for(const k of mods){const[g,id]=k.split('.');parcial[g]={...(parcial[g]||{}),[id]:base[g][id]}}
+  const afect=new Set(mods.flatMap(cabsDeCampo));for(const b of st.cfg.bidones)if(b.cabezales.some(c=>afect.has(c)))b.cabezales.forEach(c=>afect.add(c));
+  parcial.resumen={};for(const c of st.cfg.cabezales)if(afect.has(c.id)||!srv)parcial.resumen[c.id]=resumen(c.id);
+  if(f>=hoy()||(!base.receta&&f>=isoD(new Date(Date.now()-86400000))))parcial.receta=fotoReceta();
+  st.reg.receta=parcial.receta||base.receta;st.reg.guardado=ahora;
+  await Store.mergeReg(f,parcial);st.regMod=new Set();st.reg.ejemplo=false;st.dirtyReg=false;enviarPartes();st.hist=null;loadHist();toast('Día '+fCorta(st.fecha)+' guardado');if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave();if(st.tab==='cuentas'||st.tab==='drenaje'){const bn=$('.banner');if(bn&&!st.reg.ejemplo)bn.remove()}}
 async function saveCfg(){if(st.saving)return;st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
   if(lineas.length)await Store.addCambio({ts:new Date().toISOString(),fecha:hoy(),lineas});st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave()}
 
-async function loadFecha(f){st.fecha=f;let r=null;try{r=await Store.getReg(f)}catch(e){}
-  if(r){st.reg=normReg(r,f)}else{let last=null;try{last=(await Store.listRegs()).find(x=>x.fecha<f)}catch(e){}
-    st.reg=last?{fecha:f,m3:{...last.m3},cm:{},niv:{},min:{...last.min},rie:{...(last.rie||{})},dren:{},ceE:{},phE:{},ceD:{},phD:{},ceB:{},ceR:{},inc:{},phS:{}}:ejemploReg(f)}
+async function loadFecha(f){st.fecha=f;st.regMod=new Set();let r=null;try{r=await Store.getReg(f)}catch(e){}
+  st.reg=r?normReg(r,f):ejemploReg(f);
+  let last=null;try{const l=st.hist||await Store.listRegs();last=l.filter(x=>x.fecha<f).sort((a,b)=>a.fecha<b.fecha?1:-1)[0]||null}catch(e){}
+  if(last)st.reg.sug={fecha:last.fecha,m3:{...(last.m3||{})},min:{...(last.min||{})},rie:{...(last.rie||{})}};
   st.dirtyReg=false;renderAll()}
 
 document.addEventListener('click',async e=>{const t=e.target.closest('button');if(!t)return;
@@ -2169,6 +2198,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='pt-rev'){st.ptRev=t.dataset.id;renderMain();const i=$('#pt_nota');if(i)i.focus()}
   else if(t.dataset.act==='pt-rev-no'){st.ptRev=null;renderMain()}
   else if(t.dataset.act==='pt-rev-ok'){ptRevisar(t.dataset.id)}
+  else if(t.dataset.act==='sug-m3'){const id=t.dataset.id;st.reg.m3[id]=sugDe('m3',id);marcaReg('m3.'+id);renderMain();renderSave()}
   else if(t.dataset.act==='cv-play')cvPlay();
   else if(t.dataset.act==='cf-save')cfSave();
   else if(t.dataset.act==='cul-edit'){const cu=culDe(st.cab);st.cfgCul={cab:st.cab,cultivo:cu.cultivo||'Tomate',variedad:cu.variedad||'',plantacion:cu.plantacion||'',guias:String(cu.guias||''),alambre:cu.alambre?String(cu.alambre/100).replace('.',','):''};renderMain()}
