@@ -216,6 +216,4 @@ document.addEventListener('visibilitychange',async()=>{if(document.hidden||!N.us
   if(i&&i.nombre&&i.nombre!==N.user.nombre){N.user.nombre=i.nombre;try{localStorage.setItem('abono.nombre.'+N.user.email,i.nombre);st.autor=i.nombre;renderMain()}catch(e){}}
   const nf=i&&Array.isArray(i.fincas)?i.fincas:null,ne=!!(i&&i.encargado);if(JSON.stringify(nf)!==JSON.stringify(N.user.fincas)||ne!==N.user.encargado){N.user.fincas=nf;N.user.encargado=ne;try{st.partes=null;permisosCambiados();loadPartes()}catch(e){}}});
 N.cargarAcc=cargarAcc;
-/* Escucha en tiempo real (walkie): avisa de los documentos nuevos de una colección */
-N.escuchar=(col,desde,cb,cbQuita)=>fs.collection(P+col).where('ts','>',desde).onSnapshot(s=>{const ch=s.docChanges(),n=ch.filter(c=>c.type==='added').map(c=>({...c.doc.data(),id:c.doc.id})),q=ch.filter(c=>c.type==='removed').map(c=>c.doc.id);if(n.length)cb(n);if(q.length&&cbQuita)cbQuita(q)},e=>console.error('escuchar',e));
 })();
