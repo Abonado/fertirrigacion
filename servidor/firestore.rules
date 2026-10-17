@@ -1,0 +1,57 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function esAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'juanjo.serrano3@gmail.com';
+    }
+
+    function autorizado() {
+      return esAdmin() || (request.auth != null
+        && request.auth.token.email in
+           get(/databases/$(database)/documents/abonado_acceso/usuarios).data.emails);
+    }
+
+    function esEncargado() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/abonado_acceso/usuarios).data.info
+             .get(request.auth.token.email, {}).get('encargado', false) == true;
+    }
+
+    // Partes diarios: los guarda cualquiera del equipo, solo los leen el administrador y los encargados
+    match /abonado_partes/{doc} {
+      allow read: if esAdmin() || (autorizado() && esEncargado());
+      allow create, update: if autorizado();
+      allow delete: if esAdmin();
+    }
+
+    match /abonado_acceso/{doc} {
+      allow read: if request.auth != null;
+      allow write: if esAdmin();
+    }
+
+    // Mensajes privados: solo quien envía y quien recibe
+    match /abonado_privados/{doc} {
+      allow read: if autorizado()
+        && request.auth.token.email in resource.data.miembros;
+      allow create: if autorizado()
+        && request.resource.data.de == request.auth.token.email
+        && request.auth.token.email in request.resource.data.miembros;
+      allow update: if autorizado()
+        && request.auth.token.email in resource.data.miembros
+        && request.resource.data.miembros == resource.data.miembros
+        && request.resource.data.de == resource.data.de;
+      allow delete: if autorizado()
+        && request.auth.token.email == resource.data.de;
+    }
+
+    match /{coleccion}/{doc} {
+      allow read, write: if coleccion.matches('abonado_.*')
+        && coleccion != 'abonado_acceso'
+        && coleccion != 'abonado_privados'
+        && coleccion != 'abonado_partes'
+        && autorizado();
+    }
+  }
+}

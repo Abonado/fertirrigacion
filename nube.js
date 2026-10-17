@@ -66,7 +66,7 @@ catch(e){console.error(e);N.ready=()=>new Promise(()=>mostrarSinSdk());return}
 
 /* Escrituras: sin cobertura Firestore las guarda en el dispositivo y las sube al volver; no esperamos más de 1,5 s */
 function espera(p){p.catch(e=>{console.error(e);aviso(e&&e.code==='permission-denied'?'Sin permiso para guardar: vuelve a entrar':'No se pudo guardar en la nube')});return Promise.race([p,new Promise(r=>setTimeout(r,1500))])}
-const D=ref=>({get:()=>ref.get(),set:d=>espera(ref.set(d)),update:d=>espera(ref.update(d)),delete:()=>espera(ref.delete())});
+const D=ref=>({get:()=>ref.get(),set:d=>espera(ref.set(d)),merge:d=>espera(ref.set(d,{merge:true})),update:d=>espera(ref.update(d)),delete:()=>espera(ref.delete())});
 const Q=q=>({orderBy:(f,o)=>Q(q.orderBy(f,o)),limit:n=>Q(q.limit(n)),where:(f,op,v)=>Q(q.where(f,op,v)),get:()=>q.get()});
 const C=n=>{const c=fs.collection(P+n);return{...Q(c),doc:id=>D(c.doc(id)),add:async d=>{const r=c.doc();await espera(r.set(d));return{id:r.id}}}};
 const DB={doc:p=>{const i=p.indexOf('/');return D(fs.collection(P+p.slice(0,i)).doc(p.slice(i+1)))},collection:C};
@@ -98,7 +98,7 @@ N.ready=()=>new Promise(res=>{let listo=false;
     const ok=admin||acc===undefined||(acc&&(acc.emails||[]).includes(email));
     if(!ok){mostrarSinAcceso(email);return}
     const inf=(acc&&acc.info&&acc.info[email])||{};let cache='';try{cache=localStorage.getItem('abono.nombre.'+email)||''}catch(e){}
-    N.user={email,admin,nombre:inf.nombre||cache||email.split('@')[0],fincas:Array.isArray(inf.fincas)?inf.fincas:null};try{if(inf.nombre)localStorage.setItem('abono.nombre.'+email,inf.nombre)}catch(e){}N.acc=acc||null;N.db=DB;listo=true;
+    N.user={email,admin,nombre:inf.nombre||cache||email.split('@')[0],fincas:Array.isArray(inf.fincas)?inf.fincas:null,encargado:!!inf.encargado};try{if(inf.nombre)localStorage.setItem('abono.nombre.'+email,inf.nombre)}catch(e){}N.acc=acc||null;N.db=DB;listo=true;
     quitarCapa();res();if(admin)cargarAcc()})});
 
 N.salir=()=>N.auth.signOut();
@@ -116,6 +116,7 @@ N.alta=async(nombre,email,pass)=>{email=(email||'').trim().toLowerCase();nombre=
   await guardarAcc(acc);return existia};
 N.baja=async email=>{if(email===ADMIN)return;const acc=(await leerAcceso(true))||N.acc||{emails:[],info:{}};acc.emails=(acc.emails||[]).filter(e=>e!==email);const info={...(acc.info||{})};delete info[email];acc.info=info;await guardarAcc(acc)};
 N.setFincas=async(email,lista)=>{const acc=(await leerAcceso(true))||N.acc;if(!acc||!acc.info||!acc.info[email])return;const inf={...acc.info[email]};if(lista)inf.fincas=lista;else delete inf.fincas;acc.info={...acc.info,[email]:inf};await guardarAcc(acc)};
+N.setEncargado=async(email,si)=>{const acc=(await leerAcceso(true))||N.acc;if(!acc||!acc.info||!acc.info[email])return;const inf={...acc.info[email]};if(si)inf.encargado=true;else delete inf.encargado;acc.info={...acc.info,[email]:inf};await guardarAcc(acc)};
 N.renombrar=async(email,nombre)=>{nombre=(nombre||'').trim();if(!nombre)throw{msg:'Escribe el nombre'};const acc=(await leerAcceso(true))||N.acc;if(!acc||!acc.info||!acc.info[email])return;acc.info={...acc.info,[email]:{...acc.info[email],nombre}};await guardarAcc(acc);if(email===N.user.email){N.user.nombre=nombre;try{st.autor=nombre}catch(e){}}};
 
 /* ---------- Subir lo guardado en este dispositivo ---------- */
@@ -150,7 +151,7 @@ N.cardHTML=()=>{const u=N.user;if(!u)return '';const loc=datosLocales(),hay=loc.
       return `<div class="r"><div><b>${escN(i.nombre||e)}</b><small>${escN(e)}${e===ADMIN?' · administrador':''}</small></div><div class="row">
       ${N.conf==='baja:'+e?`<span class="note">¿Quitar acceso?</span><button class="btn danger" data-nube="baja-si" data-em="${escN(e)}">Sí, quitar</button><button class="btn" data-nube="no">Cancelar</button>`:
       N.conf==='nom:'+e?`<div class="inp"><input id="nu_ren" value="${escN(i.nombre||'')}" style="width:12ch;text-align:left"></div><button class="btn pri" data-nube="nom-si" data-em="${escN(e)}">Guardar</button><button class="btn" data-nube="no">Cancelar</button>`:
-      `${e===ADMIN?'':(()=>{const fs=(st.cfg.fincas||[]),sel=Array.isArray(i.fincas)?i.fincas:null;return `<div class="nfin"><span>Fincas que ve:</span>${fs.map(f=>`<button class="chip sm" data-nube="fin" data-em="${escN(e)}" data-f="${escN(f.id)}" aria-pressed="${!sel||sel.includes(f.id)}">${escN(f.nombre)}</button>`).join('')}${sel?'':'<small>(todas)</small>'}</div>`})()}<button class="btn" data-nube="nom" data-em="${escN(e)}">Cambiar nombre</button><button class="btn" data-nube="reset" data-em="${escN(e)}">Enviar cambio de contraseña</button>${e===ADMIN?'':`<button class="btn" data-nube="baja" data-em="${escN(e)}">Quitar acceso</button>`}`}</div></div>`}).join('')+`</div>
+      `${e===ADMIN?'':(()=>{const fs=(st.cfg.fincas||[]),sel=Array.isArray(i.fincas)?i.fincas:null;return `<div class="nfin"><span>Fincas que ve:</span>${fs.map(f=>`<button class="chip sm" data-nube="fin" data-em="${escN(e)}" data-f="${escN(f.id)}" aria-pressed="${!sel||sel.includes(f.id)}">${escN(f.nombre)}</button>`).join('')}${sel?'':'<small>(todas)</small>'}</div>`})()}${e===ADMIN?'':`<button class="chip sm" data-nube="enc" data-em="${escN(e)}" aria-pressed="${!!i.encargado}" title="Recibe los partes diarios">Encargado</button>`}<button class="btn" data-nube="nom" data-em="${escN(e)}">Cambiar nombre</button><button class="btn" data-nube="reset" data-em="${escN(e)}">Enviar cambio de contraseña</button>${e===ADMIN?'':`<button class="btn" data-nube="baja" data-em="${escN(e)}">Quitar acceso</button>`}`}</div></div>`}).join('')+`</div>
     <div><h3 style="font-size:18px">Dar de alta</h3><div class="sub">Crea su cuenta: entrará con este email y esta contraseña</div></div>
     <div class="nform"><div class="field"><label for="nu_nom">Nombre</label><div class="inp"><input id="nu_nom" autocomplete="off"></div></div>
     <div class="field"><label for="nu_em">Email</label><div class="inp"><input id="nu_em" type="email" autocomplete="off" autocapitalize="off" spellcheck="false"></div></div>
@@ -168,6 +169,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-nube
     else if(a==='fin'){const acc=N.acc||{info:{}},inf=(acc.info||{})[em]||{},todas=(st.cfg.fincas||[]).map(f=>f.id);let sel=Array.isArray(inf.fincas)?[...inf.fincas]:[...todas];const f=b.dataset.f;
       sel=sel.includes(f)?sel.filter(x=>x!==f):[...sel,f];if(!sel.length){aviso('Tiene que ver al menos una finca. Para quitarle el acceso usa «Quitar acceso».');return}
       await N.setFincas(em,todas.every(x=>sel.includes(x))?null:todas.filter(x=>sel.includes(x)));re();aviso('Fincas actualizadas')}
+    else if(a==='enc'){const inf=((N.acc||{}).info||{})[em]||{};await N.setEncargado(em,!inf.encargado);re();aviso(!inf.encargado?'Ahora es encargado: recibirá los partes diarios':'Ya no es encargado')}
     else if(a==='nom'){N.conf='nom:'+em;re();const i=$n('#nu_ren');if(i){i.focus();i.select()}}
     else if(a==='nom-si'){await N.renombrar(em,$n('#nu_ren').value);N.conf=null;re();aviso('Nombre cambiado')}
     else if(a==='baja-si'){await N.baja(em);N.conf=null;re();aviso('Acceso quitado')}
@@ -211,7 +213,7 @@ window.addEventListener('online',()=>{if(N.user&&N.user.admin)cargarAcc()});
 /* Si el administrador cambia el nombre, se actualiza al volver a la app */
 document.addEventListener('visibilitychange',async()=>{if(document.hidden||!N.user)return;const a=await leerAcceso(true);if(!a)return;N.acc=a;const i=(a.info||{})[N.user.email];
   if(i&&i.nombre&&i.nombre!==N.user.nombre){N.user.nombre=i.nombre;try{localStorage.setItem('abono.nombre.'+N.user.email,i.nombre);st.autor=i.nombre;renderMain()}catch(e){}}
-  const nf=i&&Array.isArray(i.fincas)?i.fincas:null;if(JSON.stringify(nf)!==JSON.stringify(N.user.fincas)){N.user.fincas=nf;try{permisosCambiados()}catch(e){}}});
+  const nf=i&&Array.isArray(i.fincas)?i.fincas:null,ne=!!(i&&i.encargado);if(JSON.stringify(nf)!==JSON.stringify(N.user.fincas)||ne!==N.user.encargado){N.user.fincas=nf;N.user.encargado=ne;try{st.partes=null;permisosCambiados();loadPartes()}catch(e){}}});
 N.cargarAcc=cargarAcc;
 /* Escucha en tiempo real (walkie): avisa de los documentos nuevos de una colección */
 N.escuchar=(col,desde,cb,cbQuita)=>fs.collection(P+col).where('ts','>',desde).onSnapshot(s=>{const ch=s.docChanges(),n=ch.filter(c=>c.type==='added').map(c=>({...c.doc.data(),id:c.doc.id})),q=ch.filter(c=>c.type==='removed').map(c=>c.doc.id);if(n.length)cb(n);if(q.length&&cbQuita)cbQuita(q)},e=>console.error('escuchar',e));
