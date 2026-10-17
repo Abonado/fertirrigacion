@@ -80,6 +80,7 @@ main{padding-block:16px 120px;display:grid;gap:14px}
 .inp.sm input{font-size:15px;width:6ch;padding:5px 6px}
 
 .tbl{overflow-x:auto}
+.salida{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.salida>div{background:var(--bg);border-radius:10px;padding:10px 12px;display:grid;gap:2px}.salida span{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase}.salida b{font-size:22px}.salida small{font-size:12px;color:var(--muted)}
 .ev .evc{display:block;color:var(--muted);font-size:12px;margin-top:2px;text-transform:none}
 .ptbody{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:12px}
 table{width:100%;border-collapse:collapse;font-size:14px}
@@ -536,10 +537,10 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){const r={fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},dren:{},ceE:{},phE:{},ceD:{},phD:{}};
+function ejemploReg(f){const r={fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},ceB:{},ceR:{},inc:{},phS:{}};
   for(const c of st.cfg.cabezales){r.m3[c.id]=c.ejM3;for(const s of c.sectores){r.min[s.id]=s.ejMin;}}
   return r}
-function normReg(r,f){return{fecha:f,...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -576,6 +577,11 @@ function resumen(cab){let fuera=0,total=0;for(const b of bidonesDe(cab))for(cons
   const ps=[];for(const s of cabById(cab).sectores)for(const bj of s.bandejas){const p=drenPct(s,bj);if(p!=null)ps.push(p)}
   return{m3:st.reg.m3[cab]??null,drenaje:ps.length?ps.reduce((a,c)=>a+c,0)/ps.length:null,fuera,total,dosis:dosisPrincipales(cab),kg:kgDia(cab),
     ceE:mediaSect(st.reg,cab,'ceE'),phE:mediaSect(st.reg,cab,'phE'),ceD:mediaSect(st.reg,cab,'ceD'),phD:mediaSect(st.reg,cab,'phD')}}
+/* Agua de riego a la salida: total = CE balsa + incremento */
+function salidaDe(cab){const r=st.reg,g=k=>(r[k]||{})[cab]??null,ceB=g('ceB'),inc=g('inc');return{ceB,ceR:g('ceR'),inc,tot:ceB!=null&&inc!=null?+(ceB+inc).toFixed(3):null,phS:g('phS'),incEst:ceEstimada(cab)/1000}}
+function salidaHTML(cab){const x=salidaDe(cab);return `<div class="salida"><div><span>Total salida</span><b>${x.tot!=null?fmt(x.tot,2):'—'} <small class="nt">mS/cm</small></b><small>${x.tot!=null?`${fmt(x.ceB,2)} balsa + ${fmt(x.inc,2)} incremento`:'CE balsa + incremento salida'}</small></div>
+  <div><span>Incremento según receta</span><b>${fmt(x.incEst,2)} <small class="nt">mS/cm</small></b><small>${x.inc!=null&&x.incEst?(Math.abs(x.inc-x.incEst)/x.incEst<=0.15?'el medido cuadra con la receta':'el medido se aparta '+fmt(Math.abs(x.inc-x.incEst)*100/x.incEst,0)+' % de la receta'):'estimado con la receta actual'}</small></div></div>`}
+const porRiego=s=>{const m=st.reg.min[s.id],n=(st.reg.rie||{})[s.id];return m!=null&&n>0?m/n:null};
 function valSect(r,s,k){const m=r[k]||{},v=s.bandejas.map(bj=>m[bj.id]).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:(m[s.id]??null)}
 function mediaSect(r,cab,k){const v=cabById(cab).sectores.map(s=>valSect(r,s,k)).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null}
 function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,cab);if(L==null)continue;for(const x of b.productos){if(!x.dosis)continue;o[x.p]=(o[x.p]||0)+L*conc(b,x)/1000}}return o}
@@ -703,8 +709,14 @@ function tankDose(b,c){const shared=b.cabezales.length>1,cm=cmCab(b,c.id),L=litr
   return h+`</tbody></table></div>`}
 
 function vDrenaje(){const c=cabById(st.cab);let h=banner();h+=`<section class="summary" data-out="dsum">${sumDren(c)}</section>`;
+  const fld=(k,lab,u)=>`<div class="field"><label for="${k}_${c.id}">${lab}</label><div class="inp"><input id="${k}_${c.id}" data-k="reg.${k}.${c.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg[k]||{})[c.id])}">${u?`<span class="u nt">${u}</span>`:''}</div></div>`;
+  h+=`<section class="card"><div><h3>Agua de riego · salida</h3><div class="sub">${esc(c.nombre)} · el total de salida se calcula solo</div></div>
+    <div class="frm">${fld('ceB','CE balsa','mS/cm')}${fld('ceR','CE reciclada','mS/cm')}${fld('inc','Incremento salida','mS/cm')}${fld('phS','pH salida','')}</div>
+    <div data-out="salida_${c.id}">${salidaHTML(c.id)}</div></section>`;
   for(const s of c.sectores){h+=`<section class="card"><div class="sector-h"><div><h3>${esc(s.nombre)}</h3><div class="sub">${s.bandejas.length} bandejas de drenaje</div></div>
-    <div class="field"><label for="min_${s.id}">Tiempo de riego</label><div class="inp"><input id="min_${s.id}" data-k="reg.min.${s.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.min[s.id])}"><span class="u">min</span></div></div></div>
+    <div class="row" style="align-items:flex-end"><div class="field"><label for="min_${s.id}">Tiempo de riego (total del día)</label><div class="inp"><input id="min_${s.id}" data-k="reg.min.${s.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.min[s.id])}"><span class="u">min</span></div></div>
+      <div class="field"><label for="rie_${s.id}">Nº de riegos</label><div class="inp sm"><input id="rie_${s.id}" data-k="reg.rie.${s.id}" inputmode="numeric" autocomplete="off" value="${inVal((st.reg.rie||{})[s.id])}"><span class="u">riegos</span></div></div></div></div>
+    <div class="note" data-out="pr_${s.id}">${porRiego(s)!=null?`≈ ${fmt(porRiego(s),1)} min por riego`:''}</div>
     <div data-out="ce_${s.id}">${ceOut(s)}</div><div class="bjh"><span>Bandeja</span><span>Drenaje</span><span>CE · pH</span><span>Volumen total · % drenaje</span></div><div>`;
     for(const bj of s.bandejas){h+=`<div class="bj"><div class="nm"><b>${esc(bj.nombre)}</b><small>${fmt(bj.caudal,0)} ml/min</small></div>
       <div class="inp sm"><input id="dr_${bj.id}" data-k="reg.dren.${bj.id}" inputmode="decimal" autocomplete="off" aria-label="Drenaje ${esc(bj.nombre)}" value="${inVal(st.reg.dren[bj.id])}"><span class="u">ml</span></div>
@@ -1361,6 +1373,8 @@ function informeTablas(d){const cu=d.cabs.filter(x=>x.dias),ps=Object.keys(d.tot
     {hoja:'Abonos',titulo:'Abono aplicado (kg o L)',cab:['Producto',...cu.map(x=>x.c.nombre),'Total'],filas:ps.map(p=>[pn(p)+' ('+uCant(p)+')',...cu.map(x=>rN(x.kg[p]||0,1)),rN(d.tot[p],1)])},
     {hoja:'Almacén',titulo:'Almacén del mes',cab:['Producto','Entradas','Salidas','Stock hoy'],filas:pa.map(p=>[pn(p)+' ('+uCant(p)+')',rN(d.ent[p]||0,1),rN(d.sal[p]||0,1),rN(stockDe(p),1)])},
     {hoja:'Diario',titulo:'Detalle diario',cab:['Día','Cabezal','m³','Drenaje %','CE drenaje','pH drenaje'],filas:d.regs.flatMap(r=>cu.filter(x=>r.m3&&r.m3[x.c.id]!=null).map(x=>[fD(r.fecha),x.c.nombre,rN(r.m3[x.c.id],0),rN(drenDia(r,x.c.id),1),rN(mediaSect(r,x.c.id,'ceD'),2),rN(mediaSect(r,x.c.id,'phD'),1)]))},
+    {hoja:'Salida',titulo:'Agua de riego (salida) y riegos',cab:['Día','Cabezal','CE balsa','CE recicl.','Increm.','Total sal.','pH sal.','Riegos'],filas:d.regs.flatMap(r=>cu.map(x=>{const g=k=>(r[k]||{})[x.c.id],b=g('ceB'),i=g('inc'),rg=x.c.sectores.map(s=>(r.rie||{})[s.id]).filter(v=>v!=null);
+      if([b,g('ceR'),i,g('phS')].every(v=>v==null)&&!rg.length)return null;return[fD(r.fecha),x.c.nombre,rN(b,2),rN(g('ceR'),2),rN(i,2),rN(b!=null&&i!=null?b+i:null,2),rN(g('phS'),1),rg.length?rg.join(' / '):'']}).filter(Boolean))},
     {hoja:'Bandejas',titulo:'Drenaje por bandeja',cab:['Día','Cabezal','Sector','Bandeja','Minutos','Volumen total L','Drenaje ml','Drenaje %','CE drenaje','pH drenaje'],filas:d.regs.flatMap(r=>cu.flatMap(x=>x.c.sectores.flatMap(s=>s.bandejas.map(bj=>{const ml=(r.dren||{})[bj.id],min=(r.min||{})[s.id],ce=(r.ceD||{})[bj.id],ph=(r.phD||{})[bj.id];
       if(ml==null&&ce==null&&ph==null)return null;return[fD(r.fecha),x.c.nombre,s.nombre,bj.nombre.replace('Bandeja ',''),rN(min,0),rN(min&&bj.caudal?min*bj.caudal/1000:null,2),rN(ml,0),rN(ml!=null&&min&&bj.caudal?ml*100/(min*bj.caudal):null,1),rN(ce,2),rN(ph,1)]}).filter(Boolean))))},
     {hoja:'Movimientos',titulo:'Movimientos de almacén',cab:['Día','Tipo','Producto','Cantidad','Proveedor','Albarán'],filas:d.alm.slice().sort((a,b)=>a.ts<b.ts?-1:1).map(m=>[fD(m.fecha),m.tipo,pn(m.p),rN(m.qty,2),m.prov||'',m.alb||''])}]}
@@ -1395,7 +1409,7 @@ async function exportXlsx(){const d=informeData(st.mes),ts=informeTablas(d);
 /* ---------- Partes recibidos: llegan al encargado cada vez que se guarda el día ---------- */
 const puedePartes=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&(NUBE.user.admin||NUBE.user.encargado));
 const encargadosDe=fid=>todosEmails().filter(e=>accInfo(e).encargado&&veFinca(e,fid));
-function cabConDatos(cab){const r=st.reg,c=cabById(cab);if(!c)return false;const bs=bidonesDe(cab),pr=bs.filter(b=>b.cabezales.length===1);if((pr.length?pr:bs).some(b=>r.cm[b.id]!=null))return true;
+function cabConDatos(cab){const r=st.reg,c=cabById(cab);if(!c)return false;const bs=bidonesDe(cab),pr=bs.filter(b=>b.cabezales.length===1);if((pr.length?pr:bs).some(b=>r.cm[b.id]!=null))return true;if(['ceB','ceR','inc','phS'].some(k=>(r[k]||{})[cab]!=null))return true;
   return c.sectores.some(s=>s.bandejas.some(bj=>r.dren[bj.id]!=null||r.ceD[bj.id]!=null||r.phD[bj.id]!=null))}
 const horaTxt=ts=>new Date(ts).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 async function enviarPartes(){if(Store.mode!=='fb'||!window.NUBE||!NUBE.user)return;const ts=new Date().toISOString();
@@ -1441,11 +1455,11 @@ function parteData(cabId){const r=st.reg;return conReceta(r,()=>{const c=cabById
   let ok=0,tot=0;const deps=bidonesDe(cabId).map(b=>{const L=litros(b,cabId);return{nombre:b.nombre,llen:(st.llen||[]).filter(e=>e.bidon===b.id&&e.fecha===st.fecha&&e.tipo==='llenado').sort((x,y)=>llKey(x)<llKey(y)?-1:1).map(e=>({hora:e.hora||'',cm:e.cmAdd,L:e.cmAdd*b.lpcm,por:e.por||''})),otros:b.cabezales.filter(x=>x!==cabId).map(cabNombre),cmTotal:r.cm[b.id],cm:cmCab(b,cabId),L,
     filas:b.productos.filter(x=>x.dosis).map(x=>{const real=dosisReal(b,x,cabId),e=estado(real,x.dosis);if(real!=null){tot++;if(e.c==='ok')ok++}
       return{n:pn(x.p),ud:uDosis(x.p),des:x.dosis,real,dev:e.t,c:e.c,cant:L!=null?L*conc(b,x)/1000:null,uc:uCant(x.p)}})}});
-  const sect=c.sectores.map(s=>{const min=r.min[s.id];return{nombre:s.nombre,min,ce:valSect(r,s,'ceD'),ph:valSect(r,s,'phD'),
+  const sect=c.sectores.map(s=>{const min=r.min[s.id];return{nombre:s.nombre,min,riegos:(r.rie||{})[s.id]??null,ce:valSect(r,s,'ceD'),ph:valSect(r,s,'phD'),
     band:s.bandejas.map(bj=>({nombre:bj.nombre,caudal:bj.caudal,vol:min!=null&&bj.caudal?min*bj.caudal/1000:null,ml:r.dren[bj.id],pct:drenPct(s,bj),ce:r.ceD[bj.id],ph:r.phD[bj.id]}))}});
   const receta=bidonesDe(cabId).map(b=>({nombre:b.nombre,principal:pn(b.principal),kg:b.kgPrincipal,uP:uCant(b.principal),cap:b.capacidad,lpcm:b.lpcm,
     filas:b.productos.filter(x=>x.dosis).map(x=>{const k=conc(b,x);return{n:pn(x.p),des:x.dosis,ud:uDosis(x.p),c1:k,c2:k*b.capacidad/1000,uc:uCant(x.p),cte:k?1000/k:null}})}));
-  return{fecha:st.fecha,finca:f?f.nombre:'',fincaId:f?f.id:'',alertas:{ceMax:st.cfg.alertas.ceMax,phMin:st.cfg.alertas.phMin,phMax:st.cfg.alertas.phMax},cab:c.nombre,cabId,sectores:c.sectores.map(s=>s.nombre),m3:r.m3[cabId],dren:R.drenaje,ceD:R.ceD,phD:R.phD,ok,tot,u,ce:ceEstimada(cabId),
+  return{salida:salidaDe(cabId),fecha:st.fecha,finca:f?f.nombre:'',fincaId:f?f.id:'',alertas:{ceMax:st.cfg.alertas.ceMax,phMin:st.cfg.alertas.phMin,phMax:st.cfg.alertas.phMax},cab:c.nombre,cabId,sectores:c.sectores.map(s=>s.nombre),m3:r.m3[cabId],dren:R.drenaje,ceD:R.ceD,phD:R.phD,ok,tot,u,ce:ceEstimada(cabId),
     rep:reparto(cabId).map(x=>({n:x.b.nombre,pct:x.pct,v:x.b.venturis})),deps,sect,receta,guardado:r.guardado,recetaDia:!!r.receta,provisional:!!(r.ejemplo||!r.guardado||st.dirtyReg)}})}
 const parteCabs=()=>{const f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(st.cab)),ok=new Set(cabsVis().map(c=>c.id));return (f?f.cabezales:[st.cab]).filter(id=>ok.has(id))};
 const fLarga=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -1462,7 +1476,10 @@ function parteCuerpo(d){let h='';
   h+=`<section class="summary"><div class="stat"><span>Agua regada</span><b>${fmt(d.m3,0)} m³</b><small>${esc(d.cab)}</small></div><div class="stat"><span>En dosis (±10 %)</span><b>${d.tot?d.ok+' de '+d.tot:'—'}</b><small>productos</small></div><div class="stat"><span>Drenaje medio</span><b>${fmt(d.dren,1)} %</b><small>${d.ceD!=null?'CE '+fmt(d.ceD,2)+' mS/cm':'sin CE'}${d.phD!=null?' · pH '+fmt(d.phD,1):''}</small></div></section>`;
   h+=`<section class="card"><div><h3>1. Cuentas del día</h3><div class="sub">Gasto de los depósitos y dosis real</div></div>`+d.deps.map(b=>`<div><b>${esc(b.nombre)}</b> <span class="note">${b.cm!=null?fmt(b.cm,1)+' cm · '+fmt(b.L,0)+' L':'sin cm gastados'}${b.otros.length?' · compartido con '+esc(b.otros.join(', ')):''}</span></div>${(b.llen||[]).length?`<div class="note">Llenado: ${b.llen.map(e=>(e.hora?e.hora+' · ':'')+'+'+fmt(e.cm,1)+' cm ('+fmt(e.L,0)+' L)'+(e.por?' · '+esc(e.por):'')).join(' / ')}</div>`:''}
     <div class="tbl"><table><thead><tr><th>Producto</th><th>Deseada</th><th>Real</th><th>Desv.</th><th>Aplicado</th></tr></thead><tbody>${b.filas.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmt(x.des,2)} <span class="u">${x.ud}</span></td><td><b>${fmt(x.real,2)}</b></td><td><span class="pill ${pillC[x.c]}">${x.dev}</span></td><td>${x.cant!=null?fmt(x.cant,2)+' '+x.uc:'—'}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
-  h+=`<section class="card"><div><h3>2. Drenaje</h3><div class="sub">Por sector y bandeja</div></div>`+d.sect.map(s=>`<div><b>${esc(s.nombre)}</b> <span class="note">${s.min!=null?fmt(s.min,0)+' min de riego':'sin minutos'}</span></div>
+  const sa=d.salida||{};
+  h+=`<section class="card"><div><h3>2. Agua de riego y drenaje</h3><div class="sub">Salida del cabezal, por sector y bandeja</div></div>
+    <div class="tbl"><table><thead><tr><th>CE balsa</th><th>CE reciclada</th><th>Incremento</th><th>Total salida</th><th>pH salida</th></tr></thead><tbody><tr><td>${fmt(sa.ceB,2)}</td><td>${fmt(sa.ceR,2)}</td><td>${fmt(sa.inc,2)}</td><td><b>${fmt(sa.tot,2)}</b></td><td>${fmt(sa.phS,1)}</td></tr></tbody></table></div>
+    <div class="note">CE en mS/cm · incremento según receta ${fmt(sa.incEst,2)} mS/cm</div>`+d.sect.map(s=>`<div><b>${esc(s.nombre)}</b> <span class="note">${s.min!=null?fmt(s.min,0)+' min de riego':'sin minutos'}${s.riegos?' · '+fmt(s.riegos,0)+' riegos'+(s.min?' (≈ '+fmt(s.min/s.riegos,1)+' min/riego)':''):''}</span></div>
     <div class="tbl"><table><thead><tr><th>Bandeja</th><th>Vol. total</th><th>Drenaje</th><th>%</th><th>CE</th><th>pH</th></tr></thead><tbody>${s.band.map(x=>`<tr><td>${esc(x.nombre)}</td><td>${fmt(x.vol,2)} L</td><td>${x.ml!=null?fmt(x.ml,0)+' ml':'—'}</td><td><b>${fmt(x.pct,1)}</b></td><td>${fmt(x.ce,2)}</td><td>${fmt(x.ph,1)}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
   h+=`<section class="card"><div><h3>3. Receta ${d.recetaDia?'de ese día':'(actual)'}</h3><div class="sub">Incremento de CE estimado ${fmt(d.ce,0)} µS/cm</div></div>`+d.receta.map(b=>`<div><b>${esc(b.nombre)}</b> <span class="note">${esc(b.principal)}: ${fmt(b.kg,1)} ${b.uP} por 1000 L · ${fmt(b.cap,0)} L</span></div>
     <div class="tbl"><table><thead><tr><th>Producto</th><th>Salida deseada</th><th>Por 1000 L</th><th>Por ${fmt(b.cap,0)} L</th></tr></thead><tbody>${b.filas.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmt(x.des,2)} <span class="u">${x.ud}</span></td><td>${fmt(x.c1,2)} ${x.uc}</td><td>${fmt(x.c2,1)} ${x.uc}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
@@ -1501,8 +1518,8 @@ async function partePdfDe(lista){let L;try{L=await pdfLib()}catch(e){toast('Hace
     y-=66;
     if(d.provisional){page.drawRectangle({x:M,y:y-18,width:IW,height:18,color:rgb(1,.95,.86)});T(d.aviso||'Atención: datos provisionales.',M+6,y-12.5,{size:8.5,bold:true,color:COL.warn});y-=28}
     // Resumen
-    const st4=[['Agua regada',fmtP(d.m3,0)+' m³'],['En dosis (±10 %)',d.tot?d.ok+' de '+d.tot:'-'],['Drenaje medio',fmtP(d.dren,1)+' %'],['CE / pH drenaje',fmtP(d.ceD,2)+' / '+fmtP(d.phD,1)]],bw=(IW-18)/4;
-    st4.forEach((x,i)=>{const bx=M+i*(bw+6);page.drawRectangle({x:bx,y:y-44,width:bw,height:44,color:bg});T(x[0].toUpperCase(),bx+8,y-14,{size:7,bold:true,color:mut,w:bw-14});T(x[1],bx+8,y-34,{size:13,bold:true,w:bw-14})});y-=58;
+    const st4=[['Agua regada',fmtP(d.m3,0)+' m³'],['Total salida',d.salida&&d.salida.tot!=null?fmtP(d.salida.tot,2)+' mS':'-'],['En dosis (±10 %)',d.tot?d.ok+' de '+d.tot:'-'],['Drenaje medio',fmtP(d.dren,1)+' %'],['CE / pH drenaje',fmtP(d.ceD,2)+' / '+fmtP(d.phD,1)]],bw=(IW-24)/5;
+    st4.forEach((x,i)=>{const bx=M+i*(bw+6);/*5 cajas*/page.drawRectangle({x:bx,y:y-44,width:bw,height:44,color:bg});T(x[0].toUpperCase(),bx+8,y-14,{size:7,bold:true,color:mut,w:bw-14});T(x[1],bx+8,y-34,{size:13,bold:true,w:bw-14})});y-=58;
     // 1. Cuentas
     titulo('1. Cuentas del día');
     if(d.u.des!=null)nota('Unidades fertilizantes aportadas: '+fmtP(d.u.real,0)+' (objetivo '+fmtP(d.u.des,0)+')');
@@ -1510,8 +1527,11 @@ async function partePdfDe(lista){let L;try{L=await pdfLib()}catch(e){toast('Hace
       if((b.llen||[]).length)nota('Llenado: '+b.llen.map(e=>(e.hora?e.hora+' h · ':'')+'+'+fmtP(e.cm,1)+' cm ('+fmtP(e.L,0)+' L)'+(e.por?' · '+e.por:'')).join('  /  '),acc);
       tabla(['Producto','Salida deseada','Real','Desviación','Aplicado'],b.filas.map(x=>[x.n,fmtP(x.des,2)+' '+x.ud,fmtP(x.real,2)+' '+x.ud,x.dev==='—'?'-':x.dev,x.cant!=null?fmtP(x.cant,2)+' '+x.uc:'-']),[.34,.18,.18,.13,.17],b.filas.map(x=>[0,0,0,x.c!=='nd'?x.c:0,0]))}
     // 2. Drenaje
-    titulo('2. Drenaje');
-    for(const s of d.sect){sub(s.nombre);nota((s.min!=null?'Tiempo de riego: '+fmtP(s.min,0)+' min':'Sin minutos de riego')+(s.ce!=null?'  ·  CE media '+fmtP(s.ce,2)+' mS/cm':'')+(s.ph!=null?'  ·  pH medio '+fmtP(s.ph,1):''));
+    titulo('2. Agua de riego y drenaje');
+    {const sa=d.salida||{};sub('Agua de riego (salida del cabezal)');
+      tabla(['CE balsa','CE reciclada','Incremento salida','Total salida','pH salida'],[[fmtP(sa.ceB,2),fmtP(sa.ceR,2),fmtP(sa.inc,2),fmtP(sa.tot,2),fmtP(sa.phS,1)]],[.2,.2,.2,.2,.2],[[0,0,0,'ok',0]]);y+=4;
+      nota('CE en mS/cm  ·  Total salida = CE balsa + incremento  ·  Incremento según receta: '+fmtP(sa.incEst,2)+' mS/cm');y-=6}
+    for(const s of d.sect){sub(s.nombre);nota((s.min!=null?'Tiempo de riego: '+fmtP(s.min,0)+' min':'Sin minutos de riego')+(s.riegos?'  ·  '+fmtP(s.riegos,0)+' riegos'+(s.min?' (~ '+fmtP(s.min/s.riegos,1)+' min/riego)':''):'')+(s.ce!=null?'  ·  CE media '+fmtP(s.ce,2)+' mS/cm':'')+(s.ph!=null?'  ·  pH medio '+fmtP(s.ph,1):''));
       const a=AL;tabla(['Bandeja','Caudal','Volumen total','Drenaje','% drenaje','CE','pH'],s.band.map(x=>[x.nombre,fmtP(x.caudal,0)+' ml/min',fmtP(x.vol,2)+' L',x.ml!=null?fmtP(x.ml,0)+' ml':'-',fmtP(x.pct,1)+(x.pct!=null?' %':''),fmtP(x.ce,2),fmtP(x.ph,1)]),[.22,.13,.14,.12,.13,.13,.13],
         s.band.map(x=>[0,0,0,0,x.pct!=null&&x.pct>100?'bad':0,x.ce!=null&&x.ce>a.ceMax?'bad':0,x.ph!=null&&(x.ph<a.phMin||x.ph>a.phMax)?'bad':0]))}
     // 3. Receta
@@ -1532,7 +1552,7 @@ async function pdfLib(){if(window.PDFLib)return window.PDFLib;const cdn='https:/
   try{await loadScript(window.claude?cdn:'pdf-lib.min.js')}catch(e){await loadScript(cdn)}return window.PDFLib}
 const pdfTxt=s=>String(s??'').replace(/­/g,'').replace(/[−–—]/g,'-').replace(/≈/g,'~').replace(/[^\x20-\x7E\xA0-\xFF]/g,'?');
 async function exportPdf(){let L;try{L=await pdfLib()}catch(e){toast('Hace falta conexión a internet para crear el PDF');return}
-  const d=informeData(st.mes),ts=informeTablas(d).slice(0,4),{PDFDocument,StandardFonts,rgb}=L;const doc=await PDFDocument.create();
+  const d=informeData(st.mes),ts=informeTablas(d).filter(t=>['Resumen','Abonos','Almacén','Diario','Salida'].includes(t.hoja)),{PDFDocument,StandardFonts,rgb}=L;const doc=await PDFDocument.create();
   const f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
   const PW=595.28,PH=841.89,M=40,IW=PW-2*M,ink=rgb(.082,.133,.173),mut=rgb(.35,.42,.44),navy=rgb(.106,.184,.29),lin=rgb(.84,.87,.85),bg=rgb(.933,.949,.937);
   let page=doc.addPage([PW,PH]),y=PH-M;
@@ -1925,7 +1945,7 @@ async function saveCfg(){if(st.saving)return;st.saving=true;renderSave();try{con
 
 async function loadFecha(f){st.fecha=f;let r=null;try{r=await Store.getReg(f)}catch(e){}
   if(r){st.reg=normReg(r,f)}else{let last=null;try{last=(await Store.listRegs()).find(x=>x.fecha<f)}catch(e){}
-    st.reg=last?{fecha:f,m3:{...last.m3},cm:{},niv:{},min:{...last.min},dren:{},ceE:{},phE:{},ceD:{},phD:{}}:ejemploReg(f)}
+    st.reg=last?{fecha:f,m3:{...last.m3},cm:{},niv:{},min:{...last.min},rie:{...(last.rie||{})},dren:{},ceE:{},phE:{},ceD:{},phD:{},ceB:{},ceR:{},inc:{},phS:{}}:ejemploReg(f)}
   st.dirtyReg=false;renderAll()}
 
 document.addEventListener('click',async e=>{const t=e.target.closest('button');if(!t)return;
