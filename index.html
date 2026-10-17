@@ -80,6 +80,18 @@ main{padding-block:16px 120px;display:grid;gap:14px}
 .inp.sm input{font-size:15px;width:6ch;padding:5px 6px}
 
 .tbl{overflow-x:auto}
+.cvwrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:640px){.cvwrap{grid-template-columns:1fr}}
+.cvplant{background:linear-gradient(#e8f3fb,#f5f9f6 70%);border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.cvsvg{display:block;width:100%;height:auto}
+.cvinfo{display:grid;gap:10px}
+.cvdia{display:grid;gap:2px}.cvdia b{font-size:16px}.cvdia span{font-size:13px;color:var(--muted)}
+.cvst{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.cvst>div{background:var(--bg);border-radius:10px;padding:8px 10px;display:grid;gap:1px}
+.cvst span{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase}.cvst b{font-size:20px}.cvst.sm b{font-size:16px}.cvst small{font-size:11.5px;color:var(--muted);text-transform:none}
+.cvslide input{width:100%;accent-color:var(--accent)}.cvslide .t{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.cvgraf{display:block;width:100%;height:auto}.cvley{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}.cvley i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
 .salida{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.salida>div{background:var(--bg);border-radius:10px;padding:10px 12px;display:grid;gap:2px}.salida span{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase}.salida b{font-size:22px}.salida small{font-size:12px;color:var(--muted)}
 .ev .evc{display:block;color:var(--muted);font-size:12px;margin-top:2px;text-transform:none}
 .ptbody{display:grid;gap:12px;border-top:1px solid var(--line);padding-top:12px}
@@ -462,7 +474,7 @@ function fe(id,cabs,lpcm,cap,kg,d,cmH,ej){return{id,nombre:'Depósito Microstep 
 function nit(id,cabs,lpcm,cap,kg,d,cmH,ej){return{id,nombre:'Depósito ácido nítrico',cabezales:cabs,lpcm,capacidad:cap,principal:'hno3',kgPrincipal:kg,venturis:1,reparto:false,cmHabitual:cmH,ejCm:ej,productos:[{p:'hno3',dosis:d}]}}
 function sec(cab,n,min,bjs){return{id:cab+'_s'+n,nombre:'Sector '+n,ejMin:min,bandejas:bjs.map(b=>({id:cab+'_b'+b[0].replace('.','_'),nombre:'Bandeja '+b[0],caudal:b[1],ejDren:b[2]}))}}
 const T12=[['1.1',223,6750],['1.2',220,8000],['1.3',219,3500]], T22=[['2.1',207,7000],['2.2',224,8000],['2.3',202,9000]];
-const DEFAULT_CONFIG={v:1,productos:PRODUCTOS,alertas:{ceMax:4,dCE:1.5,phMin:5.5,phMax:7,llenado:33},riego:{ini:'08:30',fin:'18:30'},medida:'cm',medidaV:2,
+const DEFAULT_CONFIG={v:1,cultivo:{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}},productos:PRODUCTOS,alertas:{ceMax:4,dCE:1.5,phMin:5.5,phMax:7,llenado:33},riego:{ini:'08:30',fin:'18:30'},medida:'cm',medidaV:2,
   almacenes:[{id:'gaspla',nombre:'Gasolinera y Planos',cabezales:['gas','pla']},{id:'fra',nombre:'Franco',cabezales:['fra']},{id:'fuente',nombre:'La Fuente',cabezales:['mt2','mt3']}],
   fincas:[{id:'pinta',nombre:'Pinta Santos',cabezales:['pla','gas','fra']},{id:'palacias',nombre:'Las Palacias',cabezales:[]},{id:'fuente',nombre:'La Fuente',cabezales:['mt2','mt3']}],ubic:{lat:37.4063,lon:-1.5829},stockMin:{},saco:{},
   cabezales:[
@@ -588,7 +600,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['partes','Partes recibidos'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['walkie','Walkie'],['tiempo','Tiempo'],['ajustes','Ajustes']];
+const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['partes','Partes recibidos'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['walkie','Walkie'],['tiempo','Tiempo'],['ajustes','Ajustes']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -664,7 +676,7 @@ function renderCabs(){$('#cabs').hidden=['partes','historial','mensajes','almace
 const GRUPOS=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','parte','partes'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','walkie'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
-  {id:'datos',n:'Datos',tabs:['historial','graficas','informe','diagnostico','tiempo'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
+  {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','diagnostico','tiempo'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 const grupoDe=tab=>GRUPOS.find(g=>g.tabs.includes(tab))||GRUPOS[0];
 st.ultTab=st.ultTab||{};
@@ -827,7 +839,7 @@ function vHistorial(){if(st.hist===null){loadHist();return '<div class="card"><d
   return h+`</section>`}
 let histLoading=false;
 async function loadHist(){if(histLoading)return;histLoading=true;await loadHist_();histLoading=false;refreshTab()}
-function refreshTab(){spRes();try{renderGrupos()}catch(e){}if(!$('#fincas').hidden)renderFincas();avisosLlenado();if(['historial','graficas','almacen','informe','rellenar'].includes(st.tab))renderMain();else if(st.tab==='cuentas')softUpdate()}
+function refreshTab(){spRes();try{renderGrupos()}catch(e){}if(!$('#fincas').hidden)renderFincas();avisosLlenado();if(['historial','graficas','almacen','informe','rellenar','cultivo'].includes(st.tab))renderMain();else if(st.tab==='cuentas')softUpdate()}
 async function loadHist_(){try{const[a,b]=await Promise.all([Store.listRegs(),Store.listCambios()]);st.hist=a;st.cambios=b}catch(e){st.hist=[];st.cambios=[];toast('No se pudo leer el historial')}}
 
 /* ---------- Adjuntos (fotos y archivos) ---------- */
@@ -866,7 +878,7 @@ function adjHTML(list,removable){if(!list||!list.length)return '';
     if(a.img)return `<span class="adjwrap"><button class="thumb" data-img="${a.id}" aria-label="Ver foto"><img alt="" ${a.local||a.fb?`data-local="${a.id}"`:''} src="${Adj.src(a)}"></button>${rm}</span>`;
     return `<span class="adjwrap"><button class="fchip" data-file="${a.id}">${CLIP}<span>${esc(a.name)}</span><small>${fSize(a.size||0)}</small></button>${rm}</span>`}).join('')+`</div>`}
 async function hydrate(){for(const el of document.querySelectorAll('img[data-local]')){if(el.getAttribute('src'))continue;const u=await Adj.url(findAdj(el.dataset.local)||{id:el.dataset.local,local:true});if(u)el.src=u}}
-function findAdj(id){for(const a of [...st.msgAdj,...st.ent.adj,...st.tf.adj,...st.td.adj,...st.mf.adj])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[]),...(st.priv||[]),...(st.tareas||[]),...(st.mat||[])])for(const a of [...(m.adjuntos||[]),...(m.adjHecha||[])])if(a.id===id)return a;return null}
+function findAdj(id){for(const a of [...st.msgAdj,...st.ent.adj,...st.tf.adj,...st.td.adj,...st.mf.adj,...((st.cf&&st.cf.adj)||[])])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[]),...(st.priv||[]),...(st.tareas||[]),...(st.mat||[]),...(st.crec||[])])for(const a of [...(m.adjuntos||[]),...(m.adjHecha||[]),...(m.fotos||[])])if(a.id===id)return a;return null}
 async function addFiles(files,list){list=list||st.msgAdj;for(const f of files){const tmp={tmp:true,id:'t'+Math.random(),name:f.name||'archivo'};list.push(tmp);renderMain();
   try{const a=await Adj.put(f);list[list.indexOf(tmp)]=a}catch(e){list.splice(list.indexOf(tmp),1);
     toast(e&&e.code==='tipo'?'Aquí solo se pueden adjuntar fotos, PDF, vídeos y texto':e&&e.code==='too_large'?'El archivo es demasiado grande':'No se pudo adjuntar '+(f.name||'el archivo'))}
@@ -1406,6 +1418,151 @@ function xlsxBlob(sheets){const NS='http://schemas.openxmlformats.org/spreadshee
 async function exportXlsx(){const d=informeData(st.mes),ts=informeTablas(d);
   const sheets=ts.map(t=>({name:t.hoja,rows:[[t.titulo+' · '+nomMes(st.mes)],[],t.cab,...t.filas],bold:[0,2]}));
   await saveBlob(xlsxBlob(sheets),`informe-abonado-${st.mes}.xlsx`)}
+/* ---------- Crecimiento del cultivo: medidas reales + dibujo de la planta día a día ---------- */
+st.crec=null;st.cv={dia:null,cab:null,play:false};st.cf=null;st.cfgCul=null;st.confirmCv=null;
+let cvLoading=false;
+async function loadCrec(){if(cvLoading)return;cvLoading=true;try{st.crec=await Store.listCol('crecimiento',2000)}catch(e){st.crec=st.crec||[]}cvLoading=false;if(st.tab==='cultivo')renderMain()}
+const culDe=cab=>((st.cfg.cultivo||{})[cab])||{};
+const medidasDe=cab=>(st.crec||[]).filter(m=>m.cab===cab).sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:a.ts<b.ts?-1:1);
+const diasEntre=(a,b)=>Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000);
+const sumaDias=(f,n)=>{const d=new Date(f+'T12:00:00');d.setDate(d.getDate()+n);return isoD(d)};
+/* Estado de la planta un día concreto: interpolado entre medidas reales; tras la última, como mucho 7 días al mismo ritmo */
+function plantaDia(cab,f){const cu=culDe(cab),ms=medidasDe(cab),pts=[];
+  if(cu.plantacion)pts.push({fecha:cu.plantacion,altura:cu.alturaIni||15,ram:0,guias:cu.guias||1,ini:true});
+  for(const m of ms)if(!cu.plantacion||m.fecha>=cu.plantacion)pts.push(m);
+  if(!pts.length)return null;
+  const g=m=>m.guias||cu.guias||1;
+  if(f<pts[0].fecha)return null;
+  let a=pts[0],b=null;for(const p of pts){if(p.fecha<=f)a=p;else{b=p;break}}
+  const base={guias:g(a),flor:a.flor||null,pint:a.pint||0,cos:a.cos||0,diam:a.diam??null,medida:!a.ini&&a.fecha===f?a:null,ultima:a.ini?null:a};
+  if(b){const t=diasEntre(a.fecha,f)/Math.max(1,diasEntre(a.fecha,b.fecha));
+    return{...base,altura:a.altura+(b.altura-a.altura)*t,ram:Math.floor((a.ram||0)+((b.ram||0)-(a.ram||0))*t+1e-9),est:a.fecha!==f,guias:g(b)}}
+  const extra=diasEntre(a.fecha,f);if(extra===0)return{...base,altura:a.altura,ram:a.ram||0,est:!!a.ini};
+  const prev=pts[pts.indexOf(a)-1];if(!prev||extra>7)return{...base,altura:a.altura,ram:a.ram||0,est:true,parado:true};
+  const dd=Math.max(1,diasEntre(prev.fecha,a.fecha)),va=(a.altura-prev.altura)/dd,vr=((a.ram||0)-(prev.ram||0))/dd;
+  return{...base,altura:a.altura+va*extra,ram:Math.floor((a.ram||0)+vr*extra+1e-9),est:true}}
+/* Día aproximado en que apareció cada ramillete (para saber la edad de sus frutos) */
+const ramCache=new Map();
+function fechasRam(cab){const cu=culDe(cab),ms=medidasDe(cab),key=cab+'|'+(cu.plantacion||'')+'|'+ms.map(m=>m.fecha+':'+m.ram).join(',');if(ramCache.has(key))return ramCache.get(key);
+  const{ini,fin}=cvRango(cab),out=[];let prev=0;for(let i=0;i<=diasEntre(ini,fin)+7;i++){const f=sumaDias(ini,i),p=plantaDia(cab,f);if(!p)continue;while(prev<p.ram){prev++;out[prev]=f}}
+  ramCache.clear();ramCache.set(key,out);return out}
+/* Dibujo de la planta (tomate entutorado, una o varias guías) */
+function plantaSVG(o,cab,f){const fr=fechasRam(cab);const W=360,H=430,y0=396,yT=34,cu=culDe(cab),alam=cu.alambre||null;
+  const esc_=Math.max(350,Math.ceil(Math.max(o.altura*1.08,alam||0)/50)*50),k=(y0-yT)/esc_,X0=200;
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="cvsvg" role="img" aria-label="Planta de ${fmt(o.altura/100,2)} m con ${o.ram} ramilletes"><defs><linearGradient id="cvSuelo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9a27d"/><stop offset="1" stop-color="#8d7552"/></linearGradient><radialGradient id="cvRojo" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#ff7a5c"/><stop offset="1" stop-color="#c62d16"/></radialGradient><radialGradient id="cvNar" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#ffc066"/><stop offset="1" stop-color="#e2771c"/></radialGradient><radialGradient id="cvVerde" cx=".35" cy=".35" r=".7"><stop offset="0" stop-color="#9ad46b"/><stop offset="1" stop-color="#3f8a2c"/></radialGradient></defs>`;
+  // regla
+  s+=`<g class="cvregla"><line x1="34" y1="${y0}" x2="34" y2="${yT}" stroke="#9aa7a3" stroke-width="1.5"/>`;
+  for(let c=0;c<=esc_;c+=50){const y=y0-c*k,big=c%100===0;s+=`<line x1="${big?24:28}" y1="${y}" x2="34" y2="${y}" stroke="#9aa7a3" stroke-width="1.2"/>`;if(big&&c)s+=`<text x="20" y="${y+4}" text-anchor="end" font-size="11" fill="#6b7a76">${c/100} m</text>`}s+=`</g>`;
+  if(alam){const y=y0-alam*k;s+=`<line x1="44" y1="${y}" x2="${W-8}" y2="${y}" stroke="#7d8b88" stroke-width="1.5"/><text x="${W-10}" y="${y-5}" text-anchor="end" font-size="10" fill="#6b7a76">alambre ${fmt(alam/100,1)} m</text>`}
+  // suelo y saco de cultivo con gotero
+  s+=`<rect x="40" y="${y0}" width="${W-40}" height="${H-y0}" fill="url(#cvSuelo)"/><rect x="${X0-62}" y="${y0-14}" width="124" height="22" rx="8" fill="#f4f1ea" stroke="#d6cfc0"/><line x1="40" y1="${y0-18}" x2="${W}" y2="${y0-18}" stroke="#2b2b2b" stroke-width="3"/><circle cx="${X0-20}" cy="${y0-18}" r="3.5" fill="#1d6b47"/><path d="M${X0-20} ${y0-14}q-2 4 0 6q2-2 0-6z" fill="#3aa0e0"/>`;
+  const n=Math.max(1,Math.min(4,o.guias||1)),h=Math.max(8,o.altura),base={x:X0,y:y0-14},sp=Math.min(70,190/n);
+  const op=o.est?' opacity=".62"':'';s+=`<g${op}>`;
+  const verde='#2f7d32',hoja='#3f9a43',hoja2='#2f7d32';
+  for(let i=0;i<n;i++){const tx=X0+(i-(n-1)/2)*sp+(n===1?6:0),ty=y0-h*k,cx=base.x+(tx-base.x)*0.15,cy=y0-h*k*0.45;
+    const P=t=>({x:(1-t)*(1-t)*base.x+2*(1-t)*t*cx+t*t*tx,y:(1-t)*(1-t)*base.y+2*(1-t)*t*cy+t*t*ty});
+    // rafia
+    s+=`<line x1="${tx}" y1="${ty}" x2="${tx}" y2="${alam?y0-alam*k:yT}" stroke="#c9b98f" stroke-width="1" stroke-dasharray="3 3"/>`;
+    // hojas
+    const nh=Math.max(3,Math.floor(h/17));
+    for(let j=0;j<nh;j++){const t=(j+0.7)/(nh+0.4);if(h>160&&t<0.14)continue;const p=P(t),sd=(j+i)%2?1:-1,sz=(0.75+0.35*Math.sin(j*1.7))*Math.min(1,0.55+h/400),L=40*sz,ang=sd*(62-28*t);
+      s+=`<g transform="translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${ang.toFixed(0)})"><line x1="0" y1="0" x2="0" y2="${-L}" stroke="${verde}" stroke-width="1.6"/>`;
+      for(let q=1;q<=3;q++){const yy=-L*q/3.4,rr=7*sz*(1.15-q*0.12);s+=`<ellipse cx="${-rr*0.9}" cy="${yy}" rx="${rr}" ry="${rr*0.55}" fill="${q%2?hoja:hoja2}" transform="rotate(-25 ${-rr*0.9} ${yy})"/><ellipse cx="${rr*0.9}" cy="${yy}" rx="${rr}" ry="${rr*0.55}" fill="${q%2?hoja2:hoja}" transform="rotate(25 ${rr*0.9} ${yy})"/>`}
+      s+=`<ellipse cx="0" cy="${-L-3*sz}" rx="${4.5*sz}" ry="${3*sz}" fill="${hoja}"/></g>`}
+    // tallo
+    s+=`<path d="M${base.x} ${base.y} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)}" fill="none" stroke="${verde}" stroke-width="${Math.min(6,2.5+h/120).toFixed(1)}" stroke-linecap="round"/>`;
+    // ramilletes
+    const N=o.ram||0,h1=Math.min(45,h*0.3),hN=Math.max(h1,h-28);
+    for(let r=1;r<=N;r++){const hc=N===1?h1:h1+(r-1)*(hN-h1)/(N-1),t=Math.min(.97,hc/h),p=P(t),sd=(r+i)%2?-1:1,px=p.x+sd*13,py=p.y+4;
+      s+=`<path d="M${p.x.toFixed(1)} ${p.y.toFixed(1)} q${sd*7} 0 ${sd*13} 4" fill="none" stroke="${verde}" stroke-width="1.4"/>`;
+      if(r<=o.cos){s+=`<path d="M${px} ${py} l${sd*5} 3" stroke="#8a6d3b" stroke-width="1.5"/>`;continue}
+      const edad=fr[r]&&f?diasEntre(fr[r],f):(N-r)*7,enFlor=o.flor?r>=o.flor:edad<8,pint=r<=o.cos+(o.pint||0);
+      if(enFlor){for(let f=0;f<4;f++){const fx=px+sd*(f*4.5),fy=py+(f%2?4:-1);s+=`<g transform="translate(${fx.toFixed(1)} ${fy.toFixed(1)})"><circle r="2.8" fill="#f6c915"/><circle r="1.1" fill="#d28b00"/></g>`}continue}
+      const age=Math.min(1,Math.max(0,(edad-6)/45)),rad=2.6+6*age,fill=pint?(r<=o.cos+Math.ceil((o.pint||0)/2)?'url(#cvRojo)':'url(#cvNar)'):'url(#cvVerde)';
+      for(let f=0;f<4;f++){const fx=px+sd*(f*rad*1.55),fy=py+(f%2?rad*0.9:0)+f*0.6;s+=`<circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${rad.toFixed(1)}" fill="${fill}"/><circle cx="${(fx-rad*0.3).toFixed(1)}" cy="${(fy-rad*0.35).toFixed(1)}" r="${(rad*0.25).toFixed(1)}" fill="#fff" opacity=".35"/>`}}
+    // ápice
+    s+=`<g transform="translate(${tx.toFixed(1)} ${ty.toFixed(1)})"><ellipse cx="-4" cy="-3" rx="5" ry="3" fill="#6cc04a" transform="rotate(-35 -4 -3)"/><ellipse cx="4" cy="-3" rx="5" ry="3" fill="#6cc04a" transform="rotate(35 4 -3)"/><circle r="2.4" fill="#86d25f"/></g>`}
+  s+=`</g>`;
+  // marca de altura
+  const yh=y0-h*k;s+=`<line x1="34" y1="${yh}" x2="${X0-sp*(n-1)/2-14}" y2="${yh}" stroke="#1b2f4a" stroke-width="1" stroke-dasharray="4 3"/><rect x="38" y="${yh-19}" width="70" height="16" rx="8" fill="#1b2f4a"/><text x="73" y="${yh-7}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${fmt(o.altura/100,2)} m</text>`;
+  if(o.est)s+=`<text x="${W-10}" y="${H-10}" text-anchor="end" font-size="11" fill="#fff" font-weight="700">${o.parado?'SIN MEDIR':'ESTIMADO'}</text>`;
+  return s+`</svg>`}
+/* Riego y abonado de ese cabezal, día a día y acumulado desde la plantación */
+function riegoCab(cab){const o={};for(const r of st.hist||[]){const m=(r.m3||{})[cab],res=(r.resumen||{})[cab]||{},kg=Object.values(res.kg||{}).reduce((a,b)=>a+b,0),ce=(r.ceB||{})[cab]!=null&&(r.inc||{})[cab]!=null?r.ceB[cab]+r.inc[cab]:null;
+  o[r.fecha]={m3:m??null,kg:kg||null,dren:res.drenaje??null,ce}}return o}
+function cvInfo(cab,f){const p=plantaDia(cab,f),cu=culDe(cab),rd=riegoCab(cab),dia=rd[f]||{};let m3=0,kg=0,dr=[],nd=0;
+  if(cu.plantacion)for(const[k,v]of Object.entries(rd))if(k>=cu.plantacion&&k<=f){if(v.m3)m3+=v.m3,nd++;if(v.kg)kg+=v.kg;if(v.dren!=null)dr.push(v.dren)}
+  const ms=medidasDe(cab).filter(m=>m.fecha<=f),u=ms[ms.length-1],pr=ms[ms.length-2]||(cu.plantacion?{fecha:cu.plantacion,altura:cu.alturaIni||15,ram:0}:null);
+  const ritmo=u&&pr&&diasEntre(pr.fecha,u.fecha)>0?{cm:(u.altura-pr.altura)/diasEntre(pr.fecha,u.fecha),dr:(u.ram-(pr.ram||0))>0?diasEntre(pr.fecha,u.fecha)/(u.ram-(pr.ram||0)):null}:null;
+  const foto=[...ms].reverse().find(m=>(m.fotos||[]).length);
+  return `<div class="cvdia"><b>${esc(fLarga(f).replace(/^./,x=>x.toUpperCase()))}</b>${cu.plantacion?`<span>Día ${diasEntre(cu.plantacion,f)} desde la plantación</span>`:''}</div>
+  ${p?`<div class="cvst"><div><span>Altura</span><b>${fmt(p.altura/100,2)} m</b></div><div><span>Ramilletes</span><b>${p.ram}</b><small>por guía</small></div><div><span>Guías</span><b>${p.guias}</b></div>${ritmo?`<div><span>Ritmo</span><b>${fmt(ritmo.cm,1)} cm/día</b><small>${ritmo.dr?'1 ramillete cada '+fmt(ritmo.dr,1)+' días':''}</small></div>`:''}</div>
+  <div class="note">${p.medida?'Medida real de este día'+(p.medida.por?' · '+esc(p.medida.por):''):p.parado?'Hace más de 7 días que no se mide: la planta se muestra como en la última medida.':p.est?'Estimado entre medidas reales':''}</div>`:'<div class="note">Sin datos para este día.</div>'}
+  <div class="cvst sm"><div><span>Riego ese día</span><b>${dia.m3!=null?fmt(dia.m3,0)+' m³':'—'}</b><small>${dia.dren!=null?'drenaje '+fmt(dia.dren,1)+' %':''}${dia.ce!=null?' · CE '+fmt(dia.ce,2):''}</small></div>
+    <div><span>Desde la plantación</span><b>${m3?fmt(m3,0)+' m³':'—'}</b><small>${nd?nd+' días con datos':''}</small></div><div><span>Abono aplicado</span><b>${kg?fmt(kg,0)+' kg/L':'—'}</b><small>${dr.length?'drenaje medio '+fmt(dr.reduce((a,b)=>a+b,0)/dr.length,1)+' %':''}</small></div></div>
+  ${foto?`<div class="cvfoto"><span class="note">Foto del ${esc(fFecha(foto.fecha))}</span>${adjHTML(foto.fotos.slice(0,3),false)}</div>`:''}`}
+/* Gráfica: altura (medidas reales y estimada) con el riego diario detrás */
+function cvGrafica(cab,ini,fin,sel){const W=640,H=190,L=44,R=40,T=14,B=26,n=Math.max(1,diasEntre(ini,fin)),rd=riegoCab(cab),x=f=>L+(W-L-R)*diasEntre(ini,f)/n;
+  const alts=[];for(let i=0;i<=n;i++){const f=sumaDias(ini,i),p=plantaDia(cab,f);if(p)alts.push([f,p.altura])}
+  const amax=Math.max(100,...alts.map(a=>a[1]))*1.08,m3s=Object.entries(rd).filter(([f])=>f>=ini&&f<=fin),mmax=Math.max(1,...m3s.map(([,v])=>v.m3||0)),ya=v=>H-B-(H-B-T)*v/amax,ym=v=>H-B-(H-B-T)*0.6*v/mmax;
+  let s=`<svg viewBox="0 0 ${W} ${H}" class="cvgraf" role="img" aria-label="Altura de la planta y riego diario">`;
+  for(let c=0;c<=amax;c+=100)s+=`<line x1="${L}" x2="${W-R}" y1="${ya(c)}" y2="${ya(c)}" stroke="#e1e6e3"/><text x="${L-6}" y="${ya(c)+4}" text-anchor="end" font-size="11" fill="#6b7a76">${c/100} m</text>`;
+  const bw=Math.max(1.5,(W-L-R)/n*0.7);for(const[f,v]of m3s)if(v.m3)s+=`<rect x="${(x(f)-bw/2).toFixed(1)}" y="${ym(v.m3).toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-B-ym(v.m3)).toFixed(1)}" fill="#7cc0ea" opacity=".55"/>`;
+  if(alts.length)s+=`<path d="${alts.map((a,i)=>(i?'L':'M')+x(a[0]).toFixed(1)+' '+ya(a[1]).toFixed(1)).join('')}" fill="none" stroke="#1d6b47" stroke-width="2.5" stroke-linejoin="round"/>`;
+  for(const m of medidasDe(cab))if(m.fecha>=ini&&m.fecha<=fin)s+=`<circle cx="${x(m.fecha).toFixed(1)}" cy="${ya(m.altura).toFixed(1)}" r="4.5" fill="#fff" stroke="#1d6b47" stroke-width="2.5"/>`;
+  if(sel)s+=`<line x1="${x(sel)}" x2="${x(sel)}" y1="${T}" y2="${H-B}" stroke="#1b2f4a" stroke-dasharray="3 3"/>`;
+  s+=`<text x="${L}" y="${H-6}" font-size="11" fill="#6b7a76">${esc(fCorta(ini))}</text><text x="${W-R}" y="${H-6}" text-anchor="end" font-size="11" fill="#6b7a76">${esc(fCorta(fin))}</text><text x="${W-R+4}" y="${T+10}" font-size="10" fill="#3a8fc4">m³</text>`;
+  return s+`</svg><div class="cvley"><span><i style="background:#1d6b47"></i>Altura (puntos: medidas reales)</span><span><i style="background:#7cc0ea"></i>Riego del día (m³)</span></div>`}
+function cvRango(cab){const cu=culDe(cab),ms=medidasDe(cab),ini=cu.plantacion||(ms[0]&&ms[0].fecha)||hoy(),ult=ms.length?ms[ms.length-1].fecha:ini;return{ini,fin:ult>hoy()?ult:hoy()}}
+function vCultivo(){if(st.crec===null){loadCrec();return '<section class="card"><div class="note">Cargando…</div></section>'}if(st.hist===null)loadHist();
+  const cab=st.cab,c=cabById(cab),cu=culDe(cab),ms=medidasDe(cab),{ini,fin}=cvRango(cab);
+  if(st.cv.cab!==cab||!st.cv.dia||st.cv.dia<ini||st.cv.dia>fin){st.cv.cab=cab;st.cv.dia=fin}
+  const f=st.cv.dia,p=plantaDia(cab,f);
+  let h='';
+  if(!cu.plantacion&&!ms.length)h+=`<section class="card"><div class="banner">Pon la fecha de plantación y apunta una primera medida para ver la planta crecer.</div></section>`;
+  h+=`<section class="card cvcard"><div class="tank-h"><div><h3>Crecimiento · ${esc(c.nombre)}</h3><div class="sub">${esc(cu.cultivo||'Tomate')}${cu.variedad?' '+esc(cu.variedad):''}${cu.plantacion?' · plantado el '+esc(fFecha(cu.plantacion)):''}</div></div>
+    <button class="btn" data-act="cv-play" ${diasEntre(ini,fin)<2?'disabled':''}>${st.cv.play?'Parar':'▶ Ver crecer'}</button></div>
+    <div class="cvwrap"><div class="cvplant" id="cvplant">${p?plantaSVG(p,cab,f):'<div class="note" style="padding:40px 10px">Sin datos todavía</div>'}</div><div class="cvinfo" id="cvinfo">${cvInfo(cab,f)}</div></div>
+    <div class="cvslide"><input type="range" id="cv_dia" data-cv="dia" min="0" max="${diasEntre(ini,fin)}" value="${diasEntre(ini,f)}" aria-label="Día"><div class="t"><span>${esc(fCorta(ini))}</span><span>${esc(fCorta(fin))}</span></div></div></section>`;
+  h+=`<section class="card"><div><h3>Altura y riego</h3><div class="sub">Línea: altura de la planta · barras: m³ regados cada día</div></div><div id="cvgraf">${cvGrafica(cab,ini,fin,f)}</div></section>`;
+  // nueva medida
+  const g=st.cf&&st.cf.cab===cab?st.cf:(st.cf={cab,fecha:hoy(),altura:'',ram:'',guias:String(cu.guias||(ms.length?ms[ms.length-1].guias:'')||''),flor:'',pint:'',cos:'',diam:'',nota:'',adj:[]});
+  const fl=(id,lab,u,attrs)=>`<div class="field"><label for="cf_${id}">${lab}</label><div class="inp"><input id="cf_${id}" data-cf="${id}" ${attrs||'inputmode="decimal"'} autocomplete="off" value="${esc(g[id]??'')}">${u?`<span class="u">${u}</span>`:''}</div></div>`;
+  h+=`<section class="card"><div><h3>Apuntar medida</h3><div class="sub">Mide siempre la misma planta (o la media de varias marcadas). Una vez a la semana basta.</div></div>
+    <div class="frm">${fl('fecha','Fecha','','type="date"')}${fl('altura','Altura','m')}${fl('ram','Ramilletes (por guía)','','inputmode="numeric"')}${fl('guias','Guías','','inputmode="numeric"')}
+    ${fl('flor','Ramillete en flor (nº)','','inputmode="numeric" placeholder="opcional"')}${fl('pint','Ramilletes pintando','','inputmode="numeric" placeholder="opcional"')}${fl('cos','Ramilletes cosechados','','inputmode="numeric" placeholder="opcional"')}${fl('diam','Grosor del tallo','mm','inputmode="decimal" placeholder="opcional"')}</div>
+    <div class="field"><label for="cf_nota">Observaciones</label><div class="inp"><input class="wide" id="cf_nota" data-cf="nota" style="width:100%;text-transform:none" value="${esc(g.nota)}" autocomplete="off"></div></div>
+    ${adjHTML(g.adj,true)}
+    <div class="row">${Adj.can()?`<label class="btn" for="cf_foto">Añadir foto</label><input type="file" id="cf_foto" data-cf="file" accept="image/*" multiple hidden>`:''}<button class="btn pri" data-act="cf-save" ${g.adj.some(a=>a.tmp)?'disabled':''}>Guardar medida</button></div></section>`;
+  // datos de la plantación
+  const pc=st.cfgCul&&st.cfgCul.cab===cab?st.cfgCul:null;
+  h+=`<section class="card"><div class="tank-h"><div><h3>Datos de la plantación</h3><div class="sub">${cu.plantacion?esc(cu.cultivo||'Tomate')+' · '+esc(fFecha(cu.plantacion))+' · '+(cu.guias||1)+' guías'+(cu.alambre?' · alambre '+fmt(cu.alambre/100,1)+' m':''):'Sin rellenar'}</div></div>${pc?'':`<button class="btn" data-act="cul-edit">Cambiar</button>`}</div>
+    ${pc?`<div class="frm"><div class="field"><label for="cu_cul">Cultivo</label><div class="inp"><input id="cu_cul" data-cu="cultivo" style="text-transform:none" value="${esc(pc.cultivo)}"></div></div>
+      <div class="field"><label for="cu_var">Variedad</label><div class="inp"><input id="cu_var" data-cu="variedad" style="text-transform:none" value="${esc(pc.variedad)}" placeholder="opcional"></div></div>
+      <div class="field"><label for="cu_pl">Fecha de plantación</label><div class="inp"><input type="date" id="cu_pl" data-cu="plantacion" value="${esc(pc.plantacion)}"></div></div>
+      <div class="field"><label for="cu_gu">Guías</label><div class="inp"><input id="cu_gu" data-cu="guias" inputmode="numeric" value="${esc(pc.guias)}"></div></div>
+      <div class="field"><label for="cu_al">Altura del alambre</label><div class="inp"><input id="cu_al" data-cu="alambre" inputmode="decimal" value="${esc(pc.alambre)}" placeholder="opcional"><span class="u">m</span></div></div></div>
+      <div class="row"><button class="btn pri" data-act="cul-save">Guardar</button><button class="btn" data-act="cul-no">Cancelar</button></div>`:''}</section>`;
+  // historial de medidas
+  h+=`<section class="card"><div><h3>Medidas apuntadas</h3><div class="sub">${ms.length} ${ms.length===1?'medida':'medidas'}</div></div>${ms.length?`<div class="tbl"><table><thead><tr><th>Fecha</th><th>Altura</th><th>Ram.</th><th>Guías</th><th>Flor</th><th>Tallo</th><th></th></tr></thead><tbody>${[...ms].reverse().map(m=>`<tr><td>${esc(fFecha(m.fecha))}${m.por?`<br><small class="note">${esc(m.por)}</small>`:''}</td><td><b>${fmt(m.altura/100,2)} m</b></td><td>${m.ram??'—'}</td><td>${m.guias??'—'}</td><td>${m.flor??'—'}</td><td>${m.diam!=null?fmt(m.diam,1):'—'}</td><td>${st.confirmCv===m.id?`<button class="btn danger" data-act="cv-del-yes" data-id="${m.id}">Borrar</button>`:`<button class="btn" data-act="cv-del" data-id="${m.id}">×</button>`}</td></tr>${m.nota||(m.fotos||[]).length?`<tr><td colspan="7">${m.nota?`<span class="note">${esc(m.nota)}</span>`:''}${adjHTML(m.fotos,false)}</td></tr>`:''}`).join('')}</tbody></table></div>`:'<div class="note">Todavía no hay medidas.</div>'}</section>`;
+  return h}
+function cvPintar(){const cab=st.cab,f=st.cv.dia,p=plantaDia(cab,f),{ini,fin}=cvRango(cab);const a=$('#cvplant'),b=$('#cvinfo'),g=$('#cvgraf'),r=$('#cv_dia');
+  if(a)a.innerHTML=p?plantaSVG(p,cab,f):'<div class="note" style="padding:40px 10px">Sin datos para este día</div>';if(b){b.innerHTML=cvInfo(cab,f);hydrate()}if(g)g.innerHTML=cvGrafica(cab,ini,fin,f);if(r)r.value=diasEntre(ini,f)}
+let cvTimer=null;
+function cvPlay(){if(st.cv.play){st.cv.play=false;clearInterval(cvTimer);renderMain();return}const{ini,fin}=cvRango(st.cab),n=diasEntre(ini,fin);if(n<2)return;st.cv.play=true;let i=0;st.cv.dia=ini;renderMain();
+  const paso=Math.max(1,Math.round(n/70));cvTimer=setInterval(()=>{if(st.tab!=='cultivo'){st.cv.play=false;clearInterval(cvTimer);return}i=Math.min(n,i+paso);st.cv.dia=sumaDias(ini,i);cvPintar();if(i>=n){st.cv.play=false;clearInterval(cvTimer);const bt=$('[data-act="cv-play"]');if(bt)bt.textContent='▶ Ver crecer'}},60)}
+async function cfSave(){const g=st.cf,n=v=>{const x=num(String(v||''));return x==null?null:x};const alt=n(g.altura);if(!(alt>0)){toast('Escribe la altura en metros');return}
+  const altura=alt<20?Math.round(alt*1000)/10:alt;// en metros (3,1) o, si ponen cm (310), se respeta
+  const m={ts:new Date().toISOString(),fecha:g.fecha||hoy(),cab:g.cab,altura,ram:n(g.ram)!=null?Math.round(n(g.ram)):null,guias:n(g.guias)!=null?Math.round(n(g.guias)):null,flor:n(g.flor)!=null?Math.round(n(g.flor)):null,pint:n(g.pint)!=null?Math.round(n(g.pint)):null,cos:n(g.cos)!=null?Math.round(n(g.cos)):null,diam:n(g.diam),nota:(g.nota||'').trim(),fotos:g.adj.filter(a=>!a.tmp),por:yoNombre()};
+  try{const id=await Store.addCol('crecimiento',m);st.crec.unshift({...m,id});st.cf=null;st.cv.dia=m.fecha>hoy()?m.fecha:hoy();renderMain();toast('Medida guardada')}catch(e){toast(errMsg(e))}}
+async function culSave(){const pc=st.cfgCul,cab=pc.cab,g=num(String(pc.guias||'')),al=num(String(pc.alambre||''));
+  const v={cultivo:(pc.cultivo||'Tomate').trim(),variedad:(pc.variedad||'').trim(),plantacion:pc.plantacion||'',guias:g>0?Math.round(g):1};if(al>0)v.alambre=al<20?Math.round(al*100):al;
+  for(const c of [st.cfg,st.savedCfg]){c.cultivo={...(c.cultivo||{}),[cab]:v}}
+  try{await Store.setConfig(st.savedCfg);st.cfgCul=null;st.cv.dia=null;renderMain();toast('Datos de la plantación guardados')}catch(e){toast(errMsg(e))}}
+function onCvInput(e){const t=e.target;if(t.dataset.cv==='dia'){const{ini}=cvRango(st.cab);st.cv.dia=sumaDias(ini,+t.value);cvPintar();return}
+  if(t.dataset.cf){const k=t.dataset.cf;if(k==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';addFiles(fs,st.cf.adj)}return}st.cf[k]=t.value;return}
+  if(t.dataset.cu&&st.cfgCul)st.cfgCul[t.dataset.cu]=t.value}
+$('#main').addEventListener('input',onCvInput);$('#main').addEventListener('change',e=>{if(e.target.dataset.cf==='file')onCvInput(e)});
 /* ---------- Partes recibidos: llegan al encargado cada vez que se guarda el día ---------- */
 const puedePartes=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&(NUBE.user.admin||NUBE.user.encargado));
 const encargadosDe=fid=>todosEmails().filter(e=>accInfo(e).encargado&&veFinca(e,fid));
@@ -1904,7 +2061,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()},150)});
 
-const VIEWS={parte:vParte,partes:vPartes,walkie:vWalkie,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
+const VIEWS={cultivo:vCultivo,parte:vParte,partes:vPartes,walkie:vWalkie,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
 function renderMain(){$('#main').innerHTML=VIEWS[st.tab]();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
 function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=VIEWS[st.tab]();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
@@ -1957,7 +2114,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.open){if(st.dirtyReg)await saveReg();st.tab='cuentas';await loadFecha(t.dataset.open)}
   else if(t.dataset.img){openImg(t.dataset.img)}
   else if(t.dataset.file){const a=findAdj(t.dataset.file);if(a)Adj.save(a)}
-  else if(t.dataset.rmadj){for(const L of [st.msgAdj,st.ent.adj,st.tf.adj,st.td.adj,st.mf.adj]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
+  else if(t.dataset.rmadj){for(const L of [st.msgAdj,st.ent.adj,st.tf.adj,st.td.adj,st.mf.adj,...(st.cf?[st.cf.adj]:[])]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
   else if(t.dataset.gr){st.gRange=+t.dataset.gr;renderMain()}
   else if(t.dataset.mf!==undefined){st.msgF=t.dataset.mf;st.confirmDel=null;renderMain()}
   else if(t.dataset.act==='msg-send')sendMsg();
@@ -2012,6 +2169,13 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='pt-rev'){st.ptRev=t.dataset.id;renderMain();const i=$('#pt_nota');if(i)i.focus()}
   else if(t.dataset.act==='pt-rev-no'){st.ptRev=null;renderMain()}
   else if(t.dataset.act==='pt-rev-ok'){ptRevisar(t.dataset.id)}
+  else if(t.dataset.act==='cv-play')cvPlay();
+  else if(t.dataset.act==='cf-save')cfSave();
+  else if(t.dataset.act==='cul-edit'){const cu=culDe(st.cab);st.cfgCul={cab:st.cab,cultivo:cu.cultivo||'Tomate',variedad:cu.variedad||'',plantacion:cu.plantacion||'',guias:String(cu.guias||''),alambre:cu.alambre?String(cu.alambre/100).replace('.',','):''};renderMain()}
+  else if(t.dataset.act==='cul-no'){st.cfgCul=null;renderMain()}
+  else if(t.dataset.act==='cul-save')culSave();
+  else if(t.dataset.act==='cv-del'){st.confirmCv=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='cv-del-yes'){const id=t.dataset.id,m=(st.crec||[]).find(x=>x.id===id);try{await Store.delCol('crecimiento',id);for(const a of (m&&m.fotos)||[])await Adj.del(a);st.crec=st.crec.filter(x=>x.id!==id);st.confirmCv=null;renderMain();toast('Medida borrada')}catch(e){toast(errMsg(e))}}
   else if(t.dataset.act==='parte-pdf'){t.disabled=true;partePdf(t.dataset.todos?parteCabs():[st.cab]).finally(()=>{t.disabled=false})}
   else if(t.dataset.act==='inf-pdf'){t.disabled=true;exportPdf().finally(()=>{t.disabled=false})}
   else if(t.dataset.act==='rv-play')rvToggle();
@@ -2066,7 +2230,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
-  try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
+  try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
   st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();wkIniciar();setTimeout(wkLimpiar,15000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}})();
