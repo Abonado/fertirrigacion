@@ -80,6 +80,16 @@ main{padding-block:16px 120px;display:grid;gap:14px}
 .inp.sm input{font-size:15px;width:6ch;padding:5px 6px}
 
 .tbl{overflow-x:auto}
+.mapwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:78vh;background:#f7f3e8;-webkit-overflow-scrolling:touch}
+.mapin{min-width:100%}.mapsvg{display:block;width:100%;height:auto;cursor:crosshair;user-select:none;-webkit-user-select:none}
+.mapsvg .nave{cursor:crosshair}.mapsvg .mpin{cursor:pointer}.mapsvg .mpulse{animation:mpuls 1.6s ease-out infinite;transform-origin:0 -30px}
+@keyframes mpuls{0%{opacity:.9;transform:scale(.7)}100%{opacity:0;transform:scale(1.6)}}
+.mley{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12px;color:var(--muted)}.mley i,.mdot{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;color:#fff;font:800 11px/1 var(--f-body,inherit);font-style:normal;margin-right:5px;vertical-align:-5px}
+.mlist{display:grid}.mrow{display:flex;gap:10px;align-items:center;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 4px;cursor:pointer;font:inherit;color:inherit;width:100%}
+.mrow:first-child{border-top:0}.mrow.on{background:var(--bg);border-radius:10px}.mrow .mt{flex:1;min-width:0}.mrow .mt b{display:block}.mrow .mt small{display:block;color:var(--muted);font-size:12.5px;text-transform:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow .mr{display:grid;justify-items:end;gap:3px}.mrow .mr small{font-size:11px;color:var(--muted)}
+.lbl{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+
 .cvwrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
 @media (max-width:640px){.cvwrap{grid-template-columns:1fr}}
 .cvplant{background:linear-gradient(#e8f3fb,#f5f9f6 70%);border-radius:12px;overflow:hidden;border:1px solid var(--line)}
@@ -505,7 +515,7 @@ const fFecha=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'sho
 const fCorta=f=>{const p=f.split('-');return p[2]+'/'+p[1]};
 
 /* ---------- Almacenamiento: nube del artifact (db) o, si no hay, este navegador ---------- */
-const SYNC=new Set(['almacen','llenados','tareas','material','mensajes','crecimiento','partes','registros','cambios']);
+const SYNC=new Set(['incidencias','almacen','llenados','tareas','material','mensajes','crecimiento','partes','registros','cambios']);
 const ahoraISO=()=>new Date().toISOString();
 const Store={db:null,mode:'local',
   /* En la nube: la primera vez descarga todo y lo guarda en el móvil; las siguientes solo pide lo cambiado (campo «mod»).
@@ -604,7 +614,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['partes','Partes recibidos'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
+const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -678,14 +688,14 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.
 function renderCabs(){$('#cabs').hidden=['partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
 const GRUPOS=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','parte','partes'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
-  {id:'equipo',n:'Equipo',tabs:['tareas','mensajes'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
+  {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','diagnostico','tiempo'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 const grupoDe=tab=>GRUPOS.find(g=>g.tabs.includes(tab))||GRUPOS[0];
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(puedePartes()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
-  try{n.equipo=(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}
+  try{n.equipo=(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)+(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}
   try{let a=0;if(st.mat&&esAdminU()&&miEmail())a+=matPend().filter(mVisible).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
 function renderGrupos(){const g=grupoDe(st.tab),ins=insignias();$('#grupos').innerHTML=GRUPOS.map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('')}
@@ -882,7 +892,7 @@ function adjHTML(list,removable){if(!list||!list.length)return '';
     if(a.img)return `<span class="adjwrap"><button class="thumb" data-img="${a.id}" aria-label="Ver foto"><img alt="" ${a.local||a.fb?`data-local="${a.id}"`:''} src="${Adj.src(a)}"></button>${rm}</span>`;
     return `<span class="adjwrap"><button class="fchip" data-file="${a.id}">${CLIP}<span>${esc(a.name)}</span><small>${fSize(a.size||0)}</small></button>${rm}</span>`}).join('')+`</div>`}
 async function hydrate(){for(const el of document.querySelectorAll('img[data-local]')){if(el.getAttribute('src'))continue;const u=await Adj.url(findAdj(el.dataset.local)||{id:el.dataset.local,local:true});if(u)el.src=u}}
-function findAdj(id){for(const a of [...st.msgAdj,...st.ent.adj,...st.tf.adj,...st.td.adj,...st.mf.adj,...((st.cf&&st.cf.adj)||[])])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[]),...(st.priv||[]),...(st.tareas||[]),...(st.mat||[]),...(st.crec||[])])for(const a of [...(m.adjuntos||[]),...(m.adjHecha||[]),...(m.fotos||[])])if(a.id===id)return a;return null}
+function findAdj(id){for(const a of [...st.msgAdj,...st.ent.adj,...st.tf.adj,...st.td.adj,...st.mf.adj,...((st.cf&&st.cf.adj)||[]),...((st.mNueva&&st.mNueva.adj)||[])])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[]),...(st.priv||[]),...(st.tareas||[]),...(st.mat||[]),...(st.crec||[]),...(st.inc||[])])for(const a of [...(m.adjuntos||[]),...(m.adjHecha||[]),...(m.fotos||[])])if(a.id===id)return a;return null}
 async function addFiles(files,list){list=list||st.msgAdj;for(const f of files){const tmp={tmp:true,id:'t'+Math.random(),name:f.name||'archivo'};list.push(tmp);renderMain();
   try{const a=await Adj.put(f);list[list.indexOf(tmp)]=a}catch(e){list.splice(list.indexOf(tmp),1);
     toast(e&&e.code==='tipo'?'Aquí solo se pueden adjuntar fotos, PDF, vídeos y texto':e&&e.code==='too_large'?'El archivo es demasiado grande':'No se pudo adjuntar '+(f.name||'el archivo'))}
@@ -1521,6 +1531,99 @@ function onCvInput(e){const t=e.target;if(t.dataset.cv==='dia'){const{ini}=cvRan
   if(t.dataset.cf){const k=t.dataset.cf;if(k==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';addFiles(fs,st.cf.adj)}return}st.cf[k]=t.value;return}
   if(t.dataset.cu&&st.cfgCul)st.cfgCul[t.dataset.cu]=t.value}
 $('#main').addEventListener('input',onCvInput);$('#main').addEventListener('change',e=>{if(e.target.dataset.cf==='file')onCvInput(e)});
+/* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */
+/* Gasolinera: 6 naves numeradas de abajo (1) arriba (6), trazadas sobre la foto aérea */
+const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633],[275,775],[213,905]],Q=[[826,152],[757,290],[690,438],[622,582],[556,727],[432,852],[335,948]];
+  const naves=[];for(let i=0;i<6;i++){const k=5-i;naves.push({n:i+1,p:[P[k+1],Q[k+1],Q[k],P[k]]})}
+  return{titulo:'Gasolinera',finca:'Pinta Santos',vb:[150,20,930,985],naves,ang:24}})()};
+const ITIPOS={plaga:['Plaga','#c0392b','P'],enfermedad:['Enfermedad','#7d3c98','E'],riego:['Riego / goteo','#1f78c1','R'],estructura:['Estructura / plástico','#d35400','S'],nutricion:['Nutrición','#8a9a1b','N'],otro:['Otro','#566573','O']};
+const IPRIO={alta:['Alta','bad'],media:['Media','warn'],baja:['Baja','ok']};
+st.inc=null;st.mz=1;st.mSel=null;st.mNueva=null;st.mFil='abiertas';st.mRes=null;
+let incLoading=false;
+async function loadInc(){if(incLoading)return;incLoading=true;try{st.inc=await Store.listCol('incidencias',0)}catch(e){st.inc=st.inc||[]}incLoading=false;try{renderGrupos()}catch(e){}if(st.tab==='mapa')renderMain()}
+const incVisible=i=>!restringido()||fincasVis().some(f=>f.cabezales.includes(i.cab));
+const incAbiertas=()=>(st.inc||[]).filter(i=>i.estado!=='resuelta'&&incVisible(i));
+function dentro(pt,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const[xi,yi]=poly[i],[xj,yj]=poly[j];if(((yi>pt[1])!==(yj>pt[1]))&&(pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi))c=!c}return c}
+const centro=p=>[p.reduce((a,q)=>a+q[0],0)/p.length,p.reduce((a,q)=>a+q[1],0)/p.length];
+const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
+const ptsS=p=>p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+/* El plano: estilo de plano técnico (papel, retícula, cajetín) */
+function planoSVG(cab,incs){const M=MAPAS[cab],[vx,vy,vw,vh]=M.vb;let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg" id="mapsvg" role="img" aria-label="Plano de naves de ${esc(M.titulo)}">
+  <defs><pattern id="mpGrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#e4dcc8" stroke-width="1"/></pattern>
+  <pattern id="mpGrid2" width="200" height="200" patternUnits="userSpaceOnUse"><path d="M200 0H0V200" fill="none" stroke="#d6ccb3" stroke-width="1.4"/></pattern>
+  <pattern id="mpHatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#9c8f73" stroke-width="1.2"/></pattern>
+  <filter id="mpSh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0b1a2b" flood-opacity=".35"/></filter></defs>
+  <rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f7f3e8"/><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="url(#mpGrid)"/><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="url(#mpGrid2)"/>`;
+  // parcelas vecinas (solo contorno)
+  s+=`<g fill="none" stroke="#cbbf9f" stroke-width="1.5" stroke-dasharray="6 5"><path d="M160 470L330 330L450 400L320 540Z"/><path d="M160 640L300 560L320 690L170 800Z"/><path d="M160 880L240 800L250 900L160 980Z"/></g>`;
+  // carretera RM-11 y RM-332
+  s+=`<g><path d="M560 1010L1080 470" stroke="#d9c58f" stroke-width="74" fill="none"/><path d="M560 1010L1080 470" stroke="#efe2b8" stroke-width="64" fill="none"/><path d="M560 1010L1080 470" stroke="#fff" stroke-width="2" stroke-dasharray="18 14" fill="none"/>
+    <path d="M1010 20L1008 340" stroke="#d2cbbb" stroke-width="22" fill="none"/><circle cx="1004" cy="368" r="30" fill="none" stroke="#d2cbbb" stroke-width="16"/><path d="M1030 380L1080 350" stroke="#d2cbbb" stroke-width="18"/><path d="M990 392L940 470" stroke="#d2cbbb" stroke-width="14"/>
+    <rect x="788" y="742" width="84" height="28" rx="6" fill="#e8a33a" transform="rotate(-46 830 756)"/><text x="830" y="762" text-anchor="middle" font-size="17" font-weight="700" fill="#fff" transform="rotate(-46 830 756)">RM-11</text>
+    <rect x="950" y="215" width="96" height="28" rx="6" fill="#e8a33a"/><text x="998" y="235" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">RM-332</text></g>`;
+  // camino de la finca
+  const cam="M300 1005L432 872L566 742L700 452L800 250L858 140Q880 118 920 124L1010 150";
+  s+=`<path d="${cam}" stroke="#bdb5a3" stroke-width="22" fill="none" stroke-linejoin="round"/><path d="${cam}" stroke="#e6e0d2" stroke-width="16" fill="none" stroke-linejoin="round"/>
+    <path d="M432 872L300 960" stroke="#e6e0d2" stroke-width="12" fill="none"/>`;
+  // arbolado de la rambla (siempre igual)
+  let sd=7;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;s+=`<g>`;for(let i=0;i<70;i++){const t=rnd(),x=640+t*250+(rnd()-.5)*60,y=880-t*640+(rnd()-.5)*60;if(x>920||y<200)continue;const r=6+rnd()*9;s+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(1)}" fill="#7fae74" opacity=".55"/><circle cx="${(x-2).toFixed(0)}" cy="${(y-2).toFixed(0)}" r="${(r*.55).toFixed(1)}" fill="#a3c995" opacity=".6"/>`}s+=`</g>`;
+  // caseta
+  s+=`<g><rect x="858" y="446" width="48" height="64" fill="url(#mpHatch)" stroke="#5f5644" stroke-width="2"/><text x="882" y="530" text-anchor="middle" font-size="14" fill="#5f5644" font-weight="700">CASETA</text></g>`;
+  // naves
+  const abiertas=n=>incs.filter(i=>i.nave===n&&i.estado!=='resuelta');
+  for(const nv of M.naves){const[a,b,c,d]=nv.p,tiene=abiertas(nv.n),alta=tiene.some(i=>i.prio==='alta');
+    s+=`<g class="nave" data-nave="${nv.n}"><polygon points="${ptsS(nv.p)}" fill="${alta?'#f7dcd6':tiene.length?'#fbecc9':'#e3ecf4'}" stroke="#1b2f4a" stroke-width="3" stroke-linejoin="round"/>`;
+    for(let k=1;k<12;k++){const t=k/12;s+=`<line x1="${lerp(d,a,t)[0].toFixed(1)}" y1="${lerp(d,a,t)[1].toFixed(1)}" x2="${lerp(c,b,t)[0].toFixed(1)}" y2="${lerp(c,b,t)[1].toFixed(1)}" stroke="#9fb4c9" stroke-width="1.6"/>`}
+    const[cx,cy]=centro(nv.p);s+=`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${M.ang})"><rect x="-46" y="-17" width="92" height="34" rx="17" fill="#1b2f4a" opacity=".92"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#fff" letter-spacing="1">NAVE ${nv.n}</text>${tiene.length?`<circle cx="50" cy="-15" r="13" fill="${alta?'#c0392b':'#e2a32a'}"/><text x="50" y="-10" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${tiene.length}</text>`:''}</g></g>`}
+  // incidencias
+  for(const i of incs.filter(i=>st.mFil==='todas'||i.estado!=='resuelta')){const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta',sel=st.mSel===i.id,k=sel?1.35:1,col=res?'#9aa3a8':t[1];
+    s+=`<g class="mpin${sel?' sel':''}" data-inc="${i.id}" transform="translate(${i.x.toFixed(1)} ${i.y.toFixed(1)}) scale(${k})" filter="url(#mpSh)">${i.prio==='alta'&&!res?'<circle r="20" cy="-30" fill="none" stroke="#c0392b" stroke-width="3" class="mpulse"/>':''}<path d="M0 0C-4 -10 -15 -18 -15 -30A15 15 0 1 1 15 -30C15 -18 4 -10 0 0Z" fill="${col}" stroke="#fff" stroke-width="2.5"/><text y="-24" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${res?'✓':t[2]}</text><circle r="34" cy="-25" fill="transparent"/></g>`}
+  if(st.mNueva&&st.mNueva.x!=null)s+=`<g transform="translate(${st.mNueva.x.toFixed(1)} ${st.mNueva.y.toFixed(1)})"><circle r="10" fill="none" stroke="#1b2f4a" stroke-width="3"/><circle r="22" fill="none" stroke="#1b2f4a" stroke-width="2" stroke-dasharray="4 4"/><line x1="-30" x2="-14" stroke="#1b2f4a" stroke-width="3"/><line x1="14" x2="30" stroke="#1b2f4a" stroke-width="3"/><line y1="-30" y2="-14" stroke="#1b2f4a" stroke-width="3"/><line y1="14" y2="30" stroke="#1b2f4a" stroke-width="3"/></g>`;
+  // norte y cajetín
+  s+=`<g transform="translate(${vx+60} ${vy+70})"><circle r="34" fill="#fff" stroke="#1b2f4a" stroke-width="2"/><path d="M0 -26L10 8L0 2L-10 8Z" fill="#1b2f4a"/><text y="26" text-anchor="middle" font-size="14" font-weight="800" fill="#1b2f4a">N</text></g>`;
+  s+=`<g transform="translate(${vx+92} ${vy+16})"><rect width="330" height="90" fill="#fff" stroke="#1b2f4a" stroke-width="2.5"/><line x1="0" y1="34" x2="330" y2="34" stroke="#1b2f4a" stroke-width="1.5"/><line x1="230" y1="34" x2="230" y2="90" stroke="#1b2f4a" stroke-width="1.5"/>
+    <text x="12" y="24" font-size="17" font-weight="800" fill="#1b2f4a" letter-spacing=".5">${esc(M.finca.toUpperCase())} · ${esc(M.titulo.toUpperCase())}</text><text x="12" y="58" font-size="14" fill="#1b2f4a">Plano de naves</text><text x="12" y="78" font-size="12" fill="#5d6d7e">${M.naves.length} naves · numeradas de sur a norte</text><text x="280" y="58" text-anchor="middle" font-size="12" fill="#5d6d7e">ESCALA</text><text x="280" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="#1b2f4a">S/E</text></g>`;
+  return s+`</svg>`}
+function vMapa(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
+  if(!M)return `<section class="card"><div><h3>Mapa de naves · ${esc(c.nombre)}</h3><div class="sub">Este cabezal todavía no tiene plano</div></div><div class="note">Manda una foto aérea de sus naves (Google Maps en vista satélite) y se dibuja el plano igual que el de Gasolinera.</div><div class="row">${Object.keys(MAPAS).filter(k=>cabsVis().some(x=>x.id===k)).map(k=>`<button class="btn" data-cab="${k}">Ver ${esc(cabNombre(k))}</button>`).join('')}</div></section>`;
+  if(st.inc===null){loadInc();return '<section class="card"><div class="note">Cargando el mapa…</div></section>'}
+  const incs=(st.inc||[]).filter(i=>i.cab===cab),ab=incs.filter(i=>i.estado!=='resuelta'),sel=incs.find(i=>i.id===st.mSel),N=st.mNueva;
+  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Mapa de naves · ${esc(M.titulo)}</h3><div class="sub">${ab.length?`${ab.length} ${ab.length===1?'incidencia abierta':'incidencias abiertas'}`:'Sin incidencias abiertas'} · toca una nave para apuntar una incidencia</div></div>
+    <div class="row" style="gap:6px"><button class="btn sm" data-act="mz" data-z="-1" aria-label="Alejar">−</button><button class="btn sm" data-act="mz" data-z="1" aria-label="Acercar">+</button></div></div>
+    <div class="mapwrap" id="mapwrap"><div class="mapin" style="width:${st.mz*100}%">${planoSVG(cab,incs)}</div></div>
+    <div class="mley">${Object.entries(ITIPOS).map(([k,t])=>`<span><i style="background:${t[1]}">${t[2]}</i>${t[0]}</span>`).join('')}</div>
+    <div class="pick"><button class="chip" data-mfil="abiertas" aria-pressed="${st.mFil==='abiertas'}">Abiertas (${ab.length})</button><button class="chip" data-mfil="todas" aria-pressed="${st.mFil==='todas'}">Todas (${incs.length})</button></div></section>`;
+  if(N)h+=`<section class="card" id="mform"><div><h3>Nueva incidencia · Nave ${N.nave}</h3><div class="sub">Marcada en el plano. Toca otro punto para moverla.</div></div>
+    <div><div class="lbl">Tipo</div><div class="pick">${Object.entries(ITIPOS).map(([k,t])=>`<button class="chip" data-mtipo="${k}" aria-pressed="${N.tipo===k}">${t[0]}</button>`).join('')}</div></div>
+    <div><div class="lbl">Prioridad</div><div class="pick">${Object.entries(IPRIO).map(([k,t])=>`<button class="chip" data-mprio="${k}" aria-pressed="${N.prio===k}">${t[0]}</button>`).join('')}</div></div>
+    <div class="field"><label for="mi_txt">Qué pasa</label><div class="inp"><input class="wide" id="mi_txt" data-mi="txt" style="width:100%;text-transform:none" value="${esc(N.txt)}" placeholder="Ej.: mosca blanca en las filas del pasillo central" autocomplete="off"></div></div>
+    ${adjHTML(N.adj,true)}
+    <div class="row">${Adj.can()?`<label class="btn" for="mi_foto">Añadir foto</label><input type="file" id="mi_foto" data-mi="file" accept="image/*" multiple hidden>`:''}<button class="btn pri" data-act="mi-save" ${N.adj.some(a=>a.tmp)?'disabled':''}>Guardar incidencia</button><button class="btn" data-act="mi-no">Cancelar</button></div></section>`;
+  if(sel){const t=ITIPOS[sel.tipo]||ITIPOS.otro,res=sel.estado==='resuelta',puede=sel.porEmail===miEmail()||esAdminU();
+    h+=`<section class="card" id="mdet"><div class="tank-h"><div><h3><span class="mdot" style="background:${t[1]}">${t[2]}</span> ${esc(t[0])} · Nave ${sel.nave}</h3><div class="sub">${esc(fFecha(sel.fecha))} · ${esc(hhmm(sel.ts))} · ${esc(sel.por||'')}</div></div><span class="pill ${res?'ok':IPRIO[sel.prio]?IPRIO[sel.prio][1]:'nd'}">${res?'Resuelta':'Prioridad '+(IPRIO[sel.prio]||IPRIO.media)[0].toLowerCase()}</span></div>
+      ${sel.txt?`<p>${esc(sel.txt)}</p>`:''}${adjHTML(sel.fotos,false)}
+      ${res?`<div class="note">Resuelta por ${esc(sel.resPor||'')} · ${esc(fFecha((sel.resTs||'').slice(0,10)||sel.fecha))}${sel.resNota?' · «'+esc(sel.resNota)+'»':''}</div>`:''}
+      ${st.mRes===sel.id?`<div class="field"><label for="mi_res">Cómo se ha resuelto (opcional)</label><div class="inp"><input class="wide" id="mi_res" style="width:100%;text-transform:none" autocomplete="off"></div></div><div class="row"><button class="btn pri" data-act="mi-res-ok" data-id="${sel.id}">Marcar resuelta</button><button class="btn" data-act="mi-res-no">Cancelar</button></div>`
+      :`<div class="row">${res?`<button class="btn" data-act="mi-abrir" data-id="${sel.id}">Volver a abrir</button>`:`<button class="btn pri" data-act="mi-res" data-id="${sel.id}">Resolver</button><button class="btn" data-act="mi-tarea" data-id="${sel.id}">Crear tarea</button>`}${puede?(st.confirmMi===sel.id?`<button class="btn danger" data-act="mi-del-yes" data-id="${sel.id}">Sí, borrar</button>`:`<button class="btn" data-act="mi-del" data-id="${sel.id}">Borrar</button>`):''}<button class="btn" data-act="mi-cerrar">Cerrar</button></div>`}</section>`}
+  const lista=(st.mFil==='todas'?incs:ab).slice().sort((a,b)=>(a.estado==='resuelta')-(b.estado==='resuelta')||((b.prio==='alta')-(a.prio==='alta'))||(a.ts<b.ts?1:-1));
+  h+=`<section class="card"><div><h3>${st.mFil==='todas'?'Todas las incidencias':'Incidencias abiertas'}</h3><div class="sub">Toca una para verla en el plano</div></div>${lista.length?`<div class="mlist">${lista.map(i=>{const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta';return `<button class="mrow${st.mSel===i.id?' on':''}" data-inc="${i.id}"><span class="mdot" style="background:${res?'#9aa3a8':t[1]}">${res?'✓':t[2]}</span><span class="mt"><b>Nave ${i.nave} · ${esc(t[0])}</b><small>${esc((i.txt||'Sin descripción').slice(0,90))}</small></span><span class="mr"><span class="pill ${res?'ok':(IPRIO[i.prio]||IPRIO.media)[1]}">${res?'Resuelta':(IPRIO[i.prio]||IPRIO.media)[0]}</span><small>${esc(fCorta(i.fecha))}</small></span></button>`}).join('')}</div>`:'<div class="note">Nada por aquí. Toca una nave en el plano para apuntar una incidencia.</div>'}</section>`;
+  return h}
+function mapaPunto(e){const svg=$('#mapsvg');if(!svg)return null;const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=svg.getScreenCTM();if(!m)return null;const q=p.matrixTransform(m.inverse());return[q.x,q.y]}
+document.addEventListener('click',e=>{if(st.tab!=='mapa')return;
+  const pin=e.target.closest('[data-inc]');if(pin){st.mSel=st.mSel===pin.dataset.inc&&pin.classList.contains('mrow')?null:pin.dataset.inc;st.mNueva=null;st.mRes=null;renderMain();const d=$(pin.classList.contains('mrow')?'#mapwrap':'#mdet');if(d)d.scrollIntoView({behavior:'smooth',block:'nearest'});return}
+  const f=e.target.closest('[data-mfil]');if(f){st.mFil=f.dataset.mfil;renderMain();return}
+  const ti=e.target.closest('[data-mtipo]');if(ti&&st.mNueva){st.mNueva.tipo=ti.dataset.mtipo;renderMain();return}
+  const pr=e.target.closest('[data-mprio]');if(pr&&st.mNueva){st.mNueva.prio=pr.dataset.mprio;renderMain();return}
+  if(e.target.closest('#mapsvg')){const pt=mapaPunto(e),M=MAPAS[st.cab];if(!pt||!M)return;const nv=M.naves.find(n=>dentro(pt,n.p));if(!nv){toast('Toca dentro de una nave');return}
+    const N=st.mNueva||{tipo:'plaga',prio:'media',txt:'',adj:[]};st.mNueva={...N,nave:nv.n,x:pt[0],y:pt[1]};st.mSel=null;renderMain();const fm=$('#mform');if(fm)fm.scrollIntoView({behavior:'smooth',block:'nearest'})}});
+document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.mi;if(!k||!st.mNueva)return;if(k==='txt')st.mNueva.txt=e.target.value});
+document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.mi;if(k==='file'&&st.mNueva&&e.target.files.length){const fs=[...e.target.files];e.target.value='';addFiles(fs,st.mNueva.adj)}});
+async function miGuardar(){const N=st.mNueva;if(!N||N.x==null)return;const now=new Date().toISOString();
+  const i={ts:now,fecha:hoy(),cab:st.cab,finca:fincaDeCab(st.cab),nave:N.nave,x:+N.x.toFixed(1),y:+N.y.toFixed(1),tipo:N.tipo,prio:N.prio,txt:(N.txt||'').trim(),fotos:N.adj.filter(a=>!a.tmp),estado:'abierta',por:yoNombre(),porEmail:miEmail()};
+  try{const id=await Store.addCol('incidencias',i);st.inc.unshift({...i,id});st.mNueva=null;st.mSel=id;renderMain();renderGrupos();toast('Incidencia guardada en la nave '+i.nave);
+    let para=[...new Set([...encargadosDe(i.finca),...adminsEmails()])];const t=ITIPOS[i.tipo]||ITIPOS.otro;
+    pushEnviar(para,`${i.prio==='alta'?'URGENTE · ':''}${t[0]} en la nave ${i.nave} · ${cabNombre(i.cab)}`,(i.txt||'Sin descripción')+' · '+yoNombre(),'inc-'+id,'mapa')}catch(e){toast(errMsg(e))}}
+async function miPatch(id,p,msg){const i=(st.inc||[]).find(x=>x.id===id);if(!i)return;try{await Store.updCol('incidencias',id,p);Object.assign(i,p);st.mRes=null;renderMain();renderGrupos();if(msg)toast(msg)}catch(e){toast(errMsg(e))}}
 /* ---------- Partes recibidos: llegan al encargado cada vez que se guarda el día ---------- */
 const puedePartes=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&(NUBE.user.admin||NUBE.user.encargado));
 const encargadosDe=fid=>todosEmails().filter(e=>accInfo(e).encargado&&veFinca(e,fid));
@@ -2019,7 +2122,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()},150)});
 
-const VIEWS={cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
+const VIEWS={mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
 function renderMain(){$('#main').innerHTML=VIEWS[st.tab]();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
 function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=VIEWS[st.tab]();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
@@ -2085,7 +2188,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.open){if(st.dirtyReg)await saveReg();st.tab='cuentas';await loadFecha(t.dataset.open)}
   else if(t.dataset.img){openImg(t.dataset.img)}
   else if(t.dataset.file){const a=findAdj(t.dataset.file);if(a)Adj.save(a)}
-  else if(t.dataset.rmadj){for(const L of [st.msgAdj,st.ent.adj,st.tf.adj,st.td.adj,st.mf.adj,...(st.cf?[st.cf.adj]:[])]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
+  else if(t.dataset.rmadj){for(const L of [st.msgAdj,st.ent.adj,st.tf.adj,st.td.adj,st.mf.adj,...(st.cf?[st.cf.adj]:[]),...(st.mNueva?[st.mNueva.adj]:[])]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
   else if(t.dataset.gr){st.gRange=+t.dataset.gr;renderMain()}
   else if(t.dataset.mf!==undefined){st.msgF=t.dataset.mf;st.confirmDel=null;renderMain()}
   else if(t.dataset.act==='msg-send')sendMsg();
@@ -2136,6 +2239,17 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='pt-rev-no'){st.ptRev=null;renderMain()}
   else if(t.dataset.act==='pt-rev-ok'){ptRevisar(t.dataset.id)}
   else if(t.dataset.act==='sug-m3'){const id=t.dataset.id;st.reg.m3[id]=sugDe('m3',id);marcaReg('m3.'+id);renderMain();renderSave()}
+  else if(t.dataset.act==='mz'){const z=[1,1.6,2.4],i=z.indexOf(st.mz);st.mz=z[Math.max(0,Math.min(2,i+(+t.dataset.z)))];const w=$('#mapwrap'),fx=w?(w.scrollLeft+w.clientWidth/2)/w.scrollWidth:.5,fy=w?(w.scrollTop+w.clientHeight/2)/w.scrollHeight:.5;renderMain();const w2=$('#mapwrap');if(w2){w2.scrollLeft=fx*w2.scrollWidth-w2.clientWidth/2;w2.scrollTop=fy*w2.scrollHeight-w2.clientHeight/2}}
+  else if(t.dataset.act==='mi-save')miGuardar();
+  else if(t.dataset.act==='mi-no'){st.mNueva=null;renderMain()}
+  else if(t.dataset.act==='mi-cerrar'){st.mSel=null;st.mRes=null;renderMain()}
+  else if(t.dataset.act==='mi-res'){st.mRes=t.dataset.id;renderMain();const i=$('#mi_res');if(i)i.focus()}
+  else if(t.dataset.act==='mi-res-no'){st.mRes=null;renderMain()}
+  else if(t.dataset.act==='mi-res-ok'){const n=$('#mi_res');miPatch(t.dataset.id,{estado:'resuelta',resPor:yoNombre(),resTs:new Date().toISOString(),resNota:n?n.value.trim():''},'Incidencia resuelta')}
+  else if(t.dataset.act==='mi-abrir')miPatch(t.dataset.id,{estado:'abierta'},'Incidencia abierta de nuevo')
+  else if(t.dataset.act==='mi-del'){st.confirmMi=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='mi-del-yes'){const id=t.dataset.id,i=(st.inc||[]).find(x=>x.id===id);try{await Store.delCol('incidencias',id);for(const a of (i&&i.fotos)||[])await Adj.del(a);st.inc=st.inc.filter(x=>x.id!==id);st.mSel=null;st.confirmMi=null;renderMain();renderGrupos();toast('Incidencia borrada')}catch(e){toast(errMsg(e))}}
+  else if(t.dataset.act==='mi-tarea'){const i=(st.inc||[]).find(x=>x.id===t.dataset.id);if(i){const ti=ITIPOS[i.tipo]||ITIPOS.otro;st.tf={...st.tf,open:true,titulo:`Nave ${i.nave}: ${ti[0].toLowerCase()}${i.txt?' · '+i.txt:''}`.slice(0,120),finca:i.finca,cab:i.cab,urg:i.prio==='alta',det:'Desde el mapa de naves',adj:[...(i.fotos||[])]};st.tab='tareas';renderAll();window.scrollTo(0,0)}}
   else if(t.dataset.act==='cv-play')cvPlay();
   else if(t.dataset.act==='cf-save')cfSave();
   else if(t.dataset.act==='cul-edit'){const cu=culDe(st.cab);st.cfgCul={cab:st.cab,cultivo:cu.cultivo||'Tomate',variedad:cu.variedad||'',plantacion:cu.plantacion||'',guias:String(cu.guias||''),alambre:cu.alambre?String(cu.alambre/100).replace('.',','):''};renderMain()}
@@ -2198,14 +2312,14 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
-  st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();setTimeout(wkBorrarRestos,20000);
+  st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}})();
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.abrir!=null&&st.ready)irA(d.abrir||'cuentas-hoy')});
 /* Con datos compartidos: al volver a la app, recarga lo que hayan guardado otros */
 setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
 let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(document.hidden||Store.mode!=='fb'||!st.ready||Date.now()-ultRec<30000)return;ultRec=Date.now();
-  if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();
+  if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc();
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
 
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
