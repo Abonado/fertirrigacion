@@ -19,6 +19,23 @@ service cloud.firestore {
              .get(request.auth.token.email, {}).get('encargado', false) == true;
     }
 
+    function esGestor() {
+      return esAdmin() || (autorizado() && esEncargado());
+    }
+
+    // Receta, ajustes, fincas y cabezales: solo administrador y encargados
+    match /abonado_config/{doc} {
+      allow read: if autorizado();
+      allow write: if esGestor();
+    }
+
+    // Almacén: cualquiera apunta; corregir o borrar, el gestor o quien lo apuntó
+    match /abonado_almacen/{doc} {
+      allow read, create: if autorizado();
+      allow update, delete: if esGestor()
+        || (autorizado() && resource.data.get('porEmail', '') == request.auth.token.email);
+    }
+
     // Partes diarios: los guarda cualquiera del equipo, solo los leen el administrador y los encargados
     match /abonado_partes/{doc} {
       allow read: if esAdmin() || (autorizado() && esEncargado());
@@ -51,6 +68,8 @@ service cloud.firestore {
         && coleccion != 'abonado_acceso'
         && coleccion != 'abonado_privados'
         && coleccion != 'abonado_partes'
+        && coleccion != 'abonado_config'
+        && coleccion != 'abonado_almacen'
         && autorizado();
     }
   }

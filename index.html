@@ -80,6 +80,12 @@ main{padding-block:16px 120px;display:grid;gap:14px}
 .inp.sm input{font-size:15px;width:6ch;padding:5px 6px}
 
 .tbl{overflow-x:auto}
+.edc{border:1px solid var(--line);border-radius:12px;margin:8px 0;overflow:hidden}.edch{display:flex;gap:10px;align-items:center;width:100%;background:var(--bg);border:0;padding:12px;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.edch b{font-size:16px}.edch small{flex:1;color:var(--muted);font-size:12px;text-transform:none}.edcb{padding:12px;display:grid;gap:10px}.edcb h4{margin:6px 0 0;font-size:14px;text-transform:uppercase;color:var(--muted)}
+.eds,.edd{border-left:3px solid var(--accent);padding:4px 0 4px 10px;display:grid;gap:8px}.edb{display:grid;grid-template-columns:minmax(0,1fr) 140px auto;gap:6px;align-items:center}.edb .inp{width:100%;min-width:0}.edb .inp input{width:100%;min-width:0}
+.edcb .inp input[style*="text-transform:none"],.edf .inp input[style*="text-transform:none"]{text-align:left!important;width:100%}.edcb .field .inp,.edf .field .inp{width:100%}
+.edx{border:0;background:none;color:var(--bad);font-weight:800;cursor:pointer;padding:0 0 0 4px}.edf .inp input{width:100%}
+
 .mapwrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:78vh;background:#f7f3e8;-webkit-overflow-scrolling:touch}
 .mapin{min-width:100%}.mapsvg{display:block;width:100%;height:auto;cursor:crosshair;user-select:none;-webkit-user-select:none}
 .mapsvg .nave{cursor:crosshair}.mapsvg .mpin{cursor:pointer}.mapsvg .mpulse{animation:mpuls 1.6s ease-out infinite;transform-origin:0 -30px}
@@ -614,7 +620,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes']];
+const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -685,21 +691,21 @@ function elegirFinca(id){const f=fincasVis().find(x=>x.id===id);if(!f||!f.cabeza
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){$('#cabs').hidden=['partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
+function renderCabs(){$('#cabs').hidden=['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
 const GRUPOS=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','parte','partes'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','diagnostico','tiempo'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
-  {id:'ajustes',n:'Ajustes',tabs:['ajustes'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
+  {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 const grupoDe=tab=>GRUPOS.find(g=>g.tabs.includes(tab))||GRUPOS[0];
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(puedePartes()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
   try{n.equipo=(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)+(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}
-  try{let a=0;if(st.mat&&esAdminU()&&miEmail())a+=matPend().filter(mVisible).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
+  try{let a=0;if(st.mat&&esGestor()&&miEmail())a+=matPend().filter(mVisible).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
 function renderGrupos(){const g=grupoDe(st.tab),ins=insignias();$('#grupos').innerHTML=GRUPOS.map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('')}
-function renderTabs(){renderGrupos();const g=grupoDe(st.tab);st.ultTab[g.id]=st.tab;$('#tabs').hidden=g.tabs.length<2;$('#tabs').innerHTML=TABS.filter(([k])=>g.tabs.includes(k)&&(k!=='partes'||puedePartes())).map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
+function renderTabs(){renderGrupos();const g=grupoDe(st.tab);st.ultTab[g.id]=st.tab;$('#tabs').hidden=g.tabs.length<2;$('#tabs').innerHTML=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k)).map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
 /* Menús desplazables con ratón: rueda y arrastrar */
 function scrollRaton(el){if(!el)return;
   el.addEventListener('wheel',e=>{if(el.scrollWidth<=el.clientWidth)return;if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){el.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
@@ -760,7 +766,7 @@ function ceOut(s){const out=cePill(valSect(st.reg,s,'ceD'),valSect(st.reg,s,'phD
 function sumDren(c){const r=resumen(c.id);const per=c.sectores.map(s=>{const ps=s.bandejas.map(bj=>drenPct(s,bj)).filter(p=>p!=null);return{s,m:ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null}});
   return `<div class="stat"><span>Media del cabezal</span><b>${fmt(r.drenaje,1)} %</b><small>${esc(c.nombre)}</small></div>`+(r.ceD!=null?`<div class="stat"><span>CE drenaje</span><b>${fmt(r.ceD,2)}</b><small class="nt">mS/cm</small></div>`:'')+per.map(p=>`<div class="stat"><span>${esc(p.s.nombre)}</span><b>${fmt(p.m,1)} %</b><small>${fmt(st.reg.min[p.s.id],0)} min</small></div>`).join('')}
 
-function vRellenar(){const bs=bidonesDe(st.cab);let sel=st.fillB[st.cab];if(!bs.find(b=>b.id===sel))sel=bs[0].id;st.fillB[st.cab]=sel;const b=bs.find(x=>x.id===sel);
+function vRellenar(){const bs=bidonesDe(st.cab);if(!bs.length)return `<section class="card"><div class="note">Este cabezal no tiene depósitos. El administrador los crea en Ajustes → Fincas y cabezales.</div></section>`;let sel=st.fillB[st.cab];if(!bs.find(b=>b.id===sel))sel=bs[0].id;st.fillB[st.cab]=sel;const b=bs.find(x=>x.id===sel);
   const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b);
   let h=`<section class="card"><div><h3>Nivel de los depósitos</h3><div class="sub">${esc(cabById(st.cab).nombre)} · lo que queda y para cuántos días</div></div><div>${bs.map(x=>{const g=gastoDia(x);return `<div class="lrow"><div class="lnm"><b>${esc(x.nombre)}</b>
     <div class="field gd"><label for="gd_${x.id}">Gasto diario</label><div class="inp sm"><input id="gd_${x.id}" data-k="cfg.cons.${x.id}" inputmode="decimal" autocomplete="off" placeholder="${g.med!=null?inVal(+g.med.toFixed(1)):g.teo!=null?inVal(+g.teo.toFixed(1)):''}" value="${inVal(x.consumoDia)}"><span class="u">cm/día</span></div></div>
@@ -790,7 +796,7 @@ function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b)
   if(cm*b.lpcm>b.capacidad*1.05)h+=`<div class="step" style="color:var(--bad)"><span>Pasas de la capacidad del depósito</span><b></b></div>`;
   return h+`<div class="step water"><span>Agua (cm de depósito)</span><b>${fmt(cm-liqCm,1)} cm</b></div></div>`}
 
-function vReceta(){const c=cabById(st.cab);let h=`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
+function vReceta(){const c=cabById(st.cab);let h=(esGestor()?'':`<section class="card"><div class="note">Receta de solo lectura: la cambian el encargado o el administrador.</div></section>`)+`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
   for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}Capacidad ${fmt(b.capacidad,0)} L</div></div>
       <div class="field"><label for="kg_${b.id}">${esc(prod(b.principal).n)} por 1000 L</label><div class="inp"><input id="kg_${b.id}" data-k="cfg.kg.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(b.kgPrincipal)}"><span class="u">${uCant(b.principal)}</span></div></div></div>
@@ -809,7 +815,7 @@ function sumReceta(c){const rp=reparto(c.id);
   return `<div class="stat"><span>Incremento de CE estimado</span><b>${fmt(ceEstimada(c.id),0)}</b><small class="nt">µS/cm</small></div>
   <div class="stat wide"><span>Reparto de venturis</span><div class="tbl"><table><tbody>${rp.map(r=>`<tr><td>${esc(r.b.nombre)}</td><td><b>${fmt(r.pct,1)} %</b></td><td class="u">${r.b.venturis>1?r.b.venturis+' venturis × '+fmt(r.pct/r.b.venturis,1)+' %':'1 venturi'}</td></tr>`).join('')}</tbody></table></div></div>`}
 
-function vAjustes(){const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
+function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de llenado, mensajes, tareas e incidencias</div></div><div data-out="notif">${notifHTML()}</div></section>`+(window.NUBE&&NUBE.user?NUBE.cardHTML():'');const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
   for(const b of bidonesDe(st.cab)){h+=`<div class="cfgrow"><div class="field nmf"><label for="bn_${b.id}">Nombre</label><div class="inp"><input class="wide" id="bn_${b.id}" data-k="cfg.bname.${b.id}" data-text="1" value="${esc(b.nombre)}"></div></div>
     <div class="field"><label for="lp_${b.id}">L por cm</label><div class="inp sm"><input id="lp_${b.id}" data-k="cfg.lpcm.${b.id}" inputmode="decimal" value="${inVal(b.lpcm)}"></div></div>
     <div class="field"><label for="cp_${b.id}">Capacidad</label><div class="inp sm"><input id="cp_${b.id}" data-k="cfg.cap.${b.id}" inputmode="decimal" value="${inVal(b.capacidad)}"><span class="u">L</span></div></div>
@@ -849,7 +855,7 @@ function vHistorial(){if(st.hist===null){loadHist();return '<div class="card"><d
   h+=`</section><section class="card"><div><h3>Cambios de receta</h3><div class="sub">Qué se cambió y cuándo</div></div>`;
   const cs=st.cambios||[];
   if(!cs.length)h+=`<div class="note">Sin cambios de receta.</div>`;
-  else h+=`<div>`+cs.map(x=>`<div class="chg"><b>${fFecha(x.fecha)}</b><ul>${(x.lineas||[]).map(l=>`<li>${esc(String(l).replace(/Bid[oó]n/gi,'Depósito'))}</li>`).join('')}</ul></div>`).join('')+`</div>`;
+  else h+=`<div>`+cs.map(x=>`<div class="chg"><b>${fFecha(x.fecha)}${x.por?` · ${esc(x.por)}`:''}</b><ul>${(x.lineas||[]).map(l=>`<li>${esc(String(l).replace(/Bid[oó]n/gi,'Depósito'))}</li>`).join('')}</ul></div>`).join('')+`</div>`;
   return h+`</section>`}
 let histLoading=false;
 async function loadHist(){if(histLoading)return;histLoading=true;await loadHist_();histLoading=false;refreshTab()}
@@ -981,6 +987,12 @@ const MEST={pedido:['warn','Pedido'],encargado:['nd','Encargado'],recibido:['ok'
 const UDS=['unidades','metros','rollos','cajas','paquetes','sacos','litros','kg','juegos'];
 const MAT_SUG=['Goteros','Tubería PE 16 mm','Tubería PE 20 mm','Tubería PE 32 mm','Tubería PE 50 mm','Tes 16 mm','Codos 16 mm','Enlaces 16 mm','Tapones final de línea','Collarín de toma','Filtro de malla','Filtro de anillas','Juntas','Cinta de teflón','Válvula de bola','Electroválvula','Manómetro','Sonda de CE','Sonda de pH','Solución de calibración','Rafia','Clips de entutorar','Ganchos','Cuerda','Guantes','Tijeras de poda','Cajas de recolección','Plástico de invernadero','Malla de sombreo','Bridas','Pilas'];
 const esAdminU=()=>!window.NUBE||!!(NUBE.user&&NUBE.user.admin);
+/* Roles: administrador (todo), encargado (receta, ajustes, partes, pedidos) y trabajador (apunta datos) */
+const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';if(!u)return 'trabajador';return u.admin?'admin':u.encargado?'encargado':'trabajador'};
+const esGestor=()=>rolDe()!=='trabajador';
+const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
+const SOLO_GESTOR=new Set(['parte','graficas','informe']);
+function tabPermitida(k){if(k==='partes')return puedePartes();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||fincasVis().some(f=>f.id===m.finca);
@@ -988,11 +1000,11 @@ const mMio=m=>!!(miEmail()&&m.pideEmail===miEmail());
 const matPend=()=>(st.mat||[]).filter(m=>m.estado==='pedido');
 async function avisosMat(){if(!notifOk()||Notification.permission!=='granted')return;let vis=[];try{vis=JSON.parse(localStorage.getItem('abono.notifmat')||'[]')}catch(e){}
   for(const m of st.mat||[]){let k=null,t=null,b=null;
-    if(esAdminU()&&m.estado==='pedido'&&!mMio(m)){k=m.id+':pedido';t='Pedido de material: '+m.art;b=`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`}
+    if(esGestor()&&m.estado==='pedido'&&!mMio(m)){k=m.id+':pedido';t='Pedido de material: '+m.art;b=`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`}
     else if(mMio(m)&&m.estado!=='pedido'){k=m.id+':'+m.estado;t='Tu pedido de '+m.art+': '+MEST[m.estado][1].toLowerCase();b=m.resp||''}
     if(!k||vis.includes(k))continue;await notificar(t,b,'mat-'+k);vis.push(k)}
   try{localStorage.setItem('abono.notifmat',JSON.stringify(vis.slice(-400)))}catch(e){}}
-function matHTML(m){const e=MEST[m.estado]||MEST.pedido,f=(st.cfg.fincas||[]).find(x=>x.id===m.finca),adm=esAdminU(),ed=st.mEdit===m.id;
+function matHTML(m){const e=MEST[m.estado]||MEST.pedido,f=(st.cfg.fincas||[]).find(x=>x.id===m.finca),adm=esGestor(),ed=st.mEdit===m.id;
   return `<div class="tarea mat ${m.estado}${m.urg&&m.estado==='pedido'?' urg':''}"><div class="tt"><b>${esc(m.art)}</b><span class="mcant">${esc(String(m.cant||''))} ${esc(m.ud||'')}</span>${m.urg&&(m.estado==='pedido'||m.estado==='encargado')?'<span class="pill bad">Urgente</span>':''}<span class="pill ${e[0]}">${e[1]}</span></div>
     <div class="tm">${f?`<span class="mini">${esc(f.nombre)}${m.cab?' · '+esc(cabNombre(m.cab)):''}</span>`:''}<span>Pide ${mMio(m)?'<b>tú</b>':esc(m.pidePor||'')} · ${fHora(m.ts)}</span>${m.cuando?`<span>Lo necesita para el ${fFecha(m.cuando)}</span>`:''}</div>
     ${m.nota?`<p>${esc(m.nota)}</p>`:''}${adjHTML(m.adjuntos,false)}
@@ -1004,7 +1016,7 @@ function matHTML(m){const e=MEST[m.estado]||MEST.pedido,f=(st.cfg.fincas||[]).fi
       ${adm&&m.estado==='recibido'?`<button class="btn" data-act="m-est" data-id="${m.id}" data-e="pedido">Volver a pedir</button>`:''}
       ${(adm||(mMio(m)&&m.estado==='pedido'))?(st.confirmM===m.id?`<span class="note">¿Borrar pedido?</span><button class="btn danger" data-act="m-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="m-cancel">Cancelar</button>`:`<button class="btn" data-act="m-del" data-id="${m.id}">${mMio(m)&&m.estado==='pedido'&&!adm?'Anular':'Borrar'}</button>`):''}</div>`}</div>`}
 function vMaterial(){if(st.mat===null){loadMat();return '<div class="card"><div class="note">Cargando material…</div></div>'}
-  if(st.mFil===null)st.mFil=esAdminU()?'pend':'mios';
+  if(st.mFil===null)st.mFil=esGestor()?'pend':'mios';
   const g=st.mf,fs=fincasVis().filter(f=>f.cabezales.length),fsel=fs.find(x=>x.id===g.finca)||fincaAct()||fs[0],cabsF=fsel?fsel.cabezales:[];
   const all=(st.mat||[]).filter(mVisible).filter(m=>!st.finca||!fincaAct()||m.finca===st.finca||mMio(m));
   const pend=all.filter(m=>m.estado==='pedido'),enc=all.filter(m=>m.estado==='encargado');
@@ -1030,7 +1042,7 @@ function vMaterial(){if(st.mat===null){loadMat();return '<div class="card"><div 
   return h}
 async function crearMat(){const g=st.mf,art=g.art.trim();if(!art){toast('Escribe qué material necesitas');return}const fs=fincasVis().filter(f=>f.cabezales.length),f=fs.find(x=>x.id===g.finca)||fincaAct()||fs[0];const now=new Date().toISOString();
   const m={ts:now,art,cant:num(String(g.cant))??(g.cant||''),ud:g.ud,finca:f?f.id:'',cab:g.cab||'',urg:!!g.urg,cuando:g.cuando||'',nota:g.nota.trim(),adjuntos:g.adj.filter(a=>!a.tmp),estado:'pedido',pidePor:yoNombre(),pideEmail:miEmail(),hist:[{estado:'pedido',por:yoNombre(),ts:now}]};
-  try{const id=await Store.addCol('material',m);st.mat.unshift({...m,id});pushEnviar(adminsEmails(),'Pedido de material: '+art,`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`,'mat-'+id+':pedido','material');st.mf={open:false,art:'',cant:'',ud:'unidades',finca:m.finca,cab:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=esAdminU()?'pend':'mios';renderMain();toast('Pedido enviado')}catch(e){toast(errMsg(e))}}
+  try{const id=await Store.addCol('material',m);st.mat.unshift({...m,id});pushEnviar([...adminsEmails(),...encargadosDe(m.finca)],'Pedido de material: '+art,`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`,'mat-'+id+':pedido','material');st.mf={open:false,art:'',cant:'',ud:'unidades',finca:m.finca,cab:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=esGestor()?'pend':'mios';renderMain();toast('Pedido enviado')}catch(e){toast(errMsg(e))}}
 async function estadoMat(id,est){const m=st.mat.find(x=>x.id===id);if(!m)return;const r=$('#mr_txt'),now=new Date().toISOString();
   const p={estado:est,hist:[...(m.hist||[]),{estado:est,por:yoNombre(),ts:now}]};if(r){p.resp=r.value.trim();p.respPor=yoNombre()}
   try{await Store.updCol('material',id,p);Object.assign(m,p);if(m.pideEmail)pushEnviar([m.pideEmail],'Tu pedido de '+m.art+': '+MEST[est][1].toLowerCase(),p.resp||('Por '+yoNombre()),'mat-'+id+':'+est,'material');st.mEdit=null;renderMain();toast('Pedido: '+MEST[est][1].toLowerCase())}catch(e){toast(errMsg(e))}}
@@ -1214,7 +1226,9 @@ const quienVeCab=c=>todosEmails().filter(e=>veFinca(e,fincaDeCab(c)));
 const quienVeFinca=f=>todosEmails().filter(e=>veFinca(e,f));
 const adminsEmails=()=>todosEmails().filter(e=>accInfo(e).admin);
 function pushEnviar(para,titulo,cuerpo,tag,tab,extra){if(!pushListo())return;para=[...new Set(para||[])].filter(e=>e&&e!==miEmail());if(!para.length)return;
-  pushApi('enviar',{para,titulo:String(titulo||'').slice(0,120),cuerpo:String(cuerpo||'').slice(0,280),tag,tab,...(extra||{})}).catch(e=>console.warn('push enviar',e))}
+  /* Por grupos de 12 personas: el servidor gratuito de Cloudflare no admite más de ~50 envíos por petición */
+  const base={titulo:String(titulo||'').slice(0,120),cuerpo:String(cuerpo||'').slice(0,280),tag,tab,...(extra||{})};
+  for(let i=0;i<para.length;i+=12){const trozo={...base,para:para.slice(i,i+12)};if(i&&trozo.unico)trozo.unico=trozo.unico+'#'+i;pushApi('enviar',trozo).catch(e=>console.warn('push enviar',e))}}
 /* Llenado: calcula a qué hora llegará cada depósito al aviso y se lo deja programado al servidor */
 function cuandoUmbral(b,n){const u=umbralLl(),falta=n.rest-u*n.max;if(falta<=0)return Date.now();const g=n.g&&n.g.v;if(!(g>0))return null;
   const r=st.cfg.riego||{},a=minDe(r.ini)??510,z=minDe(r.fin)??1110,ven=z>a?z-a:1440,ini=z>a?a:0;
@@ -1250,7 +1264,7 @@ async function lfSave(){const L=st.lf,b=bid(L.bidon);if(L.final==null||L.final<0
   const ev={ts:new Date().toISOString(),fecha:L.fecha||st.fecha,hora:L.hora,bidon:b.id,tipo:L.tipo,cmFinal:L.final,por:yoNombre()};
   if(L.tipo==='llenado'){ev.cmAdd=L.add;ev.cantidades={};const lt=L.add*b.lpcm;for(const x of b.productos){if(!x.dosis)continue;ev.cantidades[x.p]=+(lt*conc(b,x)/1000).toFixed(2)}}
   try{const id=await Store.addCol('llenados',ev);st.llen.unshift({...ev,id});
-    if(L.tipo==='llenado'&&L.desc)for(const[p,q]of Object.entries(ev.cantidades)){const m={ts:ev.ts,fecha:ev.fecha,tipo:'salida',alm:almDeCab(b.cabezales[0]),p,qty:-q,origen:b.id,llenado:id};const mid=await Store.addCol('almacen',m);st.alm.unshift({...m,id:mid})}
+    if(L.tipo==='llenado'&&L.desc)for(const[p,q]of Object.entries(ev.cantidades)){const m={ts:ev.ts,fecha:ev.fecha,tipo:'salida',alm:almDeCab(b.cabezales[0]),p,qty:-q,origen:b.id,llenado:id,por:yoNombre(),porEmail:miEmail()};const mid=await Store.addCol('almacen',m);st.alm.unshift({...m,id:mid})}
     if(L.tipo==='llenado'&&L.desc)pushStock(Object.keys(ev.cantidades),almDeCab(b.cabezales[0]));st.lf=null;renderMain();pushProgramar();toast(L.tipo==='llenado'?'Llenado de las '+ev.hora+' guardado'+(L.desc?' y descontado del almacén':''):'Nivel guardado')}catch(e){toast(errMsg(e))}}
 async function llDel(id){try{await Store.delCol('llenados',id);st.llen=st.llen.filter(e=>e.id!==id);for(const m of st.alm.filter(m=>m.llenado===id)){await Store.delCol('almacen',m.id)}st.alm=st.alm.filter(m=>m.llenado!==id);st.confirmLl=null;renderMain();toast('Registro borrado')}catch(e){toast(errMsg(e))}}
 
@@ -1303,7 +1317,7 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
     ${adjHTML(e.adj,true)}
     <div class="row">${Adj.can()?`<label class="btn" for="ae_foto">Foto del albarán</label><input type="file" id="ae_foto" data-ae="file" accept="image/*,application/pdf" multiple hidden>`:''}<button class="btn pri" data-act="ent-save" ${e.adj.some(a=>a.tmp)?'disabled':''}>Guardar entrada</button></div></section>`;
   const a=st.aj;
-  h+=`<section class="card"><div><h3>Ajustar inventario</h3><div class="sub">Cuando cuentes lo que hay de verdad en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
+  if(esGestor())h+=`<section class="card"><div><h3>Ajustar inventario</h3><div class="sub">Cuando cuentes lo que hay de verdad en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
     <div class="field"><label for="aj_p">Producto</label><div class="inp"><select id="aj_p" data-aj="p">${ps.map(p=>`<option value="${p}" ${a.p===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div></div>
     ${sacoDe(a.p)?`<div class="field"><label for="aj_sacos">Sacos reales de ${fmt(sacoDe(a.p),0)} kg</label><div class="inp"><input id="aj_sacos" data-aj="sacos" inputmode="decimal" value="${sacIn(a.p,a.real)}"></div></div>`:''}
     <div class="field"><label for="aj_real">${sacoDe(a.p)?'Kilos reales':'Stock real'}</label><div class="inp"><input id="aj_real" data-aj="real" inputmode="decimal" value="${inVal(a.real)}"><span class="u">${uCant(a.p)}</span></div></div></div>
@@ -1312,13 +1326,13 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
   h+=`<section class="card"><div><h3>Movimientos</h3><div class="sub">Entradas, salidas por llenado y ajustes</div></div>`+(mv.length?`<div class="msgs">`+mv.map(m=>{const o=m.origen&&bid(m.origen);
     return `<div class="msg"><div class="h"><span class="pill ${m.tipo==='entrada'?'ok':m.tipo==='salida'?'nd':'warn'}">${m.tipo}</span><b>${m.qty>=0?'+':'−'}${fmt(Math.abs(m.qty),1)} ${uCant(m.p)}</b>${sacosTxt(m.p,Math.abs(m.qty))&&Math.abs(m.qty)>=sacoDe(m.p)?`<span>${sacosTxt(m.p,Math.abs(m.qty))}</span>`:''}<span>${esc(pn(m.p))}</span><span>${fFecha(m.fecha)}</span></div>
     ${m.prov||m.alb?`<p>${esc([m.prov,m.alb?'Albarán '+m.alb:''].filter(Boolean).join(' · '))}</p>`:''}${o?`<p class="note">${esc(o.nombre)} · ${esc(o.cabezales.map(cabNombre).join(' + '))}</p>`:''}${adjHTML(m.adjuntos,false)}
-    <div class="row">${st.confirmMv===m.id?`<span class="note">¿Borrar movimiento?</span><button class="btn danger" data-act="mv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="mv-del-no">Cancelar</button>`:`<button class="btn" data-act="mv-del" data-id="${m.id}">Borrar</button>`}</div></div>`}).join('')+`</div>`:`<div class="note">Sin movimientos.</div>`)+`</section>`;
+    <div class="row">${!esGestor()&&m.porEmail!==miEmail()?'':st.confirmMv===m.id?`<span class="note">¿Borrar movimiento?</span><button class="btn danger" data-act="mv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="mv-del-no">Cancelar</button>`:`<button class="btn" data-act="mv-del" data-id="${m.id}">Borrar</button>`}</div></div>`}).join('')+`</div>`:`<div class="note">Sin movimientos.</div>`)+`</section>`;
   return h}
 async function entSave(){const e=st.ent;if(!(e.qty>0)){toast('Escribe la cantidad');return}
-  const m={ts:new Date().toISOString(),fecha:e.fecha||hoy(),tipo:'entrada',alm:almAct(),p:e.p,qty:e.qty,prov:e.prov.trim(),alb:e.alb.trim(),adjuntos:e.adj.filter(a=>!a.tmp)};
+  const m={ts:new Date().toISOString(),fecha:e.fecha||hoy(),tipo:'entrada',alm:almAct(),por:yoNombre(),porEmail:miEmail(),p:e.p,qty:e.qty,prov:e.prov.trim(),alb:e.alb.trim(),adjuntos:e.adj.filter(a=>!a.tmp)};
   try{const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id});st.ent={p:e.p,qty:null,fecha:hoy(),prov:e.prov,alb:'',adj:[]};renderMain();toast('Entrada guardada')}catch(err){toast(errMsg(err))}}
 async function ajSave(){const a=st.aj,aid=almAct();if(a.real==null){toast('Escribe el stock real');return}const q=+(a.real-stockDe(a.p,aid)).toFixed(3);if(Math.abs(q)<0.001){toast('No hay diferencia');return}
-  const m={ts:new Date().toISOString(),fecha:hoy(),tipo:'ajuste',alm:aid,p:a.p,qty:q};try{const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id});st.aj={p:a.p,real:null};renderMain();toast('Inventario ajustado')}catch(err){toast(errMsg(err))}}
+  const m={ts:new Date().toISOString(),fecha:hoy(),tipo:'ajuste',alm:aid,p:a.p,qty:q,por:yoNombre(),porEmail:miEmail()};try{const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id});st.aj={p:a.p,real:null};renderMain();toast('Inventario ajustado')}catch(err){toast(errMsg(err))}}
 async function mvDel(id){const m=st.alm.find(x=>x.id===id);try{await Store.delCol('almacen',id);for(const a of (m&&m.adjuntos)||[])await Adj.del(a);st.alm=st.alm.filter(x=>x.id!==id);st.confirmMv=null;renderMain();toast('Movimiento borrado')}catch(e){toast(errMsg(e))}}
 
 /* ---------- Informe mensual ---------- */
@@ -1599,7 +1613,7 @@ function vMapa(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
     <div class="field"><label for="mi_txt">Qué pasa</label><div class="inp"><input class="wide" id="mi_txt" data-mi="txt" style="width:100%;text-transform:none" value="${esc(N.txt)}" placeholder="Ej.: mosca blanca en las filas del pasillo central" autocomplete="off"></div></div>
     ${adjHTML(N.adj,true)}
     <div class="row">${Adj.can()?`<label class="btn" for="mi_foto">Añadir foto</label><input type="file" id="mi_foto" data-mi="file" accept="image/*" multiple hidden>`:''}<button class="btn pri" data-act="mi-save" ${N.adj.some(a=>a.tmp)?'disabled':''}>Guardar incidencia</button><button class="btn" data-act="mi-no">Cancelar</button></div></section>`;
-  if(sel){const t=ITIPOS[sel.tipo]||ITIPOS.otro,res=sel.estado==='resuelta',puede=sel.porEmail===miEmail()||esAdminU();
+  if(sel){const t=ITIPOS[sel.tipo]||ITIPOS.otro,res=sel.estado==='resuelta',puede=sel.porEmail===miEmail()||esGestor();
     h+=`<section class="card" id="mdet"><div class="tank-h"><div><h3><span class="mdot" style="background:${t[1]}">${t[2]}</span> ${esc(t[0])} · Nave ${sel.nave}</h3><div class="sub">${esc(fFecha(sel.fecha))} · ${esc(hhmm(sel.ts))} · ${esc(sel.por||'')}</div></div><span class="pill ${res?'ok':IPRIO[sel.prio]?IPRIO[sel.prio][1]:'nd'}">${res?'Resuelta':'Prioridad '+(IPRIO[sel.prio]||IPRIO.media)[0].toLowerCase()}</span></div>
       ${sel.txt?`<p>${esc(sel.txt)}</p>`:''}${adjHTML(sel.fotos,false)}
       ${res?`<div class="note">Resuelta por ${esc(sel.resPor||'')} · ${esc(fFecha((sel.resTs||'').slice(0,10)||sel.fecha))}${sel.resNota?' · «'+esc(sel.resNota)+'»':''}</div>`:''}
@@ -1624,6 +1638,94 @@ async function miGuardar(){const N=st.mNueva;if(!N||N.x==null)return;const now=n
     let para=[...new Set([...encargadosDe(i.finca),...adminsEmails()])];const t=ITIPOS[i.tipo]||ITIPOS.otro;
     pushEnviar(para,`${i.prio==='alta'?'URGENTE · ':''}${t[0]} en la nave ${i.nave} · ${cabNombre(i.cab)}`,(i.txt||'Sin descripción')+' · '+yoNombre(),'inc-'+id,'mapa')}catch(e){toast(errMsg(e))}}
 async function miPatch(id,p,msg){const i=(st.inc||[]).find(x=>x.id===id);if(!i)return;try{await Store.updCol('incidencias',id,p);Object.assign(i,p);st.mRes=null;renderMain();renderGrupos();if(msg)toast(msg)}catch(e){toast(errMsg(e))}}
+/* ---------- Editor de fincas, cabezales, sectores, bandejas, depósitos, almacenes y productos (solo administrador) ---------- */
+const uid=p=>p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+st.edAbierto=st.edAbierto||{};st.edConf=null;st.edNuevoDep=null;
+const edMarca=()=>{st.dirtyCfg=true;renderSave()};
+function edArreglarCab(){const ok=st.cfg.cabezales.map(c=>c.id);if(!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}
+function edInp(attrs,val,extra){return `<div class="inp ${extra&&extra.sm?'sm':''}"><input ${attrs} value="${esc(val??'')}" autocomplete="off" ${extra&&extra.num?'inputmode="decimal"':'style="text-transform:none"'}>${extra&&extra.u?`<span class="u">${extra.u}</span>`:''}</div>`}
+const edBtnDel=(k,txt)=>st.edConf===k?`<span class="row" style="gap:6px"><button class="btn danger sm" data-ed="del-yes" data-k="${esc(k)}">Sí, borrar</button><button class="btn sm" data-ed="del-no">No</button></span>`:`<button class="btn sm" data-ed="del" data-k="${esc(k)}">${txt||'Borrar'}</button>`;
+function vEstructura(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador puede cambiar fincas y cabezales.</div></section>`;
+  const cfg=st.cfg,prods=Object.entries(cfg.productos).sort((a,b)=>a[1].n.localeCompare(b[1].n));
+  let h=`<section class="card"><div><h3>Fincas y cabezales</h3><div class="sub">Crea, cambia o quita fincas, cabezales, sectores, bandejas, depósitos y almacenes. Al terminar pulsa «Guardar receta y ajustes».</div></div>
+    <div class="row"><div class="inp"><input id="ed_nf" placeholder="Nombre de la finca nueva" style="text-transform:none" autocomplete="off"></div><button class="btn pri" data-ed="add-finca">Añadir finca</button></div></section>`;
+  for(const f of cfg.fincas){const cabs=f.cabezales.map(id=>cabById(id)).filter(Boolean);
+    h+=`<section class="card edf"><div class="tank-h"><div class="field" style="flex:1"><label>Finca</label>${edInp(`data-edv="finca.nombre" data-id="${f.id}"`,f.nombre)}</div>${cabs.length?'':edBtnDel('finca:'+f.id,'Borrar finca')}</div>`;
+    for(const c of cabs){const ab=!!st.edAbierto[c.id],deps=bidonesDe(c.id),alm=almDeCab(c.id);
+      h+=`<div class="edc"><button class="edch" data-ed="toggle" data-id="${c.id}" aria-expanded="${ab}"><b>${esc(c.nombre)}</b><small>${c.sectores.length} sectores · ${c.sectores.reduce((a,s)=>a+s.bandejas.length,0)} bandejas · ${deps.length} depósitos</small><span>${ab?'▲':'▼'}</span></button>`;
+      if(ab){h+=`<div class="edcb"><div class="frm"><div class="field"><label>Nombre del cabezal</label>${edInp(`data-edv="cab.nombre" data-id="${c.id}"`,c.nombre)}</div>
+          <div class="field"><label>Finca</label><div class="inp"><select data-edv="cab.finca" data-id="${c.id}">${cfg.fincas.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></div></div>
+          <div class="field"><label>Almacén de abonos</label><div class="inp"><select data-edv="cab.alm" data-id="${c.id}">${almacenes().map(a=>`<option value="${a.id}" ${a.id===alm?'selected':''}>${esc(a.nombre)}</option>`).join('')}</select></div></div></div>
+        <h4>Sectores y bandejas de drenaje</h4>`;
+        for(const s of c.sectores){h+=`<div class="eds"><div class="row" style="align-items:flex-end"><div class="field" style="flex:1"><label>Sector</label>${edInp(`data-edv="sec.nombre" data-id="${s.id}"`,s.nombre)}</div>${edBtnDel('sec:'+s.id,'Quitar sector')}</div>`;
+          for(const bj of s.bandejas)h+=`<div class="edb">${edInp(`data-edv="bj.nombre" data-id="${bj.id}" aria-label="Nombre de la bandeja"`,bj.nombre)}${edInp(`data-edv="bj.caudal" data-id="${bj.id}" aria-label="Caudal"`,bj.caudal,{num:1,sm:1,u:'ml/min'})}${edBtnDel('bj:'+bj.id,'×')}</div>`;
+          h+=`<button class="btn sm" data-ed="add-bj" data-id="${s.id}">+ Bandeja</button></div>`}
+        h+=`<button class="btn sm" data-ed="add-sec" data-id="${c.id}">+ Sector</button><h4>Depósitos</h4>`;
+        for(const b of deps){const otros=cabs.filter(x=>x.id!==c.id);
+          h+=`<div class="edd"><div class="frm"><div class="field"><label>Nombre</label>${edInp(`data-edv="dep.nombre" data-id="${b.id}"`,b.nombre)}</div><div class="field"><label>Capacidad</label>${edInp(`data-edv="dep.cap" data-id="${b.id}"`,b.capacidad,{num:1,sm:1,u:'L'})}</div><div class="field"><label>Litros por cm</label>${edInp(`data-edv="dep.lpcm" data-id="${b.id}"`,b.lpcm,{num:1,sm:1})}</div>
+            <div class="field"><label>Producto principal</label><div class="inp"><select data-edv="dep.principal" data-id="${b.id}">${b.productos.map(x=>`<option value="${x.p}" ${x.p===b.principal?'selected':''}>${esc(pn(x.p))}</option>`).join('')}</select></div></div></div>
+            <div class="lbl">Productos del depósito</div><div class="pick">${b.productos.map(x=>`<span class="chip">${esc(pn(x.p))}${b.productos.length>1?` <button class="edx" data-ed="del-prod" data-id="${b.id}" data-p="${x.p}" aria-label="Quitar ${esc(pn(x.p))}">×</button>`:''}</span>`).join('')}
+            <div class="inp sm"><select data-edv="dep.addprod" data-id="${b.id}"><option value="">+ Añadir producto</option>${prods.filter(([k])=>!b.productos.some(x=>x.p===k)).map(([k,v])=>`<option value="${k}">${esc(v.n.replace(/­/g,''))}</option>`).join('')}</select></div></div>
+            ${otros.length?`<div class="lbl">Compartido con</div><div class="pick">${otros.map(o=>`<label class="chk"><input type="checkbox" data-edv="dep.comp" data-id="${b.id}" data-c="${o.id}" ${b.cabezales.includes(o.id)?'checked':''}> ${esc(o.nombre)}</label>`).join('')}</div>`:''}
+            <div class="row">${edBtnDel('dep:'+b.id+':'+c.id,b.cabezales.length>1?'Quitar de este cabezal':'Borrar depósito')}</div><div class="note">Las dosis se ponen en Riego → Receta.</div></div>`}
+        const nd=st.edNuevoDep&&st.edNuevoDep.cab===c.id?st.edNuevoDep:null;
+        h+=nd?`<div class="edd"><div class="frm"><div class="field"><label>Nombre del depósito</label>${edInp('id="ed_dn"',nd.nombre)}</div><div class="field"><label>Producto principal</label><div class="inp"><select id="ed_dp">${prods.map(([k,v])=>`<option value="${k}">${esc(v.n.replace(/­/g,''))}</option>`).join('')}</select></div></div>
+            <div class="field"><label>Capacidad</label>${edInp('id="ed_dc"',5000,{num:1,sm:1,u:'L'})}</div><div class="field"><label>Litros por cm</label>${edInp('id="ed_dl"','',{num:1,sm:1})}</div></div>
+            <div class="row"><button class="btn pri sm" data-ed="add-dep-ok" data-id="${c.id}">Crear depósito</button><button class="btn sm" data-ed="add-dep-no">Cancelar</button></div></div>`
+          :`<button class="btn sm" data-ed="add-dep" data-id="${c.id}">+ Depósito</button>`;
+        h+=`<div class="row" style="margin-top:10px">${cfg.cabezales.length>1?edBtnDel('cab:'+c.id,'Borrar cabezal'):''}</div></div>`}
+      h+=`</div>`}
+    h+=`<div class="row"><div class="inp"><input data-ednc="${f.id}" placeholder="Nombre del cabezal nuevo" style="text-transform:none" autocomplete="off"></div><button class="btn" data-ed="add-cab" data-id="${f.id}">Añadir cabezal</button></div></section>`}
+  h+=`<section class="card"><div><h3>Almacenes</h3><div class="sub">Cada cabezal descuenta los abonos de su almacén</div></div>${almacenes().map(a=>`<div class="row" style="align-items:flex-end"><div class="field" style="flex:1"><label>${a.cabezales.map(cabNombre).join(', ')||'Sin cabezales'}</label>${edInp(`data-edv="alm.nombre" data-id="${a.id}"`,a.nombre)}</div>${a.cabezales.length||almacenes().length<2?'':edBtnDel('alm:'+a.id)}</div>`).join('')}
+    <div class="row"><div class="inp"><input id="ed_na" placeholder="Nombre del almacén nuevo" style="text-transform:none" autocomplete="off"></div><button class="btn" data-ed="add-alm">Añadir almacén</button></div></section>`;
+  const prop=Object.entries(cfg.productos).filter(([k])=>!PRODUCTOS[k]);
+  h+=`<section class="card"><div><h3>Productos propios</h3><div class="sub">Abonos que no vienen de serie. CE: lo que sube la conductividad (mS/cm por cada g/L); UF: unidades fertilizantes por kg. Si no lo sabes, deja 0.</div></div>
+    ${prop.map(([k,v])=>`<div class="frm"><div class="field"><label>Nombre</label>${edInp(`data-edv="prod.n" data-id="${k}"`,v.n)}</div><div class="field"><label>CE</label>${edInp(`data-edv="prod.ce" data-id="${k}"`,v.ce,{num:1,sm:1})}</div><div class="field"><label>UF</label>${edInp(`data-edv="prod.un" data-id="${k}"`,v.un,{num:1,sm:1})}</div><label class="chk"><input type="checkbox" data-edv="prod.liq" data-id="${k}" ${v.liq?'checked':''}> Líquido</label>${st.cfg.bidones.some(b=>b.productos.some(x=>x.p===k))?'':edBtnDel('prod:'+k)}</div>`).join('')||'<div class="note">Ninguno todavía.</div>'}
+    <div class="row"><div class="inp"><input id="ed_np" placeholder="Nombre del producto nuevo" style="text-transform:none" autocomplete="off"></div><label class="chk"><input type="checkbox" id="ed_npl"> Líquido</label><button class="btn" data-ed="add-prod">Añadir producto</button></div></section>`;
+  return h}
+function edBorrar(k){const cfg=st.cfg,[t,id,extra]=k.split(':');
+  if(t==='finca')cfg.fincas=cfg.fincas.filter(f=>f.id!==id||f.cabezales.length);
+  else if(t==='cab'){if(cfg.cabezales.length<2)return toast('Tiene que quedar al menos un cabezal');cfg.cabezales=cfg.cabezales.filter(c=>c.id!==id);for(const f of cfg.fincas)f.cabezales=f.cabezales.filter(x=>x!==id);
+    for(const a of almacenes())a.cabezales=a.cabezales.filter(x=>x!==id);for(const b of cfg.bidones)b.cabezales=b.cabezales.filter(x=>x!==id);cfg.bidones=cfg.bidones.filter(b=>b.cabezales.length);if(cfg.cultivo)delete cfg.cultivo[id];edArreglarCab()}
+  else if(t==='sec'){for(const c of cfg.cabezales)c.sectores=c.sectores.filter(s=>s.id!==id)}
+  else if(t==='bj'){for(const c of cfg.cabezales)for(const s of c.sectores)s.bandejas=s.bandejas.filter(b=>b.id!==id)}
+  else if(t==='dep'){const b=bid(id);if(b){b.cabezales=b.cabezales.filter(x=>x!==extra);if(!b.cabezales.length)cfg.bidones=cfg.bidones.filter(x=>x.id!==id)}}
+  else if(t==='alm'){cfg.almacenes=almacenes().filter(a=>a.id!==id||a.cabezales.length)}
+  else if(t==='prod'){if(!PRODUCTOS[id])delete cfg.productos[id]}
+  st.edConf=null;edMarca();renderAll()}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ed]');if(!b||st.tab!=='estructura')return;const a=b.dataset.ed,id=b.dataset.id,cfg=st.cfg,val=s=>{const i=$(s);return i?i.value.trim():''};
+  if(a==='toggle'){st.edAbierto[id]=!st.edAbierto[id];renderMain();return}
+  if(a==='del'){st.edConf=b.dataset.k;renderMain();return}if(a==='del-no'){st.edConf=null;renderMain();return}if(a==='del-yes'){edBorrar(b.dataset.k);return}
+  if(a==='add-finca'){const n=val('#ed_nf');if(!n)return toast('Escribe el nombre de la finca');cfg.fincas.push({id:uid('f'),nombre:n,cabezales:[]})}
+  else if(a==='add-cab'){const i=document.querySelector(`[data-ednc="${id}"]`),n=i?i.value.trim():'';if(!n)return toast('Escribe el nombre del cabezal');const cid=uid('c');cfg.cabezales.push({id:cid,nombre:n,sectores:[{id:cid+'_s1',nombre:'Sector 1',bandejas:[]}]});cfg.fincas.find(f=>f.id===id).cabezales.push(cid);st.edAbierto[cid]=true}
+  else if(a==='add-sec'){const c=cabById(id);c.sectores.push({id:uid(id+'_s'),nombre:'Sector '+(c.sectores.length+1),bandejas:[]})}
+  else if(a==='add-bj'){for(const c of cfg.cabezales)for(const s of c.sectores)if(s.id===id)s.bandejas.push({id:uid(id+'_b'),nombre:'Bandeja '+(s.nombre.replace(/\D/g,'')||'')+'.'+(s.bandejas.length+1),caudal:200})}
+  else if(a==='add-dep'){st.edNuevoDep={cab:id,nombre:'Depósito '};renderMain();return}
+  else if(a==='add-dep-no'){st.edNuevoDep=null;renderMain();return}
+  else if(a==='add-dep-ok'){const n=val('#ed_dn'),p=val('#ed_dp'),cap=num(val('#ed_dc')),l=num(val('#ed_dl'));if(!n||n==='Depósito')return toast('Escribe el nombre del depósito');if(!(cap>0)||!(l>0))return toast('Pon la capacidad y los litros por cm');
+    cfg.bidones.push({id:uid('d'),nombre:n,cabezales:[id],lpcm:l,capacidad:cap,principal:p,kgPrincipal:null,venturis:1,reparto:true,cmHabitual:null,productos:[{p,dosis:0}]});st.edNuevoDep=null}
+  else if(a==='del-prod'){const d=bid(id);d.productos=d.productos.filter(x=>x.p!==b.dataset.p);if(d.principal===b.dataset.p)d.principal=d.productos[0].p}
+  else if(a==='add-alm'){const n=val('#ed_na');if(!n)return toast('Escribe el nombre del almacén');cfg.almacenes=[...almacenes(),{id:uid('a'),nombre:n,cabezales:[]}]}
+  else if(a==='add-prod'){const n=val('#ed_np');if(!n)return toast('Escribe el nombre del producto');cfg.productos[uid('p')]={n,liq:!!($('#ed_npl')||{}).checked,ce:0,un:0}}
+  else return;edMarca();renderAll()});
+function onEdInput(e){const t=e.target,k=t.dataset&&t.dataset.edv;if(!k)return;const id=t.dataset.id,cfg=st.cfg,v=t.type==='checkbox'?t.checked:t.value,txt=String(v).trim(),n=num(String(v));
+  const cab=cabById(id),dep=bid(id),f=cfg.fincas.find(x=>x.id===id);let rerender=false;
+  if(k==='finca.nombre'){if(!txt)return;f.nombre=txt}
+  else if(k==='cab.nombre'){if(!txt)return;cab.nombre=txt}
+  else if(k==='cab.finca'){if(e.type!=='change')return;for(const x of cfg.fincas)x.cabezales=x.cabezales.filter(c=>c!==id);cfg.fincas.find(x=>x.id===v).cabezales.push(id);rerender=true}
+  else if(k==='cab.alm'){if(e.type!=='change')return;for(const a of almacenes())a.cabezales=a.cabezales.filter(c=>c!==id);almacenes().find(a=>a.id===v).cabezales.push(id);if(!cfg.almacenes)cfg.almacenes=almacenes();rerender=true}
+  else if(k==='sec.nombre'){if(!txt)return;for(const c of cfg.cabezales)for(const s of c.sectores)if(s.id===id)s.nombre=txt}
+  else if(k==='bj.nombre'||k==='bj.caudal'){for(const c of cfg.cabezales)for(const s of c.sectores)for(const b of s.bandejas)if(b.id===id){if(k==='bj.nombre'){if(!txt)return;b.nombre=txt}else{if(!(n>0))return;b.caudal=n}}}
+  else if(k==='dep.nombre'){if(!txt)return;dep.nombre=txt}
+  else if(k==='dep.cap'){if(!(n>0))return;dep.capacidad=n}
+  else if(k==='dep.lpcm'){if(!(n>0))return;dep.lpcm=n}
+  else if(k==='dep.principal'){if(e.type!=='change')return;dep.principal=v}
+  else if(k==='dep.addprod'){if(e.type!=='change'||!v)return;dep.productos.push({p:v,dosis:0});rerender=true}
+  else if(k==='dep.comp'){if(e.type!=='change')return;const c=t.dataset.c;dep.cabezales=t.checked?[...new Set([...dep.cabezales,c])]:dep.cabezales.filter(x=>x!==c);if(!dep.cabezales.length)dep.cabezales=[c];rerender=true}
+  else if(k==='alm.nombre'){if(!txt)return;almacenes().find(a=>a.id===id).nombre=txt;if(!cfg.almacenes)cfg.almacenes=almacenes()}
+  else if(k.startsWith('prod.')){const p=cfg.productos[id];const q=k.slice(5);if(q==='n'){if(!txt)return;p.n=txt}else if(q==='liq'){if(e.type!=='change')return;p.liq=!!v}else p[q]=n??0}
+  else return;edMarca();if(rerender)renderAll()}
+$('#main').addEventListener('input',onEdInput);$('#main').addEventListener('change',onEdInput);
 /* ---------- Partes recibidos: llegan al encargado cada vez que se guarda el día ---------- */
 const puedePartes=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&(NUBE.user.admin||NUBE.user.encargado));
 const encargadosDe=fid=>todosEmails().filter(e=>accInfo(e).encargado&&veFinca(e,fid));
@@ -1959,7 +2061,7 @@ function resumenHTML(){if(st.hist===null||st.llen===null||st.alm===null)return `
   if(st.hist.some(r=>r.fecha===hoyS))items.push(['ok','Cuentas de hoy guardadas','cuentas-hoy']);
   const dep=depsBajos();
   if(dep.length)items.push(['warn',`${dep.length===1?'1 depósito':dep.length+' depósitos'} para rellenar: ${dep.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')}`,'rellenar:'+dep[0].cabezales[0]]);
-  if(st.mat===null)loadMat();if(esAdminU()&&miEmail()){const mp=matPend().filter(mVisible).length;if(mp)items.push(['warn',mp===1?'1 pedido de material por gestionar':mp+' pedidos de material por gestionar','material'])}
+  if(st.mat===null)loadMat();if(esGestor()&&miEmail()){const mp=matPend().filter(mVisible).length;if(mp)items.push(['warn',mp===1?'1 pedido de material por gestionar':mp+' pedidos de material por gestionar','material'])}
   if(st.tareas===null)loadTareas();const tm=tareasMias();if(tm.length)items.push([tm.some(t=>t.fecha<hoy()||t.urg)?'bad':'warn',tm.length===1?'1 tarea para ti hoy':tm.length+' tareas para ti hoy','tareas']);
   const pv=privSinLeer().length;if(pv)items.push(['bad',pv===1?'1 mensaje privado para ti':pv+' mensajes privados para ti','mensajes-priv']);
   const pm=pendParaMi().length;if(pm)items.push(['bad',pm===1?'1 mensaje para ti':pm+' mensajes para ti','mensajes-mios']);
@@ -2122,8 +2224,9 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()},150)});
 
-const VIEWS={mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
-function renderMain(){$('#main').innerHTML=VIEWS[st.tab]();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
+function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab))st.tab='cuentas';$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
+function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="usar-rec"],#main [data-act="cul-edit"]'))b.remove()}
 function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=VIEWS[st.tab]();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
 function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCfg;bar.hidden=!show;if(!show)return;
@@ -2152,6 +2255,12 @@ $('#main').addEventListener('change',e=>{if(e.target.type==='checkbox')onInput(e
 function diffCfg(a,b){const L=[];for(const nb of b.bidones){const ob=a.bidones.find(x=>x.id===nb.id);if(!ob)continue;const cabs=nb.cabezales.map(x=>(b.cabezales.find(c=>c.id===x)||{}).nombre).join(' + ');
   if(ob.kgPrincipal!==nb.kgPrincipal)L.push(`${cabs} · ${nb.nombre}: ${prod(nb.principal).n} por 1000 L ${fmt(ob.kgPrincipal,2)} → ${fmt(nb.kgPrincipal,2)}`);
   nb.productos.forEach((x,i)=>{const o=ob.productos[i];if(o&&o.dosis!==x.dosis)L.push(`${cabs} · ${prod(x.p).n}: ${fmt(o.dosis,2)} → ${fmt(x.dosis,2)} ${uDosis(x.p)}`)})}
+  const nom=(l,id)=>(l.find(x=>x.id===id)||{}).nombre;
+  for(const[k,t,o]of[['fincas','Finca','a'],['cabezales','Cabezal','o'],['bidones','Depósito','o']]){const ia=new Set(a[k].map(x=>x.id)),ib=new Set(b[k].map(x=>x.id));
+    for(const x of b[k])if(!ia.has(x.id))L.push(`${t} nuev${o}: ${x.nombre}`);for(const x of a[k])if(!ib.has(x.id))L.push(`${t} quitad${o}: ${x.nombre}`);
+    for(const x of b[k])if(ia.has(x.id)&&nom(a[k],x.id)!==x.nombre)L.push(`${t} renombrad${o}: ${nom(a[k],x.id)} → ${x.nombre}`)}
+  const sa=a.cabezales.flatMap(c=>c.sectores.map(s=>[c,s])),sb=b.cabezales.flatMap(c=>c.sectores.map(s=>[c,s]));
+  for(const[c,s]of sb)if(!sa.some(x=>x[1].id===s.id))L.push(`${c.nombre}: sector nuevo ${s.nombre}`);for(const[c,s]of sa)if(!sb.some(x=>x[1].id===s.id)&&b.cabezales.some(x=>x.id===c.id))L.push(`${c.nombre}: sector quitado ${s.nombre}`);
   return L}
 function errMsg(e){return e&&e.code==='quota_exceeded'?'No queda espacio en la base de datos de la página.':'No se pudo guardar'+(e&&e.code?' ('+e.code+')':'')+'. Prueba otra vez.'}
 /* Qué cabezales se ven afectados por un campo del día */
@@ -2169,8 +2278,8 @@ async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{con
   st.reg.receta=parcial.receta||base.receta;st.reg.guardado=ahora;
   await Store.mergeReg(f,parcial);st.regMod=new Set();st.reg.ejemplo=false;st.dirtyReg=false;enviarPartes();st.hist=null;loadHist();toast('Día '+fCorta(st.fecha)+' guardado');if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave();if(st.tab==='cuentas'||st.tab==='drenaje'){const bn=$('.banner');if(bn&&!st.reg.ejemplo)bn.remove()}}
-async function saveCfg(){if(st.saving)return;st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
-  if(lineas.length)await Store.addCambio({ts:new Date().toISOString(),fecha:hoy(),lineas});st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
+async function saveCfg(){if(st.saving)return;if(!esGestor()){toast('Solo el encargado o el administrador pueden cambiar la receta y los ajustes');st.cfg=clone(st.savedCfg);st.dirtyCfg=false;renderAll();return}st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
+  if(lineas.length)await Store.addCambio({ts:new Date().toISOString(),fecha:hoy(),lineas,por:yoNombre(),porEmail:miEmail()});st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave()}
 
 async function loadFecha(f){st.fecha=f;st.regMod=new Set();let r=null;try{r=await Store.getReg(f)}catch(e){}

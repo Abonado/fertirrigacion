@@ -1,7 +1,8 @@
 // Avisos con la app cerrada para «Abonado Pinta Santos» (Cloudflare Worker, plan gratuito)
 // Necesita:
 //   1. Un espacio KV enlazado con el nombre de variable  AVISOS
-//   2. Un disparador Cron cada 10 minutos:  */10 * * * *
+//   2. Un disparador Cron cada 5 minutos:  */5 * * * *
+// Los envíos van por grupos (12 personas por vez) para no pasar el límite de 50 conexiones del plan gratuito.
 // Solo atiende a personas que han entrado en la app y que el administrador ha dado de alta.
 
 const PROYECTO = 'fertirrigacion-cabezales';
@@ -100,7 +101,7 @@ const kSub = e => 's:' + e;
 async function subsDe(env, email) { return (await env.AVISOS.get(kSub(email), 'json')) || []; }
 async function enviarA(env, emails, datos, urgente) {
   let ok = 0, fallos = 0, sinDispositivo = 0;
-  for (const email of [...new Set(emails)].slice(0, 60)) {
+  for (const email of [...new Set(emails)].slice(0, 12)) {
     const l = await subsDe(env, email); if (!l.length) { sinDispositivo++; continue; }
     const vivas = [];
     for (const s of l) {
@@ -117,12 +118,17 @@ const datosDe = b => ({ t: corto(b.titulo, 120) || 'Abonado Pinta Santos', b: co
 /* ---------- Avisos programados (llenado de depósitos): clave única "prog" ---------- */
 async function revisarProgramados(env) {
   const prog = (await env.AVISOS.get('prog', 'json')) || {};
-  const ahora = Date.now(); let cambios = false;
+  const ahora = Date.now(); let cambios = false, cupo = 12;   // como mucho 12 personas por pasada; el resto en la siguiente (5 min)
   for (const [id, a] of Object.entries(prog)) {
     if (a.enviado) { if (ahora - a.enviado > 30 * 86400000) { delete prog[id]; cambios = true; } continue; }
     if (!(a.cuando <= ahora)) continue;
-    if (ahora - a.cuando < 2 * 86400000) await enviarA(env, a.para || [], datosDe(a), true);
-    a.enviado = ahora; cambios = true;
+    if (ahora - a.cuando > 2 * 86400000) { a.enviado = ahora; cambios = true; continue; }
+    if (!a.pend) a.pend = [...(a.para || [])];
+    if (cupo <= 0) break;
+    const lote = a.pend.splice(0, cupo); cupo -= lote.length;
+    if (lote.length) await enviarA(env, lote, datosDe(a), true);
+    if (!a.pend.length) { a.enviado = ahora; delete a.pend; }
+    cambios = true;
   }
   if (cambios) await env.AVISOS.put('prog', JSON.stringify(prog));
 }
@@ -144,15 +150,15 @@ export default {
     if (!yo || !(await autorizado(token, yo))) return json({ error: 'sin_acceso' }, 403);
     let b; try { b = await request.json(); } catch { return json({ error: 'peticion' }, 400); }
     const ruta = new URL(request.url).pathname.replace(/\/+$/, '').split('/').pop();
-    const emails = l => (Array.isArray(l) ? l : []).map(e => String(e || '').toLowerCase()).filter(e => /^\S+@\S+$/.test(e)).slice(0, 60);
+    const emails = l => (Array.isArray(l) ? l : []).map(e => String(e || '').toLowerCase()).filter(e => /^\S+@\S+$/.test(e)).slice(0, 200);
 
     if (ruta === 'suscribir') {
       const s = b.sub || {};
       if (!/^https:\/\//.test(s.endpoint || '') || !s.keys || !s.keys.p256dh || !s.keys.auth) return json({ error: 'peticion' }, 400);
       const l = (await subsDe(env, yo)).filter(x => x.sub.endpoint !== s.endpoint);
       l.unshift({ sub: { endpoint: s.endpoint, keys: { p256dh: s.keys.p256dh, auth: s.keys.auth } }, disp: corto(b.disp, 120), ts: Date.now() });
-      await env.AVISOS.put(kSub(yo), JSON.stringify(l.slice(0, 8)));
-      return json({ ok: true, dispositivos: Math.min(8, l.length) });
+      await env.AVISOS.put(kSub(yo), JSON.stringify(l.slice(0, 3)));   // como mucho 3 móviles por persona
+      return json({ ok: true, dispositivos: Math.min(3, l.length) });
     }
     if (ruta === 'baja') {
       const l = await subsDe(env, yo), r = l.filter(x => x.sub.endpoint !== b.endpoint);
@@ -166,7 +172,7 @@ export default {
         if (espera) { ctx.waitUntil(new Promise(r => setTimeout(r, espera)).then(() => enviarA(env, [yo], datos, true))); return json({ ok: true, programado: espera / 1000 }); }
         return json({ ok: true, ...(await enviarA(env, [yo], datos, true)) });
       }
-      const para = emails(b.para).filter(e => e !== yo); if (!para.length) return json({ ok: true, enviados: 0 });
+      const para = emails(b.para).filter(e => e !== yo).slice(0, 12); if (!para.length) return json({ ok: true, enviados: 0 });
       if (b.unico) { const k = 'u:' + corto(b.unico, 200); if (await env.AVISOS.get(k)) return json({ ok: true, repetido: true }); await env.AVISOS.put(k, '1', { expirationTtl: 172800 }); }
       return json({ ok: true, ...(await enviarA(env, para, datosDe(b), b.urgente !== false)) });
     }
@@ -178,7 +184,7 @@ export default {
         const ref = corto(b.ref, 80), cuando = +b.cuando;
         if (!(cuando > 0)) return json({ error: 'peticion' }, 400);
         if (ant && ant.enviado && ant.ref === ref) return json({ ok: true, yaAvisado: true });   // ya se avisó en este llenado
-        prog[id] = { ...datosDe(b), titulo: corto(b.titulo, 120), cuerpo: corto(b.cuerpo, 300), para: emails(b.para), cuando, ref, por: yo, enviado: 0 };
+        prog[id] = { ...datosDe(b), titulo: corto(b.titulo, 120), cuerpo: corto(b.cuerpo, 300), para: emails(b.para), cuando, ref, por: yo, enviado: 0 };   // sin «pend»: se reparte al enviar
       }
       await env.AVISOS.put('prog', JSON.stringify(prog));
       return json({ ok: true });
