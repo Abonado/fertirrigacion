@@ -38,6 +38,10 @@ service cloud.firestore {
       allow read, create: if autorizado();
       allow update, delete: if esGestor()
         || (autorizado() && resource.data.get('porEmail', '') == request.auth.token.email);
+      // Descuentos automáticos (llenados deducidos de las cuentas): los rehace cualquiera del equipo
+      allow update: if autorizado()
+        && resource.data.get('auto', false) == true
+        && request.resource.data.get('auto', false) == true;
     }
 
     // Partes diarios: los guarda cualquiera del equipo, solo los leen el administrador y los encargados
