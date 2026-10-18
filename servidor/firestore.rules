@@ -23,23 +23,31 @@ service cloud.firestore {
       return esAdmin() || (autorizado() && esEncargado());
     }
 
+    // Áreas: personal de riego y personal de campo (Ajustes → Usuarios).
+    // Sin elegir, se ve riego (así siguen funcionando las cuentas de siempre).
+    function veRiego() {
+      return esAdmin() || (autorizado()
+        && 'riego' in get(/databases/$(database)/documents/abonado_acceso/usuarios).data.info
+             .get(request.auth.token.email, {}).get('areas', ['riego']));
+    }
+
     // Ajustes, fincas y cabezales: administrador y encargados.
     // La receta (dentro de los depósitos) la puede cambiar cualquiera del equipo:
     // un trabajador solo puede tocar la parte de los depósitos, nada más.
     match /abonado_config/{doc} {
       allow read: if autorizado();
       allow write: if esGestor()
-        || (autorizado() && resource != null
+        || (veRiego() && resource != null
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bidones']));
     }
 
     // Almacén: cualquiera apunta; corregir o borrar, el gestor o quien lo apuntó
     match /abonado_almacen/{doc} {
-      allow read, create: if autorizado();
+      allow read, create: if veRiego();
       allow update, delete: if esGestor()
-        || (autorizado() && resource.data.get('porEmail', '') == request.auth.token.email);
+        || (veRiego() && resource.data.get('porEmail', '') == request.auth.token.email);
       // Descuentos automáticos (llenados deducidos de las cuentas): los rehace cualquiera del equipo
-      allow update: if autorizado()
+      allow update: if veRiego()
         && resource.data.get('auto', false) == true
         && request.resource.data.get('auto', false) == true;
     }
@@ -47,7 +55,7 @@ service cloud.firestore {
     // Partes diarios: los guarda cualquiera del equipo, solo los leen el administrador y los encargados
     match /abonado_partes/{doc} {
       allow read: if esAdmin() || (autorizado() && esEncargado());
-      allow create, update: if autorizado();
+      allow create, update: if veRiego();
       allow delete: if esAdmin();
     }
 
@@ -104,7 +112,7 @@ service cloud.firestore {
         && coleccion != 'abonado_almacen'
         && coleccion != 'abonado_collas'
         && coleccion != 'abonado_jornadas'
-        && autorizado();
+        && veRiego();
     }
   }
 }
