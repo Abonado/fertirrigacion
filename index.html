@@ -1623,7 +1623,7 @@ const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633]
      Columna izquierda: 3 naves (1-3); derecha: una pequeña arriba (4) y una grande (5). Las líneas de cada nave son sus pasillos. */
   pla:(()=>{const R=(x0,y0,x1,y1)=>[[x0,y0],[x0,y1],[x1,y1],[x1,y0]];
     const naves=[{n:1,p:R(0,0,225,375)},{n:2,p:R(0,395,225,790)},{n:3,p:R(0,810,225,1200)},{n:4,p:R(270,245,465,395)},{n:5,p:R(270,415,465,1190)}];
-    return{titulo:'Planos',finca:'Pinta Santos',vb:[-80,-110,860,1380],naves,ang:0,rayas:11,norte:[710,-50],norteAng:39,nota:'5 naves · cada línea es un pasillo',
+    return{titulo:'Planos',finca:'Pinta Santos',vb:[-80,-110,860,1380],naves,ang:0,rayas:11,pasInv:true,norte:[710,-50],norteAng:39,nota:'5 naves · cada línea es un pasillo',
       fondo(){let s='';
         s+=`<rect x="520" y="-60" width="260" height="1320" fill="#efe6cf" opacity=".7"/><g stroke="#e2d6b8" stroke-width="1.2">${[...Array(13).keys()].map(k=>`<line x1="${525+k*20}" y1="-60" x2="${525+k*20}" y2="1260"/>`).join('')}</g>`;
         const cam='M-30 -30H495V1225H-30Z';s+=`<path d="${cam}" fill="none" stroke="#bdb5a3" stroke-width="30" stroke-linejoin="round"/><path d="${cam}" fill="none" stroke="#e6e0d2" stroke-width="22" stroke-linejoin="round"/>`;
@@ -1643,6 +1643,11 @@ let incLoading=false;
 async function loadInc(){if(incLoading)return;incLoading=true;try{st.inc=await Store.listCol('incidencias',0)}catch(e){st.inc=st.inc||[]}incLoading=false;try{renderGrupos()}catch(e){}if(st.tab==='mapa')renderMain()}
 const incVisible=i=>!restringido()||fincasVis().some(f=>f.cabezales.includes(i.cab));
 const incAbiertas=()=>(st.inc||[]).filter(i=>i.estado!=='resuelta'&&incVisible(i));
+/* Pasillos de cada nave: cuántos hay y desde qué lado se cuentan (lo ajusta el encargado o el administrador) */
+function pasCfg(cab,nv){const M=MAPAS[cab],c=((st.cfg.mapas||{})[cab]||{})[nv.n]||{};return{n:c.n>0?c.n:(M.rayas||12)-1,inv:!!M.pasInv!==!!c.inv,otro:!!c.inv}}
+function pasLineas(cab,nv){const[a,b,c,d]=nv.p,{n,inv}=pasCfg(cab,nv),L=[];for(let k=1;k<=n;k++){const t=k/(n+1),p1=lerp(d,a,t),p2=lerp(c,b,t);L.push({num:inv?n+1-k:k,p1,p2})}return L}
+function pasDe(cab,nv,pt){let best=null,bd=1e9;for(const l of pasLineas(cab,nv)){const[x1,y1]=l.p1,[x2,y2]=l.p2,dx=x2-x1,dy=y2-y1,t=Math.max(0,Math.min(1,((pt[0]-x1)*dx+(pt[1]-y1)*dy)/(dx*dx+dy*dy))),q=[x1+t*dx,y1+t*dy],dd=Math.hypot(pt[0]-q[0],pt[1]-q[1]);if(dd<bd){bd=dd;best=l.num}}return best}
+const lugar=i=>`Nave ${i.nave}${i.pasillo?' · pasillo '+i.pasillo:''}`;
 function dentro(pt,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const[xi,yi]=poly[i],[xj,yj]=poly[j];if(((yi>pt[1])!==(yj>pt[1]))&&(pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi))c=!c}return c}
 const centro=p=>[p.reduce((a,q)=>a+q[0],0)/p.length,p.reduce((a,q)=>a+q[1],0)/p.length];
 const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];
@@ -1659,7 +1664,8 @@ function planoSVG(cab,incs){const M=MAPAS[cab],[vx,vy,vw,vh]=M.vb;let s=`<svg vi
   const abiertas=n=>incs.filter(i=>i.nave===n&&i.estado!=='resuelta');
   for(const nv of M.naves){const[a,b,c,d]=nv.p,tiene=abiertas(nv.n),alta=tiene.some(i=>i.prio==='alta');
     s+=`<g class="nave" data-nave="${nv.n}"><polygon points="${ptsS(nv.p)}" fill="${alta?'#f7dcd6':tiene.length?'#fbecc9':'#e3ecf4'}" stroke="#1b2f4a" stroke-width="3" stroke-linejoin="round"/>`;
-    const nr=(M.rayas||12);for(let k=1;k<nr;k++){const t=k/nr;s+=`<line x1="${lerp(d,a,t)[0].toFixed(1)}" y1="${lerp(d,a,t)[1].toFixed(1)}" x2="${lerp(c,b,t)[0].toFixed(1)}" y2="${lerp(c,b,t)[1].toFixed(1)}" stroke="#9fb4c9" stroke-width="1.6"/>`}
+    for(const l of pasLineas(cab,nv)){s+=`<line x1="${l.p1[0].toFixed(1)}" y1="${l.p1[1].toFixed(1)}" x2="${l.p2[0].toFixed(1)}" y2="${l.p2[1].toFixed(1)}" stroke="#9fb4c9" stroke-width="1.6"/>`;
+      for(const f of [0.05,0.95]){const q=lerp(l.p1,l.p2,f);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)})"><circle r="9" fill="#fff" stroke="#7f98b2" stroke-width="1"/><text y="4" text-anchor="middle" font-size="11" font-weight="800" fill="#1b2f4a">${l.num}</text></g>`}}
     const[cx,cy]=centro(nv.p);s+=`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${M.ang})"><rect x="-46" y="-17" width="92" height="34" rx="17" fill="#1b2f4a" opacity=".92"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#fff" letter-spacing="1">NAVE ${nv.n}</text>${tiene.length?`<circle cx="50" cy="-15" r="13" fill="${alta?'#c0392b':'#e2a32a'}"/><text x="50" y="-10" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${tiene.length}</text>`:''}</g></g>`}
   // incidencias
   for(const i of incs.filter(i=>st.mFil==='todas'||i.estado!=='resuelta')){const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta',sel=st.mSel===i.id,k=sel?1.35:1,col=res?'#9aa3a8':t[1];
@@ -1678,21 +1684,22 @@ function vMapa(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
     <div class="row" style="gap:6px"><button class="btn sm" data-act="mz" data-z="-1" aria-label="Alejar">−</button><button class="btn sm" data-act="mz" data-z="1" aria-label="Acercar">+</button></div></div>
     <div class="mapwrap" id="mapwrap"><div class="mapin" style="width:${st.mz*100}%">${planoSVG(cab,incs)}</div></div>
     <div class="mley">${Object.entries(ITIPOS).map(([k,t])=>`<span><i style="background:${t[1]}">${t[2]}</i>${t[0]}</span>`).join('')}</div>
+    ${esGestor()?(st.mPas?`<div class="panel"><div><h3>Pasillos de cada nave</h3><div class="sub">Cuántos tiene y desde qué lado se empiezan a contar</div></div>${M.naves.map(nv=>{const c=pasCfg(cab,nv);return `<div class="row" style="align-items:flex-end"><b style="min-width:70px">Nave ${nv.n}</b><div class="field"><label>Pasillos</label><div class="inp sm"><input data-mpas="n" data-nave="${nv.n}" inputmode="numeric" value="${c.n}"></div></div><label class="chk"><input type="checkbox" data-mpas="inv" data-nave="${nv.n}" ${c.otro?'checked':''}> Contar desde el otro lado</label></div>`}).join('')}<div class="row"><button class="btn pri" data-act="mpas-save">Guardar</button><button class="btn" data-act="mpas-no">Cancelar</button></div></div>`:`<div class="row"><button class="btn sm" data-act="mpas">Ajustar pasillos</button></div>`):''}
     <div class="pick"><button class="chip" data-mfil="abiertas" aria-pressed="${st.mFil==='abiertas'}">Abiertas (${ab.length})</button><button class="chip" data-mfil="todas" aria-pressed="${st.mFil==='todas'}">Todas (${incs.length})</button></div></section>`;
-  if(N)h+=`<section class="card" id="mform"><div><h3>Nueva incidencia · Nave ${N.nave}</h3><div class="sub">Marcada en el plano. Toca otro punto para moverla.</div></div>
+  if(N)h+=`<section class="card" id="mform"><div><h3>Nueva incidencia · ${lugar(N)}</h3><div class="sub">Marcada en el plano. Toca otro punto para moverla.</div></div>
     <div><div class="lbl">Tipo</div><div class="pick">${Object.entries(ITIPOS).map(([k,t])=>`<button class="chip" data-mtipo="${k}" aria-pressed="${N.tipo===k}">${t[0]}</button>`).join('')}</div></div>
     <div><div class="lbl">Prioridad</div><div class="pick">${Object.entries(IPRIO).map(([k,t])=>`<button class="chip" data-mprio="${k}" aria-pressed="${N.prio===k}">${t[0]}</button>`).join('')}</div></div>
     <div class="field"><label for="mi_txt">Qué pasa</label><div class="inp"><input class="wide" id="mi_txt" data-mi="txt" style="width:100%;text-transform:none" value="${esc(N.txt)}" placeholder="Ej.: mosca blanca en las filas del pasillo central" autocomplete="off"></div></div>
     ${adjHTML(N.adj,true)}
     <div class="row">${Adj.can()?`<label class="btn" for="mi_foto">Añadir foto</label><input type="file" id="mi_foto" data-mi="file" accept="image/*" multiple hidden>`:''}<button class="btn pri" data-act="mi-save" ${N.adj.some(a=>a.tmp)?'disabled':''}>Guardar incidencia</button><button class="btn" data-act="mi-no">Cancelar</button></div></section>`;
   if(sel){const t=ITIPOS[sel.tipo]||ITIPOS.otro,res=sel.estado==='resuelta',puede=sel.porEmail===miEmail()||esGestor();
-    h+=`<section class="card" id="mdet"><div class="tank-h"><div><h3><span class="mdot" style="background:${t[1]}">${t[2]}</span> ${esc(t[0])} · Nave ${sel.nave}</h3><div class="sub">${esc(fFecha(sel.fecha))} · ${esc(hhmm(sel.ts))} · ${esc(sel.por||'')}</div></div><span class="pill ${res?'ok':IPRIO[sel.prio]?IPRIO[sel.prio][1]:'nd'}">${res?'Resuelta':'Prioridad '+(IPRIO[sel.prio]||IPRIO.media)[0].toLowerCase()}</span></div>
+    h+=`<section class="card" id="mdet"><div class="tank-h"><div><h3><span class="mdot" style="background:${t[1]}">${t[2]}</span> ${esc(t[0])} · ${lugar(sel)}</h3><div class="sub">${esc(fFecha(sel.fecha))} · ${esc(hhmm(sel.ts))} · ${esc(sel.por||'')}</div></div><span class="pill ${res?'ok':IPRIO[sel.prio]?IPRIO[sel.prio][1]:'nd'}">${res?'Resuelta':'Prioridad '+(IPRIO[sel.prio]||IPRIO.media)[0].toLowerCase()}</span></div>
       ${sel.txt?`<p>${esc(sel.txt)}</p>`:''}${adjHTML(sel.fotos,false)}
       ${res?`<div class="note">Resuelta por ${esc(sel.resPor||'')} · ${esc(fFecha((sel.resTs||'').slice(0,10)||sel.fecha))}${sel.resNota?' · «'+esc(sel.resNota)+'»':''}</div>`:''}
       ${st.mRes===sel.id?`<div class="field"><label for="mi_res">Cómo se ha resuelto (opcional)</label><div class="inp"><input class="wide" id="mi_res" style="width:100%;text-transform:none" autocomplete="off"></div></div><div class="row"><button class="btn pri" data-act="mi-res-ok" data-id="${sel.id}">Marcar resuelta</button><button class="btn" data-act="mi-res-no">Cancelar</button></div>`
       :`<div class="row">${res?`<button class="btn" data-act="mi-abrir" data-id="${sel.id}">Volver a abrir</button>`:`<button class="btn pri" data-act="mi-res" data-id="${sel.id}">Resolver</button><button class="btn" data-act="mi-tarea" data-id="${sel.id}">Crear tarea</button>`}${puede?(st.confirmMi===sel.id?`<button class="btn danger" data-act="mi-del-yes" data-id="${sel.id}">Sí, borrar</button>`:`<button class="btn" data-act="mi-del" data-id="${sel.id}">Borrar</button>`):''}<button class="btn" data-act="mi-cerrar">Cerrar</button></div>`}</section>`}
   const lista=(st.mFil==='todas'?incs:ab).slice().sort((a,b)=>(a.estado==='resuelta')-(b.estado==='resuelta')||((b.prio==='alta')-(a.prio==='alta'))||(a.ts<b.ts?1:-1));
-  h+=`<section class="card"><div><h3>${st.mFil==='todas'?'Todas las incidencias':'Incidencias abiertas'}</h3><div class="sub">Toca una para verla en el plano</div></div>${lista.length?`<div class="mlist">${lista.map(i=>{const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta';return `<button class="mrow${st.mSel===i.id?' on':''}" data-inc="${i.id}"><span class="mdot" style="background:${res?'#9aa3a8':t[1]}">${res?'✓':t[2]}</span><span class="mt"><b>Nave ${i.nave} · ${esc(t[0])}</b><small>${esc((i.txt||'Sin descripción').slice(0,90))}</small></span><span class="mr"><span class="pill ${res?'ok':(IPRIO[i.prio]||IPRIO.media)[1]}">${res?'Resuelta':(IPRIO[i.prio]||IPRIO.media)[0]}</span><small>${esc(fCorta(i.fecha))}</small></span></button>`}).join('')}</div>`:'<div class="note">Nada por aquí. Toca una nave en el plano para apuntar una incidencia.</div>'}</section>`;
+  h+=`<section class="card"><div><h3>${st.mFil==='todas'?'Todas las incidencias':'Incidencias abiertas'}</h3><div class="sub">Toca una para verla en el plano</div></div>${lista.length?`<div class="mlist">${lista.map(i=>{const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta';return `<button class="mrow${st.mSel===i.id?' on':''}" data-inc="${i.id}"><span class="mdot" style="background:${res?'#9aa3a8':t[1]}">${res?'✓':t[2]}</span><span class="mt"><b>${lugar(i)} · ${esc(t[0])}</b><small>${esc((i.txt||'Sin descripción').slice(0,90))}</small></span><span class="mr"><span class="pill ${res?'ok':(IPRIO[i.prio]||IPRIO.media)[1]}">${res?'Resuelta':(IPRIO[i.prio]||IPRIO.media)[0]}</span><small>${esc(fCorta(i.fecha))}</small></span></button>`}).join('')}</div>`:'<div class="note">Nada por aquí. Toca una nave en el plano para apuntar una incidencia.</div>'}</section>`;
   return h}
 function mapaPunto(e){const svg=$('#mapsvg');if(!svg)return null;const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=svg.getScreenCTM();if(!m)return null;const q=p.matrixTransform(m.inverse());return[q.x,q.y]}
 document.addEventListener('click',e=>{if(st.tab!=='mapa')return;
@@ -1700,15 +1707,15 @@ document.addEventListener('click',e=>{if(st.tab!=='mapa')return;
   const f=e.target.closest('[data-mfil]');if(f){st.mFil=f.dataset.mfil;renderMain();return}
   const ti=e.target.closest('[data-mtipo]');if(ti&&st.mNueva){st.mNueva.tipo=ti.dataset.mtipo;renderMain();return}
   const pr=e.target.closest('[data-mprio]');if(pr&&st.mNueva){st.mNueva.prio=pr.dataset.mprio;renderMain();return}
-  if(e.target.closest('#mapsvg')){const pt=mapaPunto(e),M=MAPAS[st.cab];if(!pt||!M)return;const nv=M.naves.find(n=>dentro(pt,n.p));if(!nv){toast('Toca dentro de una nave');return}
-    const N=st.mNueva||{tipo:'plaga',prio:'media',txt:'',adj:[]};st.mNueva={...N,nave:nv.n,x:pt[0],y:pt[1]};st.mSel=null;renderMain();const fm=$('#mform');if(fm)fm.scrollIntoView({behavior:'smooth',block:'nearest'})}});
+  if(e.target.closest('#mapsvg')){const pt=mapaPunto(e),M=MAPAS[st.cab];if(!pt||!M)return;const nv=M.naves.find(n=>dentro(pt,n.p));if(!nv){toast('Toca dentro de una nave');return}const pas=pasDe(st.cab,nv,pt);
+    const N=st.mNueva||{tipo:'plaga',prio:'media',txt:'',adj:[]};st.mNueva={...N,nave:nv.n,pasillo:pas,x:pt[0],y:pt[1]};st.mSel=null;renderMain();const fm=$('#mform');if(fm)fm.scrollIntoView({behavior:'smooth',block:'nearest'})}});
 document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.mi;if(!k||!st.mNueva)return;if(k==='txt')st.mNueva.txt=e.target.value});
 document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.mi;if(k==='file'&&st.mNueva&&e.target.files.length){const fs=[...e.target.files];e.target.value='';addFiles(fs,st.mNueva.adj)}});
 async function miGuardar(){const N=st.mNueva;if(!N||N.x==null)return;const now=new Date().toISOString();
-  const i={ts:now,fecha:hoy(),cab:st.cab,finca:fincaDeCab(st.cab),nave:N.nave,x:+N.x.toFixed(1),y:+N.y.toFixed(1),tipo:N.tipo,prio:N.prio,txt:(N.txt||'').trim(),fotos:N.adj.filter(a=>!a.tmp),estado:'abierta',por:yoNombre(),porEmail:miEmail()};
-  try{const id=await Store.addCol('incidencias',i);st.inc.unshift({...i,id});st.mNueva=null;st.mSel=id;renderMain();renderGrupos();toast('Incidencia guardada en la nave '+i.nave);
+  const i={ts:now,fecha:hoy(),cab:st.cab,finca:fincaDeCab(st.cab),nave:N.nave,pasillo:N.pasillo||null,x:+N.x.toFixed(1),y:+N.y.toFixed(1),tipo:N.tipo,prio:N.prio,txt:(N.txt||'').trim(),fotos:N.adj.filter(a=>!a.tmp),estado:'abierta',por:yoNombre(),porEmail:miEmail()};
+  try{const id=await Store.addCol('incidencias',i);st.inc.unshift({...i,id});st.mNueva=null;st.mSel=id;renderMain();renderGrupos();toast('Incidencia guardada: '+lugar(i).toLowerCase());
     let para=[...new Set([...encargadosDe(i.finca),...adminsEmails()])];const t=ITIPOS[i.tipo]||ITIPOS.otro;
-    pushEnviar(para,`${i.prio==='alta'?'URGENTE · ':''}${t[0]} en la nave ${i.nave} · ${cabNombre(i.cab)}`,(i.txt||'Sin descripción')+' · '+yoNombre(),'inc-'+id,'mapa')}catch(e){toast(errMsg(e))}}
+    pushEnviar(para,`${i.prio==='alta'?'URGENTE · ':''}${t[0]} · ${lugar(i).toLowerCase()} · ${cabNombre(i.cab)}`,(i.txt||'Sin descripción')+' · '+yoNombre(),'inc-'+id,'mapa')}catch(e){toast(errMsg(e))}}
 async function miPatch(id,p,msg){const i=(st.inc||[]).find(x=>x.id===id);if(!i)return;try{await Store.updCol('incidencias',id,p);Object.assign(i,p);st.mRes=null;renderMain();renderGrupos();if(msg)toast(msg)}catch(e){toast(errMsg(e))}}
 /* ---------- Editor de fincas, cabezales, sectores, bandejas, depósitos, almacenes y productos (solo administrador) ---------- */
 const uid=p=>p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
@@ -2424,6 +2431,10 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='sug-m3'){const id=t.dataset.id;st.reg.m3[id]=sugDe('m3',id);marcaReg('m3.'+id);renderMain();renderSave()}
   else if(t.dataset.act==='mz'){const z=[1,1.6,2.4],i=z.indexOf(st.mz);st.mz=z[Math.max(0,Math.min(2,i+(+t.dataset.z)))];const w=$('#mapwrap'),fx=w?(w.scrollLeft+w.clientWidth/2)/w.scrollWidth:.5,fy=w?(w.scrollTop+w.clientHeight/2)/w.scrollHeight:.5;renderMain();const w2=$('#mapwrap');if(w2){w2.scrollLeft=fx*w2.scrollWidth-w2.clientWidth/2;w2.scrollTop=fy*w2.scrollHeight-w2.clientHeight/2}}
   else if(t.dataset.act==='mi-save')miGuardar();
+  else if(t.dataset.act==='mpas'){st.mPas=true;renderMain()}
+  else if(t.dataset.act==='mpas-no'){st.mPas=false;renderMain()}
+  else if(t.dataset.act==='mpas-save'){const cab=st.cab,o={};for(const i of document.querySelectorAll('[data-mpas]')){const n=i.dataset.nave;o[n]=o[n]||{};if(i.dataset.mpas==='n'){const v=Math.round(num(i.value)||0);if(v>0&&v<200)o[n].n=v}else o[n].inv=i.checked}
+    for(const c of [st.cfg,st.savedCfg]){c.mapas={...(c.mapas||{}),[cab]:o}}try{await Store.setConfig(st.savedCfg);st.mPas=false;renderMain();toast('Pasillos guardados')}catch(e){toast(errMsg(e))}}
   else if(t.dataset.act==='mi-no'){st.mNueva=null;renderMain()}
   else if(t.dataset.act==='mi-cerrar'){st.mSel=null;st.mRes=null;renderMain()}
   else if(t.dataset.act==='mi-res'){st.mRes=t.dataset.id;renderMain();const i=$('#mi_res');if(i)i.focus()}
@@ -2432,7 +2443,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='mi-abrir')miPatch(t.dataset.id,{estado:'abierta'},'Incidencia abierta de nuevo')
   else if(t.dataset.act==='mi-del'){st.confirmMi=t.dataset.id;renderMain()}
   else if(t.dataset.act==='mi-del-yes'){const id=t.dataset.id,i=(st.inc||[]).find(x=>x.id===id);try{await Store.delCol('incidencias',id);for(const a of (i&&i.fotos)||[])await Adj.del(a);st.inc=st.inc.filter(x=>x.id!==id);st.mSel=null;st.confirmMi=null;renderMain();renderGrupos();toast('Incidencia borrada')}catch(e){toast(errMsg(e))}}
-  else if(t.dataset.act==='mi-tarea'){const i=(st.inc||[]).find(x=>x.id===t.dataset.id);if(i){const ti=ITIPOS[i.tipo]||ITIPOS.otro;st.tf={...st.tf,open:true,titulo:`Nave ${i.nave}: ${ti[0].toLowerCase()}${i.txt?' · '+i.txt:''}`.slice(0,120),finca:i.finca,cab:i.cab,urg:i.prio==='alta',det:'Desde el mapa de naves',adj:[...(i.fotos||[])]};st.tab='tareas';renderAll();window.scrollTo(0,0)}}
+  else if(t.dataset.act==='mi-tarea'){const i=(st.inc||[]).find(x=>x.id===t.dataset.id);if(i){const ti=ITIPOS[i.tipo]||ITIPOS.otro;st.tf={...st.tf,open:true,titulo:`${lugar(i)}: ${ti[0].toLowerCase()}${i.txt?' · '+i.txt:''}`.slice(0,120),finca:i.finca,cab:i.cab,urg:i.prio==='alta',det:'Desde el mapa de naves',adj:[...(i.fotos||[])]};st.tab='tareas';renderAll();window.scrollTo(0,0)}}
   else if(t.dataset.act==='lvl'){st.lvlOpen=st.lvlOpen===t.dataset.id?null:t.dataset.id;renderMain()}
   else if(t.dataset.act==='lvl-medir'){const id=t.dataset.id;st.fillB[st.cab]=id;st.tab='rellenar';renderAll();lfOpen('medida',{bidon:id});window.scrollTo(0,0)}
   else if(t.dataset.act==='cv-play')cvPlay();
