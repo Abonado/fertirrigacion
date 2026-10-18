@@ -59,10 +59,11 @@ service cloud.firestore {
       allow delete: if esAdmin();
     }
 
-    // Collas: las ve todo el equipo; las crea y organiza el gestor.
+    // Collas: las ven el gestor y el jefe de cada colla (gente, fotos, partes y material); las crea el gestor.
     // El jefe de una colla solo puede cambiar la lista de su gente.
     match /abonado_collas/{doc} {
-      allow read: if autorizado();
+      allow read: if esGestor()
+        || (autorizado() && resource.data.jefeEmail == request.auth.token.email);
       allow create, delete: if esGestor();
       allow update: if esGestor()
         || (autorizado() && resource.data.jefeEmail == request.auth.token.email
@@ -81,6 +82,42 @@ service cloud.firestore {
             && get(/databases/$(database)/documents/abonado_collas/$(request.resource.data.colla)).data.jefeEmail == request.auth.token.email
             && (resource == null || resource.data.jefeEmail == request.auth.token.email));
       allow delete: if esGestor();
+    }
+
+    // Personal de campo: incidencias, tareas y mensajes de cada colla.
+    // El gestor lo ve todo; el jefe solo lo de su colla.
+    match /abonado_cincid/{doc} {
+      allow read: if esGestor()
+        || (autorizado() && (resource == null || resource.data.jefeEmail == request.auth.token.email));
+      allow create: if esGestor()
+        || (autorizado() && request.resource.data.jefeEmail == request.auth.token.email);
+      allow update: if esGestor()
+        || (autorizado() && resource.data.jefeEmail == request.auth.token.email
+            && request.resource.data.jefeEmail == request.auth.token.email);
+      allow delete: if esGestor();
+    }
+    match /abonado_ctareas/{doc} {
+      allow read: if esGestor()
+        || (autorizado() && (resource == null || resource.data.jefeEmail == request.auth.token.email));
+      allow create: if esGestor()
+        || (autorizado() && request.resource.data.jefeEmail == request.auth.token.email);
+      allow update: if esGestor()
+        || (autorizado() && resource.data.jefeEmail == request.auth.token.email
+            && request.resource.data.jefeEmail == request.auth.token.email);
+      allow delete: if esGestor();
+    }
+    match /abonado_cmensajes/{doc} {
+      allow read: if esGestor()
+        || (autorizado() && (resource == null || resource.data.jefeEmail == request.auth.token.email));
+      allow create, update: if esGestor()
+        || (autorizado() && request.resource.data.jefeEmail == request.auth.token.email
+            && (resource == null || resource.data.jefeEmail == request.auth.token.email));
+      allow delete: if esGestor();
+    }
+
+    // Fotos y archivos adjuntos (troceados): los usa todo el equipo, sea de riego o de campo
+    match /abonado_adjuntos/{doc} {
+      allow read, write: if autorizado();
     }
 
     match /abonado_acceso/{doc} {
@@ -112,6 +149,10 @@ service cloud.firestore {
         && coleccion != 'abonado_almacen'
         && coleccion != 'abonado_collas'
         && coleccion != 'abonado_jornadas'
+        && coleccion != 'abonado_cincid'
+        && coleccion != 'abonado_ctareas'
+        && coleccion != 'abonado_cmensajes'
+        && coleccion != 'abonado_adjuntos'
         && veRiego();
     }
   }

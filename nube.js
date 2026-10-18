@@ -121,7 +121,7 @@ N.setEncargado=async(email,si)=>{const acc=(await leerAcceso(true))||N.acc;if(!a
 N.renombrar=async(email,nombre)=>{nombre=(nombre||'').trim();if(!nombre)throw{msg:'Escribe el nombre'};const acc=(await leerAcceso(true))||N.acc;if(!acc||!acc.info||!acc.info[email])return;acc.info={...acc.info,[email]:{...acc.info[email],nombre}};await guardarAcc(acc);if(email===N.user.email){N.user.nombre=nombre;try{st.autor=nombre}catch(e){}}};
 
 /* ---------- Subir lo guardado en este dispositivo ---------- */
-const COLS=[['msgs','mensajes'],['llenados','llenados'],['almacen','almacen'],['diagnosticos','diagnosticos'],['tareas','tareas'],['material','material'],['partes','partes'],['crecimiento','crecimiento'],['collas','collas'],['jornadas','jornadas']];
+const COLS=[['msgs','mensajes'],['llenados','llenados'],['almacen','almacen'],['diagnosticos','diagnosticos'],['tareas','tareas'],['material','material'],['partes','partes'],['crecimiento','crecimiento'],['collas','collas'],['jornadas','jornadas'],['cincid','cincid'],['ctareas','ctareas']];
 const lsJ=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}};
 function datosLocales(){const r=lsJ('abono.regs')||[],c=COLS.map(x=>x[0]).reduce((s,k)=>s+((lsJ('abono.'+k)||[]).length),0);return{dias:r.length,otros:c,config:!!lsJ('abono.config'),cambios:(lsJ('abono.cambios')||[]).length}}
 async function subirAdj(list){const out=[];for(const a of list||[]){if(a.local||a.fb){let b=null;try{b=await Adj.idbGet(a.id)}catch(e){}if(b){await N.putBlob(a.id,b,a.type);const x={...a,fb:true};delete x.local;out.push(x);continue}}out.push(a)}return out}
