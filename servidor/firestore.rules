@@ -51,6 +51,30 @@ service cloud.firestore {
       allow delete: if esAdmin();
     }
 
+    // Collas: las ve todo el equipo; las crea y organiza el gestor.
+    // El jefe de una colla solo puede cambiar la lista de su gente.
+    match /abonado_collas/{doc} {
+      allow read: if autorizado();
+      allow create, delete: if esGestor();
+      allow update: if esGestor()
+        || (autorizado() && resource.data.jefeEmail == request.auth.token.email
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['miembros', 'mod']));
+    }
+
+    // Partes de las collas (asistencia por persona y trabajo): el gestor todo;
+    // cada jefe solo lee y escribe los de su colla
+    match /abonado_jornadas/{doc} {
+      allow read: if esGestor()
+        || (autorizado() && (resource == null || resource.data.jefeEmail == request.auth.token.email));
+      allow create, update: if esGestor()
+        || (autorizado()
+            && request.resource.data.jefeEmail == request.auth.token.email
+            && doc.matches(request.resource.data.colla + '_.*')
+            && get(/databases/$(database)/documents/abonado_collas/$(request.resource.data.colla)).data.jefeEmail == request.auth.token.email
+            && (resource == null || resource.data.jefeEmail == request.auth.token.email));
+      allow delete: if esGestor();
+    }
+
     match /abonado_acceso/{doc} {
       allow read: if request.auth != null;
       allow write: if esAdmin();
@@ -78,6 +102,8 @@ service cloud.firestore {
         && coleccion != 'abonado_partes'
         && coleccion != 'abonado_config'
         && coleccion != 'abonado_almacen'
+        && coleccion != 'abonado_collas'
+        && coleccion != 'abonado_jornadas'
         && autorizado();
     }
   }

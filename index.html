@@ -104,6 +104,18 @@ main{padding-block:16px 120px;display:grid;gap:14px}
 .mlist{display:grid}.mrow{display:flex;gap:10px;align-items:center;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 4px;cursor:pointer;font:inherit;color:inherit;width:100%}
 .mrow:first-child{border-top:0}.mrow.on{background:var(--bg);border-radius:10px}.mrow .mt{flex:1;min-width:0}.mrow .mt b{display:block}.mrow .mt small{display:block;color:var(--muted);font-size:12.5px;text-transform:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mrow .mr{display:grid;justify-items:end;gap:3px}.mrow .mr small{font-size:11px;color:var(--muted)}
+.cohor{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end;margin:4px 0 6px}
+.cohor .inp input[type=time],.coper .inp input[type=time]{width:auto;font-size:16px;text-align:left}.cofe .inp input[type=date]{width:auto;font-size:15px;text-align:left}.coper .inp select{width:auto}
+.coper{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;padding:9px 0;border-top:1px solid var(--line);align-items:center}
+.coper .nm b{display:block;font-size:15px;text-transform:none}.coper .nm small{color:var(--muted);font-size:12px}
+.coper .hrs{grid-column:1/-1;display:flex;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
+.coper.fal .nm b{color:var(--bad)}.coper.jus .nm b{color:var(--warn)}.coper.baja .nm b,.coper.vac .nm b{color:var(--muted)}
+.coadd{margin-top:8px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}@media (max-width:520px){.coadd{grid-template-columns:1fr}}.coadd .inp{min-width:0}.coadd .inp input{width:100%}
+.cotr{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;display:grid;gap:8px}
+.cotr-h{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.cotr-h b{font-size:15px}.cotr-h small{flex:1;color:var(--muted);font-size:12.5px;text-transform:none}.cotr-h small b{font-size:12.5px;color:var(--ink)}
+.copas{display:flex;flex-wrap:wrap;gap:6px}.copas .chip{min-width:38px;text-transform:none}
+.coqp{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}.coqp label{text-transform:none}
+.coge{display:grid;gap:6px}.coge .row{flex-wrap:nowrap}
 .lbl{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
 
 .cvwrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
@@ -531,7 +543,7 @@ const fFecha=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'sho
 const fCorta=f=>{const p=f.split('-');return p[2]+'/'+p[1]};
 
 /* ---------- Almacenamiento: nube del artifact (db) o, si no hay, este navegador ---------- */
-const SYNC=new Set(['incidencias','almacen','llenados','tareas','material','mensajes','crecimiento','partes','registros','cambios']);
+const SYNC=new Set(['incidencias','almacen','llenados','tareas','material','mensajes','crecimiento','partes','registros','cambios','collas','jornadas']);
 const ahoraISO=()=>new Date().toISOString();
 const Store={db:null,mode:'local',
   /* En la nube: la primera vez descarga todo y lo guarda en el móvil; las siguientes solo pide lo cambiado (campo «mod»).
@@ -631,7 +643,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['tiempo','Tiempo'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['collas','Collas'],['tiempo','Tiempo'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -702,17 +714,17 @@ function elegirFinca(id){const f=fincasVis().find(x=>x.id===id);if(!f||!f.cabeza
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){$('#cabs').hidden=['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
+function renderCabs(){$('#cabs').hidden=['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','collas'].includes(st.tab);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
 const GRUPOS=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','parte','partes'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
-  {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
+  {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes','collas'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','diagnostico','tiempo'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 const grupoDe=tab=>GRUPOS.find(g=>g.tabs.includes(tab))||GRUPOS[0];
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(puedePartes()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
-  try{n.equipo=(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)+(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}
+  try{n.equipo=(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)+(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)+coSinParte().length}catch(e){}
   try{let a=0;if(st.mat&&esGestor()&&miEmail())a+=matPend().filter(mVisible).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
 function renderGrupos(){const g=grupoDe(st.tab),ins=insignias();$('#grupos').innerHTML=GRUPOS.map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('')}
@@ -1003,7 +1015,7 @@ const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';i
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
 const SOLO_GESTOR=new Set(['parte','graficas','informe']);
-function tabPermitida(k){if(k==='partes')return puedePartes();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
+function tabPermitida(k){if(k==='partes')return puedePartes();if(k==='collas')return puedeCollas();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||fincasVis().some(f=>f.id===m.finca);
@@ -2303,7 +2315,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()},150)});
 
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,collas:vCollas};
 function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab))st.tab='cuentas';$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
@@ -2489,6 +2501,277 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='reset-yes'){st.cfg=clone(DEFAULT_CONFIG);st.dirtyCfg=true;st.confirmReset=false;renderAll();toast('Valores iniciales cargados: pulsa «Guardar receta y ajustes»')}});
 $('#fecha').addEventListener('change',async e=>{const f=e.target.value;if(!f||f===st.fecha)return;if(st.dirtyReg)await saveReg();await loadFecha(f)});
 
+/* ---------- Collas: asistencia por persona y rendimiento de las labores en las matas ---------- */
+/* Cada colla tiene un jefe (usuario de la app) y su gente (solo el nombre, no necesitan la app).
+   El jefe apunta cada día quién ha venido, a qué hora entra y sale, y qué trabajos se han hecho:
+   labor, cabezal, nave y pasillos, matas / kilos / cajas. El gestor (encargado o administrador) lo ve todo. */
+const LABORES=[['destallar','Destallar / deshojar'],['hoja','Quitar hoja'],['entutorar','Entutorar / liar / bajar planta'],['recolectar','Recolectar'],['otras','Plantar / limpiar / otras']];
+const LAB=Object.fromEntries(LABORES);
+const COEST={pre:['ok','Presente'],fal:['bad','Falta'],jus:['warn','Falta justificada'],baja:['nd','Baja'],vac:['nd','Vacaciones / libre']};
+const CO_UD={matas:'matas',kg:'kg',cajas:'cajas'};
+const udsLabor=l=>l==='recolectar'?['kg','cajas']:['matas'];
+st.collas=null;st.jor={};st.jorDias=0;st.co={vista:null,colla:null,fecha:hoy(),ed:null,dirty:false,per:'30',fil:'',lab:null,ge:null,confirm:null,nuevo:''};
+const coId=()=>'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const hm=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?+m[1]*60+ +m[2]:null};
+function horasP(j,pid){const g=(j.gente||{})[pid];if(!g||g.e!=='pre')return 0;const a=hm(g.ent),b=hm(g.sal);if(a==null||b==null)return 0;let d=b-a;if(d<0)d+=1440;return Math.max(0,(d-(+j.pau||0))/60)}
+const presentes=j=>Object.keys(j.gente||{}).filter(p=>j.gente[p].e==='pre');
+const enTrabajo=(j,t)=>presentes(j).filter(p=>!(t.fuera||[]).includes(p));
+/* Horas de una persona en un trabajo: las que ponga el jefe o, si lo deja en blanco, lo que le quede de la jornada repartido */
+function horasEn(j,t,pid){if(t.h!=null)return t.h;const ts=(j.trabajos||[]).filter(x=>enTrabajo(j,x).includes(pid));const fijas=ts.filter(x=>x.h!=null).reduce((s,x)=>s+x.h,0),libres=ts.filter(x=>x.h==null).length;return libres?Math.max(0,horasP(j,pid)-fijas)/libres:0}
+const horasTrab=(j,t)=>enTrabajo(j,t).reduce((s,p)=>s+horasEn(j,t,p),0);
+const cantT=(t,u)=>{if(t.pp&&t.ud===u){const v=Object.values(t.qp||{}).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0):null}return t[u]??null};
+const misCollas=()=>(st.collas||[]).filter(c=>c.activa!==false&&miEmail()&&c.jefeEmail===miEmail());
+const collasVis=()=>(st.collas||[]).filter(c=>c.activa!==false&&(esGestor()||(miEmail()&&c.jefeEmail===miEmail())));
+const puedeCollas=()=>esGestor()||misCollas().length>0;
+const collaDe=id=>(st.collas||[]).find(c=>c.id===id);
+const jorKey=(c,f)=>c+'_'+f;
+const nomP=(j,pid)=>((j.gente||{})[pid]||{}).n||(((collaDe(j.colla)||{}).miembros||[]).find(m=>m.id===pid)||{}).n||'¿?';
+
+let coLoading=false;
+async function loadCollas(){if(coLoading)return;coLoading=true;try{st.collas=await Store.listCol('collas',0)}catch(e){st.collas=st.collas||[]}coLoading=false;
+  if(!esGestor()&&misCollas().length&&st.jorDias<2)loadJor(2);try{renderTabs()}catch(e){}if(st.tab==='collas')renderMain()}
+let jorLoading=false;
+/* El gestor descarga todas (con caché y solo lo cambiado). El jefe pide uno a uno los días de sus collas: las reglas no le dejan ver las demás */
+async function loadJor(dias){if(jorLoading)return;jorLoading=true;dias=dias||(esGestor()?0:35);
+  try{if(esGestor()||Store.mode!=='fb'){const l=await Store.listCol('jornadas',0);st.jor=Object.fromEntries(l.map(j=>[j.id,j]));st.jorDias=9999}
+    else{const fs=[];for(let i=0;i<dias;i++){const d=new Date();d.setDate(d.getDate()-i);fs.push(isoD(d))}
+      const vistos=st.jorVistos||(st.jorVistos=new Set()),ids=misCollas().flatMap(c=>fs.filter((f,i)=>i<2||!vistos.has(c.id+'_'+f)).map(f=>jorKey(c.id,f)));
+      const r=await Promise.all(ids.map(id=>Store.db.doc('jornadas/'+id).get().then(s=>[id,s.exists?{...s.data(),id}:null]).catch(()=>[id,undefined])));
+      for(const[id,d]of r){if(d===undefined)continue;vistos.add(id);if(d&&!d.borrado)st.jor[id]=d;else delete st.jor[id]}
+      st.jorDias=Math.max(st.jorDias,dias)}}
+  catch(e){console.warn(e)}jorLoading=false;try{renderGrupos()}catch(e){}if(st.tab==='collas')renderMain()}
+const jornadas=()=>Object.values(st.jor).filter(j=>j&&!j.borrado);
+/* Aviso al jefe: a partir de las 13:00, si no ha guardado el parte de hoy */
+function coSinParte(){if(new Date().getHours()<13||!st.jorDias)return [];return misCollas().filter(c=>!st.jor[jorKey(c.id,hoy())])}
+
+/* ---------- Borrador del parte de la colla ---------- */
+function nuevaJor(c,f){const g={};for(const m of (c.miembros||[]).filter(m=>m.activo!==false))g[m.id]={n:m.n,e:'pre',ent:c.ent||'07:00',sal:c.sal||'14:30'};
+  return{id:jorKey(c.id,f),colla:c.id,collaNombre:c.nombre,fecha:f,finca:c.finca||'',jefeEmail:c.jefeEmail||'',jefeNombre:c.jefeNombre||'',pau:c.pau??30,gente:g,trabajos:[],notas:''}}
+const draftKey=k=>'abono.codraft.'+k;
+function coAbrir(){const c=collaDe(st.co.colla);if(!c){st.co.ed=null;return}const k=jorKey(c.id,st.co.fecha);if(st.co.ed&&st.co.ed.id===k)return;
+  const base=st.jor[k]?clone(st.jor[k]):nuevaJor(c,st.co.fecha),dr=Store.lsGet(draftKey(k));
+  if(dr&&dr.ed&&(!st.jor[k]||(dr.base||'')===(st.jor[k].mod||''))){st.co.ed=dr.ed;st.co.dirty=true}else{st.co.ed=base;st.co.dirty=false}
+  // gente nueva de la colla que aún no está en el parte
+  if(!st.jor[k])for(const m of (c.miembros||[]).filter(m=>m.activo!==false))if(!st.co.ed.gente[m.id])st.co.ed.gente[m.id]={n:m.n,e:'pre',ent:c.ent||'07:00',sal:c.sal||'14:30'}}
+function coSucio(){st.co.dirty=true;const e=st.co.ed;if(e)Store.lsSet(draftKey(e.id),{ed:e,base:(st.jor[e.id]||{}).mod||''})}
+const puedeEditarDia=f=>{if(f>hoy())return false;if(esGestor())return true;const d=new Date();d.setDate(d.getDate()-7);return f>=isoD(d)};
+
+/* ---------- Vistas ---------- */
+function vCollas(){if(st.collas===null){loadCollas();return '<section class="card"><div class="note">Cargando collas…</div></section>'}
+  const vis=collasVis(),ges=esGestor();
+  if(!st.co.vista)st.co.vista=misCollas().length?'parte':ges?'rend':'parte';
+  if(!vis.length&&st.co.vista!=='gestion'){if(ges)st.co.vista='gestion';else return '<section class="card"><div class="note">No eres jefe de ninguna colla. Si debes serlo, díselo al encargado.</div></section>'}
+  const ops=[['parte','Parte del día'],['rend','Rendimiento y asistencia'],...(ges?[['gestion','Collas y gente']]:[])];
+  let h=`<div class="pick">${ops.map(([k,t])=>`<button class="chip" data-co-v="${k}" aria-pressed="${st.co.vista===k}">${t}</button>`).join('')}</div>`;
+  if(st.co.vista==='gestion')return h+coGestionHTML();
+  const nd=esGestor()?1:st.co.vista==='rend'&&st.co.per==='ant'?62:35;if(st.jorDias<nd&&!jorLoading)loadJor(nd);
+  if(st.co.vista==='rend')return h+coRendHTML();
+  return h+coParteHTML()}
+
+function coParteHTML(){const vis=collasVis();if(!st.co.colla||!vis.some(c=>c.id===st.co.colla))st.co.colla=(misCollas()[0]||vis[0]).id;
+  const c=collaDe(st.co.colla);coAbrir();const j=st.co.ed,guard=st.jor[j.id],edit=puedeEditarDia(j.fecha);
+  const pres=presentes(j),hTot=pres.reduce((s,p)=>s+horasP(j,p),0);
+  let h=vis.length>1?`<div class="pick">${vis.map(x=>`<button class="chip" data-co-colla="${x.id}" aria-pressed="${x.id===c.id}">${esc(x.nombre)}</button>`).join('')}</div>`:'';
+  h+=`<section class="card"><div class="sector-h"><div><h3>${esc(c.nombre)} · ${esc(fFecha(j.fecha))}</h3><div class="sub">Jefe: ${esc(c.jefeNombre||'sin asignar')}${c.finca?' · '+esc(((st.cfg.fincas||[]).find(f=>f.id===c.finca)||{}).nombre||''):''}</div></div>
+    <div class="field cofe"><label for="co_fecha">Día</label><div class="inp"><input type="date" id="co_fecha" data-co-f="fecha" value="${j.fecha}" max="${hoy()}"></div></div></div>
+    <div class="note" id="co_est">${guard?`Guardado por ${esc(guard.por||'')} · ${fHora(guard.mod||guard.ts)}${(guard.cambios||[]).length>1?' · corregido '+((guard.cambios.length-1)===1?'1 vez':(guard.cambios.length-1)+' veces'):''}${st.co.dirty?' · <b>tienes cambios sin guardar</b>':''}`:st.co.dirty?'<b>Sin guardar todavía</b>':'Parte nuevo: revisa la gente y apunta los trabajos'}</div>
+    ${edit?'':`<div class="banner">${j.fecha>hoy()?'No se puede apuntar un día que no ha llegado.':'Solo se pueden corregir los últimos 7 días. Para días anteriores, habla con el encargado.'}</div>`}
+    <section class="summary" id="co_sum">${coSumHTML(j)}</section></section>`;
+  // Asistencia
+  const ids=Object.keys(j.gente).sort((a,b)=>j.gente[a].n.localeCompare(j.gente[b].n));
+  h+=`<section class="card"><div class="sector-h"><div><h3>Asistencia</h3><div class="sub">${ids.length} personas · ${pres.length} presentes · <span id="co_htot">${fmt(hTot,1)}</span> h</div></div></div>
+    ${edit?`<div class="cohor"><div class="field"><label for="co_ent">Entrada</label><div class="inp"><input type="time" id="co_ent" data-co-f="hent" value="${esc(c.ent||'07:00')}"></div></div>
+      <div class="field"><label for="co_sal">Salida</label><div class="inp"><input type="time" id="co_sal" data-co-f="hsal" value="${esc(c.sal||'14:30')}"></div></div>
+      <div class="field"><label for="co_pau">Descanso</label><div class="inp sm"><input id="co_pau" data-co-f="pau" inputmode="numeric" value="${inVal(j.pau)}"><span class="u">min</span></div></div>
+      <button class="btn" data-act="co-todos">Todos presentes con este horario</button></div>`:''}
+    <div class="coper-l">${ids.map(p=>{const g=j.gente[p],[k]=COEST[g.e]||COEST.pre;return `<div class="coper ${g.e}"><div class="nm"><b>${esc(g.n)}</b><small id="coh_${p}">${g.e==='pre'?fmt(horasP(j,p),2)+' h':''}</small></div>
+      <div class="inp"><select data-co-p="${p}" data-c="e" aria-label="Estado de ${esc(g.n)}" ${edit?'':'disabled'}>${Object.entries(COEST).map(([e,[,t]])=>`<option value="${e}" ${g.e===e?'selected':''}>${t}</option>`).join('')}</select></div>
+      ${g.e==='pre'?`<div class="hrs"><div class="inp"><input type="time" data-co-p="${p}" data-c="ent" aria-label="Entrada de ${esc(g.n)}" value="${esc(g.ent||'')}" ${edit?'':'disabled'}></div><span>a</span><div class="inp"><input type="time" data-co-p="${p}" data-c="sal" aria-label="Salida de ${esc(g.n)}" value="${esc(g.sal||'')}" ${edit?'':'disabled'}></div></div>`:''}</div>`}).join('')}</div>
+    ${edit?`<div class="row coadd"><div class="inp"><input class="wide" id="co_nuevo" data-co-f="nuevo" placeholder="Nombre y apellido" style="text-transform:none" value="${esc(st.co.nuevo)}" autocomplete="off"></div><button class="btn" data-act="co-addp">+ Añadir persona a la colla</button></div>`:''}</section>`;
+  // Trabajos
+  h+=`<section class="card"><div class="sector-h"><div><h3>Trabajos</h3><div class="sub">Qué se ha hecho, dónde y cuánto. Si un trabajo no ocupa toda la jornada, pon las horas.</div></div></div>
+    ${j.trabajos.map((t,i)=>coTrabHTML(j,t,i,edit)).join('')||'<div class="note">Sin trabajos apuntados.</div>'}
+    ${edit?`<div class="row"><button class="btn" data-act="co-addt">+ Añadir trabajo</button>${!j.trabajos.length?`<button class="btn" data-act="co-copiar">Copiar los trabajos del último parte</button>`:''}</div>`:''}</section>
+  <section class="card"><div class="field"><label for="co_notas">Notas del día (opcional)</label><textarea id="co_notas" data-co-f="notas" rows="2" ${edit?'':'disabled'} placeholder="Incidencias, lluvia, material que falta…">${esc(j.notas||'')}</textarea></div>
+    ${edit?`<div class="row"><button class="btn pri" data-act="co-save">Guardar parte de la colla</button>${st.co.dirty&&guard?'<button class="btn" data-act="co-descartar">Descartar cambios</button>':''}</div>`:''}
+    ${guard&&esGestor()?(st.co.confirm==='del'?`<div class="row"><span class="note">¿Borrar este parte?</span><button class="btn danger" data-act="co-del-yes">Sí, borrar</button><button class="btn" data-act="co-no">Cancelar</button></div>`:`<div class="row"><button class="btn" data-act="co-del">Borrar parte</button></div>`):''}</section>`;
+  return h}
+function coSumHTML(j){const pres=presentes(j),falt=Object.values(j.gente).filter(g=>g.e==='fal'||g.e==='jus').length,hp=pres.reduce((s,p)=>s+horasP(j,p),0);
+  const tot={matas:0,kg:0,cajas:0};for(const t of j.trabajos)for(const u in tot){const v=cantT(t,u);if(v)tot[u]+=v}
+  const asign=j.trabajos.reduce((s,t)=>s+horasTrab(j,t),0);
+  return `<div class="stat"><span>Presentes</span><b>${pres.length}</b><small>${falt?falt+(falt===1?' falta':' faltas'):'sin faltas'}</small></div><div class="stat"><span>Horas</span><b>${fmt(hp,1)}</b><small>${j.trabajos.length?(Math.abs(asign-hp)<0.05?'todas en trabajos':fmt(Math.max(0,hp-asign),1)+' h sin trabajo'):'apunta los trabajos'}</small></div>
+    <div class="stat"><span>${tot.kg||tot.cajas?'Recolectado':'Matas'}</span><b>${tot.kg||tot.cajas?(tot.kg?fmt(tot.kg,0)+' kg':fmt(tot.cajas,0)+' cajas'):fmt(tot.matas,0)}</b><small>${tot.matas&&(tot.kg||tot.cajas)?fmt(tot.matas,0)+' matas':tot.kg&&tot.cajas?fmt(tot.cajas,0)+' cajas':'hoy'}</small></div>`}
+function coNaves(cab){const M=MAPAS[cab];return M?M.naves:null}
+function coTrabHTML(j,t,i,edit){const cabs=collaDe(j.colla)&&collaDe(j.colla).finca?((st.cfg.fincas||[]).find(f=>f.id===collaDe(j.colla).finca)||{}).cabezales||[]:cabsVis().map(c=>c.id);
+  const nv=coNaves(t.cab),nave=nv&&nv.find(x=>x.n===t.nave),pres=presentes(j),dentro=enTrabajo(j,t),hp=horasTrab(j,t),dis=edit?'':'disabled';
+  const ud=udsLabor(t.labor),mp=coMatasPas(t.cab,t.nave);
+  const fld=(u,lab)=>`<div class="field"><label for="ct_${u}_${i}">${lab}</label><div class="inp sm"><input id="ct_${u}_${i}" data-co-t="${i}" data-c="${u}" inputmode="decimal" value="${t.pp&&t.ud===u?'':inVal(t[u])}" ${t.pp&&t.ud===u?'disabled placeholder="por persona"':dis}><span class="u">${CO_UD[u]}</span></div></div>`;
+  return `<div class="cotr"><div class="cotr-h"><b>${i+1}. ${esc(LAB[t.labor]||'Trabajo')}</b><small id="cot_${i}">${coTrabRes(j,t)}</small>${edit?`<button class="edx" data-act="co-delt" data-i="${i}" aria-label="Quitar trabajo">✕</button>`:''}</div>
+    <div class="frm"><div class="field"><label for="ct_l_${i}">Labor</label><div class="inp"><select id="ct_l_${i}" data-co-t="${i}" data-c="labor" ${dis}>${LABORES.map(([k,n])=>`<option value="${k}" ${t.labor===k?'selected':''}>${n}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="ct_c_${i}">Cabezal</label><div class="inp"><select id="ct_c_${i}" data-co-t="${i}" data-c="cab" ${dis}><option value="">—</option>${cabs.map(c=>`<option value="${c}" ${t.cab===c?'selected':''}>${esc(cabNombre(c))}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="ct_n_${i}">Nave</label><div class="inp">${nv?`<select id="ct_n_${i}" data-co-t="${i}" data-c="nave" ${dis}><option value="">—</option>${nv.map(x=>`<option value="${x.n}" ${t.nave===x.n?'selected':''}>Nave ${x.n}</option>`).join('')}</select>`:`<input id="ct_n_${i}" data-co-t="${i}" data-c="nave" inputmode="numeric" value="${inVal(t.nave)}" ${dis}>`}</div></div>
+      ${t.labor==='otras'?`<div class="field" style="grid-column:1/-1"><label for="ct_x_${i}">Qué se ha hecho</label><div class="inp"><input class="wide" id="ct_x_${i}" data-co-t="${i}" data-c="txt" style="width:100%;text-transform:none" value="${esc(t.txt||'')}" ${dis}></div></div>`:''}</div>
+    ${nave?`<div class="lbl">Pasillos hechos${mp?` · ${fmt(mp,0)} matas por pasillo`:''}</div><div class="copas">${Array.from({length:pasCfg(t.cab,nave).n},(_,k)=>k+1).map(n=>`<button class="chip" data-co-pas="${i}" data-n="${n}" aria-pressed="${(t.pas||[]).includes(n)}" ${dis}>${n}</button>`).join('')}</div>`:''}
+    <div class="frm">${ud.map(u=>fld(u,u==='matas'?'Matas hechas':u==='kg'?'Kilos':'Cajas')).join('')}${t.labor==='recolectar'?fld('matas','Matas (opcional)'):''}
+      <div class="field"><label for="ct_h_${i}">Horas por persona</label><div class="inp sm"><input id="ct_h_${i}" data-co-t="${i}" data-c="h" inputmode="decimal" placeholder="toda" value="${inVal(t.h)}" ${dis}><span class="u">h</span></div></div></div>
+    <div class="lbl">Quién ha estado (${dentro.length} de ${pres.length})</div><div class="copas">${pres.map(p=>`<button class="chip" data-co-q="${i}" data-p="${p}" aria-pressed="${dentro.includes(p)}" ${dis}>${esc(j.gente[p].n)}</button>`).join('')||'<span class="note">Nadie presente.</span>'}</div>
+    <label class="chk"><input type="checkbox" data-co-t="${i}" data-c="pp" ${t.pp?'checked':''} ${dis}> Apuntar lo de cada persona (destajo)</label>
+    ${t.pp?`<div class="field"><label for="ct_u_${i}">Por persona en</label><div class="inp"><select id="ct_u_${i}" data-co-t="${i}" data-c="ud" ${dis}>${[...new Set([...ud,'matas'])].map(u=>`<option value="${u}" ${t.ud===u?'selected':''}>${CO_UD[u]}</option>`).join('')}</select></div></div>
+      <div class="coqp">${dentro.map(p=>`<div class="field"><label for="cq_${i}_${p}">${esc(j.gente[p].n)}</label><div class="inp sm"><input id="cq_${i}_${p}" data-co-qp="${i}" data-p="${p}" inputmode="decimal" value="${inVal((t.qp||{})[p])}" ${dis}><span class="u">${CO_UD[t.ud]}</span></div></div>`).join('')}</div>`:''}</div>`}
+function coTrabRes(j,t){const hp=horasTrab(j,t),n=enTrabajo(j,t).length,r=[];for(const u of ['matas','kg','cajas']){const v=cantT(t,u);if(v&&hp)r.push(fmt(v/hp,u==='kg'?0:1)+' '+CO_UD[u]+'/h')}
+  return `${n} ${n===1?'persona':'personas'} · ${fmt(hp,1)} h${r.length?' · <b>'+r.join(' · ')+'</b>':''}`}
+const coMatasPas=(cab,nave)=>((st.cfg.matasPas||{})[cab]||{})[nave]||null;
+function coAutoMatas(t){const mp=coMatasPas(t.cab,t.nave);if(!mp||!(t.pas||[]).length)return;if(t.matas==null||t.mAuto){t.matas=mp*t.pas.length;t.mAuto=true}}
+/* Recalcula los números sin redibujar (para no perder el cursor mientras se escribe) */
+function coCalc(){const j=st.co.ed;if(!j)return;const s=$('#co_sum');if(s)s.innerHTML=coSumHTML(j);for(const p in j.gente){const e=$('#coh_'+p);if(e)e.textContent=j.gente[p].e==='pre'?fmt(horasP(j,p),2)+' h':''}
+  j.trabajos.forEach((t,i)=>{const e=$('#cot_'+i);if(e)e.innerHTML=coTrabRes(j,t)});const ht=$('#co_htot');if(ht)ht.textContent=fmt(presentes(j).reduce((s,p)=>s+horasP(j,p),0),1);
+  const es=$('#co_est');if(es&&st.co.dirty&&!/sin guardar/.test(es.innerHTML))es.innerHTML+=' · <b>tienes cambios sin guardar</b>'}
+
+/* ---------- Rendimiento y asistencia ---------- */
+function coRango(){const d=new Date(),f=hoy();if(st.co.per==='7'){d.setDate(d.getDate()-6);return[isoD(d),f]}if(st.co.per==='30'){d.setDate(d.getDate()-29);return[isoD(d),f]}
+  if(st.co.per==='mes')return[f.slice(0,8)+'01',f];const a=new Date(d.getFullYear(),d.getMonth()-1,1),b=new Date(d.getFullYear(),d.getMonth(),0);return[isoD(a),isoD(b)]}
+function coDatos(){const[desde,hasta]=coRango(),vis=new Set(collasVis().map(c=>c.id));
+  const js=jornadas().filter(j=>j.fecha>=desde&&j.fecha<=hasta&&(esGestor()||vis.has(j.colla))&&(!st.co.fil||j.colla===st.co.fil)).sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:a.colla<b.colla?-1:1);
+  const per={},lab={};const P=(j,p)=>{const k=j.colla+'|'+p;return per[k]=per[k]||{k,pid:p,n:nomP(j,p),colla:j.collaNombre||(collaDe(j.colla)||{}).nombre||'',dias:0,fal:0,jus:0,baja:0,vac:0,h:0,lab:{}}};
+  for(const j of js){for(const p in j.gente){const g=j.gente[p],x=P(j,p);if(g.e==='pre'){x.dias++;x.h+=horasP(j,p)}else x[g.e]=(x[g.e]||0)+1}
+    for(const t of j.trabajos||[]){const hp=horasTrab(j,t),lk=t.labor+'|'+j.colla,L=lab[lk]=lab[lk]||{labor:t.labor,colla:j.collaNombre||'',h:0,matas:0,kg:0,cajas:0,dias:new Set()};L.h+=hp;L.dias.add(j.fecha);
+      for(const u of ['matas','kg','cajas']){const v=cantT(t,u);if(v)L[u]+=v}
+      for(const p of enTrabajo(j,t)){const x=P(j,p),hh=horasEn(j,t,p),a=x.lab[t.labor]=x.lab[t.labor]||{h:0,matas:0,kg:0,cajas:0,propio:{}};a.h+=hh;
+        for(const u of ['matas','kg','cajas']){let v=null;if(t.pp&&t.ud===u){v=(t.qp||{})[p]??null;if(v!=null)a.propio[u]=true}else{const tot=cantT(t,u);if(tot&&hp)v=tot*hh/hp}if(v)a[u]+=v}}}}
+  return{desde,hasta,js,per:Object.values(per).sort((a,b)=>a.colla.localeCompare(b.colla)||a.n.localeCompare(b.n)),lab:Object.values(lab).sort((a,b)=>LABORES.findIndex(x=>x[0]===a.labor)-LABORES.findIndex(x=>x[0]===b.labor)||a.colla.localeCompare(b.colla))}}
+const coRate=(v,h,u)=>v&&h?fmt(v/h,u==='kg'?0:1):'—';
+function coRendHTML(){const d=coDatos(),vis=collasVis();
+  let h=`<div class="pick">${[['7','7 días'],['30','30 días'],['mes','Este mes'],['ant','Mes pasado']].map(([k,t])=>`<button class="chip" data-co-per="${k}" aria-pressed="${st.co.per===k}">${t}</button>`).join('')}</div>`;
+  if(vis.length>1)h+=`<div class="pick"><button class="chip" data-co-fil="" aria-pressed="${!st.co.fil}">Todas las collas</button>${vis.map(c=>`<button class="chip" data-co-fil="${c.id}" aria-pressed="${st.co.fil===c.id}">${esc(c.nombre)}</button>`).join('')}</div>`;
+  const pd=d.per.reduce((s,x)=>s+x.dias,0),fal=d.per.reduce((s,x)=>s+x.fal,0),jus=d.per.reduce((s,x)=>s+x.jus,0),hh=d.per.reduce((s,x)=>s+x.h,0);
+  h+=`<section class="summary"><div class="stat"><span>Partes</span><b>${d.js.length}</b><small>${fCorta(d.desde)} a ${fCorta(d.hasta)}</small></div><div class="stat"><span>Jornadas</span><b>${pd}</b><small>${fmt(hh,0)} h trabajadas</small></div><div class="stat"><span>Faltas</span><b>${fal+jus}</b><small>${fal} sin justificar</small></div></section>`;
+  if(!d.js.length)return h+`<section class="card"><div class="note">${jorLoading?'Cargando partes…':'No hay partes de colla en estas fechas.'}</div></section>`;
+  // por labor
+  h+=`<section class="card"><div><h3>Rendimiento por labor</h3><div class="sub">Cantidad hecha entre las horas de todas las personas que estaban en ese trabajo</div></div><div class="tbl"><table><thead><tr><th>Labor</th><th>Horas</th><th>Matas</th><th>Matas/h</th><th>Kg</th><th>Kg/h</th><th>Cajas</th><th>Cajas/h</th></tr></thead><tbody>
+    ${d.lab.map(L=>`<tr><td><b>${esc(LAB[L.labor]||L.labor)}</b>${vis.length>1&&!st.co.fil?`<br><small class="nt">${esc(L.colla)}</small>`:''}</td><td>${fmt(L.h,1)}</td><td>${L.matas?fmt(L.matas,0):'—'}</td><td><b>${coRate(L.matas,L.h,'matas')}</b></td><td>${L.kg?fmt(L.kg,0):'—'}</td><td><b>${coRate(L.kg,L.h,'kg')}</b></td><td>${L.cajas?fmt(L.cajas,0):'—'}</td><td><b>${coRate(L.cajas,L.h,'cajas')}</b></td></tr>`).join('')}</tbody></table></div></section>`;
+  // por persona y labor
+  const labs=LABORES.filter(([k])=>d.per.some(x=>x.lab[k]));if(!st.co.lab||!labs.some(([k])=>k===st.co.lab))st.co.lab=(labs.slice().sort((a,b)=>d.per.reduce((s,x)=>s+((x.lab[b[0]]||{}).h||0),0)-d.per.reduce((s,x)=>s+((x.lab[a[0]]||{}).h||0),0))[0]||[null])[0];
+  if(st.co.lab){const L=st.co.lab,us=L==='recolectar'?['kg','cajas']:['matas'],filas=d.per.filter(x=>x.lab[L]).map(x=>({x,a:x.lab[L]}));
+    const media={};for(const u of us){const fx=filas.filter(f=>f.a[u]>0),v=fx.reduce((s,f)=>s+f.a[u],0),hh2=fx.reduce((s,f)=>s+f.a.h,0);media[u]=v&&hh2?v/hh2:null}
+    h+=`<section class="card"><div><h3>Rendimiento por persona</h3><div class="sub">«≈» = media de su colla (no se apuntó lo de cada uno). Para tener el dato real de cada persona, marca «Apuntar lo de cada persona» en el trabajo.</div></div>
+      <div class="pick">${labs.map(([k,n])=>`<button class="chip" data-co-lab="${k}" aria-pressed="${st.co.lab===k}">${n}</button>`).join('')}</div>
+      <div class="tbl"><table><thead><tr><th>Persona</th><th>Horas</th>${us.map(u=>`<th>${CO_UD[u]}</th><th>${CO_UD[u]}/h</th><th>vs media</th>`).join('')}</tr></thead><tbody>
+      ${filas.sort((a,b)=>((b.a[us[0]]/b.a.h)||0)-((a.a[us[0]]/a.a.h)||0)).map(({x,a})=>`<tr><td><b>${esc(x.n)}</b>${vis.length>1&&!st.co.fil?`<br><small class="nt">${esc(x.colla)}</small>`:''}</td><td>${fmt(a.h,1)}</td>${us.map(u=>{const r=a[u]&&a.h?a[u]/a.h:null,vm=r!=null&&media[u]?(r-media[u])/media[u]:null;return `<td>${a[u]?fmt(a[u],0):'—'}</td><td><b>${a.propio[u]?'':'≈ '}${coRate(a[u],a.h,u)}</b></td><td>${vm==null||!a.propio[u]?'—':`<span class="pill ${vm>=-0.1?'ok':vm>=-0.25?'warn':'bad'}">${vm>=0?'+':'−'}${fmt(Math.abs(vm*100),0)} %</span>`}</td>`}).join('')}</tr>`).join('')}</tbody></table></div></section>`}
+  // asistencia
+  h+=`<section class="card"><div><h3>Asistencia por persona</h3><div class="sub">Días y horas según los partes del jefe de colla</div></div><div class="tbl"><table><thead><tr><th>Persona</th><th>Días</th><th>Horas</th><th>Faltas</th><th>Justif.</th><th>Baja</th><th>Vacac.</th></tr></thead><tbody>
+    ${d.per.map(x=>`<tr><td><b>${esc(x.n)}</b>${vis.length>1&&!st.co.fil?`<br><small class="nt">${esc(x.colla)}</small>`:''}</td><td>${x.dias}</td><td>${fmt(x.h,1)}</td><td>${x.fal?`<span class="pill bad">${x.fal}</span>`:'0'}</td><td>${x.jus||0}</td><td>${x.baja||0}</td><td>${x.vac||0}</td></tr>`).join('')}</tbody></table></div>
+    <div class="row"><button class="btn pri" data-act="co-xlsx">Descargar Excel</button></div></section>`;
+  // partes
+  h+=`<section class="card"><div><h3>Partes</h3><div class="sub">Toca uno para verlo${esGestor()?' o corregirlo':''}</div></div><div class="mlist">${d.js.slice(0,60).map(j=>{const pr=presentes(j).length,hp=presentes(j).reduce((s,p)=>s+horasP(j,p),0);
+    return `<button class="mrow" data-co-open="${j.id}"><span class="mt"><b>${esc(fFecha(j.fecha))} · ${esc(j.collaNombre||'')}</b><small>${pr} presentes · ${fmt(hp,1)} h · ${(j.trabajos||[]).map(t=>LAB[t.labor]).filter(Boolean).join(', ')||'sin trabajos'}</small></span><span class="mr"><small>${esc(j.por||'')}</small></span></button>`}).join('')}</div></section>`;
+  return h}
+async function coXlsx(){const d=coDatos(),r1=[['Fecha','Colla','Persona','Estado','Entrada','Salida','Descanso (min)','Horas']],r2=[['Fecha','Colla','Labor','Detalle','Cabezal','Nave','Pasillos','Personas','Horas-persona','Matas','Kg','Cajas','Matas/h','Kg/h','Cajas/h']];
+  const n2=v=>v==null||!isFinite(v)?'':+v.toFixed(2);
+  for(const j of d.js.slice().reverse()){for(const p of Object.keys(j.gente).sort((a,b)=>j.gente[a].n.localeCompare(j.gente[b].n))){const g=j.gente[p];r1.push([j.fecha,j.collaNombre||'',g.n,COEST[g.e][1],g.e==='pre'?g.ent||'':'',g.e==='pre'?g.sal||'':'',g.e==='pre'?+j.pau||0:'',g.e==='pre'?n2(horasP(j,p)):''])}
+    for(const t of j.trabajos||[]){const hp=horasTrab(j,t),q=u=>cantT(t,u);r2.push([j.fecha,j.collaNombre||'',LAB[t.labor]||'',t.txt||'',t.cab?cabNombre(t.cab):'',t.nave||'',(t.pas||[]).join(', '),enTrabajo(j,t).length,n2(hp),n2(q('matas')),n2(q('kg')),n2(q('cajas')),q('matas')&&hp?n2(q('matas')/hp):'',q('kg')&&hp?n2(q('kg')/hp):'',q('cajas')&&hp?n2(q('cajas')/hp):''])}}
+  const r3=[['Persona','Colla','Días','Horas','Faltas','Justificadas','Baja','Vacaciones',...LABORES.flatMap(([k,n])=>k==='recolectar'?[n+' h',n+' kg/h',n+' cajas/h']:[n+' h',n+' matas/h'])]];
+  for(const x of d.per)r3.push([x.n,x.colla,x.dias,n2(x.h),x.fal||0,x.jus||0,x.baja||0,x.vac||0,...LABORES.flatMap(([k])=>{const a=x.lab[k];if(!a)return k==='recolectar'?['','','']:['',''];return k==='recolectar'?[n2(a.h),a.kg&&a.h?n2(a.kg/a.h):'',a.cajas&&a.h?n2(a.cajas/a.h):'']:[n2(a.h),a.matas&&a.h?n2(a.matas/a.h):'']})]);
+  const r4=[['Labor','Colla','Días','Horas','Matas','Matas/h','Kg','Kg/h','Cajas','Cajas/h']];for(const L of d.lab)r4.push([LAB[L.labor]||'',L.colla,L.dias.size,n2(L.h),n2(L.matas)||'',L.matas&&L.h?n2(L.matas/L.h):'',n2(L.kg)||'',L.kg&&L.h?n2(L.kg/L.h):'',n2(L.cajas)||'',L.cajas&&L.h?n2(L.cajas/L.h):'']);
+  const tit=`Collas · ${d.desde} a ${d.hasta}`,sh=(name,rows)=>({name,rows:[[tit+' · '+name],[],...rows],bold:[0,2]});
+  await saveBlob(xlsxBlob([sh('Asistencia',r1),sh('Trabajos',r2),sh('Por persona',r3),sh('Por labor',r4)]),`collas-${d.desde}-a-${d.hasta}.xlsx`)}
+
+/* ---------- Gestión de collas (encargado y administrador) ---------- */
+function coGestionHTML(){const all=(st.collas||[]).filter(c=>c.activa!==false),g=st.co.ge;let h='';
+  if(g)h+=coFormHTML(g);else h+=`<div class="row"><button class="btn pri" data-act="co-nueva">+ Nueva colla</button></div>`;
+  h+=`<section class="card"><div><h3>Collas</h3><div class="sub">${all.length} ${all.length===1?'colla':'collas'} · la gente no necesita la app, solo su nombre</div></div>${all.length?`<div class="mlist">${all.map(c=>{const n=(c.miembros||[]).filter(m=>m.activo!==false).length;
+    return `<button class="mrow" data-co-ed="${c.id}"><span class="mt"><b>${esc(c.nombre)}</b><small>Jefe: ${esc(c.jefeNombre||'sin asignar')} · ${n} ${n===1?'persona':'personas'} · ${esc(c.ent||'07:00')}–${esc(c.sal||'14:30')}</small></span><span class="mr"><small>Editar</small></span></button>`}).join('')}</div>`:'<div class="note">Todavía no hay collas. Crea la primera y pon a su jefe: le aparecerá el apartado «Collas» en su móvil.</div>'}</section>`;
+  // matas por pasillo, para calcular las matas al marcar pasillos
+  const cm=Object.keys(MAPAS).filter(k=>cabById(k));
+  if(cm.length)h+=`<section class="card"><div><h3>Matas por pasillo</h3><div class="sub">Opcional. Si lo pones, al marcar los pasillos hechos se calculan las matas solas (se pueden corregir).</div></div>
+    ${cm.map(k=>`<div class="lbl">${esc(cabNombre(k))}</div><div class="frm">${MAPAS[k].naves.map(nv=>`<div class="field"><label for="mp_${k}_${nv.n}">Nave ${nv.n}</label><div class="inp sm"><input id="mp_${k}_${nv.n}" data-co-mp="${k}|${nv.n}" inputmode="numeric" value="${inVal(coMatasPas(k,nv.n))}"><span class="u">matas</span></div></div>`).join('')}</div>`).join('')}
+    <div class="row"><button class="btn" data-act="co-mp-save">Guardar matas por pasillo</button></div></section>`;
+  return h}
+function coFormHTML(g){const fs=st.cfg.fincas||[],ps=personas().map(u=>({...u,nombre:u.nombre.replace(/ \(yo\)$/,'')}));
+  return `<section class="card"><div><h3>${g.id?'Editar colla':'Nueva colla'}</h3><div class="sub">El jefe apunta cada día la asistencia y el trabajo de su gente</div></div>
+    <div class="frm"><div class="field"><label for="ge_n">Nombre</label><div class="inp"><input class="wide" id="ge_n" data-co-ge="nombre" style="text-transform:none" placeholder="Ej.: Colla de Manuel" value="${esc(g.nombre)}"></div></div>
+      <div class="field"><label for="ge_j">Jefe de colla</label><div class="inp"><select id="ge_j" data-co-ge="jefeEmail"><option value="">— elige —</option>${ps.map(u=>`<option value="${esc(u.email)}" ${g.jefeEmail===u.email?'selected':''}>${esc(u.nombre)}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="ge_f">Finca</label><div class="inp"><select id="ge_f" data-co-ge="finca"><option value="">Varias</option>${fs.map(f=>`<option value="${f.id}" ${g.finca===f.id?'selected':''}>${esc(f.nombre)}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="ge_e">Entra</label><div class="inp"><input type="time" id="ge_e" data-co-ge="ent" value="${esc(g.ent)}"></div></div>
+      <div class="field"><label for="ge_s">Sale</label><div class="inp"><input type="time" id="ge_s" data-co-ge="sal" value="${esc(g.sal)}"></div></div>
+      <div class="field"><label for="ge_p">Descanso</label><div class="inp sm"><input id="ge_p" data-co-ge="pau" inputmode="numeric" value="${inVal(g.pau)}"><span class="u">min</span></div></div></div>
+    ${ps.length?'':'<div class="note">El jefe tiene que tener cuenta en la app (Ajustes → Usuarios).</div>'}
+    <div class="lbl">Gente de la colla</div><div class="coge">${g.miembros.map((m,i)=>`<div class="row"><div class="inp" style="flex:1"><input class="wide" data-co-gm="${i}" aria-label="Nombre" style="width:100%;text-transform:none" value="${esc(m.n)}" ${m.activo===false?'disabled':''}></div>
+      ${m.activo===false?`<span class="pill nd">De baja</span><button class="btn sm" data-act="co-gm-alta" data-i="${i}">Volver a dar de alta</button>`:`<button class="btn sm" data-act="co-gm-baja" data-i="${i}">Ya no está</button>`}</div>`).join('')}
+      <div class="row"><div class="inp" style="flex:1"><input class="wide" id="ge_nuevo" data-co-ge="nuevo" style="width:100%;text-transform:none" placeholder="Nombre y apellido" value="${esc(g.nuevo||'')}"></div><button class="btn" data-act="co-gm-add">+ Añadir</button></div></div>
+    <div class="note">A quien se va no se le borra: queda «de baja» para no perder sus días apuntados.</div>
+    <div class="row"><button class="btn pri" data-act="co-ge-save">Guardar colla</button><button class="btn" data-act="co-ge-no">Cancelar</button>
+      ${g.id?(st.co.confirm==='arch'?`<span class="note">¿Quitar la colla? Sus partes se quedan guardados.</span><button class="btn danger" data-act="co-ge-arch-yes">Sí, quitar</button>`:`<button class="btn" data-act="co-ge-arch">Quitar colla</button>`):''}</div></section>`}
+
+/* ---------- Guardar ---------- */
+async function coGuardar(){const j=st.co.ed;if(!j)return;if(!puedeEditarDia(j.fecha)){toast('Ese día ya no se puede cambiar');return}
+  const c=collaDe(j.colla);if(!Object.keys(j.gente).length){toast('La colla no tiene gente');return}
+  for(const p of presentes(j)){const g=j.gente[p];if(hm(g.ent)==null||hm(g.sal)==null){toast('Falta la hora de entrada o salida de '+g.n);return}}
+  const ahora=new Date().toISOString(),ant=st.jor[j.id],doc={...clone(j),collaNombre:c?c.nombre:j.collaNombre,jefeEmail:c?c.jefeEmail:j.jefeEmail,jefeNombre:c?c.jefeNombre:j.jefeNombre,finca:c?c.finca||'':j.finca,
+    ts:(ant&&ant.ts)||ahora,por:yoNombre(),porEmail:miEmail(),cambios:[...((ant&&ant.cambios)||[]),{ts:ahora,por:yoNombre()}].slice(-30)};
+  delete doc.id;delete doc.mod;
+  if(!esGestor()&&Store.mode==='fb'&&doc.jefeEmail!==miEmail()){toast('Solo el jefe de esta colla puede guardar su parte');return}
+  try{await Store.setCol('jornadas',j.id,doc);st.jor[j.id]={...doc,id:j.id,mod:ahora};try{localStorage.removeItem(draftKey(j.id))}catch(e){}st.co.ed=null;st.co.dirty=false;renderGrupos();renderMain();toast('Parte de la colla guardado')}catch(e){toast(errMsg(e))}}
+async function coGuardarColla(){const g=st.co.ge,nombre=(g.nombre||'').trim();if(!nombre){toast('Ponle un nombre a la colla');return}
+  if((g.nuevo||'').trim())g.miembros.push({id:coId(),n:g.nuevo.trim(),activo:true,alta:hoy()});
+  const jefe=personas().find(u=>u.email===g.jefeEmail),doc={nombre,jefeEmail:g.jefeEmail||'',jefeNombre:jefe?jefe.nombre.replace(/ \(yo\)$/,''):'',finca:g.finca||'',ent:g.ent||'07:00',sal:g.sal||'14:30',pau:num(g.pau)??30,
+    miembros:g.miembros.filter(m=>m.n.trim()).map(m=>({...m,n:m.n.trim()})),activa:true,ts:g.ts||new Date().toISOString()};
+  try{if(g.id){await Store.setCol('collas',g.id,doc);const i=st.collas.findIndex(c=>c.id===g.id);st.collas[i]={...doc,id:g.id}}else{const id=await Store.addCol('collas',doc);st.collas.unshift({...doc,id})}
+    st.co.ge=null;st.co.confirm=null;renderTabs();renderMain();toast('Colla guardada')}catch(e){toast(errMsg(e))}}
+async function coAddPersona(){const n=(st.co.nuevo||'').trim(),c=collaDe(st.co.colla);if(!n||!c){toast('Escribe el nombre');return}
+  const m={id:coId(),n,activo:true,alta:hoy()},mi=[...(c.miembros||[]),m];
+  try{await Store.updCol('collas',c.id,{miembros:mi});c.miembros=mi;st.co.ed.gente[m.id]={n,e:'pre',ent:c.ent||'07:00',sal:c.sal||'14:30'};st.co.nuevo='';coSucio();renderMain();toast(n+' añadido a la colla')}catch(e){toast(errMsg(e))}}
+async function coGuardarMP(){const mp={};for(const i of document.querySelectorAll('[data-co-mp]')){const[k,n]=i.dataset.coMp.split('|'),v=num(i.value);if(v>0){mp[k]=mp[k]||{};mp[k][n]=v}}
+  for(const c of [st.cfg,st.savedCfg])c.matasPas=mp;try{await Store.setConfig(st.savedCfg);toast('Matas por pasillo guardadas')}catch(e){toast(errMsg(e))}}
+function coUltimo(){const j=st.co.ed;return jornadas().filter(x=>x.colla===j.colla&&x.fecha<j.fecha&&(x.trabajos||[]).length).sort((a,b)=>a.fecha<b.fecha?1:-1)[0]}
+
+/* ---------- Eventos ---------- */
+document.addEventListener('click',async e=>{if(st.tab!=='collas')return;const b=e.target.closest('button');if(!b)return;const d=b.dataset,j=st.co.ed;
+  if(d.coV){st.co.vista=d.coV;st.co.confirm=null;renderMain();return}
+  if(d.coColla){st.co.colla=d.coColla;st.co.ed=null;renderMain();return}
+  if(d.coPer){st.co.per=d.coPer;renderMain();return}
+  if(d.coFil!=null){st.co.fil=d.coFil;renderMain();return}
+  if(d.coLab){st.co.lab=d.coLab;renderMain();return}
+  if(d.coOpen){const x=st.jor[d.coOpen];if(x){st.co.vista='parte';st.co.colla=x.colla;st.co.fecha=x.fecha;st.co.ed=null;renderMain();window.scrollTo(0,0)}return}
+  if(d.coEd){const c=collaDe(d.coEd);st.co.ge={...clone(c),miembros:clone(c.miembros||[]),nuevo:''};st.co.confirm=null;renderMain();window.scrollTo(0,0);return}
+  if(d.coPas!=null&&j){const t=j.trabajos[+d.coPas],n=+d.n;t.pas=t.pas||[];t.pas=t.pas.includes(n)?t.pas.filter(x=>x!==n):[...t.pas,n].sort((a,b)=>a-b);if(t.mAuto&&!t.pas.length){t.matas=null}coAutoMatas(t);coSucio();renderMain();return}
+  if(d.coQ!=null&&j){const t=j.trabajos[+d.coQ],p=d.p;t.fuera=t.fuera||[];t.fuera=t.fuera.includes(p)?t.fuera.filter(x=>x!==p):[...t.fuera,p];coSucio();renderMain();return}
+  const a=d.act;if(!a||!a.startsWith('co-'))return;
+  if(a==='co-todos'&&j){const c=collaDe(j.colla),ent=($('#co_ent')||{}).value||c.ent,sal=($('#co_sal')||{}).value||c.sal;for(const p in j.gente)Object.assign(j.gente[p],{e:'pre',ent,sal});coSucio();renderMain()}
+  else if(a==='co-addp')coAddPersona();
+  else if(a==='co-addt'&&j){const u=j.trabajos[j.trabajos.length-1];j.trabajos.push({id:coId(),labor:u?u.labor:'destallar',cab:u?u.cab:(collaDe(j.colla)&&collaDe(j.colla).finca?(((st.cfg.fincas||[]).find(f=>f.id===collaDe(j.colla).finca)||{}).cabezales||[])[0]||'':''),nave:null,pas:[],matas:null,kg:null,cajas:null,h:null,fuera:[],pp:false,ud:'matas',qp:{}});coSucio();renderMain()}
+  else if(a==='co-copiar'&&j){const u=coUltimo();if(!u){toast('No hay partes anteriores con trabajos');return}j.trabajos=u.trabajos.map(t=>({id:coId(),labor:t.labor,txt:t.txt||'',cab:t.cab||'',nave:t.nave??null,pas:[],matas:null,kg:null,cajas:null,h:t.h??null,fuera:[],pp:!!t.pp,ud:t.ud||'matas',qp:{}}));coSucio();renderMain();toast('Copiados los trabajos del '+fFecha(u.fecha)+': pon las cantidades de hoy')}
+  else if(a==='co-delt'&&j){j.trabajos.splice(+d.i,1);coSucio();renderMain()}
+  else if(a==='co-save')coGuardar();
+  else if(a==='co-descartar'&&j){try{localStorage.removeItem(draftKey(j.id))}catch(_){}st.co.ed=null;st.co.dirty=false;renderMain()}
+  else if(a==='co-del'){st.co.confirm='del';renderMain()}
+  else if(a==='co-no'){st.co.confirm=null;renderMain()}
+  else if(a==='co-del-yes'&&j){try{await Store.delCol('jornadas',j.id);delete st.jor[j.id];try{localStorage.removeItem(draftKey(j.id))}catch(_){}st.co.ed=null;st.co.dirty=false;st.co.confirm=null;renderMain();toast('Parte borrado')}catch(err){toast(errMsg(err))}}
+  else if(a==='co-xlsx')coXlsx();
+  else if(a==='co-nueva'){st.co.ge={id:null,nombre:'',jefeEmail:'',finca:fincaAct()?fincaAct().id:'',ent:'07:00',sal:'14:30',pau:30,miembros:[],nuevo:''};renderMain()}
+  else if(a==='co-ge-no'){st.co.ge=null;st.co.confirm=null;renderMain()}
+  else if(a==='co-gm-add'){const g=st.co.ge,n=(g.nuevo||'').trim();if(!n){toast('Escribe el nombre');return}g.miembros.push({id:coId(),n,activo:true,alta:hoy()});g.nuevo='';renderMain();const i=$('#ge_nuevo');if(i)i.focus()}
+  else if(a==='co-gm-baja'){const m=st.co.ge.miembros[+d.i];m.activo=false;m.baja=hoy();renderMain()}
+  else if(a==='co-gm-alta'){const m=st.co.ge.miembros[+d.i];m.activo=true;delete m.baja;renderMain()}
+  else if(a==='co-ge-save')coGuardarColla();
+  else if(a==='co-ge-arch'){st.co.confirm='arch';renderMain()}
+  else if(a==='co-ge-arch-yes'){const g=st.co.ge;try{await Store.updCol('collas',g.id,{activa:false});const c=collaDe(g.id);if(c)c.activa=false;st.co.ge=null;st.co.confirm=null;renderTabs();renderMain();toast('Colla quitada')}catch(err){toast(errMsg(err))}}
+  else if(a==='co-mp-save')coGuardarMP()});
+function onCoInput(e){if(st.tab!=='collas')return;const t=e.target,d=t.dataset,j=st.co.ed,ch=e.type==='change';
+  if(d.coF){const k=d.coF;if(k==='fecha'){if(!ch||!t.value)return;st.co.fecha=t.value>hoy()?hoy():t.value;st.co.ed=null;renderMain();return}
+    if(k==='nuevo'){st.co.nuevo=t.value;return}if(!j)return;
+    if(k==='pau'){j.pau=num(t.value)??0;coSucio();coCalc();return}if(k==='notas'){j.notas=t.value;coSucio();return}return}
+  if(d.coP&&j){const g=j.gente[d.coP];if(!g)return;g[d.c]=t.value;coSucio();if(d.c==='e'){if(ch)renderMain()}else coCalc();return}
+  if(d.coT!=null&&j){const x=j.trabajos[+d.coT],c=d.c;if(!x)return;
+    if(c==='pp'){x.pp=t.checked;if(x.pp&&!udsLabor(x.labor).concat('matas').includes(x.ud))x.ud=udsLabor(x.labor)[0];coSucio();renderMain();return}
+    if(['labor','cab','ud'].includes(c)){if(!ch)return;x[c]=t.value;if(c==='cab'){x.nave=null;x.pas=[]}if(c==='labor'&&x.pp&&!udsLabor(x.labor).concat('matas').includes(x.ud))x.ud=udsLabor(x.labor)[0];coSucio();renderMain();return}
+    if(c==='nave'){if(t.tagName==='SELECT'&&!ch)return;x.nave=t.value===''?null:+t.value;x.pas=[];if(x.mAuto)x.matas=null;coSucio();if(t.tagName==='SELECT')renderMain();return}
+    if(c==='txt'){x.txt=t.value;coSucio();return}
+    x[c]=num(t.value);if(c==='matas')x.mAuto=false;coSucio();coCalc();return}
+  if(d.coQp!=null&&j){const x=j.trabajos[+d.coQp];x.qp=x.qp||{};x.qp[d.p]=num(t.value);coSucio();coCalc();return}
+  if(d.coGe&&st.co.ge){st.co.ge[d.coGe]=t.value;return}
+  if(d.coGm!=null&&st.co.ge){st.co.ge.miembros[+d.coGm].n=t.value;return}}
+$('#main').addEventListener('input',onCoInput);$('#main').addEventListener('change',onCoInput);
+
 /* ---------- Copia de seguridad ---------- */
 async function backup(){toast('Preparando copia…');if(Store.mode==='fb'){try{const x=await NUBE.exportAll();await saveBlob(new Blob([JSON.stringify({app:'abonado-pinta-santos',v:2,exportado:new Date().toISOString(),ls:x.ls,adjuntos:x.adjuntos})],{type:'application/json'}),'abonado-copia-'+hoy()+'.json');toast('Copia descargada: '+x.dias+' días y '+Object.keys(x.adjuntos).length+' adjuntos')}catch(e){toast('Necesitas conexión para descargar la copia')}return}
   const ls={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('abono.'))ls[k]=localStorage.getItem(k)}}catch(e){}
@@ -2508,14 +2791,14 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
-  st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc();setTimeout(wkBorrarRestos,20000);
+  st.ready=true;if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc();loadCollas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}})();
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.abrir!=null&&st.ready)irA(d.abrir||'cuentas-hoy')});
 /* Con datos compartidos: al volver a la app, recarga lo que hayan guardado otros */
 setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
 let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(document.hidden||Store.mode!=='fb'||!st.ready||Date.now()-ultRec<30000)return;ultRec=Date.now();
-  if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc();
+  if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc();loadCollas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
 
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
