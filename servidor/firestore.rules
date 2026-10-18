@@ -23,10 +23,14 @@ service cloud.firestore {
       return esAdmin() || (autorizado() && esEncargado());
     }
 
-    // Receta, ajustes, fincas y cabezales: solo administrador y encargados
+    // Ajustes, fincas y cabezales: administrador y encargados.
+    // La receta (dentro de los depósitos) la puede cambiar cualquiera del equipo:
+    // un trabajador solo puede tocar la parte de los depósitos, nada más.
     match /abonado_config/{doc} {
       allow read: if autorizado();
-      allow write: if esGestor();
+      allow write: if esGestor()
+        || (autorizado() && resource != null
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bidones']));
     }
 
     // Almacén: cualquiera apunta; corregir o borrar, el gestor o quien lo apuntó

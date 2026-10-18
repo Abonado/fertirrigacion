@@ -796,7 +796,7 @@ function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b)
   if(cm*b.lpcm>b.capacidad*1.05)h+=`<div class="step" style="color:var(--bad)"><span>Pasas de la capacidad del depósito</span><b></b></div>`;
   return h+`<div class="step water"><span>Agua (cm de depósito)</span><b>${fmt(cm-liqCm,1)} cm</b></div></div>`}
 
-function vReceta(){const c=cabById(st.cab);let h=(esGestor()?'':`<section class="card"><div class="note">Receta de solo lectura: la cambian el encargado o el administrador.</div></section>`)+`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
+function vReceta(){const c=cabById(st.cab);let h=`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
   for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}Capacidad ${fmt(b.capacidad,0)} L</div></div>
       <div class="field"><label for="kg_${b.id}">${esc(prod(b.principal).n)} por 1000 L</label><div class="inp"><input id="kg_${b.id}" data-k="cfg.kg.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(b.kgPrincipal)}"><span class="u">${uCant(b.principal)}</span></div></div></div>
@@ -2226,7 +2226,8 @@ let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout((
 
 const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes};
 function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab))st.tab='cuentas';$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(st.tab==='graficas'||st.tab==='tiempo')drawCharts();if(st.tab==='tiempo')drawRadar()}
-function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="usar-rec"],#main [data-act="cul-edit"]'))b.remove()}
+const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
+function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
 function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=VIEWS[st.tab]();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
 function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCfg;bar.hidden=!show;if(!show)return;
@@ -2278,7 +2279,7 @@ async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{con
   st.reg.receta=parcial.receta||base.receta;st.reg.guardado=ahora;
   await Store.mergeReg(f,parcial);st.regMod=new Set();st.reg.ejemplo=false;st.dirtyReg=false;enviarPartes();st.hist=null;loadHist();toast('Día '+fCorta(st.fecha)+' guardado');if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave();if(st.tab==='cuentas'||st.tab==='drenaje'){const bn=$('.banner');if(bn&&!st.reg.ejemplo)bn.remove()}}
-async function saveCfg(){if(st.saving)return;if(!esGestor()){toast('Solo el encargado o el administrador pueden cambiar la receta y los ajustes');st.cfg=clone(st.savedCfg);st.dirtyCfg=false;renderAll();return}st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
+async function saveCfg(){if(st.saving)return;if(!esGestor()){const n=clone(st.savedCfg);for(const b of n.bidones){const x=bid(b.id);if(!x)continue;b.kgPrincipal=x.kgPrincipal;b.productos.forEach((p,i)=>{const q=x.productos.find(y=>y.p===p.p);if(q)p.dosis=q.dosis})}st.cfg=n}st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
   if(lineas.length)await Store.addCambio({ts:new Date().toISOString(),fecha:hoy(),lineas,por:yoNombre(),porEmail:miEmail()});st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave()}
 
