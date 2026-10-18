@@ -1622,7 +1622,7 @@ const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633]
   /* Planos: dibujado girado para que las naves queden en vertical (la flecha marca el norte real).
      Columna izquierda: 3 naves (1-3); derecha: una pequeña arriba (4) y una grande (5). Las líneas de cada nave son sus pasillos. */
   pla:(()=>{const R=(x0,y0,x1,y1)=>[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];   // pasillos de lado a lado de la nave
-    const naves=[{n:1,p:R(0,0,225,375),pas:8},{n:2,p:R(0,395,225,790),pas:8},{n:3,p:R(0,810,225,1200),pas:8},{n:4,p:R(270,245,465,395),pas:3},{n:5,p:R(270,415,465,1190),pas:16}];
+    const naves=[{n:1,p:R(0,0,225,375),pas:4},{n:2,p:R(0,395,225,790),pas:4},{n:3,p:R(0,810,225,1200),pas:4},{n:4,p:R(270,245,465,395),pas:1},{n:5,p:R(270,415,465,1190),pas:8}];
     return{titulo:'Planos',finca:'Pinta Santos',vb:[-80,-110,860,1380],naves,ang:0,rayas:11,pasInv:true,norte:[710,-50],norteAng:39,nota:'5 naves · pasillos numerados de arriba abajo',
       fondo(){let s='';
         s+=`<rect x="520" y="-60" width="260" height="1320" fill="#efe6cf" opacity=".7"/><g stroke="#e2d6b8" stroke-width="1.2">${[...Array(13).keys()].map(k=>`<line x1="${525+k*20}" y1="-60" x2="${525+k*20}" y2="1260"/>`).join('')}</g>`;
