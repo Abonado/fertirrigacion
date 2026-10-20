@@ -363,6 +363,7 @@ table.cmat td,table.cmat th{white-space:nowrap}table.cmat td:nth-child(2),table.
 .cus{display:grid;gap:4px;padding:8px 0;border-top:1px dashed var(--line)}.cus small{color:var(--muted);font-size:12px}
 table.rendt td:first-child{min-width:150px;white-space:normal}table.rendt td:first-child b{text-transform:none}table.rendt th,table.rendt td{white-space:nowrap}
 .m3o{display:grid;gap:6px;margin:8px 0;padding:10px;border-radius:10px;background:var(--bg)}
+.ptipo{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
 .agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
 .acard{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:10px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 1px 2px rgba(20,30,40,.04),0 8px 24px rgba(20,30,40,.06);position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
 .acard:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(20,30,40,.06),0 14px 30px rgba(20,30,40,.1)}.acard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -634,13 +635,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},ceB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},sug:null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},sug:null}}
 /* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
 const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
 const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
 st.regMod=new Set();
 const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
-function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},incR:{...(r.incR||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -845,7 +846,7 @@ function tankDose(b,c){const shared=b.cabezales.length>1,cm=cmCab(b,c.id),L=litr
 function vDrenaje(){const c=cabById(st.cab);let h=banner();h+=`<section class="summary" data-out="dsum">${sumDren(c)}</section>`;
   const fld=(k,lab,u)=>`<div class="field"><label for="${k}_${c.id}">${lab}</label><div class="inp"><input id="${k}_${c.id}" data-k="reg.${k}.${c.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg[k]||{})[c.id])}">${u?`<span class="u nt">${u}</span>`:''}</div></div>`;
   h+=`<section class="card"><div><h3>Agua de riego · salida</h3><div class="sub">${esc(c.nombre)} · el total de salida se calcula solo</div></div>
-    <div class="frm">${fld('ceB','CE balsa','mS/cm')}${fld('ceR','CE reciclada','mS/cm')}${fld('incR','Incr. reciclada','mS/cm')}${fld('inc','Incremento salida','mS/cm')}${fld('phS','pH salida','')}${fld('m3R','M³ reciclada','m³')}${fld('rad','Radiación','')}</div>
+    <div class="frm">${fld('ceB','CE balsa','mS/cm')}${fld('phB','pH balsa','')}${fld('ceR','CE reciclada','mS/cm')}${fld('incR','Incr. reciclada','mS/cm')}${fld('inc','Incremento salida','mS/cm')}${fld('phS','pH salida','')}${fld('m3R','M³ reciclada','m³')}${fld('rad','Radiación','')}</div>
     <div data-out="salida_${c.id}">${salidaHTML(c.id)}</div>
     <div class="field"><label for="obs_${c.id}">Observaciones del parte (opcional)</label><textarea id="obs_${c.id}" data-k="reg.obs.${c.id}" data-text="1" rows="2" style="text-transform:none">${esc((st.reg.obs||{})[c.id]||'')}</textarea></div></section>`;
   for(const s of c.sectores){h+=`<section class="card"><div class="sector-h"><div><h3>${esc(s.nombre)}</h3><div class="sub">${s.bandejas.length} bandejas de drenaje</div></div>
@@ -1938,7 +1939,7 @@ function vPartes(){if(!puedePartes())return `<section class="card"><div class="n
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(d.cab||p.cab)} · ${esc(fFecha(p.fecha))}</h3><div class="sub">${esc(d.finca||'')} · guardado ${esc(horaTxt(p.ts))} por ${esc(p.por||'')}</div></div>${est}</div>
       <div class="row" style="gap:6px"><span class="pill nd">${fmt(d.m3,0)} m³</span><span class="pill ${d.tot&&d.ok===d.tot?'ok':d.tot?'warn':'nd'}">En dosis ${d.tot?d.ok+' de '+d.tot:'—'}</span><span class="pill nd">Drenaje ${fmt(d.dren,1)} %</span>${d.ceD!=null?`<span class="pill ${d.alertas&&d.ceD>d.alertas.ceMax?'bad':'nd'}">CE ${fmt(d.ceD,2)}</span>`:''}${d.phD!=null?`<span class="pill nd">pH ${fmt(d.phD,1)}</span>`:''}</div>
       ${p.revisado?`<div class="note">Revisado por ${esc(p.revisadoPor||'')} · ${esc(horaTxt(p.revisadoTs))}${p.nota?' · «'+esc(p.nota)+'»':''}</div>`:''}
-      <div class="row"><button class="btn" data-act="pt-ver" data-id="${p.id}">${ab?'Ocultar':'Ver parte'}</button><button class="btn" data-act="pt-pdf" data-id="${p.id}">PDF</button>${d.hoja?`<button class="btn" data-act="pt-xlsx" data-id="${p.id}">Excel</button>`:''}${!p.revisado||cam?`<button class="btn pri" data-act="pt-rev" data-id="${p.id}">Marcar revisado</button>`:''}</div>
+      <div class="row"><button class="btn" data-act="pt-ver" data-id="${p.id}">${ab?'Ocultar':'Ver parte'}</button><button class="btn" data-act="pt-pdf" data-id="${p.id}">${d.hoja?'Parte grande PDF':'PDF'}</button>${d.hoja?`<button class="btn" data-act="pt-xlsx" data-id="${p.id}">Excel</button>`:''}${d.hojaP?`<button class="btn" data-act="pt-pdf" data-tipo="pequeno" data-id="${p.id}">Parte pequeño PDF</button><button class="btn" data-act="pt-xlsx" data-tipo="pequeno" data-id="${p.id}">Excel</button>`:''}${!p.revisado||cam?`<button class="btn pri" data-act="pt-rev" data-id="${p.id}">Marcar revisado</button>`:''}</div>
       ${st.ptRev===p.id?`<div class="panel"><div class="field"><label for="pt_nota">Observaciones (opcional)</label><div class="inp"><input class="wide" id="pt_nota" style="width:100%;text-transform:none" autocomplete="off"></div></div><div class="row"><button class="btn pri" data-act="pt-rev-ok" data-id="${p.id}">Guardar revisión</button><button class="btn" data-act="pt-rev-no">Cancelar</button></div></div>`:''}
       ${ab?`<div class="ptbody">${parteCuerpo(d)}</div>`:''}</section>`}
   return h}
@@ -1960,7 +1961,7 @@ function parteData(cabId){const r=st.reg;return conReceta(r,()=>{const c=cabById
   const receta=bidonesDe(cabId).map(b=>({nombre:b.nombre,principal:pn(b.principal),kg:b.kgPrincipal,uP:uCant(b.principal),cap:b.capacidad,lpcm:b.lpcm,
     filas:b.productos.filter(x=>x.dosis).map(x=>{const k=conc(b,x);return{n:pn(x.p),des:x.dosis,ud:uDosis(x.p),c1:k,c2:k*b.capacidad/1000,uc:uCant(x.p),cte:k?1000/k:null}})}));
   return{salida:salidaDe(cabId),fecha:st.fecha,finca:f?f.nombre:'',fincaId:f?f.id:'',alertas:{ceMax:st.cfg.alertas.ceMax,phMin:st.cfg.alertas.phMin,phMax:st.cfg.alertas.phMax},cab:c.nombre,cabId,sectores:c.sectores.map(s=>s.nombre),m3:r.m3[cabId],dren:R.drenaje,ceD:R.ceD,phD:R.phD,ok,tot,u,ce:ceEstimada(cabId),
-    rep:reparto(cabId).map(x=>({n:x.b.nombre,pct:x.pct,v:x.b.venturis})),deps,sect,receta,hoja:parteHoja(cabId),guardado:r.guardado,recetaDia:!!r.receta,provisional:!!(r.ejemplo||!r.guardado||st.dirtyReg)}})}
+    rep:reparto(cabId).map(x=>({n:x.b.nombre,pct:x.pct,v:x.b.venturis})),deps,sect,receta,hoja:parteHoja(cabId),hojaP:parteHojaP(cabId),guardado:r.guardado,recetaDia:!!r.receta,provisional:!!(r.ejemplo||!r.guardado||st.dirtyReg)}})}
 const parteCabs=()=>{const f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(st.cab)),ok=new Set(cabsVis().map(c=>c.id));return (f?f.cabezales:[st.cab]).filter(id=>ok.has(id))};
 const fLarga=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 const pillC={ok:'ok',warn:'warn',bad:'bad',nd:'nd'};
@@ -1968,8 +1969,9 @@ function vParte(){if(st.cfg.cabezales.length&&!cabById(st.cab))return '';const d
   let h=`<section class="card"><div><h3>Parte diario · ${esc(d.cab)}</h3><div class="sub">${esc(d.finca)} · ${esc(fLarga(d.fecha))} · Sectores: ${esc(d.sectores.join(', '))}</div></div>
     ${d.provisional?`<div class="banner">${st.dirtyReg?'Hay cambios sin guardar en este día: el parte sale con lo que ves ahora. Guarda el día para que quede igual para todos.':'Este día aún no está guardado: el parte saldría con datos provisionales.'}</div>`:''}
     ${d.recetaDia?'':`<div class="note">${d.fecha<hoy()?'Este día se guardó antes de que la app apuntara la receta de cada día: sale la receta actual.':'La receta queda apuntada con el parte al guardar el día.'}</div>`}
-    <div class="row"><button class="btn pri" data-act="parte-pdf">Control de riegos (PDF) · ${esc(d.cab)}</button><button class="btn" data-act="parte-xlsx">Excel</button>${nCab>1?`<button class="btn" data-act="parte-pdf" data-todos="1">Todos los cabezales de ${esc(fs?fs.nombre:'la finca')} (PDF)</button>`:''}</div>
-    <div class="note">Sale en la hoja «Control de riegos» de la empresa (PR101 / Ed.05). Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`+parteFijosInfo(st.cab);
+    ${['grande','pequeno'].map(t=>{const K=PTIPO[t];return `<div class="ptipo"><div><b>${K.corto}</b> <span class="note">· hoja «${K.titulo}»${t==='pequeno'?' (Anexo XI)':''}</span></div>
+      <div class="row"><button class="btn pri" data-act="parte-pdf" data-tipo="${t}">${K.corto} (PDF) · ${esc(d.cab)}</button><button class="btn" data-act="parte-xlsx" data-tipo="${t}">Excel</button>${nCab>1?`<button class="btn" data-act="parte-pdf" data-tipo="${t}" data-todos="1">Todos los cabezales de ${esc(fs?fs.nombre:'la finca')} (PDF)</button>`:''}</div></div>`}).join('')}
+    <div class="note">Los dos salen en las hojas de la empresa (PR101 / Ed.05) con los datos del día. Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`+parteFijosInfo(st.cab);
   h+=parteCuerpo(d);
   return h}
 function parteCuerpo(d){let h='';
@@ -1984,7 +1986,7 @@ function parteCuerpo(d){let h='';
   h+=`<section class="card"><div><h3>3. Receta ${d.recetaDia?'de ese día':'(actual)'}</h3><div class="sub">Incremento de CE estimado ${fmt(d.ce,0)} µS/cm</div></div>`+d.receta.map(b=>`<div><b>${esc(b.nombre)}</b> <span class="note">${esc(b.principal)}: ${fmt(b.kg,1)} ${b.uP} por 1000 L · ${fmt(b.cap,0)} L</span></div>
     <div class="tbl"><table><thead><tr><th>Producto</th><th>Salida deseada</th><th>Por 1000 L</th><th>Por ${fmt(b.cap,0)} L</th></tr></thead><tbody>${b.filas.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmt(x.des,2)} <span class="u">${x.ud}</span></td><td>${fmt(x.c1,2)} ${x.uc}</td><td>${fmt(x.c2,1)} ${x.uc}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
   return h}
-async function partePdf(cabs){await Promise.all(cabs.map(c=>radCargar(c,st.fecha)));const l=cabs.map(c=>parteData(c));return parteHojaPdf(l,cabs.length>1?`Control de riegos ${fD(st.fecha).replace(/\//g,'-')}`:parteNombre(l[0]))}
+async function partePdf(cabs,tipo){tipo=tipo||'grande';await Promise.all(cabs.map(c=>radCargar(c,st.fecha)));const l=cabs.map(c=>parteData(c));return parteHojaPdf(l,cabs.length>1?`${PTIPO[tipo].titulo} ${fD(st.fecha).replace(/\//g,'-')}`:parteNombre(l[0],tipo),tipo)}
 async function partePdfAntiguo(cabs){return partePdfDe(cabs.map(c=>({...parteData(c),gen:new Date().toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' por '+yoNombre(),aviso:st.dirtyReg?'Atención: incluye cambios que aún no se han guardado en la app.':'Atención: este día no está guardado en la app; datos provisionales.'})))}
 async function partePdfDe(lista){let L;try{L=await pdfLib()}catch(e){toast('Hace falta conexión a internet para crear el PDF');return}
   const{PDFDocument,StandardFonts,rgb}=L,doc=await PDFDocument.create(),f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
@@ -2450,7 +2452,7 @@ function diffCfg(a,b){const L=[];for(const nb of b.bidones){const ob=a.bidones.f
   return L}
 function errMsg(e){return e&&e.code==='quota_exceeded'?'No queda espacio en la base de datos de la página.':'No se pudo guardar'+(e&&e.code?' ('+e.code+')':'')+'. Prueba otra vez.'}
 /* Qué cabezales se ven afectados por un campo del día */
-function cabsDeCampo(k){const[g,id]=k.split('.');if(['m3','ceB','ceR','inc','phS','incR','m3R','rad','obs'].includes(g))return [id];if(g==='cm'||g==='niv'){const b=bid(id);return b?b.cabezales:[]}
+function cabsDeCampo(k){const[g,id]=k.split('.');if(['m3','ceB','phB','ceR','inc','phS','incR','m3R','rad','obs'].includes(g))return [id];if(g==='cm'||g==='niv'){const b=bid(id);return b?b.cabezales:[]}
   for(const c of st.cfg.cabezales)for(const s of c.sectores){if(s.id===id)return [c.id];if(s.bandejas.some(bj=>bj.id===id))return [c.id]}return []}
 async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{const f=st.fecha,mods=[...st.regMod],ahora=new Date().toISOString();
   let srv=null;try{srv=await Store.getReg(f)}catch(e){}
@@ -2530,9 +2532,9 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='mv-del-yes')mvDel(t.dataset.id);
   else if(t.dataset.act==='inf-xlsx')exportXlsx();
   else if(t.dataset.act==='pt-ver'){st.ptAbierto=st.ptAbierto===t.dataset.id?null:t.dataset.id;renderMain()}
-  else if(t.dataset.act==='pt-pdf'){const p=(st.partes||[]).find(x=>x.id===t.dataset.id);if(p){t.disabled=true;(p.d&&p.d.hoja?parteHojaPdf([p.d],parteNombre(p.d)):partePdfDe([ptDatos(p)])).finally(()=>{t.disabled=false})}}
-  else if(t.dataset.act==='pt-xlsx'){const p=(st.partes||[]).find(x=>x.id===t.dataset.id);if(p&&p.d&&p.d.hoja)parteHojaXlsx(p.d,parteNombre(p.d))}
-  else if(t.dataset.act==='parte-xlsx'){radCargar(st.cab,st.fecha).then(()=>{const d=parteData(st.cab);parteHojaXlsx(d,parteNombre(d))})}
+  else if(t.dataset.act==='pt-pdf'){const p=(st.partes||[]).find(x=>x.id===t.dataset.id),tp=t.dataset.tipo||'grande';if(p){t.disabled=true;(p.d&&p.d[PTIPO[tp].hoja]?parteHojaPdf([p.d],parteNombre(p.d,tp),tp):partePdfDe([ptDatos(p)])).finally(()=>{t.disabled=false})}}
+  else if(t.dataset.act==='pt-xlsx'){const p=(st.partes||[]).find(x=>x.id===t.dataset.id),tp=t.dataset.tipo||'grande';if(p&&p.d&&p.d[PTIPO[tp].hoja])parteHojaXlsx(p.d,parteNombre(p.d,tp),tp)}
+  else if(t.dataset.act==='parte-xlsx'){const tp=t.dataset.tipo||'grande';radCargar(st.cab,st.fecha).then(()=>{const d=parteData(st.cab);parteHojaXlsx(d,parteNombre(d,tp),tp)})}
   else if(t.dataset.act==='pf-save')pfGuardar();
   else if(t.dataset.act==='pt-rev'){st.ptRev=t.dataset.id;renderMain();const i=$('#pt_nota');if(i)i.focus()}
   else if(t.dataset.act==='pt-rev-no'){st.ptRev=null;renderMain()}
@@ -2562,7 +2564,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='cul-save')culSave();
   else if(t.dataset.act==='cv-del'){st.confirmCv=t.dataset.id;renderMain()}
   else if(t.dataset.act==='cv-del-yes'){const id=t.dataset.id,m=(st.crec||[]).find(x=>x.id===id);try{await Store.delCol('crecimiento',id);for(const a of (m&&m.fotos)||[])await Adj.del(a);st.crec=st.crec.filter(x=>x.id!==id);st.confirmCv=null;renderMain();toast('Medida borrada')}catch(e){toast(errMsg(e))}}
-  else if(t.dataset.act==='parte-pdf'){t.disabled=true;partePdf(t.dataset.todos?parteCabs():[st.cab]).finally(()=>{t.disabled=false})}
+  else if(t.dataset.act==='parte-pdf'){t.disabled=true;partePdf(t.dataset.todos?parteCabs():[st.cab],t.dataset.tipo||'grande').finally(()=>{t.disabled=false})}
   else if(t.dataset.act==='inf-pdf'){t.disabled=true;exportPdf().finally(()=>{t.disabled=false})}
   else if(t.dataset.act==='rv-play')rvToggle();
   else if(t.dataset.act==='wx-reload'){st.wx=null;st.rv=null;renderMain()}
@@ -3105,13 +3107,17 @@ document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&e.targe
 
 /* ---------- Parte diario con el formato de la empresa: hoja «Control de riegos» (PR101 / Ed.05) ---------- */
 /* La plantilla original (PDF vectorial y Excel) va en parte-tpl.js; aquí solo se decide qué va en cada casilla. */
-async function parteTpl(){if(window.PARTE_TPL)return window.PARTE_TPL;await loadScript('parte-tpl.js');return window.PARTE_TPL}
+/* Dos hojas de la empresa: el parte grande («Control de riegos») y el parte pequeño («Control de aportes», Anexo XI) */
+const PTIPO={grande:{titulo:'Control de riegos',corto:'Parte grande',js:'parte-tpl.js',g:'PARTE_TPL',hoja:'hoja',cab:'D1',cabPre:'PROCEDIMIENTO                         ',prod:'A7',fecha:'L7',prodHasta:11,hsz:9.5,hy:2},
+  pequeno:{titulo:'Control de aportes',corto:'Parte pequeño',js:'parte-tpl-p.js',g:'PARTE_TPL_P',hoja:'hojaP',cab:'E2',cabPre:'PROCEDIMIENTO                                                 ',prod:'A8',fecha:'P8',prodHasta:9,hsz:8,hy:1.3}};
+async function parteTpl(tipo){const T=PTIPO[tipo||'grande'];if(window[T.g])return window[T.g];await loadScript(T.js);return window[T.g]}
+const ptCover=(tipo,V)=>tipo==='pequeno'?((V._cover||{}).v||[]):PT_COVER;
 const b64u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const sinAcento=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 /* Filas de «Nutrientes x 100 m³» */
 const PT_NUT=[[24,'hno3',/nitrico/],[25,'mkp',/monopot/],[26,'h3po4',/fosforico/],[27,'kno3',/nitrato pot/],[28,'k2so4',/sulfato pot/],[29,'kcl',/cloruro pot/],[30,'nacl',/cloruro sod/],[31,null,/cloruro calc/],
   [32,'ca',/solucion calc/],[33,'trad',/trad/],[34,'mn',/mangan/],[35,'zn',/zinc|cinc/],[36,null,/microstep.*esp/],[37,'fe',/microstep|hierro/],[38,null,/nitrato magn/],[39,null,/nitrato calc/]];
-function ptNutFila(p){const n=sinAcento(pn(p));for(const[row,id]of PT_NUT)if(id===p)return row;if(PRODUCTOS[p])return null;for(const[row,,re]of PT_NUT)if(re.test(n))return row;return null}
+function ptNutFila(p,L){L=L||PT_NUT;const n=sinAcento(pn(p));for(const[row,id]of L)if(id===p)return row;if(PRODUCTOS[p])return null;for(const[row,,re]of L)if(re.test(n))return row;return null}
 /* Depósitos D-1 a D-5: qué producto principal va en cada uno y en qué casillas */
 const PT_DEP=[{p:'kno3',n:1,col:'A',val:'C',hdr:'A35',L:'C42',fila:{kno3:36,k2so4:37,h3po4:38,zn:39,mn:40,mkp:41},libre:42},
   {p:'ca',n:2,col:'D',val:'E',hdr:'D35',L:'E42',fila:{ca:36},libre:37},{p:'fe',n:3,col:'F',val:'G',hdr:'F35',L:'G42',fila:{fe:36},libre:37},
@@ -3158,14 +3164,14 @@ function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V=
   return V}
 
 /* ---------- PDF con la hoja original de fondo ---------- */
-const ptRef=ref=>{const m=/^([A-Q])(\d+)$/.exec(ref);return{c:'ABCDEFGHIJKLMNOPQ'.indexOf(m[1]),r:+m[2]}};
-async function parteHojaPdf(lista,nombre){let L,T;try{L=await pdfLib();T=await parteTpl()}catch(e){toast('Hace falta conexión a internet para crear el parte');return}
+const ptRef=ref=>{const m=/^([A-U])(\d+)$/.exec(ref);return{c:'ABCDEFGHIJKLMNOPQRSTU'.indexOf(m[1]),r:+m[2]}};
+async function parteHojaPdf(lista,nombre,tipo){tipo=tipo||'grande';const K=PTIPO[tipo];let L,T;try{L=await pdfLib();T=await parteTpl(tipo)}catch(e){toast('Hace falta conexión a internet para crear el parte');return}
   const{PDFDocument,StandardFonts,rgb}=L,doc=await PDFDocument.create(),[fondo]=await doc.embedPdf(b64u8(T.pdf)),f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
   doc.setTitle(pdfTxt(nombre));doc.setAuthor(pdfTxt(yoNombre()));doc.setCreator('Abonado-Fertirrigacion');
   const ink=rgb(0,0,0),wh=rgb(1,1,1),ry=k=>T.ry[k]!=null?T.ry[k]:T.ry[k+1];
   const caja=(ref,rng)=>{const a=ptRef(rng?rng.split(':')[0]:ref),b=ptRef(rng?rng.split(':')[1]:ref);const x0=T.cx[a.c],x1=T.cx[b.c+1],y0=ry(a.r),y1=ry(b.r+1);return{x:x0,w:x1-x0,top:T.H-y0,h:y1-y0}};
-  for(const d of lista){const V=d.hoja||{},page=doc.addPage([T.W,T.H]);page.drawPage(fondo,{x:0,y:0,width:T.W,height:T.H});
-        for(const k of PT_COVER){const[a,b2]=k.split(':');const q=caja(a,b2?k:null);page.drawRectangle({x:q.x+1,y:q.top-q.h+1,width:q.w-2,height:q.h-2,color:wh})}
+  for(const d of lista){const V=d[K.hoja]||{},page=doc.addPage([T.W,T.H]);page.drawPage(fondo,{x:0,y:0,width:T.W,height:T.H});
+        for(const k of ptCover(tipo,V)){const[a,b2]=k.split(':');const q=caja(a,b2?k:null);page.drawRectangle({x:q.x+1,y:q.top-q.h+1,width:q.w-2,height:q.h-2,color:wh})}
     const fit=(s,w,size,fo)=>{s=pdfTxt(s);let z=size;while(z>4.5&&fo.widthOfTextAtSize(s,z)>w)z-=.25;return z};
     const texto=(s,q,o)=>{const fo=o.b?fb:f;let size=o.sz||8;s=pdfTxt(typeof s==='number'?ptMiles(s):s);
       let lineas=[s];if(o.wrap&&fo.widthOfTextAtSize(s,size)>q.w-4){const ps=s.split(/\s+/);lineas=[];let cur='';for(const p of ps){const t=cur?cur+' '+p:p;if(cur&&fo.widthOfTextAtSize(t,size)>q.w-4){lineas.push(cur);cur=p}else cur=t}if(cur)lineas.push(cur);
@@ -3175,23 +3181,80 @@ async function parteHojaPdf(lista,nombre){let L,T;try{L=await pdfLib();T=await p
       for(const ln of lineas){const w=fo.widthOfTextAtSize(ln,size),x=o.al==='l'?q.x+2.5:o.al==='r'?q.x+q.w-2.5-w:q.x+(q.w-w)/2;page.drawText(ln,{x,y,size,font:fo,color:ink});y-=lh}};
     // Cabecera: nombre del cabezal en lugar de «PLANOS»
     const hc=T.hdr.cab;page.drawRectangle({x:hc[0]-2,y:T.H-hc[3]-1,width:Math.max(hc[2]-hc[0],120)+4,height:hc[3]-hc[1]+2,color:wh});
-    if(V.D1)page.drawText(pdfTxt(V.D1.v),{x:hc[0],y:T.H-hc[3]+2.6,size:fit(V.D1.v,200,13,fb),font:fb,color:ink});
+    if(V[K.cab])page.drawText(pdfTxt(V[K.cab].v),{x:hc[0],y:T.H-hc[3]+2.6,size:fit(V[K.cab].v,200,13,fb),font:fb,color:ink});
     const hp=T.hdr.prod,hf=T.hdr.fecha,cola=(v,pre)=>String(v).replace(pre,'').trim();
-    if(V.A7){const s=cola(V.A7.v,'PRODUCTOR:');if(s)page.drawText(pdfTxt(s),{x:hp[2]+5,y:T.H-hp[3]+2,size:fit(s,T.cx[11]-hp[2]-10,9.5,fb),font:fb,color:ink})}
-    if(V.L7){const s=cola(V.L7.v,'FECHA:');page.drawText(pdfTxt(s),{x:hf[2]+5,y:T.H-hf[3]+2,size:9.5,font:fb,color:ink})}
-    for(const[k,o]of Object.entries(V)){if(k==='D1'||k==='A7'||k==='L7')continue;texto(o.v,caja(k,o.rng),o)}}
+    if(V[K.prod]){const s=cola(V[K.prod].v,'PRODUCTOR:');if(s)page.drawText(pdfTxt(s),{x:hp[2]+5,y:T.H-hp[3]+K.hy,size:fit(s,T.cx[K.prodHasta]-hp[2]-10,K.hsz,fb),font:fb,color:ink})}
+    if(V[K.fecha]){const s=cola(V[K.fecha].v,'FECHA:');page.drawText(pdfTxt(s),{x:hf[2]+5,y:T.H-hf[3]+K.hy,size:K.hsz,font:fb,color:ink})}
+    for(const[k,o]of Object.entries(V)){if(k[0]==='_'||k===K.cab||k===K.prod||k===K.fecha)continue;texto(o.v,caja(k,o.rng),o)}}
   const bytes=await doc.save();await saveBlob(new Blob([bytes],{type:'application/pdf'}),nombre+'.pdf')}
 
 /* ---------- Excel: la plantilla original rellenada (mismo formato, mismo logo) ---------- */
-async function parteHojaXlsx(d,nombre){let T;try{T=await parteTpl()}catch(e){toast('Hace falta conexión a internet para crear el Excel');return}
-  let x=T.xlsx.sheet;const V=d.hoja||{};
+async function parteHojaXlsx(d,nombre,tipo){tipo=tipo||'grande';const K=PTIPO[tipo];let T;try{T=await parteTpl(tipo)}catch(e){toast('Hace falta conexión a internet para crear el Excel');return}
+  let x=T.xlsx.sheet;const V=d[K.hoja]||{};
   const setC=(ref,val)=>{const re=new RegExp(`<c r="${ref}"([^>]*?)(?:/>|>[\\s\\S]*?</c>)`);x=x.replace(re,(m,at)=>{const s=(/ s="\d+"/.exec(at)||[''])[0];
     if(val==null||val==='')return `<c r="${ref}"${s}/>`;return typeof val==='number'?`<c r="${ref}"${s}><v>${val}</v></c>`:`<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${xe(val)}</t></is></c>`})};
-  for(const k of PT_COVER)setC(k.split(':')[0],null);
-  for(const[k,o]of Object.entries(V))setC(k,k==='D1'?'PROCEDIMIENTO                         '+o.v:o.v);
+  for(const k of ptCover(tipo,V))setC(k.split(':')[0],null);
+  for(const[k,o]of Object.entries(V))if(k[0]!=='_')setC(k,k===K.cab?K.cabPre+o.v:o.v);
   const files=T.xlsx.files.map(([n,b])=>({name:n,data:b64u8(b)})),i=files.findIndex(z=>z.name==='xl/workbook.xml');files.splice(i+1,0,{name:'xl/worksheets/sheet1.xml',data:x});
   await saveBlob(zipStore(files),nombre+'.xlsx')}
-const parteNombre=d=>`Control de riegos ${d.cab} ${fD(d.fecha).replace(/\//g,'-')}`;
+const parteNombre=(d,tipo)=>`${PTIPO[tipo||'grande'].titulo} ${d.cab} ${fD(d.fecha).replace(/\//g,'-')}`;
+
+/* ---------- Parte pequeño: hoja «Control de aportes» (Anexo XI, PR101 / Ed.05) ---------- */
+/* Filas de «Nutrientes/100 m³» (columna H) y sus kg por sector S1…S4 (J…M) */
+const PP_NUT=[[11,'hno3',/nitrico/],[12,'h3po4',/fosforico/],[13,'mkp',/monopot/],[14,'kno3',/nitrato pot/],[15,'k2so4',/sulf.*potas/],[16,'kcl',/cloruro pot/],[17,'nacl',/cloruro sod/],[18,'zn',/zinc|cinc/],[19,'mn',/mangan/],
+  [20,null,/nitrato magn/],[21,null,/sulf.*magn/],[23,'ca',/solucion calc/],[24,null,/nitrato calc/],[25,null,/cloruro calc/],[26,'trad',/trad/],[28,null,/microstep.*fe\b|hierro/],[29,'fe',/microstep|micro step/]];
+const PP_LIBRE=[22,27];
+/* Bloques de sector de la derecha (trazabilidad y una fila por minisector): S1 11-15, S2 16-20, S3 21-24, S4 25-29 */
+const PP_SECT=[{r0:11,n:5},{r0:16,n:5},{r0:21,n:4},{r0:25,n:5}];
+/* Depósitos D-1 a D-4 tal y como vienen en la hoja (si coinciden, se deja el texto original con sus colores) */
+const PP_DEP=[{p:'kno3',n:1,hdr:'A30:D30',lab:'A|C',val:'D',cap:5000,tag:'N-P-K',fila:{kno3:31,k2so4:32,mkp:33,zn:34,mn:35},L:'A37:D37'},
+  {p:'ca',n:2,hdr:'E30:I30',lab:'E|H',val:'I',cap:5000,tag:'S.CALCICA',fila:{ca:31,trad:32},L:'E37:I37'},
+  {p:'fe',n:3,hdr:'J30:M30',lab:'J|L',val:'M',cap:1000,tag:'MICRO.ESP',fila:{fe:31},L:'J37:M37'},
+  {p:'hno3',n:4,hdr:'P30:Q30',lab:'P|P',val:'Q',cap:5000,tag:'A.NITRICO',fila:{hno3:31},L:'P37:Q37'}];
+const PP_VAL={D:[31,33,34],I:[31],M:[31],Q:[31]}; // casillas con números de ejemplo en la hoja
+/* m³ de cada sector: los del contador repartidos por los minutos de riego (y por el caudal del sector si está puesto en Ajustes) */
+function m3Sectores(cabId){const r=st.reg,c=cabById(cabId),m3=r.m3[cabId];if(m3==null||!c)return null;const ss=c.sectores.filter(s=>r.min[s.id]>0);if(!ss.length)return null;
+  const q=s=>num(((st.cfg.sectInfo||{})[s.id]||{}).qh),conQ=ss.every(s=>q(s)>0),w=s=>r.min[s.id]*(conQ?q(s):1),t=ss.reduce((a,s)=>a+w(s),0);
+  return{conQ,m:Object.fromEntries(c.sectores.map(s=>[s.id,r.min[s.id]>0?m3*w(s)/t:null]))}}
+function parteHojaP(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V={},cover=[];
+  const put=(ref,v,o)=>{if(v==null||v===''||(typeof v==='number'&&!isFinite(v)))return;V[ref]={v,...(o||{})}};
+  put('E2',c.nombre.toUpperCase());put('A8','PRODUCTOR: '+(infoFinca(cabId).productor||P.productor||''));put('P8','FECHA: '+fD(st.fecha));
+  cover.push('C9:I9');put('C9',c.nombre.toUpperCase(),{rng:'C9:I9',b:1,sz:9});
+  // Medidas
+  const sa=salidaDe(cabId),m3=r.m3[cabId];
+  [['C11',sa.ceB,2,1],['C12',(r.phB||{})[cabId],2,1],['C13',sa.tot,2,0],['C14',sa.phS,2,0],['C15',P.sup&&m3!=null?m3*1000/P.sup:null,2,1],['C16',(u=>u.real??u.des)(unidades(cabId)),1,1],['C17',m3,1,1]]
+    .forEach(([k,v,d,mg])=>put(k,ptNum(v,d),mg?{rng:k+':D'+k.slice(1)}:{}));
+  // Sectores S1…S4: nº de riegos y tiempo de riego
+  const filas=ptFilas(c).filter(x=>ptBloque(x.row)<=4),COL='ABCD';
+  for(const{s,row}of filas){const b=ptBloque(row),col=COL[b-1],rie=(r.rie||{})[s.id],min=r.min[s.id];
+    if(rie!=null)put(col+'24',`S${b}: ${ptMiles(+rie)}`,{rng:`${col}24:${col}25`});if(min!=null)put(col+'27',`S${b}: ${ptMiles(+min)}'`,{rng:`${col}27:${col}29`})}
+  // Nutrientes/100 m³ (lo aplicado de verdad) y kg de cada uno en cada sector
+  const nut={},extra=[];for(const b of bidonesDe(cabId))for(const x of b.productos){if(!x.dosis)continue;const real=dosisReal(b,x,cabId);if(real==null)continue;let row=ptNutFila(x.p,PP_NUT);
+    if(!row){let e=extra.find(z=>z.p===x.p);if(!e){if(extra.length>=PP_LIBRE.length)continue;e={p:x.p,row:PP_LIBRE[extra.length]};extra.push(e)}row=e.row}nut[row]=(nut[row]||0)+real}
+  for(const e of extra)put('E'+e.row,pn(e.p),{rng:`E${e.row}:G${e.row}`,al:'l',b:1});
+  const ms=m3Sectores(cabId);
+  for(const[row,v]of Object.entries(nut)){put('H'+row,ptNum(v,2),{rng:`H${row}:I${row}`});
+    if(ms)for(const{s,row:rb}of filas){const m=ms.m[s.id];if(m!=null)put('JKLM'[ptBloque(rb)-1]+row,ptNum(v*m/100,2))}}
+  // Trazabilidad y una fila por minisector: EC, pH y % de drenaje
+  cover.push('P11:P15','P16:P20');
+  for(const{s,row}of filas){const B=PP_SECT[ptBloque(row)-1],i=infoSector(s.id,cabId,row);put('P'+B.r0,i.traz,{rng:`P${B.r0}:P${B.r0+B.n-1}`,b:1,sz:9,wrap:1})}
+  for(const{s,bj,row}of ptMini(c)){const b=ptBloque(row);if(b>4)continue;const B=PP_SECT[b-1],k=(row-10)%5;if(k>=B.n)continue;const rr=B.r0+k;
+    put('Q'+rr,ptNum(r.ceD[bj.id],2),{rng:`Q${rr}:R${rr}`});put('S'+rr,ptNum(r.phD[bj.id],2),{rng:`S${rr}:T${rr}`});put('U'+rr,ptNum(drenPct(s,bj),1))}
+  // Depósitos: kg (o L) por depósito lleno y los litros gastados hoy (cm × L/cm)
+  for(const[col,rows]of Object.entries(PP_VAL))for(const rr of rows)cover.push(col+rr);
+  const usados=new Set();
+  for(const D of PP_DEP){const b=bidonesDe(cabId).find(x=>x.principal===D.p&&!usados.has(x.id)),[l0,l1]=D.lab.split('|'),lab=rr=>l0===l1?l0+rr:`${l0}${rr}:${l1}${rr}`;
+    if(!b){cover.push(D.hdr);put(D.hdr.split(':')[0],`D-${D.n}:`,{rng:D.hdr,al:'l',b:1});for(let rr=31;rr<=36;rr++)cover.push(lab(rr));continue}
+    usados.add(b.id);
+    if((b.capacidad||0)!==D.cap){cover.push(D.hdr);put(D.hdr.split(':')[0],`D-${D.n}: ${miles(b.capacidad||0)} LITROS (${D.tag})`,{rng:D.hdr,al:'l',b:1})}
+    let libre=Math.max(...Object.values(D.fila))+1;
+    for(const x of b.productos){if(!x.dosis)continue;let rr=D.fila[x.p];if(!rr){if(libre>36)continue;rr=libre++;cover.push(lab(rr));put(l0+rr,PT_CORTO[x.p]||pn(x.p).toUpperCase().slice(0,16),{rng:l0===l1?null:lab(rr),b:1})}
+      put(D.val+rr,ptNum(conc(b,x)*(b.capacidad||0)/1000,2))}
+    const cm=r.cm[b.id];if(cm!=null&&b.lpcm)put(D.L.split(':')[0],'L. '+ptMiles(ptNum(cm*b.lpcm,0)),{rng:D.L,al:'l',b:1})}
+  // Ácido fosfórico y ácido nítrico: litros de ácido puro que han entrado hoy en este cabezal
+  const acido=p=>{let t=null;for(const b of bidonesDe(cabId))for(const x of b.productos){if(x.p!==p||!x.dosis)continue;const L=litros(b,cabId);if(L==null)continue;t=(t||0)+L*conc(b,x)/1000}return t};
+  for(const[p,ref]of [['h3po4','R37:S37'],['hno3','T37:U37']]){const v=acido(p);if(v==null)continue;cover.push(ref);put(ref.split(':')[0],'L. '+ptMiles(ptNum(v,1)),{rng:ref,al:'l',b:1})}
+  V._cover={v:cover};return V}
 
 
 /* Radiación del día (si no se apunta a mano): la del servicio del tiempo para la finca, en J/cm² */
@@ -3214,20 +3277,20 @@ function cuDraft(){if(!st.cuD)st.cuD={fincaInfo:clone(st.cfg.fincaInfo||{}),sect
 function cultivoAjHTML(){const D=cuDraft(),g=esGestor(),dis=g?'':'disabled';
   const inp=(k,val,ph,o={})=>`<div class="inp"><input data-cu="${k}" ${o.num?'inputmode="decimal"':''} style="width:100%;text-align:left;text-transform:${o.may?'uppercase':'none'}" value="${esc(val??'')}" placeholder="${esc(ph||'')}" ${dis}></div>`;
   const campos=[['vari','Variedad','RICOSOL'],['cult','Cultivo','TOMATE'],['sust','Dónde se planta (sustrato)','COCO']];
-  return `<section class="card" id="cultivo_aj"><div><h3>Cultivo y datos del parte</h3><div class="sub">Variedad, cultivo y dónde se planta de cada finca y de cada sector. Sale tal cual en el parte diario (hoja «Control de riegos»).</div></div>
+  return `<section class="card" id="cultivo_aj"><div><h3>Cultivo y datos del parte</h3><div class="sub">Variedad, cultivo y dónde se planta de cada finca y de cada sector. Sale tal cual en el parte grande y en el pequeño.</div></div>
     ${fincasVis().filter(f=>f.cabezales.length).map(f=>{const F=D.fincaInfo[f.id]||{};return `<div class="cuf"><h4>${esc(f.nombre)}</h4>
       <div class="frm"><div class="field"><label>Productor</label>${inp('f|'+f.id+'|productor',F.productor,'Nombre del productor')}</div>${campos.map(([k,l,ph])=>`<div class="field"><label>${l} · toda la finca</label>${inp('f|'+f.id+'|'+k,F[k],ph,{may:1})}</div>`).join('')}</div>
       ${g?`<div class="row"><button class="btn sm" data-act="cu-todos" data-f="${f.id}">Poner esto en todos los sectores de ${esc(f.nombre)}</button></div>`:''}
       ${f.cabezales.map(cid=>{const c=cabById(cid);if(!c)return '';return `<div class="cuc"><div class="lbl">${esc(c.nombre)}</div>
         <div class="frm"><div class="field"><label>Superficie regada (m²) · para L/m²</label>${inp('c|'+cid+'|sup',D.sup[cid]!=null?inVal(D.sup[cid]):'','',{num:1})}</div></div>
         ${ptFilas(c).map(({s,row})=>{const S=D.sectInfo[s.id]||{},her=infoSector(s.id,cid,row);return `<div class="cus"><b>${esc(s.nombre)}</b><small>en el parte: filas ${ptBloque(row)}-1 a ${ptBloque(row)}-${Math.min(5,s.bandejas.length||1)} (una por minisector)</small>
-          <div class="frm">${campos.map(([k,l])=>`<div class="field"><label>${l}</label>${inp('s|'+s.id+'|'+k,S[k],her[k]?her[k]+' (de la finca)':'',{may:1})}</div>`).join('')}<div class="field"><label>Trazabilidad</label>${inp('s|'+s.id+'|traz',S.traz,her.traz||'Código del sector',{may:1})}</div></div></div>`}).join('')}</div>`}).join('')}</div>`}).join('')}
+          <div class="frm">${campos.map(([k,l])=>`<div class="field"><label>${l}</label>${inp('s|'+s.id+'|'+k,S[k],her[k]?her[k]+' (de la finca)':'',{may:1})}</div>`).join('')}<div class="field"><label>Trazabilidad</label>${inp('s|'+s.id+'|traz',S.traz,her.traz||'Código del sector',{may:1})}</div><div class="field"><label>Caudal del sector (m³/h) · reparte los kg por sector</label>${inp('s|'+s.id+'|qh',S.qh!=null?inVal(S.qh):'','Opcional',{num:1})}</div></div></div>`}).join('')}</div>`}).join('')}</div>`}).join('')}
     ${g?'<div class="row"><button class="btn pri" data-act="cu-save">Guardar cultivo y datos del parte</button></div>':'<div class="note">Solo los cambia el encargado o el administrador.</div>'}
     <div class="note">Si un sector lo dejas en blanco, coge lo de la finca.</div></section>`}
 async function cuGuardar(){const D=cuDraft();for(const c of [st.cfg,st.savedCfg]){c.fincaInfo=clone(D.fincaInfo);c.sectInfo=clone(D.sectInfo);c.parte=c.parte||{};for(const[cab,v]of Object.entries(D.sup)){c.parte[cab]={...parteFijos(cab),...(c.parte[cab]||{}),sup:v}}}
   try{await Store.setConfig(st.savedCfg);st.cuD=null;toast('Cultivo y datos del parte guardados');renderMain()}catch(e){toast(errMsg(e))}}
 $('#main').addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.cu;if(!k)return;const D=cuDraft(),[t,id,f]=k.split('|'),v=e.target.value.trim();
-  if(t==='f')(D.fincaInfo[id]=D.fincaInfo[id]||{})[f]=f==='productor'?v:v.toUpperCase();else if(t==='s')(D.sectInfo[id]=D.sectInfo[id]||{})[f]=v.toUpperCase();else if(t==='c')D.sup[id]=num(v)});
+  if(t==='f')(D.fincaInfo[id]=D.fincaInfo[id]||{})[f]=f==='productor'?v:v.toUpperCase();else if(t==='s')(D.sectInfo[id]=D.sectInfo[id]||{})[f]=f==='qh'?num(v):v.toUpperCase();else if(t==='c')D.sup[id]=num(v)});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act^="cu-"]');if(!b)return;const a=b.dataset.act;
   if(a==='cu-save')cuGuardar();
   else if(a==='cu-todos'){const D=cuDraft(),F=D.fincaInfo[b.dataset.f]||{},f=(st.cfg.fincas||[]).find(x=>x.id===b.dataset.f);for(const cid of (f&&f.cabezales)||[]){const c=cabById(cid);if(!c)continue;for(const s of c.sectores){const S=D.sectInfo[s.id]=D.sectInfo[s.id]||{};for(const k of ['vari','cult','sust'])if(F[k])S[k]=F[k]}}renderMain();toast('Puesto en todos los sectores: pulsa «Guardar»')}});
