@@ -359,6 +359,8 @@ table.cmat td,table.cmat th{white-space:nowrap}table.cmat td:nth-child(2),table.
 .carga .cnom{font:600 12px/1 system-ui,sans-serif;letter-spacing:.22em;color:#5b7286;text-transform:uppercase;animation:cg-fade 1.2s .5s both}
 @keyframes cg-in{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}@keyframes cg-bar{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes cg-fade{from{opacity:0}to{opacity:1}}
 @media (prefers-reduced-motion:reduce){.carga img,.carga .cnom{animation:none}}
+.cuf{border-top:1px solid var(--line);padding-top:12px;margin-top:6px;display:grid;gap:8px}.cuf h4{margin:0;font-size:16px}.cuc{display:grid;gap:8px;padding-left:10px;border-left:3px solid var(--accent)}
+.cus{display:grid;gap:4px;padding:8px 0;border-top:1px dashed var(--line)}.cus small{color:var(--muted);font-size:12px}
 .agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
 .acard{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:10px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 1px 2px rgba(20,30,40,.04),0 8px 24px rgba(20,30,40,.06);position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
 .acard:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(20,30,40,.06),0 14px 30px rgba(20,30,40,.1)}.acard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -940,6 +942,7 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
   <section class="card"><div><h3>Avisos con la app cerrada</h3><div class="sub">Dirección del servidor de avisos (Cloudflare)</div></div>
     <div class="field"><label for="av_url_cfg">Servidor de avisos</label><div class="inp"><input class="wide" id="av_url_cfg" data-k="cfg.avisos.url" data-text="1" style="width:100%;text-transform:none" placeholder="https://abonado-avisos.….workers.dev" value="${esc(st.cfg.avisosUrl||'')}" autocomplete="off" spellcheck="false"></div></div>
     <div class="note">Después pulsa «Guardar receta y ajustes». Cada persona tiene que activar los avisos en su móvil, en Ajustes → Aviso de llenado.</div></section>`;
+  h+=cultivoAjHTML();
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Copia de seguridad, recetas y ajustes</div></div>
     <div class="row"><button class="btn pri" data-act="backup">Descargar copia de seguridad</button><label class="btn" for="restore">Restaurar copia</label><input type="file" id="restore" accept="application/json,.json" hidden></div>
@@ -1962,7 +1965,7 @@ function vParte(){if(st.cfg.cabezales.length&&!cabById(st.cab))return '';const d
     ${d.provisional?`<div class="banner">${st.dirtyReg?'Hay cambios sin guardar en este día: el parte sale con lo que ves ahora. Guarda el día para que quede igual para todos.':'Este día aún no está guardado: el parte saldría con datos provisionales.'}</div>`:''}
     ${d.recetaDia?'':`<div class="note">${d.fecha<hoy()?'Este día se guardó antes de que la app apuntara la receta de cada día: sale la receta actual.':'La receta queda apuntada con el parte al guardar el día.'}</div>`}
     <div class="row"><button class="btn pri" data-act="parte-pdf">Control de riegos (PDF) · ${esc(d.cab)}</button><button class="btn" data-act="parte-xlsx">Excel</button>${nCab>1?`<button class="btn" data-act="parte-pdf" data-todos="1">Todos los cabezales de ${esc(fs?fs.nombre:'la finca')} (PDF)</button>`:''}</div>
-    <div class="note">Sale en la hoja «Control de riegos» de la empresa (PR101 / Ed.05). Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`+parteFijosHTML(st.cab);
+    <div class="note">Sale en la hoja «Control de riegos» de la empresa (PR101 / Ed.05). Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`+parteFijosInfo(st.cab);
   h+=parteCuerpo(d);
   return h}
 function parteCuerpo(d){let h='';
@@ -3127,9 +3130,13 @@ const ptNum=(v,d)=>v==null||!isFinite(v)?null:+(+v).toFixed(d);
 /* Qué va en cada casilla, con los datos del día (se guarda con el parte para poder rehacerlo igual) */
 function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V={};
   const put=(ref,v,o)=>{if(v==null||v===''||(typeof v==='number'&&!isFinite(v)))return;V[ref]={v,...(o||{})}};
-  put('D1',c.nombre.toUpperCase());put('A7','PRODUCTOR: '+(P.productor||''));put('L7','FECHA: '+fD(st.fecha));
-  for(let b=1;b<=5;b++){const fx=(P.blk||{})[b];if(!fx)continue;const r0=10+(b-1)*5;
-    put('B'+r0,fx.traz,{rng:`B${r0}:B${r0+4}`,al:'l',b:1,sz:11,wrap:1});put('C'+r0,fx.vari,{al:'l',b:1});put('C'+(r0+1),fx.cult,{al:'l',b:1});put('D'+r0,fx.sust,{al:'l',b:1})}
+  put('D1',c.nombre.toUpperCase());put('A7','PRODUCTOR: '+(infoFinca(cabId).productor||P.productor||''));put('L7','FECHA: '+fD(st.fecha));
+  const filas=ptFilas(c);
+  for(let b=1;b<=5;b++){const en=filas.filter(x=>ptBloque(x.row)===b);if(!en.length)continue;const r0=10+(b-1)*5,inf=en.map(x=>({row:x.row,...infoSector(x.s.id,cabId,x.row)}));
+    const uno=k=>[...new Set(inf.map(i=>i[k]).filter(Boolean))],iguales=['vari','cult','sust'].every(k=>uno(k).length<=1);
+    put('B'+r0,uno('traz').join(' / '),{rng:`B${r0}:B${r0+4}`,al:'l',b:1,sz:11,wrap:1});
+    if(iguales){put('C'+r0,uno('vari')[0],{al:'l',b:1});put('C'+(r0+1),uno('cult')[0],{al:'l',b:1});put('D'+r0,uno('sust')[0],{al:'l',b:1})}
+    else for(const i of inf){put('C'+i.row,[i.vari,i.cult].filter(Boolean).join(' '),{al:'l',b:1});put('D'+i.row,i.sust,{al:'l',b:1})}}
   const media=l=>{const v=l.filter(x=>x!=null&&isFinite(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
   for(const{s,row}of ptFilas(c)){const min=r.min[s.id],rie=(r.rie||{})[s.id],bs=s.bandejas;
     // por sector: media de sus bandejas (CE y pH del drenaje, ml por gotero, ml drenados y %)
@@ -3194,6 +3201,38 @@ async function radCargar(cab,f){if(enClaude())return;const k=radKey(cab,f);if(st
   const url=dias<=90?`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=shortwave_radiation_sum&timezone=Europe%2FMadrid&past_days=92&forecast_days=1`
     :`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&daily=shortwave_radiation_sum&timezone=Europe%2FMadrid&start_date=${f}&end_date=${f}`;
   try{const j=await (await fetch(url)).json(),t=(j.daily||{}).time||[],v=(j.daily||{}).shortwave_radiation_sum||[];st.radC[k]=st.radC[k]||{};t.forEach((d,i)=>{if(v[i]!=null)st.radC[k][d]=v[i]});if(st.radC[k][f]===undefined)st.radC[k][f]=null}catch(e){}}
+
+/* ---------- Cultivo de cada finca y sector (Ajustes) → parte diario ---------- */
+const infoFinca=cab=>{const fi=(st.cfg.fincas||[]).find(f=>f.cabezales.includes(cab));return (fi&&(st.cfg.fincaInfo||{})[fi.id])||{}};
+/* Lo del sector manda; si falta, lo de la finca; si falta, lo del crecimiento del cultivo; Planos trae lo de la hoja */
+function infoSector(sid,cab,row){const S=(st.cfg.sectInfo||{})[sid]||{},F=infoFinca(cab),C=(st.cfg.cultivo||{})[cab]||{},P=parteFijos(cab),B=(row&&(P.blk||{})[ptBloque(row)])||{};
+  const g=k=>S[k]||F[k]||B[k]||'';return{vari:(g('vari')||C.variedad||'').toUpperCase(),cult:(g('cult')||C.cultivo||'').toUpperCase(),sust:g('sust').toUpperCase(),traz:S.traz||B.traz||''}}
+st.cuD=null;
+function cuDraft(){if(!st.cuD)st.cuD={fincaInfo:clone(st.cfg.fincaInfo||{}),sectInfo:clone(st.cfg.sectInfo||{}),sup:Object.fromEntries(st.cfg.cabezales.map(c=>[c.id,(parteFijos(c.id)||{}).sup??null]))};return st.cuD}
+function cultivoAjHTML(){const D=cuDraft(),g=esGestor(),dis=g?'':'disabled';
+  const inp=(k,val,ph,o={})=>`<div class="inp"><input data-cu="${k}" ${o.num?'inputmode="decimal"':''} style="width:100%;text-align:left;text-transform:${o.may?'uppercase':'none'}" value="${esc(val??'')}" placeholder="${esc(ph||'')}" ${dis}></div>`;
+  const campos=[['vari','Variedad','RICOSOL'],['cult','Cultivo','TOMATE'],['sust','Dónde se planta (sustrato)','COCO']];
+  return `<section class="card" id="cultivo_aj"><div><h3>Cultivo y datos del parte</h3><div class="sub">Variedad, cultivo y dónde se planta de cada finca y de cada sector. Sale tal cual en el parte diario (hoja «Control de riegos»).</div></div>
+    ${fincasVis().filter(f=>f.cabezales.length).map(f=>{const F=D.fincaInfo[f.id]||{};return `<div class="cuf"><h4>${esc(f.nombre)}</h4>
+      <div class="frm"><div class="field"><label>Productor</label>${inp('f|'+f.id+'|productor',F.productor,'Nombre del productor')}</div>${campos.map(([k,l,ph])=>`<div class="field"><label>${l} · toda la finca</label>${inp('f|'+f.id+'|'+k,F[k],ph,{may:1})}</div>`).join('')}</div>
+      ${g?`<div class="row"><button class="btn sm" data-act="cu-todos" data-f="${f.id}">Poner esto en todos los sectores de ${esc(f.nombre)}</button></div>`:''}
+      ${f.cabezales.map(cid=>{const c=cabById(cid);if(!c)return '';return `<div class="cuc"><div class="lbl">${esc(c.nombre)}</div>
+        <div class="frm"><div class="field"><label>Superficie regada (m²) · para L/m²</label>${inp('c|'+cid+'|sup',D.sup[cid]!=null?inVal(D.sup[cid]):'','',{num:1})}</div></div>
+        ${ptFilas(c).map(({s,row})=>{const S=D.sectInfo[s.id]||{},her=infoSector(s.id,cid,row);return `<div class="cus"><b>${esc(s.nombre)}</b><small>fila ${ptBloque(row)}-${(row-10)%5+1} del parte</small>
+          <div class="frm">${campos.map(([k,l])=>`<div class="field"><label>${l}</label>${inp('s|'+s.id+'|'+k,S[k],her[k]?her[k]+' (de la finca)':'',{may:1})}</div>`).join('')}<div class="field"><label>Trazabilidad</label>${inp('s|'+s.id+'|traz',S.traz,her.traz||'Código del sector',{may:1})}</div></div></div>`}).join('')}</div>`}).join('')}</div>`}).join('')}
+    ${g?'<div class="row"><button class="btn pri" data-act="cu-save">Guardar cultivo y datos del parte</button></div>':'<div class="note">Solo los cambia el encargado o el administrador.</div>'}
+    <div class="note">Si un sector lo dejas en blanco, coge lo de la finca.</div></section>`}
+async function cuGuardar(){const D=cuDraft();for(const c of [st.cfg,st.savedCfg]){c.fincaInfo=clone(D.fincaInfo);c.sectInfo=clone(D.sectInfo);c.parte=c.parte||{};for(const[cab,v]of Object.entries(D.sup)){c.parte[cab]={...parteFijos(cab),...(c.parte[cab]||{}),sup:v}}}
+  try{await Store.setConfig(st.savedCfg);st.cuD=null;toast('Cultivo y datos del parte guardados');renderMain()}catch(e){toast(errMsg(e))}}
+$('#main').addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.cu;if(!k)return;const D=cuDraft(),[t,id,f]=k.split('|'),v=e.target.value.trim();
+  if(t==='f')(D.fincaInfo[id]=D.fincaInfo[id]||{})[f]=f==='productor'?v:v.toUpperCase();else if(t==='s')(D.sectInfo[id]=D.sectInfo[id]||{})[f]=v.toUpperCase();else if(t==='c')D.sup[id]=num(v)});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act^="cu-"]');if(!b)return;const a=b.dataset.act;
+  if(a==='cu-save')cuGuardar();
+  else if(a==='cu-todos'){const D=cuDraft(),F=D.fincaInfo[b.dataset.f]||{},f=(st.cfg.fincas||[]).find(x=>x.id===b.dataset.f);for(const cid of (f&&f.cabezales)||[]){const c=cabById(cid);if(!c)continue;for(const s of c.sectores){const S=D.sectInfo[s.id]=D.sectInfo[s.id]||{};for(const k of ['vari','cult','sust'])if(F[k])S[k]=F[k]}}renderMain();toast('Puesto en todos los sectores: pulsa «Guardar»')}});
+function parteFijosInfo(cab){const c=cabById(cab),F=infoFinca(cab),sup=(parteFijos(cab)||{}).sup;
+  return `<section class="card"><div class="sector-h"><div><h3>Cultivo de cada sector</h3><div class="sub">Productor: ${esc(F.productor||parteFijos(cab).productor||'—')} · superficie: ${sup?fmt(sup,0)+' m²':'—'}</div></div>${esGestor()?'<button class="btn" data-act="cu-ir">Cambiar en Ajustes</button>':''}</div>
+    <div class="tbl"><table><thead><tr><th>Fila</th><th>Sector</th><th>Variedad</th><th>Cultivo</th><th>Sustrato</th><th>Trazabilidad</th></tr></thead><tbody>${ptFilas(c).map(({s,row})=>{const i=infoSector(s.id,cab,row);return `<tr><td>${ptBloque(row)}-${(row-10)%5+1}</td><td>${esc(s.nombre)}</td><td>${esc(i.vari||'—')}</td><td>${esc(i.cult||'—')}</td><td>${esc(i.sust||'—')}</td><td>${esc(i.traz||'—')}</td></tr>`}).join('')}</tbody></table></div></section>`}
+document.addEventListener('click',e=>{if(!e.target.closest('[data-act="cu-ir"]'))return;st.tab='ajustes';renderCabs();renderTabs();renderMain();setTimeout(()=>{const el=$('#cultivo_aj');if(el)el.scrollIntoView({block:'start'})},50)});
 /* Datos fijos de la hoja: los cambia el encargado o el administrador */
 st.pfD=null;
 function pfDraft(){const cab=st.cab;if(!st.pfD||st.pfD.cab!==cab)st.pfD={cab,v:clone(parteFijos(cab))};const v=st.pfD.v;v.blk=v.blk||{};return v}
