@@ -1755,10 +1755,10 @@ const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633]
         s+=`<g fill="#dfe8cf" stroke="#c9d6b3" stroke-width="1.5">${[[40,20,150,460],[40,480,92,850],[40,930,200,1040],[40,1080,300,1190],[40,1210,300,1330],[40,1350,300,1460],[40,1480,300,1590]].map(([x0,y0,x1,y1])=>`<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" rx="6"/>`).join('')}</g>`;
         // invernaderos vecinos (no son de la finca): solo contorno
         s+=`<g fill="none" stroke="#cbbf9f" stroke-width="1.5" stroke-dasharray="6 5"><path d="M440 560L640 230L800 250L730 730L430 735Z"/><path d="M300 20L580 0L480 230Z"/></g>`;
-        // carretera
+        // carretera RM-11 (punto kilométrico 24 al sur)
         const ctra='M1030 -125C935 120 852 330 792 520C762 620 746 700 730 800C712 900 692 990 672 1080C654 1170 634 1260 616 1340C600 1420 588 1500 576 1600';
         s+=`<path d="${ctra}" stroke="#d9c58f" stroke-width="70" fill="none"/><path d="${ctra}" stroke="#efe2b8" stroke-width="60" fill="none"/><path d="${ctra}" stroke="#fff" stroke-width="2" stroke-dasharray="18 14" fill="none"/>
-          <g transform="translate(768 640) rotate(-74)"><rect x="-62" y="-14" width="124" height="28" rx="6" fill="#e8a33a"/><text y="6" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">CARRETERA</text></g>`;
+          <g transform="translate(768 640) rotate(-74)"><rect x="-44" y="-14" width="88" height="28" rx="6" fill="#e8a33a"/><text y="6" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">RM-11</text></g><g transform="translate(640 1480)"><rect x="-20" y="-14" width="40" height="28" rx="5" fill="#f2d36b" stroke="#c9a640"/><text y="6" text-anchor="middle" font-size="15" font-weight="700" fill="#5f5644">24</text></g><g transform="translate(740 1520)"><text x="80" y="-12" text-anchor="middle" font-size="14" font-weight="700" fill="#5f5644">100 m (aprox.)</text><path d="M0 0H160M0 -8V8M80 -5V5M160 -8V8" stroke="#5f5644" stroke-width="2.5" fill="none"/><rect y="-3" width="80" height="6" fill="#5f5644"/></g>`;
         // camino entre las naves
         const cam='M600 120L475 285L392 520L362 700L352 1060L405 1110L418 1300L428 1560';
         s+=`<path d="${cam}" stroke="#bdb5a3" stroke-width="20" fill="none" stroke-linejoin="round"/><path d="${cam}" stroke="#e6e0d2" stroke-width="14" fill="none" stroke-linejoin="round"/>`;
