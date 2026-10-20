@@ -3159,7 +3159,7 @@ function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V=
   const usados=new Set();for(const D of PT_DEP){const b=bidonesDe(cabId).find(x=>x.principal===D.p&&!usados.has(x.id));if(!b){put(D.hdr,`D-${D.n}:`,{al:'l',b:1});continue}usados.add(b.id);
     put(D.hdr,`D-${D.n}: ${miles(b.capacidad||0)}`,{al:'l',b:1});let libre=D.libre;
     for(const x of b.productos){if(!x.dosis)continue;let row=D.fila[x.p];if(!row){if(libre>41)continue;row=libre++;put(D.col+row,PT_CORTO[x.p]||pn(x.p).toUpperCase().slice(0,16),{al:'l',b:1})}put(D.val+row,ptNum(conc(b,x)*(b.capacidad||0)/1000,1))}
-    const cm=r.cm[b.id];put(D.L,cm!=null&&b.lpcm?ptNum(cm*b.lpcm,0):null)}
+    const Lc=litros(b,cabId);put(D.L,Lc!=null?ptNum(Lc,Lc<100?1:0):null)}/* depósito compartido: solo lo que le toca a este cabezal */
   put('L41',(r.obs||{})[cabId],{rng:'L41:P42',al:'l',wrap:1});
   return V}
 
@@ -3250,7 +3250,7 @@ function parteHojaP(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V
     let libre=Math.max(...Object.values(D.fila))+1;
     for(const x of b.productos){if(!x.dosis)continue;let rr=D.fila[x.p];if(!rr){if(libre>36)continue;rr=libre++;cover.push(lab(rr));put(l0+rr,PT_CORTO[x.p]||pn(x.p).toUpperCase().slice(0,16),{rng:l0===l1?null:lab(rr),b:1})}
       put(D.val+rr,ptNum(conc(b,x)*(b.capacidad||0)/1000,2))}
-    const cm=r.cm[b.id];if(cm!=null&&b.lpcm)put(D.L.split(':')[0],'L. '+ptMiles(ptNum(cm*b.lpcm,0)),{rng:D.L,al:'l',b:1})}
+    const Lc=litros(b,cabId);if(Lc!=null)put(D.L.split(':')[0],'L. '+ptMiles(ptNum(Lc,Lc<100?1:0)),{rng:D.L,al:'l',b:1})}
   // Ácido fosfórico y ácido nítrico: litros de ácido puro que han entrado hoy en este cabezal
   const acido=p=>{let t=null;for(const b of bidonesDe(cabId))for(const x of b.productos){if(x.p!==p||!x.dosis)continue;const L=litros(b,cabId);if(L==null)continue;t=(t||0)+L*conc(b,x)/1000}return t};
   for(const[p,ref]of [['h3po4','R37:S37'],['hno3','T37:U37']]){const v=acido(p);if(v==null)continue;cover.push(ref);put(ref.split(':')[0],'L. '+ptMiles(ptNum(v,1)),{rng:ref,al:'l',b:1})}
