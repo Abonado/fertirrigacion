@@ -3144,7 +3144,7 @@ function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V=
   const usados=new Set();for(const D of PT_DEP){const b=bidonesDe(cabId).find(x=>x.principal===D.p&&!usados.has(x.id));if(!b){put(D.hdr,`D-${D.n}:`,{al:'l',b:1});continue}usados.add(b.id);
     put(D.hdr,`D-${D.n}: ${miles(b.capacidad||0)}`,{al:'l',b:1});let libre=D.libre;
     for(const x of b.productos){if(!x.dosis)continue;let row=D.fila[x.p];if(!row){if(libre>41)continue;row=libre++;put(D.col+row,PT_CORTO[x.p]||pn(x.p).toUpperCase().slice(0,16),{al:'l',b:1})}put(D.val+row,ptNum(conc(b,x)*(b.capacidad||0)/1000,1))}
-    const nv=nivel(b);put(D.L,nv?ptNum(Math.max(0,Math.min(b.capacidad||1e9,nv.rest*b.lpcm)),0):null)}
+    const cm=r.cm[b.id];put(D.L,cm!=null&&b.lpcm?ptNum(cm*b.lpcm,0):null)}
   put('L41',(r.obs||{})[cabId],{rng:'L41:P42',al:'l',wrap:1});
   return V}
 
