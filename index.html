@@ -361,6 +361,7 @@ table.cmat td,table.cmat th{white-space:nowrap}table.cmat td:nth-child(2),table.
 @media (prefers-reduced-motion:reduce){.carga img,.carga .cnom{animation:none}}
 .cuf{border-top:1px solid var(--line);padding-top:12px;margin-top:6px;display:grid;gap:8px}.cuf h4{margin:0;font-size:16px}.cuc{display:grid;gap:8px;padding-left:10px;border-left:3px solid var(--accent)}
 .cus{display:grid;gap:4px;padding:8px 0;border-top:1px dashed var(--line)}.cus small{color:var(--muted);font-size:12px}
+table.rendt td:first-child{min-width:150px;white-space:normal}table.rendt td:first-child b{text-transform:none}table.rendt th,table.rendt td{white-space:nowrap}
 .agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
 .acard{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:10px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 1px 2px rgba(20,30,40,.04),0 8px 24px rgba(20,30,40,.06);position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
 .acard:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(20,30,40,.06),0 14px 30px rgba(20,30,40,.1)}.acard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -1215,8 +1216,9 @@ async function loadOps(){if(opsLoading)return;opsLoading=true;try{const[a,b]=awa
    diario  = se llena hasta arriba cada día después de medir; se apuntan los cm gastados y el llenado se deduce solo
    vacio   = se llena cuando hace falta; se apunta el vacío (cm desde arriba); si el vacío baja, se deduce que se llenó
    manual  = como antes: solo cuentan los llenados que se apuntan a mano */
-const MODOS={diario:['Se llena cada día','Se apuntan los cm gastados; al apuntarlos se entiende que después se llenó hasta arriba'],vacio:['Se llena cuando hace falta','Se apunta el vacío del depósito (cm desde arriba); si baja, se entiende que se llenó'],manual:['Solo llenados apuntados','Los cm gastados no llenan el depósito; hay que apuntar cada llenado']};
-const modoDep=b=>b&&MODOS[b.modo]?b.modo:(st.cfg.medida==='gaste'||st.cfg.medida==='nivel'?'vacio':'manual');
+/* Solo se apuntan los cm gastados del día (ya no se usa el vacío anterior / vacío de hoy) */
+const MODOS={diario:['Se llena cada día','Se apuntan los cm gastados; al apuntarlos se entiende que después se llenó hasta arriba'],manual:['Se llena cuando hace falta','Se apuntan los cm gastados del día; cada llenado se apunta en «Rellenar depósito»']};
+const modoDep=b=>b&&MODOS[b.modo]?b.modo:'manual';
 const esDirecto=b=>modoDep(b)!=='vacio';
 const esGaste=b=>modoDep(b)==='vacio';
 const maxCm=b=>b.capacidad/b.lpcm;
@@ -2723,7 +2725,7 @@ function coRendHTML(){const d=coDatos(),vis=collasVis();
   h+=`<section class="summary"><div class="stat"><span>Partes</span><b>${d.js.length}</b><small>${fCorta(d.desde)} a ${fCorta(d.hasta)}</small></div><div class="stat"><span>Jornadas</span><b>${pd}</b><small>${fmt(hh,0)} h trabajadas</small></div><div class="stat"><span>Faltas</span><b>${fal+jus}</b><small>${fal} sin justificar</small></div></section>`;
   if(!d.js.length)return h+`<section class="card"><div class="note">${jorLoading?'Cargando partes…':'No hay partes de colla en estas fechas.'}</div></section>`;
   // por labor
-  h+=`<section class="card"><div><h3>Rendimiento por labor</h3><div class="sub">Cantidad hecha entre las horas de todas las personas que estaban en ese trabajo</div></div><div class="tbl"><table><thead><tr><th>Labor</th><th>Horas</th><th>Matas</th><th>Matas/h</th><th>Kg</th><th>Kg/h</th><th>Cajas</th><th>Cajas/h</th></tr></thead><tbody>
+  h+=`<section class="card"><div><h3>Rendimiento por labor</h3><div class="sub">Cantidad hecha entre las horas de todas las personas que estaban en ese trabajo</div></div><div class="tbl"><table class="rendt"><thead><tr><th>Labor</th><th>Horas</th><th>Matas</th><th>Matas/h</th><th>Kg</th><th>Kg/h</th><th>Cajas</th><th>Cajas/h</th></tr></thead><tbody>
     ${d.lab.map(L=>`<tr><td><b>${esc(LAB[L.labor]||L.labor)}</b>${vis.length>1&&!st.co.fil?`<br><small class="nt">${esc(L.colla)}</small>`:''}</td><td>${fmt(L.h,1)}</td><td>${L.matas?fmt(L.matas,0):'—'}</td><td><b>${coRate(L.matas,L.h,'matas')}</b></td><td>${L.kg?fmt(L.kg,0):'—'}</td><td><b>${coRate(L.kg,L.h,'kg')}</b></td><td>${L.cajas?fmt(L.cajas,0):'—'}</td><td><b>${coRate(L.cajas,L.h,'cajas')}</b></td></tr>`).join('')}</tbody></table></div></section>`;
   // por persona y labor
   const labs=LABORES.filter(([k])=>d.per.some(x=>x.lab[k]));if(!st.co.lab||!labs.some(([k])=>k===st.co.lab))st.co.lab=(labs.slice().sort((a,b)=>d.per.reduce((s,x)=>s+((x.lab[b[0]]||{}).h||0),0)-d.per.reduce((s,x)=>s+((x.lab[a[0]]||{}).h||0),0))[0]||[null])[0];
@@ -2731,10 +2733,10 @@ function coRendHTML(){const d=coDatos(),vis=collasVis();
     const media={};for(const u of us){const fx=filas.filter(f=>f.a[u]>0),v=fx.reduce((s,f)=>s+f.a[u],0),hh2=fx.reduce((s,f)=>s+f.a.h,0);media[u]=v&&hh2?v/hh2:null}
     h+=`<section class="card"><div><h3>Rendimiento por persona</h3><div class="sub">«≈» = media de su colla (no se apuntó lo de cada uno). Para tener el dato real de cada persona, marca «Apuntar lo de cada persona» en el trabajo.</div></div>
       <div class="pick">${labs.map(([k,n])=>`<button class="chip" data-co-lab="${k}" aria-pressed="${st.co.lab===k}">${n}</button>`).join('')}</div>
-      <div class="tbl"><table><thead><tr><th>Persona</th><th>Horas</th>${us.map(u=>`<th>${CO_UD[u]}</th><th>${CO_UD[u]}/h</th><th>vs media</th>`).join('')}</tr></thead><tbody>
+      <div class="tbl"><table class="rendt"><thead><tr><th>Persona</th><th>Horas</th>${us.map(u=>`<th>${CO_UD[u]}</th><th>${CO_UD[u]}/h</th><th>vs media</th>`).join('')}</tr></thead><tbody>
       ${filas.sort((a,b)=>((b.a[us[0]]/b.a.h)||0)-((a.a[us[0]]/a.a.h)||0)).map(({x,a})=>`<tr><td><b>${esc(x.n)}</b>${vis.length>1&&!st.co.fil?`<br><small class="nt">${esc(x.colla)}</small>`:''}</td><td>${fmt(a.h,1)}</td>${us.map(u=>{const r=a[u]&&a.h?a[u]/a.h:null,vm=r!=null&&media[u]?(r-media[u])/media[u]:null;return `<td>${a[u]?fmt(a[u],0):'—'}</td><td><b>${a.propio[u]?'':'≈ '}${coRate(a[u],a.h,u)}</b></td><td>${vm==null||!a.propio[u]?'—':`<span class="pill ${vm>=-0.1?'ok':vm>=-0.25?'warn':'bad'}">${vm>=0?'+':'−'}${fmt(Math.abs(vm*100),0)} %</span>`}</td>`}).join('')}</tr>`).join('')}</tbody></table></div></section>`}
   // asistencia
-  h+=`<section class="card"><div><h3>Asistencia por persona</h3><div class="sub">Días y horas según los partes del jefe de colla</div></div><div class="tbl"><table><thead><tr><th>Persona</th><th>Días</th><th>Horas</th><th>Faltas</th><th>Justif.</th><th>Baja</th><th>Vacac.</th></tr></thead><tbody>
+  h+=`<section class="card"><div><h3>Asistencia por persona</h3><div class="sub">Días y horas según los partes del jefe de colla</div></div><div class="tbl"><table class="rendt"><thead><tr><th>Persona</th><th>Días</th><th>Horas</th><th>Faltas</th><th>Justif.</th><th>Baja</th><th>Vacac.</th></tr></thead><tbody>
     ${d.per.map(x=>`<tr><td><b>${esc(x.n)}</b>${vis.length>1&&!st.co.fil?`<br><small class="nt">${esc(x.colla)}</small>`:''}</td><td>${x.dias}</td><td>${fmt(x.h,1)}</td><td>${x.fal?`<span class="pill bad">${x.fal}</span>`:'0'}</td><td>${x.jus||0}</td><td>${x.baja||0}</td><td>${x.vac||0}</td></tr>`).join('')}</tbody></table></div>
     <div class="row"><button class="btn pri" data-act="co-xlsx">Descargar Excel</button></div></section>`;
   // partes
