@@ -1092,7 +1092,7 @@ const esAdminU=()=>!window.NUBE||!!(NUBE.user&&NUBE.user.admin);
 const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';if(!u)return 'trabajador';return u.admin?'admin':u.encargado?'encargado':'trabajador'};
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
-const SOLO_GESTOR=new Set(['parte','graficas','informe']);
+const SOLO_GESTOR=new Set(['graficas','informe']);
 function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
