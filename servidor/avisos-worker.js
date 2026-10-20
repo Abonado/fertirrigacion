@@ -115,19 +115,21 @@ async function enviarA(env, emails, datos, urgente) {
 }
 const datosDe = b => ({ t: corto(b.titulo, 120) || 'Abonado Pinta Santos', b: corto(b.cuerpo, 300), tag: corto(b.tag, 80), tab: corto(b.tab, 60) });
 
-/* ---------- Avisos programados (llenado de depósitos): clave única "prog" ---------- */
+/* ---------- Avisos programados (llenado de depósitos y recordatorios de las notas): clave única "prog" ----------
+   Un recordatorio que se repite trae «serie»: las siguientes horas de aviso. Al enviar uno, pasa al siguiente. */
+function siguiente(a, ahora) { const l = (a.serie || []).filter(t => t > ahora); if (!l.length) return false; a.cuando = l[0]; a.serie = l.slice(1); a.enviado = 0; delete a.pend; return true; }
 async function revisarProgramados(env) {
   const prog = (await env.AVISOS.get('prog', 'json')) || {};
   const ahora = Date.now(); let cambios = false, cupo = 12;   // como mucho 12 personas por pasada; el resto en la siguiente (5 min)
   for (const [id, a] of Object.entries(prog)) {
     if (a.enviado) { if (ahora - a.enviado > 30 * 86400000) { delete prog[id]; cambios = true; } continue; }
     if (!(a.cuando <= ahora)) continue;
-    if (ahora - a.cuando > 2 * 86400000) { a.enviado = ahora; cambios = true; continue; }
+    if (ahora - a.cuando > 2 * 86400000) { if (!siguiente(a, ahora)) a.enviado = ahora; cambios = true; continue; }
     if (!a.pend) a.pend = [...(a.para || [])];
     if (cupo <= 0) break;
     const lote = a.pend.splice(0, cupo); cupo -= lote.length;
     if (lote.length) await enviarA(env, lote, datosDe(a), true);
-    if (!a.pend.length) { a.enviado = ahora; delete a.pend; }
+    if (!a.pend.length) { delete a.pend; if (!siguiente(a, ahora)) a.enviado = ahora; }
     cambios = true;
   }
   if (cambios) await env.AVISOS.put('prog', JSON.stringify(prog));
@@ -179,12 +181,15 @@ export default {
     if (ruta === 'programar') {
       const id = corto(b.id, 80); if (!id) return json({ error: 'peticion' }, 400);
       const prog = (await env.AVISOS.get('prog', 'json')) || {}, ant = prog[id];
+      if (ant && ant.por && ant.por !== yo && id.startsWith('nota-')) return json({ error: 'sin_acceso' }, 403);
       if (b.borrar) { if (!ant) return json({ ok: true }); delete prog[id]; }
       else {
         const ref = corto(b.ref, 80), cuando = +b.cuando;
         if (!(cuando > 0)) return json({ error: 'peticion' }, 400);
         if (ant && ant.enviado && ant.ref === ref) return json({ ok: true, yaAvisado: true });   // ya se avisó en este llenado
-        prog[id] = { ...datosDe(b), titulo: corto(b.titulo, 120), cuerpo: corto(b.cuerpo, 300), para: emails(b.para), cuando, ref, por: yo, enviado: 0 };   // sin «pend»: se reparte al enviar
+        const serie = (Array.isArray(b.serie) ? b.serie : []).map(Number).filter(t => t > cuando).sort((x, y) => x - y).slice(0, 60);
+        if (id.startsWith('nota-') && emails(b.para).some(e => e !== yo)) return json({ error: 'peticion' }, 400);   // las notas son privadas: solo para uno mismo
+        prog[id] = { ...datosDe(b), titulo: corto(b.titulo, 120), cuerpo: corto(b.cuerpo, 300), para: emails(b.para), cuando, ref, por: yo, enviado: 0, ...(serie.length ? { serie } : {}) };   // sin «pend»: se reparte al enviar
       }
       await env.AVISOS.put('prog', JSON.stringify(prog));
       return json({ ok: true });

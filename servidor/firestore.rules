@@ -115,6 +115,14 @@ service cloud.firestore {
       allow delete: if esGestor();
     }
 
+    // Notas privadas con recordatorio: cada cuenta solo ve, cambia y borra las suyas (ni el administrador ve las de otros)
+    match /abonado_notas/{doc} {
+      allow read, delete: if autorizado() && resource.data.email == request.auth.token.email;
+      allow create: if autorizado() && request.resource.data.email == request.auth.token.email;
+      allow update: if autorizado() && resource.data.email == request.auth.token.email
+        && request.resource.data.email == request.auth.token.email;
+    }
+
     // Fotos y archivos adjuntos (troceados): los usa todo el equipo, sea de riego o de campo
     match /abonado_adjuntos/{doc} {
       allow read, write: if autorizado();
@@ -153,6 +161,7 @@ service cloud.firestore {
         && coleccion != 'abonado_ctareas'
         && coleccion != 'abonado_cmensajes'
         && coleccion != 'abonado_adjuntos'
+        && coleccion != 'abonado_notas'
         && veRiego();
     }
   }
