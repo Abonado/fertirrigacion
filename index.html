@@ -3118,9 +3118,12 @@ const PT_CORTO={kno3:'N. POTASICO',k2so4:'S. POTASICO',kcl:'CL. POTASICO',mkp:'F
 const ptMiles=v=>{const neg=v<0,a=Math.abs(v),d=Number.isInteger(a)?0:Math.abs(a*10-Math.round(a*10))<1e-9?1:2,[e,dec]=a.toFixed(d).split('.');return (neg?'-':'')+e.replace(/\B(?=(\d{3})+(?!\d))/g,'.')+(dec?','+dec:'')};
 const miles=v=>String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 /* Datos fijos (trazabilidad, cultivo, sustrato, productor, superficie): en Ajustes del parte; Planos viene con los de la hoja */
-/* Cada fila de la izquierda (1-1 … 5-5) es un sector. Si el sector se llama «1-3» o «1.3» va en esa fila; si no, en orden. */
-function ptFilas(c){const out=[],usadas=new Set();c.sectores.forEach(s=>{const m=/(\d+)\s*[-.]\s*(\d+)/.exec(s.nombre);if(m&&+m[1]>=1&&+m[1]<=5&&+m[2]>=1&&+m[2]<=5){const row=10+(+m[1]-1)*5+(+m[2]-1);if(!usadas.has(row)){usadas.add(row);out.push({s,row})}}});
-  let next=10;c.sectores.forEach(s=>{if(out.some(x=>x.s===s))return;while(usadas.has(next))next++;if(next>34)return;usadas.add(next);out.push({s,row:next})});return out}
+/* Filas 1-1 … 5-5: el primer número es el sector y el segundo el minisector (cada bandeja de drenaje).
+   «Sector 2» va en el bloque 2; su «Bandeja 2.3» en la fila 2-3. Si los nombres no traen número, van en orden. */
+function ptFilas(c){const out=[],usados=new Set();c.sectores.forEach(s=>{const m=/(\d+)/.exec(s.nombre),n=m?+m[1]:0;if(n>=1&&n<=5&&!usados.has(n)){usados.add(n);out.push({s,row:10+(n-1)*5})}});
+  let nx=1;c.sectores.forEach(s=>{if(out.some(x=>x.s===s))return;while(usados.has(nx))nx++;if(nx>5)return;usados.add(nx);out.push({s,row:10+(nx-1)*5})});return out.sort((a,b)=>a.row-b.row)}
+function ptMini(c){const out=[];for(const{s,row}of ptFilas(c)){const usados=new Set();s.bandejas.forEach(bj=>{const m=/\d+\s*[.,-]\s*(\d+)/.exec(bj.nombre),k=m?+m[1]:0;if(k>=1&&k<=5&&!usados.has(k)){usados.add(k);out.push({s,bj,row:row+k-1})}});
+  let nx=1;s.bandejas.forEach(bj=>{if(out.some(x=>x.bj===bj))return;while(usados.has(nx))nx++;if(nx>5)return;usados.add(nx);out.push({s,bj,row:row+nx-1})})}return out}
 const ptBloque=row=>Math.floor((row-10)/5)+1;
 const PT_PLA={traz:'21121 2ATP1T',vari:'RICOSOL',cult:'TOMATE',sust:'COCO'};
 function parteFijos(cab){const g=(st.cfg.parte||{})[cab];const P=g?clone(g):{productor:'',sup:null,blk:cab==='pla'?{1:{...PT_PLA},2:{...PT_PLA}}:{}};
@@ -3131,18 +3134,13 @@ const ptNum=(v,d)=>v==null||!isFinite(v)?null:+(+v).toFixed(d);
 function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V={};
   const put=(ref,v,o)=>{if(v==null||v===''||(typeof v==='number'&&!isFinite(v)))return;V[ref]={v,...(o||{})}};
   put('D1',c.nombre.toUpperCase());put('A7','PRODUCTOR: '+(infoFinca(cabId).productor||P.productor||''));put('L7','FECHA: '+fD(st.fecha));
-  const filas=ptFilas(c);
-  for(let b=1;b<=5;b++){const en=filas.filter(x=>ptBloque(x.row)===b);if(!en.length)continue;const r0=10+(b-1)*5,inf=en.map(x=>({row:x.row,...infoSector(x.s.id,cabId,x.row)}));
-    const uno=k=>[...new Set(inf.map(i=>i[k]).filter(Boolean))],iguales=['vari','cult','sust'].every(k=>uno(k).length<=1);
-    put('B'+r0,uno('traz').join(' / '),{rng:`B${r0}:B${r0+4}`,al:'l',b:1,sz:11,wrap:1});
-    if(iguales){put('C'+r0,uno('vari')[0],{al:'l',b:1});put('C'+(r0+1),uno('cult')[0],{al:'l',b:1});put('D'+r0,uno('sust')[0],{al:'l',b:1})}
-    else for(const i of inf){put('C'+i.row,[i.vari,i.cult].filter(Boolean).join(' '),{al:'l',b:1});put('D'+i.row,i.sust,{al:'l',b:1})}}
-  const media=l=>{const v=l.filter(x=>x!=null&&isFinite(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
-  for(const{s,row}of ptFilas(c)){const min=r.min[s.id],rie=(r.rie||{})[s.id],bs=s.bandejas;
-    // por sector: media de sus bandejas (CE y pH del drenaje, ml por gotero, ml drenados y %)
-    const vols=bs.map(bj=>min!=null&&bj.caudal?min*bj.caudal:null),dren=bs.map(bj=>r.dren[bj.id]??null),con=bs.map((bj,i)=>dren[i]!=null&&vols[i]?i:-1).filter(i=>i>=0);
-    const vol=con.length?media(con.map(i=>vols[i])):media(vols),dr=media(dren),pct=con.length?media(con.map(i=>dren[i]*100/vols[i])):null;
-    put('E'+row,ptNum(valSect(r,s,'ceD'),2));put('F'+row,ptNum(valSect(r,s,'phD'),2));put('G'+row,ptNum(vol,0));put('H'+row,ptNum(dr,0));put('I'+row,ptNum(pct,1));put('J'+row,ptNum(rie,0));put('K'+row,ptNum(min,0))}
+  // cabecera de cada sector: trazabilidad, variedad, cultivo y sustrato
+  for(const{s,row:r0}of ptFilas(c)){const i=infoSector(s.id,cabId,r0);
+    put('B'+r0,i.traz,{rng:`B${r0}:B${r0+4}`,al:'l',b:1,sz:11,wrap:1});put('C'+r0,i.vari,{al:'l',b:1});put('C'+(r0+1),i.cult,{al:'l',b:1});put('D'+r0,i.sust,{al:'l',b:1})}
+  // una fila por minisector (bandeja): cada uno con sus datos, sin mezclar
+  for(const{s,bj,row}of ptMini(c)){const min=r.min[s.id],rie=(r.rie||{})[s.id];
+    put('E'+row,ptNum(r.ceD[bj.id],2));put('F'+row,ptNum(r.phD[bj.id],2));put('G'+row,ptNum(min!=null&&bj.caudal?min*bj.caudal:null,0));put('H'+row,ptNum(r.dren[bj.id],0));
+    put('I'+row,ptNum(drenPct(s,bj),1));put('J'+row,ptNum(rie,0));put('K'+row,ptNum(min,0))}
   const sa=salidaDe(cabId),m3=r.m3[cabId],m3R=(r.m3R||{})[cabId];
   [['O10',sa.ceB,2],['O11',sa.ceR,2],['O12',sa.incR,2],['O13',sa.ent,2],['O14',sa.inc,2],['O15',sa.tot,2],['O16',sa.phS,2],['O17',m3R,1],['O18',m3,1],['O19',m3R!=null&&m3?m3R*100/m3:null,1],
     ['O20',P.sup&&m3!=null?m3*1000/P.sup:null,2],['O21',(u=>u.real??u.des)(unidades(cabId)),1],['O22',(r.rad||{})[cabId]??radAuto(cabId,st.fecha),0]].forEach(([k,v,d])=>put(k,ptNum(v,d)));
@@ -3218,7 +3216,7 @@ function cultivoAjHTML(){const D=cuDraft(),g=esGestor(),dis=g?'':'disabled';
       ${g?`<div class="row"><button class="btn sm" data-act="cu-todos" data-f="${f.id}">Poner esto en todos los sectores de ${esc(f.nombre)}</button></div>`:''}
       ${f.cabezales.map(cid=>{const c=cabById(cid);if(!c)return '';return `<div class="cuc"><div class="lbl">${esc(c.nombre)}</div>
         <div class="frm"><div class="field"><label>Superficie regada (m²) · para L/m²</label>${inp('c|'+cid+'|sup',D.sup[cid]!=null?inVal(D.sup[cid]):'','',{num:1})}</div></div>
-        ${ptFilas(c).map(({s,row})=>{const S=D.sectInfo[s.id]||{},her=infoSector(s.id,cid,row);return `<div class="cus"><b>${esc(s.nombre)}</b><small>fila ${ptBloque(row)}-${(row-10)%5+1} del parte</small>
+        ${ptFilas(c).map(({s,row})=>{const S=D.sectInfo[s.id]||{},her=infoSector(s.id,cid,row);return `<div class="cus"><b>${esc(s.nombre)}</b><small>en el parte: filas ${ptBloque(row)}-1 a ${ptBloque(row)}-${Math.min(5,s.bandejas.length||1)} (una por minisector)</small>
           <div class="frm">${campos.map(([k,l])=>`<div class="field"><label>${l}</label>${inp('s|'+s.id+'|'+k,S[k],her[k]?her[k]+' (de la finca)':'',{may:1})}</div>`).join('')}<div class="field"><label>Trazabilidad</label>${inp('s|'+s.id+'|traz',S.traz,her.traz||'Código del sector',{may:1})}</div></div></div>`}).join('')}</div>`}).join('')}</div>`}).join('')}
     ${g?'<div class="row"><button class="btn pri" data-act="cu-save">Guardar cultivo y datos del parte</button></div>':'<div class="note">Solo los cambia el encargado o el administrador.</div>'}
     <div class="note">Si un sector lo dejas en blanco, coge lo de la finca.</div></section>`}
@@ -3231,7 +3229,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act^="cu-"
   else if(a==='cu-todos'){const D=cuDraft(),F=D.fincaInfo[b.dataset.f]||{},f=(st.cfg.fincas||[]).find(x=>x.id===b.dataset.f);for(const cid of (f&&f.cabezales)||[]){const c=cabById(cid);if(!c)continue;for(const s of c.sectores){const S=D.sectInfo[s.id]=D.sectInfo[s.id]||{};for(const k of ['vari','cult','sust'])if(F[k])S[k]=F[k]}}renderMain();toast('Puesto en todos los sectores: pulsa «Guardar»')}});
 function parteFijosInfo(cab){const c=cabById(cab),F=infoFinca(cab),sup=(parteFijos(cab)||{}).sup;
   return `<section class="card"><div class="sector-h"><div><h3>Cultivo de cada sector</h3><div class="sub">Productor: ${esc(F.productor||parteFijos(cab).productor||'—')} · superficie: ${sup?fmt(sup,0)+' m²':'—'}</div></div>${esGestor()?'<button class="btn" data-act="cu-ir">Cambiar en Ajustes</button>':''}</div>
-    <div class="tbl"><table><thead><tr><th>Fila</th><th>Sector</th><th>Variedad</th><th>Cultivo</th><th>Sustrato</th><th>Trazabilidad</th></tr></thead><tbody>${ptFilas(c).map(({s,row})=>{const i=infoSector(s.id,cab,row);return `<tr><td>${ptBloque(row)}-${(row-10)%5+1}</td><td>${esc(s.nombre)}</td><td>${esc(i.vari||'—')}</td><td>${esc(i.cult||'—')}</td><td>${esc(i.sust||'—')}</td><td>${esc(i.traz||'—')}</td></tr>`}).join('')}</tbody></table></div></section>`}
+    <div class="tbl"><table><thead><tr><th>Fila</th><th>Sector</th><th>Variedad</th><th>Cultivo</th><th>Sustrato</th><th>Trazabilidad</th></tr></thead><tbody>${ptFilas(c).map(({s,row})=>{const i=infoSector(s.id,cab,row);return `<tr><td>${ptBloque(row)}-1…${ptBloque(row)}-${Math.min(5,s.bandejas.length||1)}</td><td>${esc(s.nombre)}</td><td>${esc(i.vari||'—')}</td><td>${esc(i.cult||'—')}</td><td>${esc(i.sust||'—')}</td><td>${esc(i.traz||'—')}</td></tr>`}).join('')}</tbody></table></div></section>`}
 document.addEventListener('click',e=>{if(!e.target.closest('[data-act="cu-ir"]'))return;st.tab='ajustes';renderCabs();renderTabs();renderMain();setTimeout(()=>{const el=$('#cultivo_aj');if(el)el.scrollIntoView({block:'start'})},50)});
 /* Datos fijos de la hoja: los cambia el encargado o el administrador */
 st.pfD=null;
