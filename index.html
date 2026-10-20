@@ -1905,7 +1905,7 @@ const encargadosDe=fid=>todosEmails().filter(e=>accInfo(e).encargado&&veFinca(e,
 function cabConDatos(cab){const r=st.reg,c=cabById(cab);if(!c)return false;const bs=bidonesDe(cab),pr=bs.filter(b=>b.cabezales.length===1);if((pr.length?pr:bs).some(b=>r.cm[b.id]!=null))return true;if(['ceB','ceR','inc','phS'].some(k=>(r[k]||{})[cab]!=null))return true;
   return c.sectores.some(s=>s.bandejas.some(bj=>r.dren[bj.id]!=null||r.ceD[bj.id]!=null||r.phD[bj.id]!=null))}
 const horaTxt=ts=>new Date(ts).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-async function enviarPartes(){if(Store.mode!=='fb'||!window.NUBE||!NUBE.user)return;const ts=new Date().toISOString();
+async function enviarPartes(){if(Store.mode!=='fb'||!window.NUBE||!NUBE.user)return;const ts=new Date().toISOString();await Promise.all(st.cfg.cabezales.filter(c=>cabConDatos(c.id)).map(c=>radCargar(c.id,st.fecha)));
   for(const c of st.cfg.cabezales){if(!cabConDatos(c.id))continue;const d=parteData(c.id);d.provisional=false;
     const doc={fecha:st.fecha,cab:c.id,finca:d.fincaId,ts,por:yoNombre(),porEmail:miEmail(),d:JSON.parse(JSON.stringify(d))};
     try{await NUBE.db.collection('partes').doc(st.fecha+'_'+c.id).merge({...doc,mod:ahoraISO()})}catch(e){console.warn('parte',e);continue}
@@ -1977,7 +1977,7 @@ function parteCuerpo(d){let h='';
   h+=`<section class="card"><div><h3>3. Receta ${d.recetaDia?'de ese día':'(actual)'}</h3><div class="sub">Incremento de CE estimado ${fmt(d.ce,0)} µS/cm</div></div>`+d.receta.map(b=>`<div><b>${esc(b.nombre)}</b> <span class="note">${esc(b.principal)}: ${fmt(b.kg,1)} ${b.uP} por 1000 L · ${fmt(b.cap,0)} L</span></div>
     <div class="tbl"><table><thead><tr><th>Producto</th><th>Salida deseada</th><th>Por 1000 L</th><th>Por ${fmt(b.cap,0)} L</th></tr></thead><tbody>${b.filas.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmt(x.des,2)} <span class="u">${x.ud}</span></td><td>${fmt(x.c1,2)} ${x.uc}</td><td>${fmt(x.c2,1)} ${x.uc}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
   return h}
-async function partePdf(cabs){const l=cabs.map(c=>parteData(c));return parteHojaPdf(l,cabs.length>1?`Control de riegos ${fD(st.fecha).replace(/\//g,'-')}`:parteNombre(l[0]))}
+async function partePdf(cabs){await Promise.all(cabs.map(c=>radCargar(c,st.fecha)));const l=cabs.map(c=>parteData(c));return parteHojaPdf(l,cabs.length>1?`Control de riegos ${fD(st.fecha).replace(/\//g,'-')}`:parteNombre(l[0]))}
 async function partePdfAntiguo(cabs){return partePdfDe(cabs.map(c=>({...parteData(c),gen:new Date().toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' por '+yoNombre(),aviso:st.dirtyReg?'Atención: incluye cambios que aún no se han guardado en la app.':'Atención: este día no está guardado en la app; datos provisionales.'})))}
 async function partePdfDe(lista){let L;try{L=await pdfLib()}catch(e){toast('Hace falta conexión a internet para crear el PDF');return}
   const{PDFDocument,StandardFonts,rgb}=L,doc=await PDFDocument.create(),f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
@@ -2525,7 +2525,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='pt-ver'){st.ptAbierto=st.ptAbierto===t.dataset.id?null:t.dataset.id;renderMain()}
   else if(t.dataset.act==='pt-pdf'){const p=(st.partes||[]).find(x=>x.id===t.dataset.id);if(p){t.disabled=true;(p.d&&p.d.hoja?parteHojaPdf([p.d],parteNombre(p.d)):partePdfDe([ptDatos(p)])).finally(()=>{t.disabled=false})}}
   else if(t.dataset.act==='pt-xlsx'){const p=(st.partes||[]).find(x=>x.id===t.dataset.id);if(p&&p.d&&p.d.hoja)parteHojaXlsx(p.d,parteNombre(p.d))}
-  else if(t.dataset.act==='parte-xlsx'){const d=parteData(st.cab);parteHojaXlsx(d,parteNombre(d))}
+  else if(t.dataset.act==='parte-xlsx'){radCargar(st.cab,st.fecha).then(()=>{const d=parteData(st.cab);parteHojaXlsx(d,parteNombre(d))})}
   else if(t.dataset.act==='pf-save')pfGuardar();
   else if(t.dataset.act==='pt-rev'){st.ptRev=t.dataset.id;renderMain();const i=$('#pt_nota');if(i)i.focus()}
   else if(t.dataset.act==='pt-rev-no'){st.ptRev=null;renderMain()}
@@ -3115,23 +3115,30 @@ const PT_CORTO={kno3:'N. POTASICO',k2so4:'S. POTASICO',kcl:'CL. POTASICO',mkp:'F
 const ptMiles=v=>{const neg=v<0,a=Math.abs(v),d=Number.isInteger(a)?0:Math.abs(a*10-Math.round(a*10))<1e-9?1:2,[e,dec]=a.toFixed(d).split('.');return (neg?'-':'')+e.replace(/\B(?=(\d{3})+(?!\d))/g,'.')+(dec?','+dec:'')};
 const miles=v=>String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
 /* Datos fijos (trazabilidad, cultivo, sustrato, productor, superficie): en Ajustes del parte; Planos viene con los de la hoja */
-function parteFijos(cab){const g=(st.cfg.parte||{})[cab];if(g)return g;
-  if(cab==='pla')return{productor:'',sup:null,sect:{pla_s1:{traz:'21121 2ATP1T',vari:'RICOSOL',cult:'TOMATE',sust:'COCO'},pla_s2:{traz:'21121 2ATP1T',vari:'RICOSOL',cult:'TOMATE',sust:'COCO'}}};
-  return{productor:'',sup:null,sect:{}}}
+/* Cada fila de la izquierda (1-1 … 5-5) es un sector. Si el sector se llama «1-3» o «1.3» va en esa fila; si no, en orden. */
+function ptFilas(c){const out=[],usadas=new Set();c.sectores.forEach(s=>{const m=/(\d+)\s*[-.]\s*(\d+)/.exec(s.nombre);if(m&&+m[1]>=1&&+m[1]<=5&&+m[2]>=1&&+m[2]<=5){const row=10+(+m[1]-1)*5+(+m[2]-1);if(!usadas.has(row)){usadas.add(row);out.push({s,row})}}});
+  let next=10;c.sectores.forEach(s=>{if(out.some(x=>x.s===s))return;while(usadas.has(next))next++;if(next>34)return;usadas.add(next);out.push({s,row:next})});return out}
+const ptBloque=row=>Math.floor((row-10)/5)+1;
+const PT_PLA={traz:'21121 2ATP1T',vari:'RICOSOL',cult:'TOMATE',sust:'COCO'};
+function parteFijos(cab){const g=(st.cfg.parte||{})[cab];const P=g?clone(g):{productor:'',sup:null,blk:cab==='pla'?{1:{...PT_PLA},2:{...PT_PLA}}:{}};
+  if(!P.blk){P.blk={};const c=cabById(cab);if(c)for(const{s,row}of ptFilas(c)){const b=ptBloque(row),x=(P.sect||{})[s.id];if(x&&!P.blk[b])P.blk[b]={...x}}}
+  return P}
 const ptNum=(v,d)=>v==null||!isFinite(v)?null:+(+v).toFixed(d);
 /* Qué va en cada casilla, con los datos del día (se guarda con el parte para poder rehacerlo igual) */
 function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V={};
   const put=(ref,v,o)=>{if(v==null||v===''||(typeof v==='number'&&!isFinite(v)))return;V[ref]={v,...(o||{})}};
   put('D1',c.nombre.toUpperCase());put('A7','PRODUCTOR: '+(P.productor||''));put('L7','FECHA: '+fD(st.fecha));
-  c.sectores.forEach((s,i)=>{const m=/(\d+)/.exec(s.nombre),ns=m?+m[1]:i+1;if(ns<1||ns>5)return;const r0=10+(ns-1)*5,fx=(P.sect||{})[s.id]||{};
-    put('B'+r0,fx.traz,{rng:`B${r0}:B${r0+4}`,al:'l',b:1,sz:11,wrap:1});put('C'+r0,fx.vari,{al:'l',b:1});put('C'+(r0+1),fx.cult,{al:'l',b:1});put('D'+r0,fx.sust,{al:'l',b:1});
-    const min=r.min[s.id],rie=(r.rie||{})[s.id];
-    s.bandejas.forEach((bj,k)=>{const mm=/\d+[.,](\d+)/.exec(bj.nombre),nk=mm?+mm[1]:k+1;if(nk<1||nk>5)return;const row=r0+nk-1;
-      put('E'+row,ptNum(r.ceD[bj.id],2));put('F'+row,ptNum(r.phD[bj.id],2));put('G'+row,ptNum(min!=null&&bj.caudal?min*bj.caudal:null,0));put('H'+row,ptNum(r.dren[bj.id],0));
-      put('I'+row,ptNum(drenPct(s,bj),1));put('J'+row,ptNum(rie,0));put('K'+row,ptNum(min,0))})});
+  for(let b=1;b<=5;b++){const fx=(P.blk||{})[b];if(!fx)continue;const r0=10+(b-1)*5;
+    put('B'+r0,fx.traz,{rng:`B${r0}:B${r0+4}`,al:'l',b:1,sz:11,wrap:1});put('C'+r0,fx.vari,{al:'l',b:1});put('C'+(r0+1),fx.cult,{al:'l',b:1});put('D'+r0,fx.sust,{al:'l',b:1})}
+  const media=l=>{const v=l.filter(x=>x!=null&&isFinite(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+  for(const{s,row}of ptFilas(c)){const min=r.min[s.id],rie=(r.rie||{})[s.id],bs=s.bandejas;
+    // por sector: media de sus bandejas (CE y pH del drenaje, ml por gotero, ml drenados y %)
+    const vols=bs.map(bj=>min!=null&&bj.caudal?min*bj.caudal:null),dren=bs.map(bj=>r.dren[bj.id]??null),con=bs.map((bj,i)=>dren[i]!=null&&vols[i]?i:-1).filter(i=>i>=0);
+    const vol=con.length?media(con.map(i=>vols[i])):media(vols),dr=media(dren),pct=con.length?media(con.map(i=>dren[i]*100/vols[i])):null;
+    put('E'+row,ptNum(valSect(r,s,'ceD'),2));put('F'+row,ptNum(valSect(r,s,'phD'),2));put('G'+row,ptNum(vol,0));put('H'+row,ptNum(dr,0));put('I'+row,ptNum(pct,1));put('J'+row,ptNum(rie,0));put('K'+row,ptNum(min,0))}
   const sa=salidaDe(cabId),m3=r.m3[cabId],m3R=(r.m3R||{})[cabId];
   [['O10',sa.ceB,2],['O11',sa.ceR,2],['O12',sa.incR,2],['O13',sa.ent,2],['O14',sa.inc,2],['O15',sa.tot,2],['O16',sa.phS,2],['O17',m3R,1],['O18',m3,1],['O19',m3R!=null&&m3?m3R*100/m3:null,1],
-    ['O20',P.sup&&m3!=null?m3*1000/P.sup:null,2],['O21',(u=>u.real??u.des)(unidades(cabId)),1],['O22',(r.rad||{})[cabId],0]].forEach(([k,v,d])=>put(k,ptNum(v,d)));
+    ['O20',P.sup&&m3!=null?m3*1000/P.sup:null,2],['O21',(u=>u.real??u.des)(unidades(cabId)),1],['O22',(r.rad||{})[cabId]??radAuto(cabId,st.fecha),0]].forEach(([k,v,d])=>put(k,ptNum(v,d)));
   const nut={};for(const b of bidonesDe(cabId))for(const x of b.productos){if(!x.dosis)continue;const row=ptNutFila(x.p);if(!row)continue;const real=dosisReal(b,x,cabId);if(real!=null)nut[row]=(nut[row]||0)+real}
   for(const[row,v]of Object.entries(nut))put('O'+row,ptNum(v,2));
   const usados=new Set();for(const D of PT_DEP){const b=bidonesDe(cabId).find(x=>x.principal===D.p&&!usados.has(x.id));if(!b){put(D.hdr,`D-${D.n}:`,{al:'l',b:1});continue}usados.add(b.id);
@@ -3177,18 +3184,29 @@ async function parteHojaXlsx(d,nombre){let T;try{T=await parteTpl()}catch(e){toa
   await saveBlob(zipStore(files),nombre+'.xlsx')}
 const parteNombre=d=>`Control de riegos ${d.cab} ${fD(d.fecha).replace(/\//g,'-')}`;
 
+
+/* Radiación del día (si no se apunta a mano): la del servicio del tiempo para la finca, en J/cm² */
+st.radC={};
+const radKey=(cab,f)=>{const fi=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(cab)),u=(fi&&fi.ubic)||st.cfg.ubic||AGUILAS;return u.lat.toFixed(2)+','+u.lon.toFixed(2)};
+function radAuto(cab,f){const c=st.radC[radKey(cab,f)];return c&&c[f]!=null?Math.round(c[f]*100):null}
+async function radCargar(cab,f){if(enClaude())return;const k=radKey(cab,f);if(st.radC[k]&&st.radC[k][f]!==undefined)return;const[lat,lon]=k.split(',');
+  const dias=Math.round((Date.parse(hoy())-Date.parse(f))/864e5);
+  const url=dias<=90?`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=shortwave_radiation_sum&timezone=Europe%2FMadrid&past_days=92&forecast_days=1`
+    :`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&daily=shortwave_radiation_sum&timezone=Europe%2FMadrid&start_date=${f}&end_date=${f}`;
+  try{const j=await (await fetch(url)).json(),t=(j.daily||{}).time||[],v=(j.daily||{}).shortwave_radiation_sum||[];st.radC[k]=st.radC[k]||{};t.forEach((d,i)=>{if(v[i]!=null)st.radC[k][d]=v[i]});if(st.radC[k][f]===undefined)st.radC[k][f]=null}catch(e){}}
 /* Datos fijos de la hoja: los cambia el encargado o el administrador */
 st.pfD=null;
-function pfDraft(){const cab=st.cab;if(!st.pfD||st.pfD.cab!==cab)st.pfD={cab,v:clone(parteFijos(cab))};const v=st.pfD.v;v.sect=v.sect||{};return v}
+function pfDraft(){const cab=st.cab;if(!st.pfD||st.pfD.cab!==cab)st.pfD={cab,v:clone(parteFijos(cab))};const v=st.pfD.v;v.blk=v.blk||{};return v}
 function parteFijosHTML(cab){const P=pfDraft(),c=cabById(cab),g=esGestor(),dis=g?'':'disabled',inp=(k,val,ph,num)=>`<div class="inp"><input data-pf="${k}" ${num?'inputmode="decimal"':''} style="width:100%;text-align:left;text-transform:none" value="${esc(val??'')}" placeholder="${esc(ph||'')}" ${dis}></div>`;
-  return `<section class="card"><details class="pfx"${st.pfOpen?' open':''}><summary><b>Datos fijos de la hoja</b><span class="note"> · productor, superficie y, por sector, trazabilidad, variedad, cultivo y sustrato</span></summary>
+  return `<section class="card"><details class="pfx"${st.pfOpen?' open':''}><summary><b>Datos fijos de la hoja</b><span class="note"> · productor, superficie, trazabilidad, variedad, cultivo y sustrato</span></summary>
     <div class="frm" style="margin-top:10px"><div class="field"><label>Productor</label>${inp('productor',P.productor,'')}</div><div class="field"><label>Superficie regada (m²) · para L/m²</label>${inp('sup',P.sup!=null?inVal(P.sup):'','',1)}</div></div>
-    ${c.sectores.map(s=>{const x=P.sect[s.id]||{};return `<div class="lbl" style="margin-top:8px">${esc(s.nombre)}</div><div class="frm">${[['traz','Trazabilidad','21121 2ATP1T'],['vari','Variedad','RICOSOL'],['cult','Cultivo','TOMATE'],['sust','Sustrato','COCO']].map(([k,l,ph])=>`<div class="field"><label>${l}</label>${inp('s|'+s.id+'|'+k,x[k],ph)}</div>`).join('')}</div>`}).join('')}
+    <div class="note" style="margin-top:8px">Cada fila de la hoja (1-1 a 5-5) es un sector: ${ptFilas(c).map(({s,row})=>`${esc(s.nombre)} → ${ptBloque(row)}-${(row-10)%5+1}`).join(' · ')||'sin sectores'}</div>
+    ${[...new Set(ptFilas(c).map(x=>ptBloque(x.row)))].sort().map(b=>{const x=P.blk[b]||{};return `<div class="lbl" style="margin-top:8px">Filas ${b}-1 a ${b}-5</div><div class="frm">${[['traz','Trazabilidad','21121 2ATP1T'],['vari','Variedad','RICOSOL'],['cult','Cultivo','TOMATE'],['sust','Sustrato','COCO']].map(([k,l,ph])=>`<div class="field"><label>${l}</label>${inp('b|'+b+'|'+k,x[k],ph)}</div>`).join('')}</div>`}).join('')}
     ${g?'<div class="row"><button class="btn pri" data-act="pf-save">Guardar datos fijos</button></div>':'<div class="note">Solo los cambia el encargado o el administrador.</div>'}</details></section>`}
 async function pfGuardar(){const v=clone(pfDraft()),cab=st.pfD.cab;for(const c of [st.cfg,st.savedCfg])c.parte={...(c.parte||{}),[cab]:clone(v)};
   try{await Store.setConfig(st.savedCfg);toast('Datos fijos guardados');renderMain()}catch(e){toast(errMsg(e))}}
 $('#main').addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.pf;if(!k)return;const v=pfDraft(),val=e.target.value;
-  if(k==='productor')v.productor=val;else if(k==='sup')v.sup=num(val);else{const[,sid,f]=k.split('|');(v.sect[sid]=v.sect[sid]||{})[f]=val.trim()}});
+  if(k==='productor')v.productor=val;else if(k==='sup')v.sup=num(val);else{const[,b,f]=k.split('|');(v.blk[b]=v.blk[b]||{})[f]=val.trim()}});
 document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('pfx'))st.pfOpen=e.target.open},true);
 
 /* ---------- Copia de seguridad ---------- */
