@@ -1741,7 +1741,33 @@ const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633]
           <rect x="570" y="620" width="110" height="80" fill="url(#mpHatch)" stroke="#5f5644" stroke-width="2.5"/>
           <g>${[0,1,2,3].map(k=>`<rect x="${690+k*16}" y="626" width="13" height="70" fill="#2c4a6e" stroke="#9fb4c9" stroke-width="1"/>`).join('')}</g>
           <text x="661" y="735" text-anchor="middle" font-size="18" font-weight="800" fill="#b5741a">CABEZAL</text><text x="661" y="756" text-anchor="middle" font-size="12" fill="#5f5644">con placas solares</text></g>`;
-        return s}}})()};
+        return s}}})(),
+  /* Franco: dibujado sobre la foto aérea (norte arriba). 4 naves como las marcó Juanjo: 1 junto a la carretera, 2 al sur de la 1,
+     3 y 4 al otro lado del camino. «q» es el cuadrilátero que marca la dirección de las líneas de cultivo (los pasillos). */
+  fra:(()=>{const naves=[
+      {n:1,p:[[420,740],[712,812],[690,900],[645,1075],[388,1062]],q:[[420,740],[712,812],[645,1075],[388,1062]],c:[530,905]},
+      {n:2,p:[[478,1050],[612,1098],[525,1480],[422,1552],[410,1240]],q:[[478,1050],[612,1098],[525,1480],[422,1552]],c:[500,1270]},
+      {n:3,p:[[222,470],[312,500],[378,610],[362,1052],[300,1062],[85,895],[245,670],[240,505]],q:[[222,470],[335,520],[360,1055],[85,895]],c:[275,830]},
+      {n:4,p:[[135,140],[258,40],[472,285],[387,548],[205,465]],q:[[135,140],[258,40],[470,300],[205,470]],c:[300,290]}];
+    return{titulo:'Franco',finca:'Pinta Santos',vb:[30,-125,1010,1720],naves,ang:0,norte:[975,-60],norteAng:0,nota:'4 naves · norte arriba',
+      fondo(){let s='';
+        // bancales de cultivo al oeste
+        s+=`<g fill="#dfe8cf" stroke="#c9d6b3" stroke-width="1.5">${[[40,20,150,460],[40,480,92,850],[40,930,200,1040],[40,1080,300,1190],[40,1210,300,1330],[40,1350,300,1460],[40,1480,300,1590]].map(([x0,y0,x1,y1])=>`<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" rx="6"/>`).join('')}</g>`;
+        // invernaderos vecinos (no son de la finca): solo contorno
+        s+=`<g fill="none" stroke="#cbbf9f" stroke-width="1.5" stroke-dasharray="6 5"><path d="M440 560L640 230L800 250L730 730L430 735Z"/><path d="M300 20L580 0L480 230Z"/></g>`;
+        // carretera
+        const ctra='M1030 -125C935 120 852 330 792 520C762 620 746 700 730 800C712 900 692 990 672 1080C654 1170 634 1260 616 1340C600 1420 588 1500 576 1600';
+        s+=`<path d="${ctra}" stroke="#d9c58f" stroke-width="70" fill="none"/><path d="${ctra}" stroke="#efe2b8" stroke-width="60" fill="none"/><path d="${ctra}" stroke="#fff" stroke-width="2" stroke-dasharray="18 14" fill="none"/>
+          <g transform="translate(768 640) rotate(-74)"><rect x="-62" y="-14" width="124" height="28" rx="6" fill="#e8a33a"/><text y="6" text-anchor="middle" font-size="16" font-weight="700" fill="#fff">CARRETERA</text></g>`;
+        // camino entre las naves
+        const cam='M600 120L475 285L392 520L362 700L352 1060L405 1110L418 1300L428 1560';
+        s+=`<path d="${cam}" stroke="#bdb5a3" stroke-width="20" fill="none" stroke-linejoin="round"/><path d="${cam}" stroke="#e6e0d2" stroke-width="14" fill="none" stroke-linejoin="round"/>`;
+        // arbolado junto al camino
+        let sd=11;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;s+=`<g>`;for(let i=0;i<46;i++){const t=rnd(),x=405+(rnd()-.5)*30-t*20,y=330+t*400;const r=5+rnd()*7;s+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(1)}" fill="#7fae74" opacity=".55"/>`}s+=`</g>`;
+        // caseta / arbolado al sur de la nave 1
+        s+=`<g><rect x="585" y="995" width="50" height="58" fill="url(#mpHatch)" stroke="#5f5644" stroke-width="2"/><text x="610" y="1072" text-anchor="middle" font-size="13" fill="#5f5644" font-weight="700">CASETA</text></g>`;
+        return s}}})(),
+};
 const ITIPOS={plaga:['Plaga','#c0392b','P'],enfermedad:['Enfermedad','#7d3c98','E'],riego:['Riego / goteo','#1f78c1','R'],estructura:['Estructura / plástico','#d35400','S'],nutricion:['Nutrición','#8a9a1b','N'],otro:['Otro','#566573','O']};
 const IPRIO={alta:['Alta','bad'],media:['Media','warn'],baja:['Baja','ok']};
 st.inc=null;st.mz=1;st.mSel=null;st.mNueva=null;st.mFil='abiertas';st.mRes=null;
@@ -1751,7 +1777,7 @@ const incVisible=i=>!restringido()||fincasVis().some(f=>f.cabezales.includes(i.c
 const incAbiertas=()=>(st.inc||[]).filter(i=>i.estado!=='resuelta'&&incVisible(i));
 /* Pasillos de cada nave: cuántos hay y desde qué lado se cuentan (lo ajusta el encargado o el administrador) */
 function pasCfg(cab,nv){const M=MAPAS[cab],c=((st.cfg.mapas||{})[cab]||{})[nv.n]||{};return{n:c.n>0?c.n:nv.pas||(M.rayas||12)-1,inv:!!M.pasInv!==!!c.inv,otro:!!c.inv}}
-function pasLineas(cab,nv){const[a,b,c,d]=nv.p,{n,inv}=pasCfg(cab,nv),L=[];for(let k=1;k<=n;k++){const t=k/(n+1),p1=lerp(d,a,t),p2=lerp(c,b,t);L.push({num:inv?n+1-k:k,p1,p2})}return L}
+function pasLineas(cab,nv){const[a,b,c,d]=nv.q||nv.p,{n,inv}=pasCfg(cab,nv),L=[];for(let k=1;k<=n;k++){const t=k/(n+1),p1=lerp(d,a,t),p2=lerp(c,b,t);L.push({num:inv?n+1-k:k,p1,p2})}return L}
 function pasDe(cab,nv,pt){let best=null,bd=1e9;for(const l of pasLineas(cab,nv)){const[x1,y1]=l.p1,[x2,y2]=l.p2,dx=x2-x1,dy=y2-y1,t=Math.max(0,Math.min(1,((pt[0]-x1)*dx+(pt[1]-y1)*dy)/(dx*dx+dy*dy))),q=[x1+t*dx,y1+t*dy],dd=Math.hypot(pt[0]-q[0],pt[1]-q[1]);if(dd<bd){bd=dd;best=l.num}}return best}
 const lugar=i=>`Nave ${i.nave}${i.pasillo?' · pasillo '+i.pasillo:''}`;
 function dentro(pt,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const[xi,yi]=poly[i],[xj,yj]=poly[j];if(((yi>pt[1])!==(yj>pt[1]))&&(pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi))c=!c}return c}
@@ -1772,7 +1798,7 @@ function planoSVG(cab,incs){const M=MAPAS[cab],[vx,vy,vw,vh]=M.vb;let s=`<svg vi
     s+=`<g class="nave" data-nave="${nv.n}"><polygon points="${ptsS(nv.p)}" fill="${alta?'#f7dcd6':tiene.length?'#fbecc9':'#e3ecf4'}" stroke="#1b2f4a" stroke-width="3" stroke-linejoin="round"/>`;
     for(const l of pasLineas(cab,nv)){s+=`<line x1="${l.p1[0].toFixed(1)}" y1="${l.p1[1].toFixed(1)}" x2="${l.p2[0].toFixed(1)}" y2="${l.p2[1].toFixed(1)}" stroke="#9fb4c9" stroke-width="1.6"/>`;
       for(const f of [0.05,0.95]){const q=lerp(l.p1,l.p2,f);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)})"><circle r="9" fill="#fff" stroke="#7f98b2" stroke-width="1"/><text y="4" text-anchor="middle" font-size="11" font-weight="800" fill="#1b2f4a">${l.num}</text></g>`}}
-    const[cx,cy]=centro(nv.p);s+=`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${M.ang})"><rect x="-46" y="-17" width="92" height="34" rx="17" fill="#1b2f4a" opacity=".92"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#fff" letter-spacing="1">NAVE ${nv.n}</text>${tiene.length?`<circle cx="50" cy="-15" r="13" fill="${alta?'#c0392b':'#e2a32a'}"/><text x="50" y="-10" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${tiene.length}</text>`:''}</g></g>`}
+    const[cx,cy]=nv.c||centro(nv.p);s+=`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${M.ang})"><rect x="-46" y="-17" width="92" height="34" rx="17" fill="#1b2f4a" opacity=".92"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#fff" letter-spacing="1">NAVE ${nv.n}</text>${tiene.length?`<circle cx="50" cy="-15" r="13" fill="${alta?'#c0392b':'#e2a32a'}"/><text x="50" y="-10" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${tiene.length}</text>`:''}</g></g>`}
   // incidencias
   for(const i of incs.filter(i=>st.mFil==='todas'||i.estado!=='resuelta')){const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta',sel=st.mSel===i.id,k=sel?1.35:1,col=res?'#9aa3a8':t[1];
     s+=`<g class="mpin${sel?' sel':''}" data-inc="${i.id}" transform="translate(${i.x.toFixed(1)} ${i.y.toFixed(1)}) scale(${k})" filter="url(#mpSh)">${i.prio==='alta'&&!res?'<circle r="20" cy="-30" fill="none" stroke="#c0392b" stroke-width="3" class="mpulse"/>':''}<path d="M0 0C-4 -10 -15 -18 -15 -30A15 15 0 1 1 15 -30C15 -18 4 -10 0 0Z" fill="${col}" stroke="#fff" stroke-width="2.5"/><text y="-24" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${res?'✓':t[2]}</text><circle r="34" cy="-25" fill="transparent"/></g>`}
