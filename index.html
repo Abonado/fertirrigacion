@@ -362,6 +362,7 @@ table.cmat td,table.cmat th{white-space:nowrap}table.cmat td:nth-child(2),table.
 .cuf{border-top:1px solid var(--line);padding-top:12px;margin-top:6px;display:grid;gap:8px}.cuf h4{margin:0;font-size:16px}.cuc{display:grid;gap:8px;padding-left:10px;border-left:3px solid var(--accent)}
 .cus{display:grid;gap:4px;padding:8px 0;border-top:1px dashed var(--line)}.cus small{color:var(--muted);font-size:12px}
 table.rendt td:first-child{min-width:150px;white-space:normal}table.rendt td:first-child b{text-transform:none}table.rendt th,table.rendt td{white-space:nowrap}
+.m3o{display:grid;gap:6px;margin:8px 0;padding:10px;border-radius:10px;background:var(--bg)}
 .agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
 .acard{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:10px;align-content:start;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 1px 2px rgba(20,30,40,.04),0 8px 24px rgba(20,30,40,.06);position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
 .acard:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(20,30,40,.06),0 14px 30px rgba(20,30,40,.1)}.acard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
@@ -824,6 +825,7 @@ function vCuentas(){const c=cabById(st.cab);let h=banner()+`<div data-out="pend"
   for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}${fmt(b.lpcm,1)} L por cm</div></div></div>
       ${lecturaBoxes(b,c)}
+      ${b.cabezales.length>1?`<div class="m3o"><div class="note">Depósito compartido: para repartir lo gastado hacen falta los m³ de hoy de ${b.cabezales.length>2?'los otros cabezales':'el otro cabezal'}.</div><div class="frm">${b.cabezales.filter(x=>x!==c.id).map(x=>`<div class="field"><label for="m3o_${b.id}_${x}">m³ de ${esc(cabById(x).nombre)} hoy</label><div class="inp"><input id="m3o_${b.id}_${x}" data-k="reg.m3.${x}" inputmode="decimal" autocomplete="off"${sugPh('m3',x)} value="${inVal(st.reg.m3[x])}"><span class="u">m³</span></div></div>`).join('')}</div></div>`:''}
       <div data-out="lec_${b.id}">${lecturaHTML(b)}</div>
       <div class="row"><button class="btn" data-act="llenar-arriba" data-id="${b.id}">He llenado hasta arriba</button></div>
       <div data-out="t_${b.id}">${tankDose(b,c)}</div></section>`}
@@ -833,7 +835,7 @@ function sumCuentas(){let ok=0,tot=0,peor=null;for(const b of bidonesDe(st.cab))
   return `<div class="stat"><span>En dosis (±10 %)</span><b>${tot?ok+' de '+tot:'—'}</b><small>productos de la receta</small></div>
   <div class="stat"><span>Mayor desviación</span><b>${peor?`<span class="pill ${peor.e.c}" style="font-size:16px">${peor.e.t}</span>`:'—'}</b><small>${peor?esc(prod(peor.x.p).n):'faltan datos'}</small></div>
   <div class="stat"><span>Unidades aportadas</span><b>${fmt(u.real,0)}</b><small>objetivo ${fmt(u.des,0)}</small></div>`}
-function tankDose(b,c){const shared=b.cabezales.length>1,cm=cmCab(b,c.id),L=litros(b,c.id),m=st.reg.m3[c.id];
+function tankDose(b,c){const shared=b.cabezales.length>1,cm=cmCab(b,c.id),L=litros(b,c.id),m=st.reg.m3[c.id];const faltan=shared&&st.reg.cm[b.id]!=null?b.cabezales.filter(x=>st.reg.m3[x]==null):[];if(faltan.length)return `<div class="banner">Faltan los m³ de hoy de ${esc(faltan.map(cabNombre).join(' y '))}: sin ellos no se puede repartir este depósito ni sacar sus cuentas.</div>`;
   let h=nivelHTML(b);
   h+=`<div class="tbl"><table><thead><tr><th>Producto</th><th>Deseada</th><th>Real</th><th>Desv.</th><th>× ${fmt(b.lpcm,b.lpcm%1?1:0)}</th></tr></thead><tbody>`;
   for(const x of b.productos){if(!x.dosis)continue;const r=dosisReal(b,x,c.id),e=estado(r,x.dosis);
@@ -2431,7 +2433,7 @@ function applyCfg(p,v){const b=bid(p[2]);switch(p[1]){
   case 'al':if(v!=null)st.cfg.alertas[p[2]]=v;break;case 'ub':st.cfg.ubic={...(st.cfg.ubic||{}),[p[2]]:v};st.wx=null;break;case 'min':if(v==null)delete st.cfg.stockMin[p[2]];else st.cfg.stockMin[p[2]]=v;break;case 'saco':if(!(v>0))delete st.cfg.saco[p[2]];else st.cfg.saco[p[2]]=v;break;
   case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'avisos':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.avisosUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.avisosUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'modo':if(MODOS[v])b.modo=v;break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
 function onInput(e){const t=e.target,k=t.dataset.k;if(!k)return;const p=k.split('.');const v=t.type==='checkbox'?t.checked:(t.dataset.text?t.value.trim():num(t.value));
-  if(p[0]==='reg'){if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
+  if(p[0]==='reg'){if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);for(const o of document.querySelectorAll('#main [data-k]'))if(o!==t&&o.dataset.k===k&&o.type!=='checkbox')o.value=t.value;if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
   softUpdate();renderSave()}
 $('#main').addEventListener('input',onInput);
 $('#main').addEventListener('change',e=>{if(e.target.type==='checkbox')onInput(e)});
