@@ -405,6 +405,7 @@ table.rendt td:first-child{min-width:150px;white-space:normal}table.rendt td:fir
 .grupos{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}
 .grp{position:relative;display:grid;justify-items:center;gap:3px;padding:8px 2px 7px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font:700 12px var(--f-display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
 .grp svg{width:22px;height:22px}
+.ion{text-transform:none;letter-spacing:0}
 .grp span{max-width:100%;overflow:hidden;text-overflow:clip;white-space:nowrap}
 @media (max-width:699px){#grupos.seis{gap:4px}#grupos.seis .grp{font-size:10px;letter-spacing:.02em;padding:8px 0 7px}}
 .grp[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
@@ -591,7 +592,7 @@ const fFecha=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'sho
 const fCorta=f=>{const p=f.split('-');return p[2]+'/'+p[1]};
 
 /* ---------- Almacenamiento: nube del artifact (db) o, si no hay, este navegador ---------- */
-const SYNC=new Set(['incidencias','almacen','llenados','tareas','material','mensajes','crecimiento','partes','registros','cambios','collas','jornadas','cincid','ctareas']);
+const SYNC=new Set(['cuaderno','incidencias','almacen','llenados','tareas','material','mensajes','crecimiento','partes','registros','cambios','collas','jornadas','cincid','ctareas']);
 const ahoraISO=()=>new Date().toISOString();
 const Store={db:null,mode:'local',
   /* En la nube: la primera vez descarga todo y lo guarda en el móvil; las siguientes solo pide lo cambiado (campo «mod»).
@@ -691,7 +692,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -789,10 +790,10 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.
 function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material'].includes(st.tab);
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
-const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','parte','partes'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','solucion','parte','partes'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
-  {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','diagnostico','tiempo'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
+  {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','tiempo'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 /* Personal de campo: su propio menú (de momento, las collas) */
@@ -1007,7 +1008,7 @@ function adjHTML(list,removable){if(!list||!list.length)return '';
     if(a.img)return `<span class="adjwrap"><button class="thumb" data-img="${a.id}" aria-label="Ver foto"><img alt="" ${a.local||a.fb?`data-local="${a.id}"`:''} src="${Adj.src(a)}"></button>${rm}</span>`;
     return `<span class="adjwrap"><button class="fchip" data-file="${a.id}">${CLIP}<span>${esc(a.name)}</span><small>${fSize(a.size||0)}</small></button>${rm}</span>`}).join('')+`</div>`}
 async function hydrate(){for(const el of document.querySelectorAll('img[data-local]')){if(el.getAttribute('src'))continue;const u=await Adj.url(findAdj(el.dataset.local)||{id:el.dataset.local,local:true});if(u)el.src=u}}
-function findAdj(id){{const r=findAdjCampo(id);if(r)return r}for(const a of [...st.msgAdj,...st.ent.adj,...st.tf.adj,...st.td.adj,...st.mf.adj,...((st.cf&&st.cf.adj)||[]),...((st.mNueva&&st.mNueva.adj)||[])])if(a.id===id)return a;for(const m of [...(st.msgs||[]),...(st.alm||[]),...(st.diags||[]),...(st.priv||[]),...(st.tareas||[]),...(st.mat||[]),...(st.crec||[]),...(st.inc||[])])for(const a of [...(m.adjuntos||[]),...(m.adjHecha||[]),...(m.fotos||[])])if(a.id===id)return a;return null}
+function findAdj(id){{const r=findAdjCampo(id);if(r)return r}for(const a of [...st.msgAdj,...st.ent.adj,...st.tf.adj,...st.td.adj,...st.mf.adj,...((st.cf&&st.cf.adj)||[]),...((st.mNueva&&st.mNueva.adj)||[])])if(a.id===id)return a;for(const m of [...(st.cuad||[]),...(st.cq&&st.cq.form?[{adjuntos:st.cq.form.adj||[]}]:[]),...(st.msgs||[]),...(st.alm||[]),...(st.diags||[]),...(st.priv||[]),...(st.tareas||[]),...(st.mat||[]),...(st.crec||[]),...(st.inc||[])])for(const a of [...(m.adjuntos||[]),...(m.adj||[]),...(m.adjHecha||[]),...(m.fotos||[])])if(a.id===id)return a;return null}
 async function addFiles(files,list){list=list||st.msgAdj;for(const f of files){const tmp={tmp:true,id:'t'+Math.random(),name:f.name||'archivo'};list.push(tmp);renderMain();
   try{const a=await Adj.put(f);list[list.indexOf(tmp)]=a}catch(e){list.splice(list.indexOf(tmp),1);
     toast(e&&e.code==='tipo'?'Aquí solo se pueden adjuntar fotos, PDF, vídeos y texto':e&&e.code==='too_large'?'El archivo es demasiado grande':'No se pudo adjuntar '+(f.name||'el archivo'))}
@@ -1100,7 +1101,7 @@ const esAdminU=()=>!window.NUBE||!!(NUBE.user&&NUBE.user.admin);
 const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';if(!u)return 'trabajador';return u.admin?'admin':u.encargado?'encargado':'trabajador'};
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
-const SOLO_GESTOR=new Set(['graficas','informe']);
+const SOLO_GESTOR=new Set(['graficas','informe','cuaderno']);
 function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
@@ -2453,7 +2454,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()},150)});
 
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas};
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno};
 function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
@@ -2528,7 +2529,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.open){if(st.dirtyReg)await saveReg();st.tab='cuentas';await loadFecha(t.dataset.open)}
   else if(t.dataset.img){openImg(t.dataset.img)}
   else if(t.dataset.file){const a=findAdj(t.dataset.file);if(a)Adj.save(a)}
-  else if(t.dataset.rmadj){if(CAMPO.has(st.tab)&&st.co.ed&&(st.co.ed.adjuntos||[]).some(x=>x.id===t.dataset.rmadj))coSucio();for(const L of [...campoAdjLists(),st.msgAdj,st.ent.adj,st.tf.adj,st.td.adj,st.mf.adj,...(st.cf?[st.cf.adj]:[]),...(st.mNueva?[st.mNueva.adj]:[])]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
+  else if(t.dataset.rmadj){if(CAMPO.has(st.tab)&&st.co.ed&&(st.co.ed.adjuntos||[]).some(x=>x.id===t.dataset.rmadj))coSucio();for(const L of [...campoAdjLists(),...(st.cq&&st.cq.form&&st.cq.form.adj?[st.cq.form.adj]:[]),st.msgAdj,st.ent.adj,st.tf.adj,st.td.adj,st.mf.adj,...(st.cf?[st.cf.adj]:[]),...(st.mNueva?[st.mNueva.adj]:[])]){const i=L.findIndex(x=>x.id===t.dataset.rmadj);if(i>=0){Adj.del(L[i]);L.splice(i,1)}}renderMain()}
   else if(t.dataset.gr){st.gRange=+t.dataset.gr;renderMain()}
   else if(t.dataset.mf!==undefined){st.msgF=t.dataset.mf;st.confirmDel=null;renderMain()}
   else if(t.dataset.act==='msg-send')sendMsg();
@@ -3146,6 +3147,333 @@ function onCampoInput(e){if(!CAMPO.has(st.tab))return;const t=e.target,d=t.datas
   if(d.jadj&&st.co.ed){if(!ch||!t.files||!t.files.length)return;const j=st.co.ed;j.adjuntos=j.adjuntos||[];const fs=[...t.files];t.value='';coSucio();addFiles(fs,j.adjuntos).then(()=>{coSucio();renderMain()})}}
 $('#main').addEventListener('input',onCampoInput);$('#main').addEventListener('change',onCampoInput);
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&e.target&&e.target.id==='cm_txt'&&window.matchMedia('(min-width:700px)').matches){e.preventDefault();cmEnviar()}});
+/* ---------- Cuaderno de explotación (España: RD 1311/2012 anexo III fitosanitarios; RD 1051/2022 fertilización y riego;
+   Región de Murcia: zona vulnerable a nitratos de Águilas y resto de ZVN, programa de actuación) ----------
+   Lo fijo (explotación, parcelas, aplicadores, equipos) va en la configuración; los registros, en la colección «cuaderno».
+   La fertilización y el riego salen solos de las cuentas diarias, agrupados por quincenas (lo permite el RD 1051/2022 en fertirrigación). */
+st.cuad=null;st.cq={sec:'resumen',form:null,conf:null,desde:null,hasta:null};
+const CQ_SECS=[['resumen','Resumen'],['explot','Explotación'],['parcelas','Parcelas'],['pers','Aplicadores y equipos'],['fito','Fitosanitarios'],['fert','Fertilización'],['riego','Riego'],['cosecha','Cosecha'],['analisis','Análisis'],['zv','Zona vulnerable'],['exportar','Exportar']];
+const CQ_RIEGO=[['goteo','Riego localizado (goteo)'],['sinsuelo','Cultivo sin suelo / hidropónico sin recirculación'],['recirc','Cultivo sin suelo / hidropónico con recirculación'],['micro','Microaspersión'],['asper','Aspersión'],['grav','Gravedad']];
+const CQ_UD=[['L/ha','L/ha'],['kg/ha','kg/ha'],['cc/hL','cc/hL'],['g/hL','g/hL'],['L/1000 m²','L/1000 m²'],['kg/1000 m²','kg/1000 m²']];
+const CQ_AN=[['agua','Agua de riego'],['suelo','Suelo / sustrato'],['drenaje','Drenaje'],['foliar','Foliar'],['residuos','Residuos de fitosanitarios'],['estiercol','Estiércol / enmienda'],['otro','Otro']];
+const CQ_CARNE=[['basico','Básico'],['cualificado','Cualificado'],['fumigador','Fumigador'],['piloto','Piloto aplicador']];
+/* Riqueza en unidades fertilizantes: % del kg (sólidos) o kg por cada 100 L (líquidos). El N de los líquidos es el mismo que usa «Unidades» */
+const CQ_RIQ0={kno3:{N:13,P:0,K:46},k2so4:{N:0,P:0,K:50},kcl:{N:0,P:0,K:60},mkp:{N:0,P:52,K:34},h3po4:{N:0,P:85.8,K:0},ca:{N:11.52,P:0,K:0},hno3:{N:15,P:0,K:0}};
+const cqC=()=>{const c=st.cfg.cuad=st.cfg.cuad||{};c.exp=c.exp||{};c.parcelas=c.parcelas||[];c.pers=c.pers||[];c.equipos=c.equipos||[];c.riq=c.riq||{};return c};
+const cqRiq=p=>({N:0,P:0,K:0,...(CQ_RIQ0[p]||{}),...((st.cfg.cuad||{}).riq||{})[p]||{}});
+const cqParc=()=>cqC().parcelas;
+const cqParcN=id=>{const p=cqParc().find(x=>x.id===id);return p?`${p.n||'?'} · ${p.nom||cabNombre(p.cab)||''}`:'—'};
+const cqPersN=id=>{const p=cqC().pers.find(x=>x.id===id);return p?p.nom:'—'};
+const cqEqN=id=>{const p=cqC().equipos.find(x=>x.id===id);return p?p.nom:'—'};
+const cqSig=p=>[p.prov,p.muni,p.pol,p.par,p.rec].every(v=>v!=null&&v!=='')?`${p.prov}-${p.muni}-${p.pol}-${p.par}-${p.rec}`:'';
+/* Campos de cada registro: [clave, etiqueta, tipo, obligatorio, opciones] */
+const CQ_F={
+  parcelas:[['n','Nº de orden','text',1],['nom','Nombre (nave, sector…)','text',1],['cab','Cabezal que la riega','sel',1,()=>st.cfg.cabezales.map(c=>[c.id,c.nombre])],['sup','Superficie (ha)','num',1],
+    ['prov','SIGPAC · provincia','text',1],['muni','SIGPAC · municipio','text',1],['agr','SIGPAC · agregado','text'],['zona','SIGPAC · zona','text'],['pol','SIGPAC · polígono','text',1],['par','SIGPAC · parcela','text',1],['rec','SIGPAC · recinto','text',1],
+    ['cult','Cultivo','text',1],['vari','Variedad','text'],['sist','Sistema','sel',1,()=>[['invernadero','Invernadero'],['malla','Malla'],['aire','Aire libre']]],['riego','Sistema de riego','sel',1,()=>CQ_RIEGO],
+    ['siembra','Fecha de plantación','date'],['prec','Cultivo precedente','text'],['rend','Rendimiento esperado (t/ha)','num'],['coefN','Extracción de N (kg N por t de cosecha)','num',0,null,'Tomate: 2,5 – 4 (programa de actuación de Murcia, tabla 5)'],
+    ['necN','Plan de abonado · N (kg/ha)','num'],['necP','Plan de abonado · P₂O₅ (kg/ha)','num'],['necK','Plan de abonado · K₂O (kg/ha)','num'],['amb','Datos medioambientales (captaciones de agua, zonas protegidas…)','area']],
+  pers:[['nom','Nombre y apellidos o empresa','text',1],['nif','NIF','text',1],['ropo','Nº inscripción ROPO','text'],['carne','Tipo de carné','sel',0,()=>[['','—'],...CQ_CARNE]],['ncarne','Nº de carné','text'],['cad','Caducidad del carné','date']],
+  equipos:[['nom','Equipo (tipo y marca)','text',1],['roma','Nº de inscripción ROMA','text'],['insp','Fecha de la última inspección (ITEAF)','date'],['obs','Observaciones','text']],
+  fito:[['fecha','Fecha','date',1],['parcelas','Parcelas tratadas','multi',1,()=>cqParc().map(p=>[p.id,cqParcN(p.id)])],['sup','Superficie tratada (ha)','num',1],['plaga','Problema fitosanitario (plaga, enfermedad, mala hierba)','text',1],['just','Justificación (umbral, síntoma, estación de avisos…)','text'],
+    ['prod','Producto (nombre comercial)','text',1],['reg','Nº de registro','text',1],['ma','Materia activa','text'],['dosis','Dosis','num',1],['ud','Unidad de la dosis','sel',1,()=>CQ_UD],['caldo','Caldo (L/ha)','num'],
+    ['apl','Aplicador','sel',1,()=>[['','—'],...cqC().pers.map(p=>[p.id,p.nom])]],['eq','Equipo','sel',0,()=>[['','—'],...cqC().equipos.map(p=>[p.id,p.nom])]],['ps','Plazo de seguridad (días)','num',1],['ef','Eficacia','sel',0,()=>[['','Sin valorar todavía'],['B','Buena'],['R','Regular'],['M','Mala']]],['obs','Observaciones','area']],
+  fert:[['fecha','Fecha','date',1],['parcelas','Parcelas','multi',1,()=>cqParc().map(p=>[p.id,cqParcN(p.id)])],['prod','Producto','text',1],['tfert','Tipo','sel',1,()=>[['mineral','Abono mineral'],['organico','Abono orgánico / estiércol'],['enmienda','Enmienda'],['foliar','Foliar'],['bioest','Bioestimulante']]],
+    ['metodo','Forma de aplicación','sel',1,()=>[['fondo','Abonado de fondo'],['fertirrig','Fertirrigación (fuera de la receta)'],['foliar','Foliar'],['cobertera','Cobertera']]],['kg','Cantidad total (kg o L)','num',1],['N','Riqueza N (%)','num'],['P','Riqueza P₂O₅ (%)','num'],['K','Riqueza K₂O (%)','num'],['obs','Observaciones','area']],
+  cosecha:[['fecha','Fecha','date',1],['parcela','Parcela','sel',1,()=>[['','—'],...cqParc().map(p=>[p.id,cqParcN(p.id)])]],['prod','Producto','text',1],['kg','Cantidad (kg)','num',1],['alb','Nº de albarán o factura','text'],['cli','Comprador (nombre)','text',1],['nif','NIF del comprador','text'],['rgseaa','Nº RGSEAA del comprador','text'],['dir','Dirección del comprador','text']],
+  analisis:[['fecha','Fecha','date',1],['clase','Tipo','sel',1,()=>CQ_AN],['parcela','Parcela (si es de una)','sel',0,()=>[['','—'],...cqParc().map(p=>[p.id,cqParcN(p.id)])]],['lab','Laboratorio','text'],['bol','Nº de boletín','text'],['res','Resultados principales','area'],['adj','Boletín (foto o PDF)','file']],
+  lluvia:[['fecha','Fecha','date',1],['mm','Lluvia caída (mm)','num',1],['int','Intensidad máxima (mm/h)','num'],['medidas','Qué se ajustó del riego y del abonado','area',1]],
+  decl:[['fecha','Fecha','date',1],['firma','Firmado por','text',1],['texto','Declaración','area',1]]};
+const CQ_DECL='El titular declara que el sistema de fertirrigación se mantiene en buen estado de funcionamiento: se revisan periódicamente filtros, goteros, venturis y depósitos, se comprueba la uniformidad del riego y se corrigen las fugas y obstrucciones detectadas.';
+const CQ_NOM={fito:'Tratamiento fitosanitario',fert:'Abonado (fuera de la receta diaria)',cosecha:'Cosecha comercializada',analisis:'Análisis',lluvia:'Lluvia fuerte (más de 15 mm/h)',decl:'Declaración responsable: mantenimiento de la fertirrigación',parcelas:'Parcela',pers:'Aplicador o empresa',equipos:'Equipo de aplicación'};
+const cqEsCfg=t=>['parcelas','pers','equipos'].includes(t);
+let cqLoading=false;
+async function loadCuad(){if(cqLoading)return;cqLoading=true;try{st.cuad=await Store.listCol('cuaderno',0)}catch(e){console.warn('cuaderno',e);st.cuad=st.cuad||[];st.cqErr=e&&e.code}cqLoading=false;if(st.tab==='cuaderno')renderMain()}
+function cqRango(){const y=hoy().slice(0,4);if(!st.cq.desde)st.cq.desde=y+'-01-01';if(!st.cq.hasta)st.cq.hasta=y+'-12-31';return[st.cq.desde,st.cq.hasta]}
+const cqEnRango=f=>{const[a,b]=cqRango();return f>=a&&f<=b};
+const cqReg=t=>(st.cuad||[]).filter(x=>x.tipo===t&&cqEnRango(x.fecha||'')).sort((a,b)=>a.fecha<b.fecha?1:-1);
+/* Fertirrigación y riego por quincena y cabezal, desde las cuentas guardadas */
+function cqQuin(f){const d=+f.slice(8,10);return f.slice(0,7)+(d<=15?'-1':'-2')}
+const cqQuinTxt=q=>{const[y,m,h]=q.split('-');const fin=new Date(+y,+m,0).getDate();return h==='1'?`1–15/${m}/${y}`:`16–${fin}/${m}/${y}`};
+function cqAuto(){const[a,b]=cqRango(),o={};for(const r of (st.hist||[]).filter(r=>r.fecha>=a&&r.fecha<=b))for(const c of st.cfg.cabezales){const m3=r.m3&&r.m3[c.id];const k=kgCab(r,c.id);if(m3==null&&!Object.keys(k).length)continue;
+    const key=c.id+'|'+cqQuin(r.fecha),x=o[key]=o[key]||{cab:c.id,q:cqQuin(r.fecha),m3:0,dias:0,kg:{}};x.m3+=m3||0;x.dias++;for(const p in k)x.kg[p]=(x.kg[p]||0)+k[p]}
+  return Object.values(o).map(x=>{let N=0,P=0,K=0;for(const[p,v]of Object.entries(x.kg)){const r=cqRiq(p);N+=v*r.N/100;P+=v*r.P/100;K+=v*r.K/100}return{...x,N,P,K}}).sort((a,b)=>a.q<b.q?-1:a.q>b.q?1:a.cab<b.cab?-1:1)}
+/* Reparto de lo de un cabezal entre sus parcelas, por superficie */
+function cqReparto(cab){const ps=cqParc().filter(p=>p.cab===cab&&+p.sup>0),t=ps.reduce((s,p)=>s+(+p.sup),0);return ps.map(p=>({p,f:t?(+p.sup)/t:0}))}
+function cqAguaN(cab){const n=(((st.cfg.nutri||{})[cab]||{}).agua||{}).v||{};return +n.NO3||0}   // meq/L de nitrato del agua
+function cqBalance(){const auto=cqAuto(),out=[];
+  for(const p of cqParc()){const sup=+p.sup||0;if(!sup)continue;let N=0,P=0,K=0,m3=0;
+    for(const x of auto.filter(x=>x.cab===p.cab)){const f=(cqReparto(p.cab).find(r=>r.p.id===p.id)||{}).f||0;N+=x.N*f;P+=x.P*f;K+=x.K*f;m3+=x.m3*f}
+    for(const r of cqReg('fert').filter(r=>(r.parcelas||[]).includes(p.id))){const ps=(r.parcelas||[]).map(id=>cqParc().find(z=>z.id===id)).filter(Boolean),ts=ps.reduce((s,z)=>s+(+z.sup||0),0)||1,f=sup/ts;N+=(+r.kg||0)*(+r.N||0)/100*f;P+=(+r.kg||0)*(+r.P||0)/100*f;K+=(+r.kg||0)*(+r.K||0)/100*f}
+    const Nagua=cqAguaN(p.cab)*14.007*m3/1000,kgCos=cqReg('cosecha').filter(c=>c.parcela===p.id).reduce((s,c)=>s+(+c.kg||0),0),coef=+p.coefN||3.25;
+    out.push({p,sup,N,P,K,m3,Nagua,kgCos,estN:(+p.rend||0)*sup*coef,realN:kgCos/1000*coef,coef})}
+  return out}
+/* Comprobaciones de lo que pide la normativa */
+function cqChecks(){const c=cqC(),e=c.exp,L=[],ok=(b,t,s)=>L.push([b?'ok':'bad',t,s]),av=(b,t,s)=>L.push([b?'ok':'warn',t,s]);
+  ok(e.titular&&e.nif&&(e.rea||e.siex),'Datos del titular y nº de registro de la explotación','Titular, NIF y nº REA/REGEPA o código SIEX');
+  {const nf=c.parcelas.filter(p=>!cqSig(p)||!(+p.sup>0)).length;ok(c.parcelas.length&&!nf,'Parcelas con referencia SIGPAC y superficie',c.parcelas.length?(nf?nf+' sin completar':''):'No hay parcelas')}
+  const sinParc=st.cfg.cabezales.filter(cb=>!c.parcelas.some(p=>p.cab===cb.id)).map(cb=>cb.nombre);av(!sinParc.length,'Todos los cabezales tienen parcela',sinParc.length?'Sin parcela: '+sinParc.join(', ')+' (su abonado no se reparte)':'');
+  ok(c.pers.length&&c.pers.every(p=>p.ncarne||p.ropo),'Aplicadores con carné o nº ROPO',c.pers.length?'':'No hay aplicadores');
+  const viejo=c.equipos.filter(q=>!q.insp||(Date.now()-Date.parse(q.insp))>3*365*864e5);av(!viejo.length,'Equipos con la inspección en vigor (cada 3 años)',viejo.length?viejo.map(q=>q.nom).join(', '):'');
+  const sinEf=cqReg('fito').filter(t=>!t.ef);av(!sinEf.length,'Tratamientos con la eficacia valorada',sinEf.length?sinEf.length+' sin valorar':'');
+  const ag=(st.cuad||[]).filter(x=>x.tipo==='analisis'&&x.clase==='agua').sort((a,b)=>a.fecha<b.fecha?1:-1)[0];
+  ok(ag&&(Date.now()-Date.parse(ag.fecha))<=2*365*864e5,'Análisis de agua de riego de menos de 2 años',ag?'Último: '+fD(ag.fecha):'No hay ninguno apuntado');
+  const ult=(st.hist||[]).map(r=>r.fecha).sort().pop();av(ult&&(Date.now()-Date.parse(ult))<31*864e5,'Fertilización apuntada en el último mes (plazo del RD 1051/2022)',ult?'Último día guardado: '+fD(ult):'');
+  av(c.parcelas.length&&c.parcelas.every(p=>p.necN!=null&&p.necN!==''),'Plan de abonado: necesidades de N, P₂O₅ y K₂O por parcela','');
+  if(e.zv)av(cqReg('decl').length,'Zona vulnerable: declaración responsable del mantenimiento de la fertirrigación en esta campaña','');
+  return L}
+function cqFormDe(t,x){const f={_t:t,_id:x?x.id:null};for(const[k,,ty]of CQ_F[t])f[k]=x&&x[k]!=null?clone(x[k]):ty==='multi'||ty==='file'?[]:'';if(!x){if(CQ_F[t].some(z=>z[0]==='fecha'))f.fecha=hoy();if(t==='decl'){f.texto=CQ_DECL;f.firma=(cqC().exp.titular||yoNombre())}if(t==='fito'&&cqC().pers.length===1)f.apl=cqC().pers[0].id;if(t==='parcelas'){f.n=String(cqParc().length+1);f.sist='invernadero';f.riego='recirc';f.prov=cqC().exp.provCod||'';f.muni=cqC().exp.muniCod||'';f.coefN=3.25}if(t==='fert'){f.tfert='mineral';f.metodo='fondo'}}return f}
+function cqCampo(f,[k,l,ty,req,op,ayuda]){const v=f[k],id='cq_'+k,lab=`<label for="${id}">${esc(l)}${req?' *':''}</label>`;
+  if(ty==='area')return `<div class="field" style="grid-column:1/-1">${lab}<textarea id="${id}" data-cq="${k}" rows="3">${esc(v||'')}</textarea></div>`;
+  if(ty==='sel')return `<div class="field">${lab}<div class="inp"><select id="${id}" data-cq="${k}">${op().map(([a,b])=>`<option value="${esc(a)}" ${String(v)===String(a)?'selected':''}>${esc(b)}</option>`).join('')}</select></div>${ayuda?`<small class="note">${esc(ayuda)}</small>`:''}</div>`;
+  if(ty==='multi'){const o=op();return `<div class="field" style="grid-column:1/-1">${lab}${o.length?`<div class="pick">${o.map(([a,b])=>`<button class="chip" data-cqm="${k}" data-v="${esc(a)}" aria-pressed="${(v||[]).includes(a)}">${esc(b)}</button>`).join('')}</div>`:'<div class="note">Primero da de alta las parcelas.</div>'}</div>`}
+  if(ty==='file')return `<div class="field" style="grid-column:1/-1">${lab}${adjHTML(v,true)}${Adj.can()?`<label class="btn" for="${id}">Añadir foto o PDF</label><input type="file" id="${id}" data-cq="${k}" accept="image/*,application/pdf" multiple hidden>`:''}</div>`;
+  return `<div class="field">${lab}<div class="inp"><input id="${id}" data-cq="${k}" ${ty==='date'?'type="date"':ty==='num'?'inputmode="decimal"':''} style="text-align:left;text-transform:none" value="${esc(ty==='num'&&v!==''&&v!=null?inVal(v):v||'')}" autocomplete="off"></div>${ayuda?`<small class="note">${esc(ayuda)}</small>`:''}</div>`}
+function cqFormHTML(){const f=st.cq.form;if(!f)return '';const t=f._t;
+  return `<section class="card" id="cq_form"><div><h3>${f._id?'Cambiar':'Nuevo'}: ${esc(CQ_NOM[t].toLowerCase())}</h3><div class="sub">Los campos con * son obligatorios</div></div>
+    <div class="frm">${CQ_F[t].map(z=>cqCampo(f,z)).join('')}</div>${t==='fito'&&f.fecha&&f.ps!==''?`<div class="note">No se puede recolectar hasta el ${esc(fD(isoD(new Date(Date.parse(f.fecha)+(+num(f.ps)||0)*864e5))))}.</div>`:''}
+    <div class="row"><button class="btn pri" data-act="cq-guardar">Guardar</button><button class="btn" data-act="cq-cancelar">Cancelar</button></div></section>`}
+const cqVal=(t,x,k)=>{const z=CQ_F[t].find(f=>f[0]===k),v=x[k];if(v==null||v==='')return '';if(!z)return String(v);const ty=z[2];
+  if(ty==='sel'){const o=z[4]().find(o=>String(o[0])===String(v));return o?o[1]:String(v)}if(ty==='multi')return (v||[]).map(cqParcN).join(', ');if(ty==='date')return fD(v);if(ty==='num')return fmt(+v,+v%1?2:0);if(ty==='file')return (v||[]).length+' archivo(s)';return String(v)};
+function cqItemHTML(t,x,cols){const conf=st.cq.conf===x.id;return `<div class="tarea"><div class="tt"><b>${esc(cols.map(k=>cqVal(t,x,k)).filter(Boolean).slice(0,2).join(' · '))}</b>${t==='fito'&&!x.ef?'<span class="pill warn">Eficacia sin valorar</span>':''}${t==='fito'&&x.fecha&&x.ps!=null&&x.ps!==''&&Date.parse(x.fecha)+x.ps*864e5>Date.now()?`<span class="pill bad">Plazo de seguridad hasta ${esc(fD(isoD(new Date(Date.parse(x.fecha)+x.ps*864e5))))}</span>`:''}</div>
+    <div class="tm">${cols.slice(2).map(k=>{const v=cqVal(t,x,k);return v?`<span>${esc((CQ_F[t].find(f=>f[0]===k)||[,k])[1].replace(/ \(.*\)$/,''))}: ${esc(v)}</span>`:''}).join('')}</div>${t==='analisis'?adjHTML(x.adj,false):''}
+    <div class="row"><button class="btn sm" data-act="cq-editar" data-t="${t}" data-id="${x.id}">Cambiar</button>${conf?`<button class="btn danger sm" data-act="cq-borrar-si" data-t="${t}" data-id="${x.id}">Sí, borrar</button><button class="btn sm" data-act="cq-no">No</button>`:`<button class="btn sm" data-act="cq-borrar" data-id="${x.id}">Borrar</button>`}</div></div>`}
+function cqLista(t,arr,cols,vacio){return `<section class="card"><div class="sector-h"><div><h3>${esc(CQ_NOM[t])}${t==='decl'||t==='lluvia'?'':'s'}</h3><div class="sub">${arr.length} ${arr.length===1?'registro':'registros'}</div></div>${st.cq.form?'':`<button class="btn pri" data-act="cq-nuevo" data-t="${t}">+ Añadir</button>`}</div>${arr.length?arr.map(x=>cqItemHTML(t,x,cols)).join(''):`<div class="note">${esc(vacio||'Todavía no hay ninguno.')}</div>`}</section>`}
+function vCuaderno(){if(st.cuad===null){loadCuad();if(st.hist===null)loadHist();return '<section class="card"><div class="note">Cargando el cuaderno…</div></section>'}
+  const s=st.cq.sec,c=cqC(),[a,b]=cqRango();
+  let h=`<section class="card"><div><h3>Cuaderno de explotación</h3><div class="sub">Fitosanitarios (RD 1311/2012), fertilización y riego (RD 1051/2022) y zona vulnerable a nitratos (Región de Murcia)</div></div>
+    <div class="frm"><div class="field"><label>Campaña desde</label><div class="inp"><input type="date" data-cqr="desde" value="${a}"></div></div><div class="field"><label>hasta</label><div class="inp"><input type="date" data-cqr="hasta" value="${b}"></div></div></div>
+    <div class="pick" style="flex-wrap:wrap">${CQ_SECS.map(([k,n])=>`<button class="chip" data-cqs="${k}" aria-pressed="${s===k}">${n}</button>`).join('')}</div>
+    ${st.cqErr==='permission-denied'?'<div class="banner">Sin permiso para leer el cuaderno.</div>':''}</section>`;
+  h+=cqFormHTML();
+  if(s==='resumen'){const L=cqChecks();h+=`<section class="card"><div><h3>Qué falta para tenerlo al día</h3><div class="sub">${L.filter(x=>x[0]==='ok').length} de ${L.length} en orden</div></div><div class="resumen">${L.map(([k,t,sub])=>`<div class="ritem"><i class="dot ${k}"></i><span>${esc(t)}${sub?`<br><small class="note">${esc(sub)}</small>`:''}</span></div>`).join('')}</div>
+      <div class="note">Conserva el cuaderno al menos 3 años y los boletines de análisis al menos 4 (programa de actuación de zonas vulnerables de Murcia). El registro de fertilización hay que tenerlo al día en el plazo de un mes desde cada aporte.</div></section>`;
+    const n={fito:cqReg('fito').length,cos:cqReg('cosecha').length,an:cqReg('analisis').length};const bal=cqBalance();
+    h+=`<section class="summary"><div class="stat"><span>Tratamientos</span><b>${n.fito}</b><small>en la campaña</small></div><div class="stat"><span>Cosecha</span><b>${fmt(cqReg('cosecha').reduce((s,x)=>s+(+x.kg||0),0)/1000,1)} t</b><small>${n.cos} entregas</small></div><div class="stat"><span>N aportado</span><b>${fmt(bal.reduce((s,x)=>s+x.N,0),0)} kg</b><small>fertilizantes, todas las parcelas</small></div></section>`}
+  else if(s==='explot'){const e=c.exp,inp=(k,l,o={})=>`<div class="field"${o.full?' style="grid-column:1/-1"':''}><label>${esc(l)}</label><div class="inp"><input data-cqe="${k}" ${o.date?'type="date"':''} style="text-align:left;text-transform:none" value="${esc(e[k]||'')}"></div></div>`;
+    h+=`<section class="card"><div><h3>Datos de la explotación</h3><div class="sub">Salen en la portada del cuaderno</div></div>
+      <div class="frm">${inp('titular','Titular (nombre o razón social)',{full:1})}${inp('nif','NIF')}${inp('rea','Nº de registro de la explotación (REA / REGEPA)')}${inp('siex','Código SIEX (si lo tiene)')}${inp('dir','Dirección')}${inp('muniN','Municipio')}${inp('provN','Provincia')}${inp('provCod','Código de provincia SIGPAC (Murcia: 30)')}${inp('muniCod','Código de municipio SIGPAC')}</div>
+      <h4>Asesoramiento</h4><div class="frm">${inp('afN','Asesor en gestión integrada de plagas · nombre')}${inp('afNif','NIF del asesor')}${inp('afRopo','Nº ROPO del asesor')}${inp('aferN','Asesor en fertilización · nombre')}${inp('aferReg','Nº REGFER del asesor')}</div>
+      <h4>Zona vulnerable a nitratos</h4><label class="chk"><input type="checkbox" data-cqe="zv" ${e.zv?'checked':''}> La explotación está en zona vulnerable (por ejemplo, Águilas)</label><div class="frm">${inp('zvN','Nombre de la zona')}</div>
+      <details class="tv"><summary>Riqueza de los abonos de la receta (unidades fertilizantes)</summary><div class="tbl"><table><thead><tr><th>Producto</th><th>N</th><th>P₂O₅</th><th>K₂O</th></tr></thead><tbody>${Object.keys(st.cfg.productos).filter(p=>bidonesDeAll(p)).map(p=>{const r=cqRiq(p);return `<tr><td>${esc(pn(p))} <small class="note">${prod(p).liq?'kg por 100 L':'%'}</small></td>${['N','P','K'].map(k=>`<td><div class="inp sm"><input data-cqriq="${p}.${k}" inputmode="decimal" value="${inVal(r[k])}"></div></td>`).join('')}</tr>`}).join('')}</tbody></table></div><div class="note">Mira la etiqueta: con estas riquezas se calculan los kg de N, P₂O₅ y K₂O aportados.</div></details>
+      <div class="row"><button class="btn pri" data-act="cq-cfg-guardar">Guardar datos</button></div></section>`}
+  else if(s==='parcelas')h+=cqLista('parcelas',c.parcelas,['n','nom','cab','sup','cult','vari','sist','riego','rend','necN'],'Da de alta cada recinto SIGPAC y dile qué cabezal lo riega: el abonado y el riego de ese cabezal se reparten por superficie.')+(c.parcelas.length?`<section class="card"><div class="tbl"><table><thead><tr><th>Nº</th><th>Nombre</th><th>SIGPAC</th><th>ha</th><th>Cabezal</th></tr></thead><tbody>${c.parcelas.map(p=>`<tr><td>${esc(p.n)}</td><td>${esc(p.nom)}</td><td>${esc(cqSig(p)||'falta')}</td><td>${fmt(+p.sup||0,4)}</td><td>${esc(cabNombre(p.cab))}</td></tr>`).join('')}</tbody></table></div></section>`:'');
+  else if(s==='pers')h+=cqLista('pers',c.pers,['nom','nif','ropo','carne','ncarne','cad'])+cqLista('equipos',c.equipos,['nom','roma','insp','obs']);
+  else if(s==='fito')h+=cqLista('fito',cqReg('fito'),['fecha','prod','parcelas','plaga','dosis','ud','reg','apl','eq','ps','ef']);
+  else if(s==='fert'){const au=cqAuto();
+    h+=`<section class="card"><div><h3>Fertirrigación (de las cuentas diarias)</h3><div class="sub">Por quincena y cabezal, con lo gastado de verdad de cada depósito</div></div>${au.length?`<div class="tbl"><table><thead><tr><th>Quincena</th><th>Cabezal</th><th>Días</th><th>Abonos</th><th>N</th><th>P₂O₅</th><th>K₂O</th></tr></thead><tbody>${au.map(x=>`<tr><td>${cqQuinTxt(x.q)}</td><td>${esc(cabNombre(x.cab))}</td><td>${x.dias}</td><td><small>${Object.entries(x.kg).filter(([,v])=>v>0.05).map(([p,v])=>esc(pn(p))+' '+fmt(v,1)+' '+uCant(p)).join(' · ')}</small></td><td>${fmt(x.N,1)}</td><td>${fmt(x.P,1)}</td><td>${fmt(x.K,1)}</td></tr>`).join('')}</tbody></table></div><div class="note">kg de unidades fertilizantes de todo el cabezal. Se reparten entre sus parcelas por superficie en «Exportar» y en el balance.</div>`:'<div class="note">No hay días guardados en estas fechas.</div>'}</section>`;
+    h+=cqLista('fert',cqReg('fert'),['fecha','prod','parcelas','tfert','metodo','kg','N','P','K'],'Aquí van los abonos que no salen de la receta diaria: abonado de fondo, estiércol, foliares…');
+    h+=cqBalanceHTML()}
+  else if(s==='riego'){const au=cqAuto(),ac={};h+=`<section class="card"><div><h3>Riego</h3><div class="sub">m³ de cada cabezal por quincena (de las cuentas diarias) y por hectárea de sus parcelas</div></div>${au.length?`<div class="tbl"><table><thead><tr><th>Quincena</th><th>Cabezal</th><th>Sistema</th><th>m³</th><th>m³/ha</th><th>Acumulado m³/ha</th></tr></thead><tbody>${au.map(x=>{const ha=cqReparto(x.cab).reduce((s,r)=>s+(+r.p.sup||0),0),sis=(cqParc().find(p=>p.cab===x.cab)||{}).riego;const mh=ha?x.m3/ha:null;if(mh!=null)ac[x.cab]=(ac[x.cab]||0)+mh;return `<tr><td>${cqQuinTxt(x.q)}</td><td>${esc(cabNombre(x.cab))}</td><td><small>${esc((CQ_RIEGO.find(r=>r[0]===sis)||[,'—'])[1])}</small></td><td>${fmt(x.m3,0)}</td><td>${mh!=null?fmt(mh,0):'—'}</td><td>${ac[x.cab]!=null?fmt(ac[x.cab],0):'—'}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="note">No hay días guardados en estas fechas.</div>'}${au.some(x=>!cqReparto(x.cab).length)?'<div class="note">Para sacar los m³/ha, da de alta las parcelas de cada cabezal con su superficie.</div>':''}</section>`}
+  else if(s==='cosecha')h+=cqLista('cosecha',cqReg('cosecha'),['fecha','kg','parcela','prod','cli','nif','alb','rgseaa']);
+  else if(s==='analisis')h+=cqLista('analisis',cqReg('analisis'),['fecha','clase','parcela','lab','bol','res','adj'],'Agua de riego: al menos uno cada 2 años en zona vulnerable. Guarda los boletines al menos 4 años.');
+  else if(s==='zv'){h+=`<section class="card"><div><h3>Zona vulnerable a nitratos · Región de Murcia</h3><div class="sub">${c.exp.zv?'Explotación en zona vulnerable'+(c.exp.zvN?' ('+esc(c.exp.zvN)+')':''):'Márcalo en «Explotación» si está en zona vulnerable'}</div></div>
+      <div class="note">El programa de actuación de las zonas vulnerables de Murcia pide: registro de fertilización por cultivo, balance de nitrógeno al empezar y al cerrar el ciclo, apuntar las lluvias fuertes (más de 15 mm/h) con el riego y el abono de ese día, declaración responsable del mantenimiento del riego, y análisis de agua al menos cada 2 años. Los cultivos sin suelo con recirculación quedan fuera de las dosis máximas y del balance de N. El programa nuevo (proyecto de orden de 2025) aún estaba pendiente de aprobación definitiva: confirma con tu asesor qué versión está en vigor.</div></section>`;
+    h+=cqLista('lluvia',cqReg('lluvia'),['fecha','mm','int','medidas'],'Apunta aquí cada día de lluvia fuerte y qué cambiaste del riego y del abonado.')+cqLista('decl',cqReg('decl'),['fecha','firma','texto'])+cqBalanceHTML()}
+  else if(s==='exportar')h+=`<section class="card"><div><h3>Exportar el cuaderno</h3><div class="sub">De ${esc(fD(a))} a ${esc(fD(b))}: explotación, parcelas, aplicadores y equipos, tratamientos, fertilización (receta por quincena y parcela + abonos sueltos), riego, cosecha, análisis y zona vulnerable</div></div>
+    <div class="row"><button class="btn pri" data-act="cq-pdf">PDF</button><button class="btn" data-act="cq-xlsx">Excel</button></div><div class="note">Es el formato de la app (con los apartados del modelo oficial). Si te piden el cuaderno digital (SIEX), los datos son los mismos: se pueden pasar.</div></section>`;
+  return h}
+function bidonesDeAll(p){return st.cfg.bidones.some(b=>b.productos.some(x=>x.p===p&&x.dosis))}
+function cqBalanceHTML(){const B=cqBalance();return `<section class="card"><div><h3>Balance de nitrógeno por parcela</h3><div class="sub">Estimado (rendimiento esperado) y cerrado (cosecha real) · kg N</div></div>${B.length?`<div class="tbl"><table><thead><tr><th>Parcela</th><th>ha</th><th>N fertilizantes</th><th>N del agua</th><th>Total aportado</th><th>Necesidad estimada</th><th>Extraído (cosecha)</th><th>kg N/ha aportado</th></tr></thead><tbody>${B.map(x=>{const tot=x.N+x.Nagua;return `<tr><td>${esc(cqParcN(x.p.id))}</td><td>${fmt(x.sup,2)}</td><td>${fmt(x.N,0)}</td><td>${fmt(x.Nagua,0)}</td><td><b>${fmt(tot,0)}</b></td><td>${x.estN?fmt(x.estN,0):'—'}</td><td>${x.kgCos?fmt(x.realN,0):'—'}</td><td>${fmt(tot/x.sup,0)}</td></tr>`}).join('')}</tbody></table></div><div class="note">N del agua: nitrato del análisis de agua (en «Solución nutritiva») por los m³ regados. Necesidad: rendimiento esperado × superficie × kg N por t (tomate 2,5–4 según el programa de actuación de Murcia).</div>`:'<div class="note">Da de alta las parcelas con su superficie.</div>'}</section>`}
+/* Guardar */
+async function cqGuardar(){const f=st.cq.form;if(!f)return;const t=f._t,falta=CQ_F[t].filter(z=>z[3]&&(f[z[0]]==null||f[z[0]]===''||(Array.isArray(f[z[0]])&&!f[z[0]].length))).map(z=>z[1]);if(falta.length)return toast('Falta: '+falta.join(', '));
+  if((f.adj||[]).some(a=>a.tmp))return toast('Espera a que se suban los archivos');
+  const d={};for(const[k,,ty]of CQ_F[t])d[k]=ty==='num'?num(f[k]):f[k];
+  if(cqEsCfg(t)){const id=f._id||('q'+Date.now().toString(36)+Math.random().toString(36).slice(2,5));for(const c of [st.cfg,st.savedCfg]){c.cuad=c.cuad||{};const L=c.cuad[t]=c.cuad[t]||[],i=L.findIndex(x=>x.id===id);if(i>=0)L[i]={...L[i],...clone(d),id};else L.push({...clone(d),id})}
+    try{await Store.setConfig(st.savedCfg);st.cq.form=null;toast('Guardado');renderMain()}catch(e){toast(errMsg(e))}return}
+  if(t==='cosecha'){const pl=cqReg('fito').filter(x=>(x.parcelas||[]).includes(d.parcela)&&x.ps&&Date.parse(x.fecha)+x.ps*864e5>Date.parse(d.fecha));if(pl.length&&!f._aviso){f._aviso=1;return toast('Ojo: en esa parcela hay un plazo de seguridad sin cumplir ('+pl[0].prod+'). Pulsa Guardar otra vez si es correcto.')}}
+  const id=f._id||('q'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),ant=(st.cuad||[]).find(x=>x.id===id);
+  const doc={...(ant||{}),...d,tipo:t,ts:(ant&&ant.ts)||ahoraISO(),por:(ant&&ant.por)||yoNombre(),porEmail:(ant&&ant.porEmail)||miEmail()};delete doc.id;
+  try{await Store.setCol('cuaderno',id,doc);const L=st.cuad,i=L.findIndex(x=>x.id===id);if(i>=0)L[i]={...doc,id};else L.unshift({...doc,id});st.cq.form=null;toast('Guardado en el cuaderno');renderMain()}catch(e){toast(errMsg(e))}}
+async function cqBorrar(t,id){if(cqEsCfg(t)){for(const c of [st.cfg,st.savedCfg]){if(c.cuad&&c.cuad[t])c.cuad[t]=c.cuad[t].filter(x=>x.id!==id)}try{await Store.setConfig(st.savedCfg);st.cq.conf=null;renderMain();toast('Borrado')}catch(e){toast(errMsg(e))}return}
+  try{await Store.delCol('cuaderno',id);st.cuad=st.cuad.filter(x=>x.id!==id);st.cq.conf=null;renderMain();toast('Borrado')}catch(e){toast(errMsg(e))}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-cqs],[data-cqm],[data-act^="cq-"]');if(!b)return;
+  if(b.dataset.cqs){st.cq.sec=b.dataset.cqs;st.cq.form=null;renderMain();return}
+  if(b.dataset.cqm){const f=st.cq.form;if(!f)return;const L=f[b.dataset.cqm]=f[b.dataset.cqm]||[],v=b.dataset.v,i=L.indexOf(v);if(i>=0)L.splice(i,1);else L.push(v);
+    if(b.dataset.cqm==='parcelas'&&f._t==='fito'){const s=L.reduce((a,id)=>a+(+(cqParc().find(p=>p.id===id)||{}).sup||0),0);if(s)f.sup=+s.toFixed(4)}renderMain();return}
+  const a=b.dataset.act,t=b.dataset.t,id=b.dataset.id;
+  if(a==='cq-nuevo'){st.cq.form=cqFormDe(t,null);renderMain();setTimeout(()=>{const el=$('#cq_form');if(el)el.scrollIntoView({block:'start'})},40)}
+  else if(a==='cq-editar'){const x=cqEsCfg(t)?(cqC()[t]||[]).find(z=>z.id===id):(st.cuad||[]).find(z=>z.id===id);if(x){st.cq.form=cqFormDe(t,x);renderMain();setTimeout(()=>{const el=$('#cq_form');if(el)el.scrollIntoView({block:'start'})},40)}}
+  else if(a==='cq-cancelar'){st.cq.form=null;renderMain()}else if(a==='cq-guardar')cqGuardar();
+  else if(a==='cq-borrar'){st.cq.conf=id;renderMain()}else if(a==='cq-no'){st.cq.conf=null;renderMain()}else if(a==='cq-borrar-si')cqBorrar(t,id);
+  else if(a==='cq-cfg-guardar'){st.savedCfg.cuad={...(st.savedCfg.cuad||{}),exp:clone(cqC().exp),riq:clone(cqC().riq)};Store.setConfig(st.savedCfg).then(()=>toast('Datos de la explotación guardados')).catch(er=>toast(errMsg(er)))}
+  else if(a==='cq-pdf'){b.disabled=true;cqPdf().finally(()=>{b.disabled=false})}else if(a==='cq-xlsx')cqXlsx()});
+$('#main').addEventListener('input',e=>{const t=e.target,d=t.dataset||{};if(st.tab!=='cuaderno')return;
+  if(d.cq&&st.cq.form&&t.type!=='file'&&t.tagName!=='SELECT')st.cq.form[d.cq]=t.value;
+  else if(d.cqe&&t.type!=='checkbox')cqC().exp[d.cqe]=t.value;
+  else if(d.cqriq){const[p,k]=d.cqriq.split('.');const R=cqC().riq;R[p]={...cqRiq(p),...(R[p]||{})};R[p][k]=num(t.value)??0}});
+$('#main').addEventListener('change',e=>{const t=e.target,d=t.dataset||{};if(st.tab!=='cuaderno')return;
+  if(d.cq&&st.cq.form){if(t.type==='file'){if(t.files&&t.files.length){const fs=[...t.files];t.value='';const L=st.cq.form[d.cq]=st.cq.form[d.cq]||[];addFiles(fs,L)}return}st.cq.form[d.cq]=t.value;if(t.tagName==='SELECT'||t.type==='date'||d.cq==='ps')renderMain()}
+  else if(d.cqe&&t.type==='checkbox')cqC().exp[d.cqe]=t.checked;
+  else if(d.cqr){st.cq[d.cqr]=t.value||null;renderMain()}});
+/* ---------- Exportar: tablas del cuaderno ---------- */
+function cqTablas(){const c=cqC(),e=c.exp,[a,b]=cqRango(),T=[];const tb=(hoja,titulo,cab,filas)=>T.push({hoja,titulo,cab,filas});
+  tb('Explotación','1. Datos generales de la explotación',['Dato','Valor'],[['Titular',e.titular||''],['NIF',e.nif||''],['Nº registro (REA/REGEPA)',e.rea||''],['Código SIEX',e.siex||''],['Dirección',[e.dir,e.muniN,e.provN].filter(Boolean).join(', ')],['Campaña',fD(a)+' a '+fD(b)],['Asesor GIP',[e.afN,e.afNif,e.afRopo&&'ROPO '+e.afRopo].filter(Boolean).join(' · ')],['Asesor en fertilización',[e.aferN,e.aferReg&&'REGFER '+e.aferReg].filter(Boolean).join(' · ')],['Zona vulnerable a nitratos',e.zv?'Sí'+(e.zvN?' · '+e.zvN:''):'No']]);
+  tb('Parcelas','2. Parcelas',['Nº','Nombre','SIGPAC (prov-mun-pol-par-rec)','Agregado/zona','Superficie (ha)','Cultivo','Variedad','Sistema','Riego','Plantación','Precedente','Rend. esperado (t/ha)','Plan N/P2O5/K2O (kg/ha)','Datos medioambientales'],
+    c.parcelas.map(p=>[p.n,p.nom,cqSig(p),[p.agr,p.zona].filter(Boolean).join('/'),+p.sup||0,p.cult||'',p.vari||'',p.sist||'',(CQ_RIEGO.find(r=>r[0]===p.riego)||[,''])[1],p.siembra?fD(p.siembra):'',p.prec||'',p.rend!=null?+p.rend:'',[p.necN,p.necP,p.necK].map(v=>v==null||v===''?'-':v).join(' / '),p.amb||'']));
+  tb('Aplicadores','3. Personas o empresas que aplican',['Nombre','NIF','Nº ROPO','Carné','Nº carné','Caducidad'],c.pers.map(p=>[p.nom,p.nif||'',p.ropo||'',(CQ_CARNE.find(x=>x[0]===p.carne)||[,''])[1],p.ncarne||'',p.cad?fD(p.cad):'']));
+  tb('Equipos','4. Equipos de aplicación',['Equipo','Nº ROMA','Última inspección','Observaciones'],c.equipos.map(q=>[q.nom,q.roma||'',q.insp?fD(q.insp):'',q.obs||'']));
+  tb('Fitosanitarios','5. Registro de tratamientos fitosanitarios',['Fecha','Parcelas','Cultivo','Sup. tratada (ha)','Problema','Justificación','Producto','Nº registro','Materia activa','Dosis','Unidad','Caldo (L/ha)','Aplicador','Equipo','Plazo seg. (días)','Eficacia','Observaciones'],
+    cqReg('fito').slice().reverse().map(x=>[fD(x.fecha),(x.parcelas||[]).map(id=>(cqParc().find(p=>p.id===id)||{}).n||'?').join(', '),[...new Set((x.parcelas||[]).map(id=>(cqParc().find(p=>p.id===id)||{}).cult).filter(Boolean))].join(', '),x.sup??'',x.plaga||'',x.just||'',x.prod||'',x.reg||'',x.ma||'',x.dosis??'',x.ud||'',x.caldo??'',cqPersN(x.apl),x.eq?cqEqN(x.eq):'',x.ps??'',({B:'Buena',R:'Regular',M:'Mala'})[x.ef]||'',x.obs||'']));
+  const au=cqAuto(),fr=[];for(const x of au){const rp=cqReparto(x.cab);const abon=Object.entries(x.kg).filter(([,v])=>v>0.05).map(([p,v])=>pn(p)+' '+fmt(v,1)+' '+uCant(p)).join('; ');
+    if(!rp.length)fr.push([cqQuinTxt(x.q),'(cabezal '+cabNombre(x.cab)+', sin parcela)','',abon,'Fertirrigación',+x.N.toFixed(1),+x.P.toFixed(1),+x.K.toFixed(1),'','','']);
+    else for(const{p,f}of rp)fr.push([cqQuinTxt(x.q),p.n+' · '+p.nom,+p.sup||0,abon+(rp.length>1?` (parte proporcional ${fmt(f*100,0)} %)`:''),'Fertirrigación',+(x.N*f).toFixed(1),+(x.P*f).toFixed(1),+(x.K*f).toFixed(1),+(x.N*f/(+p.sup||1)).toFixed(1),+(x.P*f/(+p.sup||1)).toFixed(1),+(x.K*f/(+p.sup||1)).toFixed(1)])}
+  for(const r of cqReg('fert').slice().reverse())for(const id of r.parcelas||[]){const p=cqParc().find(z=>z.id===id);if(!p)continue;const ps=(r.parcelas||[]).map(i=>cqParc().find(z=>z.id===i)).filter(Boolean),ts=ps.reduce((s,z)=>s+(+z.sup||0),0)||1,f=(+p.sup||0)/ts,kg=(+r.kg||0)*f;
+    fr.push([fD(r.fecha),p.n+' · '+p.nom,+p.sup||0,`${r.prod} ${fmt(kg,1)} kg (${r.N||0}-${r.P||0}-${r.K||0})`,(CQ_F.fert.find(z=>z[0]==='metodo')[4]().find(o=>o[0]===r.metodo)||[,''])[1],+(kg*(+r.N||0)/100).toFixed(1),+(kg*(+r.P||0)/100).toFixed(1),+(kg*(+r.K||0)/100).toFixed(1),+(kg*(+r.N||0)/100/(+p.sup||1)).toFixed(1),+(kg*(+r.P||0)/100/(+p.sup||1)).toFixed(1),+(kg*(+r.K||0)/100/(+p.sup||1)).toFixed(1)])}
+  tb('Fertilización','6. Registro de fertilización (fertirrigación agrupada por quincenas)',['Fecha / quincena','Parcela','ha','Abonos y cantidades','Forma','N (kg)','P2O5 (kg)','K2O (kg)','N (kg/ha)','P2O5 (kg/ha)','K2O (kg/ha)'],fr);
+  const rr=[],acc={};for(const x of au){for(const{p,f}of cqReparto(x.cab)){const m=x.m3*f,mh=m/(+p.sup||1);acc[p.id]=(acc[p.id]||0)+mh;rr.push([cqQuinTxt(x.q),p.n+' · '+p.nom,(CQ_RIEGO.find(r=>r[0]===p.riego)||[,''])[1],+p.sup||0,+m.toFixed(0),+mh.toFixed(0),+acc[p.id].toFixed(0)])}}
+  tb('Riego','7. Riego',['Quincena','Parcela','Sistema de riego','ha','m³','m³/ha','Acumulado m³/ha'],rr);
+  tb('Cosecha','8. Cosecha comercializada',['Fecha','Parcela','Producto','Cantidad (kg)','Albarán/factura','Comprador','NIF','RGSEAA','Dirección'],cqReg('cosecha').slice().reverse().map(x=>[fD(x.fecha),cqParcN(x.parcela),x.prod||'',x.kg??'',x.alb||'',x.cli||'',x.nif||'',x.rgseaa||'',x.dir||'']));
+  tb('Análisis','9. Análisis',['Fecha','Tipo','Parcela','Laboratorio','Nº boletín','Resultados'],cqReg('analisis').slice().reverse().map(x=>[fD(x.fecha),(CQ_AN.find(o=>o[0]===x.clase)||[,x.clase||''])[1],x.parcela?cqParcN(x.parcela):'',x.lab||'',x.bol||'',x.res||'']));
+  if(e.zv){tb('Lluvias','10. Zona vulnerable · lluvias fuertes (más de 15 mm/h)',['Fecha','Lluvia (mm)','Intensidad (mm/h)','Ajuste del riego y del abonado'],cqReg('lluvia').slice().reverse().map(x=>[fD(x.fecha),x.mm??'',x.int??'',x.medidas||'']));
+    tb('Declaraciones','11. Zona vulnerable · declaración responsable del mantenimiento de la fertirrigación',['Fecha','Firmado por','Declaración'],cqReg('decl').slice().reverse().map(x=>[fD(x.fecha),x.firma||'',x.texto||'']))}
+  tb('Balance N','12. Balance de nitrógeno por parcela',['Parcela','ha','N fertilizantes (kg)','N del agua (kg)','Total aportado (kg)','kg N/ha','Necesidad estimada (kg)','Extraído según cosecha (kg)','Coef. kg N/t'],cqBalance().map(x=>[cqParcN(x.p.id),x.sup,+x.N.toFixed(0),+x.Nagua.toFixed(0),+(x.N+x.Nagua).toFixed(0),+((x.N+x.Nagua)/x.sup).toFixed(0),x.estN?+x.estN.toFixed(0):'',x.kgCos?+x.realN.toFixed(0):'',x.coef]));
+  return T}
+const cqNombre=()=>{const[a,b]=cqRango();return `Cuaderno de explotacion ${a} a ${b}`};
+function cqXlsx(){const T=cqTablas(),e=cqC().exp;saveBlob(xlsxBlob(T.map(t=>({name:t.hoja,rows:[[t.titulo],[(e.titular||'')+(e.nif?' · NIF '+e.nif:'')],t.cab,...t.filas],bold:[0,2]}))),cqNombre()+'.xlsx')}
+async function cqPdf(){let L;try{L=await pdfLib()}catch(e){toast('Hace falta conexión a internet para crear el PDF');return}
+  const{PDFDocument,StandardFonts,rgb}=L,doc=await PDFDocument.create(),f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
+  const PW=841.89,PH=595.28,M=28,IW=PW-2*M,ink=rgb(.08,.13,.17),mut=rgb(.35,.42,.44),navy=rgb(.106,.184,.29),lin=rgb(.8,.84,.82),bg=rgb(.92,.94,.93),e=cqC().exp,[a,b]=cqRango();
+  doc.setTitle(pdfTxt(cqNombre()));let page,y,np=0;
+  const nueva=()=>{page=doc.addPage([PW,PH]);np++;y=PH-M;page.drawText(pdfTxt('CUADERNO DE EXPLOTACIÓN · '+(e.titular||'')+(e.nif?' · NIF '+e.nif:'')+(e.rea?' · Nº REA '+e.rea:'')),{x:M,y:y-10,size:9,font:fb,color:navy});page.drawText(pdfTxt(`Campaña ${fD(a)} a ${fD(b)} · página ${np}`),{x:PW-M-180,y:y-10,size:8,font:f,color:mut});y-=24};
+  const lineas=(s,w,size,fo)=>{s=pdfTxt(s);const out=[];for(const par of s.split('\n')){let cur='';for(const p of par.split(/\s+/)){const t=cur?cur+' '+p:p;if(fo.widthOfTextAtSize(t,size)>w&&cur){out.push(cur);cur=p}else cur=t}out.push(cur)}
+    return out.map(l=>{let x=l;while(x.length>1&&fo.widthOfTextAtSize(x,size)>w)x=x.slice(0,-1);return x})};
+  nueva();page.drawText(pdfTxt('CUADERNO DE EXPLOTACIÓN'),{x:M,y:y-30,size:22,font:fb,color:navy});y-=56;
+  page.drawText(pdfTxt('Registro de tratamientos fitosanitarios (RD 1311/2012, anexo III), fertilización y riego (RD 1051/2022) y registros de zona vulnerable a nitratos (Región de Murcia).'),{x:M,y,size:9,font:f,color:mut});y-=24;
+  for(const t of cqTablas()){const n=t.cab.length,size=n>12?6.3:n>8?7:8,pad=3;
+    const ws=t.cab.map((c,i)=>{const pal=String(c).split(/\s+/).reduce((m,w)=>Math.max(m,w.length),0),lens=t.filas.map(r=>Math.min(60,String(r[i]??'').length));return Math.max(6,pal+1,...lens)+2});const tot=ws.reduce((s,v)=>s+v,0),cw=ws.map(v=>v/tot*IW);
+    if(y<M+70)nueva();page.drawText(pdfTxt(t.titulo.toUpperCase()),{x:M,y:y-12,size:10,font:fb,color:ink});y-=20;
+    const fila=(r,head)=>{const ls=r.map((v,i)=>lineas(typeof v==='number'?v.toLocaleString('es-ES',{maximumFractionDigits:2}):String(v??''),cw[i]-2*pad,size,head?fb:f)),h=Math.max(...ls.map(x=>x.length))*size*1.2+2*pad;
+      if(y-h<M){nueva();if(!head)fila(t.cab,true)}if(head)page.drawRectangle({x:M,y:y-h,width:IW,height:h,color:bg});let x=M;
+      ls.forEach((l,i)=>{l.forEach((s,k)=>page.drawText(s,{x:x+pad,y:y-pad-size*(k+1)*1.2+size*.25,size,font:head?fb:f,color:ink}));x+=cw[i]});page.drawLine({start:{x:M,y:y-h},end:{x:M+IW,y:y-h},thickness:.5,color:lin});y-=h};
+    fila(t.cab,true);if(!t.filas.length){page.drawText(pdfTxt('Sin registros en esta campaña'),{x:M+pad,y:y-12,size:8,font:f,color:mut});y-=18}for(const r of t.filas)fila(r,false);y-=14}
+  const bytes=await doc.save();await saveBlob(new Blob([bytes],{type:'application/pdf'}),cqNombre()+'.pdf')}
+
+/* ---------- Calculadora de solución nutritiva (meq/L): análisis de agua → abonos, con ajuste por el análisis de drenaje ----------
+   Método clásico de cálculo de soluciones nutritivas (neutralizar bicarbonatos con ácidos y completar cada ion con sales).
+   Los objetivos de serie son orientativos: el técnico los ajusta a su cultivo, fase y agua. */
+const NU_ION=[['NO3','NO₃⁻',62.00,-1],['H2PO4','H₂PO₄⁻',96.99,-1],['SO4','SO₄²⁻',48.03,-1],['Cl','Cl⁻',35.45,-1],['HCO3','HCO₃⁻',61.02,-1],['NH4','NH₄⁺',18.04,1],['K','K⁺',39.10,1],['Ca','Ca²⁺',20.04,1],['Mg','Mg²⁺',12.15,1],['Na','Na⁺',22.99,1]];
+const NU_IONN=Object.fromEntries(NU_ION.map(x=>[x[0],`<span class="ion">${x[1]}</span>`]));
+const NU_OBJI=['NO3','H2PO4','SO4','NH4','K','Ca','Mg'],NU_DRI=['NO3','H2PO4','SO4','K','Ca','Mg','Na','Cl'];
+const NU_PRE={
+  tomMed:{n:'Tomate en sustrato · zona mediterránea (orientativa)',a:{NO3:14,H2PO4:1.75,SO4:4,NH4:0.75,K:7.5,Ca:9,Mg:4},d:{NO3:18,H2PO4:1,SO4:8,K:7,Ca:12,Mg:6}},
+  tomSon:{n:'Tomate en lana de roca · Sonneveld y Voogt',a:{NO3:16,H2PO4:1.5,SO4:8.8,NH4:1.2,K:9.5,Ca:10.8,Mg:4.8},d:{NO3:23,H2PO4:1,SO4:13.6,K:8,Ca:20,Mg:9}},
+  pimMed:{n:'Pimiento en sustrato · zona mediterránea (orientativa)',a:{NO3:15,H2PO4:1.5,SO4:3,NH4:0.5,K:6.5,Ca:9,Mg:3.5},d:{NO3:18,H2PO4:1,SO4:7,K:6,Ca:12,Mg:5}}};
+const NU_RIQ={hno3P:59,hno3D:1.37,h3po4P:75,h3po4D:1.58,caCaO:16,caN:8,caD:1.5};
+/* Lo que aporta cada abono, en meq por gramo (sólidos) o por mL (líquidos) */
+function nuProds(R){R={...NU_RIQ,...(R||{})};const hn=R.hno3D*R.hno3P/100/63.01*1000,hp=R.h3po4D*R.h3po4P/100/97.99*1000;
+  return{hno3:{n:'Ácido nítrico',app:'hno3',liq:1,m:{NO3:hn},H:hn},h3po4:{n:'Ácido fosfórico',app:'h3po4',liq:1,m:{H2PO4:hp},H:hp},
+    caL:{n:'Solución cálcica (nitrato cálcico líquido)',app:'ca',liq:1,m:{Ca:R.caD*R.caCaO/100*0.7147/20.04*1000,NO3:R.caD*R.caN/100/14.007*1000}},
+    caS:{n:'Nitrato cálcico sólido',app:null,m:{Ca:9.255,NO3:10.18,NH4:0.925}},
+    mkp:{n:'Fosfato monopotásico',app:'mkp',m:{K:7.35,H2PO4:7.35}},kno3:{n:'Nitrato potásico',app:'kno3',m:{K:9.89,NO3:9.89}},
+    k2so4:{n:'Sulfato potásico',app:'k2so4',m:{K:11.48,SO4:11.48}},mgso4:{n:'Sulfato magnésico',app:null,m:{Mg:8.11,SO4:8.11}},
+    mgno3:{n:'Nitrato magnésico',app:null,m:{Mg:7.80,NO3:7.80}},nh4no3:{n:'Nitrato amónico',app:null,m:{NH4:12.49,NO3:12.49}}}}
+function nuDef(){return{agua:{f:'',lab:'',u:'meq',v:{}},dren:{f:'',v:{}},obj:{pre:'tomMed',a:{...NU_PRE.tomMed.a},d:{...NU_PRE.tomMed.d}},op:{k:0.5,hco3:0.5,mg:'auto',ca:'caL',nh4:false},riq:{...NU_RIQ}}}
+function nuCalc(D){const P=nuProds(D.riq),W=D.agua.v||{},Dr=D.dren.v||{},o=D.op,warn=[],k=+o.k||0;
+  const w=i=>+W[i]||0;
+  // 1. objetivo ajustado por el drenaje: aporte + k × (drenaje objetivo − drenaje medido), como mucho ±25 %
+  const adj={},hayD=NU_DRI.some(i=>Dr[i]!=null&&Dr[i]!=='');
+  for(const i of NU_OBJI){let a=+D.obj.a[i]||0;const dObj=D.obj.d[i],dm=Dr[i];if(hayD&&k&&dObj!=null&&dm!=null&&dm!==''&&['NO3','H2PO4','K','Ca','Mg'].includes(i)){const x=a+k*(+dObj-(+dm));a=Math.min(a*1.25,Math.max(a*0.75,x))}adj[i]=+a.toFixed(2)}
+  const need={};for(const i of NU_OBJI)need[i]=Math.max(0,adj[i]-w(i));
+  const uso={},add=(id,meq,base)=>{if(!(meq>1e-6))return;const pr=P[id],unid=meq/pr.m[base];uso[id]=(uso[id]||0)+unid};
+  const aporte=id=>{const x={},u=uso[id]||0;for(const[i,v]of Object.entries(P[id].m))x[i]=v*u;return x};
+  // 2. ácidos: neutralizar bicarbonatos hasta dejar «hco3» meq/L
+  const acido=Math.max(0,w('HCO3')-(+o.hco3||0));let pA=Math.min(need.H2PO4,acido);add('h3po4',pA,'H2PO4');add('hno3',acido-pA,'NO3');
+  // 3. fósforo que falta → fosfato monopotásico
+  add('mkp',need.H2PO4-pA,'H2PO4');
+  // 4. calcio
+  const ca=o.ca==='caS'?'caS':'caL';add(ca,need.Ca,'Ca');
+  // 5. magnesio, potasio y nitratos
+  const llevado=i=>Object.keys(uso).reduce((a,id)=>a+(aporte(id)[i]||0),0);
+  let restNO3=need.NO3-llevado('NO3'),restK=need.K-llevado('K');
+  let mgN=0;if(o.mg==='nitrato')mgN=need.Mg;else if(o.mg==='auto')mgN=Math.min(need.Mg,Math.max(0,restNO3-Math.max(0,restK)));
+  add('mgno3',mgN,'Mg');add('mgso4',need.Mg-mgN,'Mg');restNO3-=mgN;
+  const kn=Math.max(0,Math.min(Math.max(0,restK),Math.max(0,restNO3)));add('kno3',kn,'K');add('k2so4',Math.max(0,restK)-kn,'K');restNO3-=kn;
+  if(o.nh4){const restNH4=need.NH4-llevado('NH4');const x=Math.max(0,Math.min(restNH4,restNO3));add('nh4no3',x,'NH4');restNO3-=x}
+  if(restNO3>0.3)warn.push(`Faltan ${fmt(restNO3,1)} meq/L de nitrato: con este agua no se llega sin más nitrógeno. Prueba «Magnesio: nitrato», nitrato amónico o sube el objetivo de K o Ca.`);
+  // 6. solución final
+  const fin={};for(const[i]of NU_ION)fin[i]=w(i);for(const id of Object.keys(uso)){for(const[i,v]of Object.entries(aporte(id)))fin[i]=(fin[i]||0)+v}
+  const H=(uso.hno3||0)*P.hno3.H+(uso.h3po4||0)*P.h3po4.H;fin.HCO3=Math.max(0,w('HCO3')-H);
+  const cat=NU_ION.filter(x=>x[3]>0).reduce((a,x)=>a+fin[x[0]],0),an=NU_ION.filter(x=>x[3]<0).reduce((a,x)=>a+fin[x[0]],0);
+  if(w('Na')>4)warn.push(`El agua trae ${fmt(w('Na'),1)} meq/L de sodio: vigila el sodio del drenaje y la fracción de drenaje.`);
+  if(w('Cl')>5)warn.push(`El agua trae ${fmt(w('Cl'),1)} meq/L de cloruros.`);
+  if(fin.SO4>adj.SO4*1.6&&fin.SO4>8)warn.push(`Los sulfatos quedan altos (${fmt(fin.SO4,1)} meq/L): prueba «Magnesio: nitrato» para meter menos sulfato.`);
+  if(need.Ca>0&&w('HCO3')===0&&!W.HCO3)warn.push('Falta el bicarbonato del agua: sin él no se calcula el ácido.');
+  const prods=Object.entries(uso).filter(([,u])=>u>1e-6).map(([id,u])=>{const pr=P[id];return{id,n:pr.n,app:pr.app,liq:!!pr.liq,porL:u,dosis:u*100,meq:aporte(id)}});
+  return{adj,need,prods,fin,cat,an,ce:cat/10,acido,hayD,warn}}
+/* La receta actual de este cabezal para cada producto */
+function nuReceta(cab,app){let t=0,hay=false;for(const b of bidonesDe(cab))for(const x of b.productos)if(x.p===app){hay=true;t+=x.dosis||0}return hay?t:null}
+st.nuD=null;st.nuCab=null;
+function nuDraft(){if(!st.nuD||st.nuCab!==st.cab){const g=(st.cfg.nutri||{})[st.cab];const d=nuDef();st.nuD=g?{...d,...clone(g),agua:{...d.agua,...(g.agua||{})},dren:{...d.dren,...(g.dren||{})},obj:{...d.obj,...(g.obj||{})},op:{...d.op,...(g.op||{})},riq:{...d.riq,...(g.riq||{})}}:d;st.nuCab=st.cab}return st.nuD}
+/* Los valores se guardan siempre en meq/L; en mg/L solo se muestran y se escriben */
+const nuEq=i=>(NU_ION.find(x=>x[0]===i)||[])[2]||1;
+function vSolucion(){const c=cabById(st.cab),D=nuDraft(),g=esGestor(),dis=g?'':'disabled',mg=D.agua.u==='mg',R=nuCalc(D);
+  const inp=(k,v,o={})=>`<div class="inp sm"><input data-nu="${k}" inputmode="decimal" autocomplete="off" value="${v==null||v===''?'':inVal(+(+v).toFixed(o.d??2))}" ${dis} placeholder="${o.ph||''}">${o.u?`<span class="u">${o.u}</span>`:''}</div>`;
+  const fila=(lab,cells)=>`<tr><td><b>${lab}</b></td>${cells.map(x=>`<td>${x}</td>`).join('')}</tr>`;
+  let h=`<section class="card"><div><h3>Solución nutritiva · ${esc(c.nombre)}</h3><div class="sub">Del análisis de agua sale la receta en meq/L, ajustada con el análisis de drenaje</div></div>
+    <div class="note">Cálculo orientativo para ayudar al técnico: comprueba siempre el resultado antes de cambiar la receta. ${g?'':'Solo el encargado o el administrador pueden cambiar los análisis.'}</div></section>`;
+  // Análisis de agua
+  h+=`<section class="card"><div class="sector-h"><div><h3>1. Análisis del agua de riego</h3><div class="sub">El de la balsa o el pozo, del laboratorio</div></div>
+    <div class="pick"><button class="chip" data-nu-u="meq" aria-pressed="${!mg}">meq/L</button><button class="chip" data-nu-u="mg" aria-pressed="${mg}">mg/L</button></div></div>
+    <div class="frm"><div class="field"><label>Fecha del análisis</label><div class="inp"><input type="date" data-nu="agua.f" value="${esc(D.agua.f||'')}" ${dis}></div></div><div class="field"><label>Laboratorio · nº de boletín</label><div class="inp"><input data-nu="agua.lab" data-txt="1" style="text-align:left;text-transform:none" value="${esc(D.agua.lab||'')}" ${dis}></div></div>
+      <div class="field"><label>CE</label>${inp('agua.ce',D.agua.v.ce,{u:'mS/cm'})}</div><div class="field"><label>pH</label>${inp('agua.ph',D.agua.v.ph,{})}</div></div>
+    <div class="frm">${NU_ION.map(([i,n])=>`<div class="field"><label>${NU_IONN[i]}</label>${inp('agua.'+i,D.agua.v[i]!=null&&D.agua.v[i]!==''?(mg?D.agua.v[i]*nuEq(i):D.agua.v[i]):'',{u:mg?'mg/L':'meq/L',d:mg?1:2})}</div>`).join('')}</div>
+    ${D.agua.f&&(Date.now()-Date.parse(D.agua.f))>2*365*864e5?'<div class="banner">Este análisis tiene más de 2 años: en zona vulnerable a nitratos hay que hacer uno al menos cada 2 años.</div>':''}
+    ${g&&st.cfg.cabezales.length>1?`<div class="row"><select data-nu-copia="1"><option value="">Copiar el agua de otro cabezal…</option>${st.cfg.cabezales.filter(x=>x.id!==st.cab&&((st.cfg.nutri||{})[x.id]||{}).agua).map(x=>`<option value="${x.id}">${esc(x.nombre)}</option>`).join('')}</select></div>`:''}</section>`;
+  // Drenaje
+  const dm=resumen(st.cab);
+  h+=`<section class="card"><div><h3>2. Análisis del drenaje (opcional)</h3><div class="sub">Con él la receta se corrige: si en el drenaje falta un ion, se sube; si sobra, se baja</div></div>
+    <div class="frm"><div class="field"><label>Fecha del análisis</label><div class="inp"><input type="date" data-nu="dren.f" value="${esc(D.dren.f||'')}" ${dis}></div></div><div class="field"><label>CE drenaje</label>${inp('dren.ce',D.dren.v.ce,{u:'mS/cm',ph:dm.ceD!=null?'hoy '+inVal(+dm.ceD.toFixed(2)):''})}</div><div class="field"><label>pH drenaje</label>${inp('dren.ph',D.dren.v.ph,{ph:dm.phD!=null?'hoy '+inVal(+dm.phD.toFixed(1)):''})}</div></div>
+    <div class="frm">${NU_DRI.map(i=>`<div class="field"><label>${NU_IONN[i]}</label>${inp('dren.'+i,D.dren.v[i],{u:'meq/L'})}</div>`).join('')}</div></section>`;
+  // Objetivo
+  h+=`<section class="card"><div><h3>3. Objetivo y opciones</h3><div class="sub">Lo que quieres que lleve el agua de riego (aporte) y lo que quieres ver en el drenaje, en meq/L</div></div>
+    <div class="field"><label>Partir de</label><div class="inp"><select data-nu-pre="1" ${dis}>${Object.entries(NU_PRE).map(([k,v])=>`<option value="${k}" ${D.obj.pre===k?'selected':''}>${esc(v.n)}</option>`).join('')}<option value="pers" ${D.obj.pre==='pers'?'selected':''}>Personalizado</option></select></div></div>
+    <div class="tbl"><table><thead><tr><th></th>${NU_OBJI.map(i=>`<th>${NU_IONN[i]}</th>`).join('')}</tr></thead><tbody>
+      ${fila('Aporte objetivo',NU_OBJI.map(i=>inp('obj.a.'+i,D.obj.a[i],{})))}
+      ${fila('Drenaje objetivo',NU_OBJI.map(i=>['NH4'].includes(i)?'—':inp('obj.d.'+i,D.obj.d[i],{})))}</tbody></table></div>
+    <div class="frm"><div class="field"><label>Corrección por drenaje</label><div class="inp"><select data-nu="op.k" ${dis}>${[[0,'Sin corregir'],[0.25,'Suave (25 %)'],[0.5,'Normal (50 %)'],[0.75,'Fuerte (75 %)']].map(([v,t])=>`<option value="${v}" ${+D.op.k===v?'selected':''}>${t}</option>`).join('')}</select></div></div>
+      <div class="field"><label>Bicarbonato que se deja</label>${inp('op.hco3',D.op.hco3,{u:'meq/L'})}</div>
+      <div class="field"><label>Magnesio con</label><div class="inp"><select data-nu="op.mg" ${dis}>${[['auto','Automático'],['sulfato','Sulfato magnésico'],['nitrato','Nitrato magnésico']].map(([v,t])=>`<option value="${v}" ${D.op.mg===v?'selected':''}>${t}</option>`).join('')}</select></div></div>
+      <div class="field"><label>Calcio con</label><div class="inp"><select data-nu="op.ca" ${dis}>${[['caL','Solución cálcica (líquida)'],['caS','Nitrato cálcico sólido']].map(([v,t])=>`<option value="${v}" ${D.op.ca===v?'selected':''}>${t}</option>`).join('')}</select></div></div></div>
+    <label class="chk"><input type="checkbox" data-nu="op.nh4" ${D.op.nh4?'checked':''} ${dis}> Usar nitrato amónico para el amonio que falte</label>
+    <details class="tv"><summary>Riquezas de los productos líquidos</summary><div class="frm" style="margin-top:8px">
+      <div class="field"><label>Ácido nítrico</label>${inp('riq.hno3P',D.riq.hno3P,{u:'%',d:1})}</div><div class="field"><label>Densidad nítrico</label>${inp('riq.hno3D',D.riq.hno3D,{u:'kg/L'})}</div>
+      <div class="field"><label>Ácido fosfórico</label>${inp('riq.h3po4P',D.riq.h3po4P,{u:'%',d:1})}</div><div class="field"><label>Densidad fosfórico</label>${inp('riq.h3po4D',D.riq.h3po4D,{u:'kg/L'})}</div>
+      <div class="field"><label>Solución cálcica · CaO</label>${inp('riq.caCaO',D.riq.caCaO,{u:'%',d:1})}</div><div class="field"><label>Solución cálcica · N</label>${inp('riq.caN',D.riq.caN,{u:'%',d:1})}</div><div class="field"><label>Densidad sol. cálcica</label>${inp('riq.caD',D.riq.caD,{u:'kg/L'})}</div></div>
+      <div class="note">Mira la etiqueta o la ficha técnica de tu proveedor: la riqueza cambia de una marca a otra.</div></details>
+    ${g?'<div class="row"><button class="btn pri" data-act="nu-guardar">Guardar análisis y objetivo</button></div>':''}</section>`;
+  // Resultado
+  const sinAgua=!NU_ION.some(([i])=>D.agua.v[i]!=null&&D.agua.v[i]!=='');
+  h+=`<section class="card" id="nu_res"><div><h3>4. Resultado</h3><div class="sub">${sinAgua?'Escribe el análisis de agua para calcular':R.hayD&&+D.op.k?'Objetivo corregido con el análisis de drenaje':'Sin análisis de drenaje: se usa el objetivo tal cual'}</div></div>`;
+  if(!sinAgua){
+    h+=`<div class="tbl"><table><thead><tr><th>meq/L</th>${NU_OBJI.map(i=>`<th>${NU_IONN[i]}</th>`).join('')}</tr></thead><tbody>
+      ${fila('Objetivo',NU_OBJI.map(i=>fmt(+D.obj.a[i]||0,2)))}${R.hayD&&+D.op.k?fila('Corregido por drenaje',NU_OBJI.map(i=>{const dlt=R.adj[i]-(+D.obj.a[i]||0);return `${fmt(R.adj[i],2)}${Math.abs(dlt)>0.005?` <small class="${dlt>0?'ok':'bad'}">${dlt>0?'+':''}${fmt(dlt,2)}</small>`:''}`})):''}
+      ${fila('Trae el agua',NU_OBJI.map(i=>fmt(+D.agua.v[i]||0,2)))}${fila('Hay que aportar',NU_OBJI.map(i=>fmt(R.need[i],2)))}</tbody></table></div>`;
+    h+=`<h4 style="margin:10px 0 0">Abonos</h4><div class="tbl"><table><thead><tr><th>Producto</th><th>Dosis</th><th>Receta actual</th><th>Aporta (meq/L)</th></tr></thead><tbody>${R.prods.map(x=>{const act=x.app?nuReceta(st.cab,x.app):null,u=x.liq?'cc/hL':'g/hL';
+      return `<tr><td>${esc(x.n)}</td><td><b>${fmt(x.dosis,1)}</b> <span class="u">${u}</span><br><small class="note">${x.liq?'L':'kg'} por 100 m³</small></td><td>${act!=null?fmt(act,1)+' '+u:x.app?'—':'<small class="note">No está en ningún depósito</small>'}</td><td><small>${Object.entries(x.meq).map(([i,v])=>NU_IONN[i]+' '+fmt(v,2)).join(' · ')}</small></td></tr>`}).join('')||'<tr><td colspan="4">No hace falta ningún abono</td></tr>'}</tbody></table></div>`;
+    h+=`<h4 style="margin:10px 0 0">Solución que sale</h4><div class="tbl"><table><thead><tr>${NU_ION.map(x=>`<th>${NU_IONN[x[0]]}</th>`).join('')}</tr></thead><tbody><tr>${NU_ION.map(([i])=>`<td>${fmt(R.fin[i]||0,2)}</td>`).join('')}</tr></tbody></table></div>
+      <div class="row" style="gap:6px"><span class="pill nd">Cationes ${fmt(R.cat,1)} · aniones ${fmt(R.an,1)} meq/L</span><span class="pill ${Math.abs(R.cat-R.an)/Math.max(R.cat,1)>0.1?'warn':'ok'}">Balance ${Math.abs(R.cat-R.an)/Math.max(R.cat,1)>0.1?'descompensado':'correcto'}</span><span class="pill nd">CE estimada ≈ ${fmt(R.ce,2)} mS/cm</span>${R.acido?`<span class="pill nd">Ácido para ${fmt(R.acido,2)} meq/L de bicarbonato</span>`:''}</div>
+      ${R.warn.map(x=>`<div class="banner">${esc(x)}</div>`).join('')}
+      <div class="note">Dosis en la unidad de la receta: g/hL (o cc/hL) es lo mismo que kg (o L) por cada 100 m³ de agua. La CE estimada es aproximada (suma de cationes ÷ 10).</div>
+      ${g?`<div class="row"><button class="btn pri" data-act="nu-aplicar">Pasar estas dosis a la receta de ${esc(c.nombre)}</button></div><div class="note">Cambia la receta en pantalla y te lleva a «Receta» para que la revises (los kg de cada depósito) y pulses Guardar. ${bidonesDe(st.cab).some(b=>b.cabezales.length>1)?'Ojo: algún depósito es compartido con otro cabezal y también le cambia a él.':''}</div>`:''}`}
+  return h+`</section>`}
+function nuSet(k,v){const D=nuDraft(),p=k.split('.');
+  if(p[0]==='agua'||p[0]==='dren'){if(p[1]==='f'||p[1]==='lab'){D[p[0]][p[1]]=v;return}const n=num(v);let x=n;if(p[0]==='agua'&&D.agua.u==='mg'&&n!=null&&p[1]!=='ce'&&p[1]!=='ph')x=n/nuEq(p[1]);D[p[0]].v[p[1]]=x;return}
+  if(p[0]==='obj'){D.obj[p[1]][p[2]]=num(v);D.obj.pre='pers';return}
+  if(p[0]==='op'){D.op[p[1]]=p[1]==='nh4'?!!v:p[1]==='k'||p[1]==='hco3'?(num(v)??0):v;return}
+  if(p[0]==='riq'){D.riq[p[1]]=num(v);return}}
+function nuRefresco(){const r=$('#nu_res');if(!r){renderMain();return}const y=window.scrollY;renderMain();window.scrollTo(0,y)}
+$('#main').addEventListener('change',e=>{const t=e.target,d=t.dataset||{};if(st.tab!=='solucion')return;
+  if(d.nu){nuSet(d.nu,t.type==='checkbox'?t.checked:t.value);nuRefresco()}
+  else if(d.nuPre){const D=nuDraft(),P=NU_PRE[t.value];D.obj.pre=t.value;if(P){D.obj.a={...P.a};D.obj.d={...P.d}}nuRefresco()}
+  else if(d.nuCopia&&t.value){const o=(st.cfg.nutri||{})[t.value];if(o&&o.agua){nuDraft().agua=clone(o.agua);toast('Agua copiada de '+cabNombre(t.value)+': pulsa Guardar');nuRefresco()}}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-nu-u],[data-act="nu-guardar"],[data-act="nu-aplicar"]');if(!b)return;const D=nuDraft();
+  if(b.dataset.nuU){D.agua.u=b.dataset.nuU;renderMain();return}
+  if(b.dataset.act==='nu-guardar'){for(const c of [st.cfg,st.savedCfg]){c.nutri=c.nutri||{};c.nutri[st.cab]=clone(D)}Store.setConfig(st.savedCfg).then(()=>toast('Análisis y objetivo guardados')).catch(er=>toast(errMsg(er)));return}
+  if(b.dataset.act==='nu-aplicar'){const R=nuCalc(D);let n=0;const falta=[];
+    for(const x of R.prods){if(!x.app){falta.push(x.n);continue}let hecho=false;for(const bd of bidonesDe(st.cab))for(const y of bd.productos)if(y.p===x.app&&!hecho){y.dosis=+x.dosis.toFixed(x.dosis<10?2:1);hecho=true;n++}if(!hecho)falta.push(x.n)}
+    for(const app of ['hno3','h3po4','mkp','kno3','k2so4','ca'])if(!R.prods.some(x=>x.app===app))for(const bd of bidonesDe(st.cab))for(const y of bd.productos)if(y.p===app&&y.dosis&&y.p!==bd.principal){y.dosis=0;n++}
+    st.dirtyCfg=true;st.tab='receta';renderAll();renderSave();toast(`${n} dosis cambiadas en la receta: revisa y pulsa Guardar${falta.length?' · sin depósito: '+falta.join(', '):''}`)}});
 
 /* ---------- Mis notas: privadas de cada cuenta, con recordatorio (una vez o repetido) ---------- */
 st.notas=null;st.nt={form:null,conf:null,ver:'pend'};

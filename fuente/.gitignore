@@ -1,0 +1,4 @@
+netlify/
+pruebas/salida/
+__pycache__/
+*.pyc
