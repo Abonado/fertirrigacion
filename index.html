@@ -3149,7 +3149,7 @@ function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V=
     put('B'+r0,i.traz,{rng:`B${r0}:B${r0+4}`,al:'l',b:1,sz:11,wrap:1});put('C'+r0,i.vari,{al:'l',b:1});put('C'+(r0+1),i.cult,{al:'l',b:1});put('D'+r0,i.sust,{al:'l',b:1})}
   // una fila por minisector (bandeja): cada uno con sus datos, sin mezclar
   for(const{s,bj,row}of ptMini(c)){const min=r.min[s.id],rie=(r.rie||{})[s.id];
-    put('E'+row,ptNum(r.ceD[bj.id],2));put('F'+row,ptNum(r.phD[bj.id],2));put('G'+row,ptNum(min!=null&&bj.caudal?min*bj.caudal:null,0));put('H'+row,ptNum(r.dren[bj.id],0));
+    put('E'+row,ptNum(r.ceD[bj.id],2));put('F'+row,ptNum(r.phD[bj.id],2));put('G'+row,ptNum(min!=null&&bj.caudal?min*bj.caudal/1000:null,2));/* volumen total en litros */put('H'+row,ptNum(r.dren[bj.id],0));
     put('I'+row,ptNum(drenPct(s,bj),1));put('J'+row,ptNum(rie,0));put('K'+row,ptNum(min,0))}
   const sa=salidaDe(cabId),m3=r.m3[cabId],m3R=(r.m3R||{})[cabId];
   [['O10',sa.ceB,2],['O11',sa.ceR,2],['O12',sa.incR,2],['O13',sa.ent,2],['O14',sa.inc,2],['O15',sa.tot,2],['O16',sa.phS,2],['O17',m3R,1],['O18',m3,1],['O19',m3R!=null&&m3?m3R*100/m3:null,1],
