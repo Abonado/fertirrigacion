@@ -7,18 +7,18 @@ permissions:
   contents: read
 jobs:
   copia:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
       - name: Copiar la base de datos (cifrada)
         run: node fuente/copias/copia.mjs
         env:
           FIREBASE_SA: ${{ secrets.FIREBASE_SA }}
           BACKUP_PASS: ${{ secrets.BACKUP_PASS }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: copia-${{ github.run_number }}
           path: copia-*.bin
