@@ -492,6 +492,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .satley{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:4px 0}.satley i{flex:1;height:10px;border-radius:5px}
 .satp{margin:6px 0;font-size:14px}
 button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;background:none;border-right:0;border-bottom:0;cursor:pointer;padding-right:0}
+.hrt td,.hrt th{text-align:right;white-space:nowrap}.hrt td:first-child,.hrt th:first-child{text-align:left;white-space:normal;min-width:110px}.hrt td.u{text-align:left}.hrt tr.hr1 td{border-top:2px solid var(--line)}.hrt td.hrc{background:var(--warn-bg);font-weight:700}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -920,7 +921,7 @@ function vReceta(){const c=cabById(st.cab);let h=`<section class="summary" data-
     b.productos.forEach((x,i)=>{h+=`<tr><td>${esc(prod(x.p).n)}</td><td><div class="inp sm" style="display:inline-flex"><input id="ds_${b.id}_${i}" data-k="cfg.dosis.${b.id}.${i}" inputmode="decimal" autocomplete="off" value="${inVal(x.dosis)}"><span class="u">${uDosis(x.p)}</span></div></td>
       <td data-out="c1_${b.id}_${i}">${x.dosis?fmt(conc(b,x),2)+' '+uCant(x.p):'—'}</td><td data-out="c2_${b.id}_${i}">${x.dosis?fmt(conc(b,x)*b.capacidad/1000,1)+' '+uCant(x.p):'—'}</td><td data-out="c3_${b.id}_${i}">${x.dosis&&conc(b,x)?fmt(1000/conc(b,x),1):'—'}</td></tr>`});
     h+=`</tbody></table></div>${b.principal==='kno3'?`<div data-out="suma_${b.id}">${sumaPotHTML(b)}</div>`:''}</section>`}
-  return h}
+  return h+`<div class="note">Cada receta que se guarda queda apuntada en la hoja mensual «Cambios de receta» (Riego → Parte diario).</div>`}
 const SUMA_MIN=505,SUMA_MAX=515;
 function sumaPotHTML(b){const pp=b.productos.find(x=>x.p===b.principal);if(!pp||!pp.dosis)return '';let r=0;for(const x of b.productos)if(x.dosis&&!prod(x.p).liq)r+=x.dosis/pp.dosis;
   const k=r*b.capacidad/1000;if(!k)return '';const s=(b.kgPrincipal||0)*k,ok=s>=SUMA_MIN&&s<=SUMA_MAX,rec=Math.round((SUMA_MIN+SUMA_MAX)/2/k),sr=rec*k;
@@ -2030,7 +2031,7 @@ function vParte(){if(st.cfg.cabezales.length&&!cabById(st.cab))return '';const d
     ${d.recetaDia?'':`<div class="note">${d.fecha<hoy()?'Este día se guardó antes de que la app apuntara la receta de cada día: sale la receta actual.':'La receta queda apuntada con el parte al guardar el día.'}</div>`}
     ${['grande','pequeno'].map(t=>{const K=PTIPO[t];return `<div class="ptipo"><div><b>${K.corto}</b> <span class="note">· hoja «${K.titulo}»${t==='pequeno'?' (Anexo XI)':''}</span></div>
       <div class="row"><button class="btn pri" data-act="parte-pdf" data-tipo="${t}">${K.corto} (PDF) · ${esc(d.cab)}</button><button class="btn" data-act="parte-xlsx" data-tipo="${t}">Excel</button>${nCab>1?`<button class="btn" data-act="parte-pdf" data-tipo="${t}" data-todos="1">Todos los cabezales de ${esc(fs?fs.nombre:'la finca')} (PDF)</button>`:''}</div></div>`}).join('')}
-    <div class="note">Los dos salen en las hojas de la empresa (PR101 / Ed.05) con los datos del día. Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`+parteFijosInfo(st.cab);
+    <div class="note">Los dos salen en las hojas de la empresa (PR101 / Ed.05) con los datos del día. Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`+parteFijosInfo(st.cab)+hojaRecetaHTML();
   h+=parteCuerpo(d);
   return h}
 function parteCuerpo(d){let h='';
@@ -2528,7 +2529,7 @@ async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{con
   for(const id of tocados){const b=bid(id);if(b&&modoDep(b)!=='manual')autoAlmacen(b,f).catch(e=>console.warn(e))}st.reg.ejemplo=false;st.dirtyReg=false;enviarPartes();st.hist=null;loadHist();toast('Día '+fCorta(st.fecha)+' guardado');if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave();if(st.tab==='cuentas'||st.tab==='drenaje'){const bn=$('.banner');if(bn&&!st.reg.ejemplo)bn.remove()}}
 async function saveCfg(){if(st.saving)return;if(!esGestor()){const n=clone(st.savedCfg);for(const b of n.bidones){const x=bid(b.id);if(!x)continue;b.kgPrincipal=x.kgPrincipal;b.productos.forEach((p,i)=>{const q=x.productos.find(y=>y.p===p.p);if(q)p.dosis=q.dosis})}st.cfg=n}st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
-  if(lineas.length)await Store.addCambio({ts:new Date().toISOString(),fecha:hoy(),lineas,por:yoNombre(),porEmail:miEmail()});st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
+  if(lineas.length)await Store.addCambio({ts:new Date().toISOString(),fecha:hoy(),lineas,por:yoNombre(),porEmail:miEmail(),receta:fotoReceta()});st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave()}
 
 async function loadFecha(f){st.fecha=f;st.regMod=new Set();let r=null;try{r=await Store.getReg(f)}catch(e){}
@@ -3365,6 +3366,92 @@ async function cqPdf(){let L;try{L=await pdfLib()}catch(e){toast('Hace falta con
       ls.forEach((l,i)=>{l.forEach((s,k)=>page.drawText(s,{x:x+pad,y:y-pad-size*(k+1)*1.2+size*.25,size,font:head?fb:f,color:ink}));x+=cw[i]});page.drawLine({start:{x:M,y:y-h},end:{x:M+IW,y:y-h},thickness:.5,color:lin});y-=h};
     fila(t.cab,true);if(!t.filas.length){page.drawText(pdfTxt('Sin registros en esta campaña'),{x:M+pad,y:y-12,size:8,font:f,color:mut});y-=18}for(const r of t.filas)fila(r,false);y-=14}
   const bytes=await doc.save();await saveBlob(new Blob([bytes],{type:'application/pdf'}),cqNombre()+'.pdf')}
+
+/* ---------- Hoja mensual «Cambios de receta»: un bloque por abono y una columna por cada cambio de receta del mes.
+   Se rellena sola: la primera columna es la receta en vigor el día 1 y cada vez que se guarda una receta distinta sale otra. */
+st.hrMes=null;
+const fotoDe=c=>{const o={};for(const b of (c&&c.bidones)||[])o[b.id]={kg:b.kgPrincipal,cap:b.capacidad,lpcm:b.lpcm,prods:b.productos.map(x=>({...x}))};return o};
+const campanaDe=f=>{const y=+f.slice(0,4);return +f.slice(5,7)>=8?[y,y+1]:[y-1,y]};   // campaña de agosto a julio
+const MESES=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const mesTxt=m=>MESES[+m.slice(5,7)-1]+' '+m.slice(0,4);
+const fPunto=f=>{const p=f.split('-');return +p[2]+'.'+(+p[1])+'.'+p[0].slice(2)};
+/* Valores de la receta de un cabezal: salida deseada, por 1000 L, por depósito y constante (L de depósito por kg o L de abono) */
+function recetaVals(rec,cab){const out=[];
+  for(const b of st.cfg.bidones.filter(x=>x.cabezales.includes(cab))){const r=rec&&rec[b.id];if(!r||!Array.isArray(r.prods))continue;
+    const pp=r.prods.find(x=>x.p===b.principal),fac=pp&&pp.dosis>0&&r.kg?r.kg/pp.dosis:0,cap=r.cap||b.capacidad;
+    for(const x of r.prods){const c1=(x.dosis||0)*fac;out.push({k:b.id+'|'+x.p,b:b.id,p:x.p,cap,sal:+x.dosis||0,c1,c2:c1*cap/1000,cte:c1>0?1000/c1:null})}}
+  return out}
+const hrFirma=v=>JSON.stringify(v.map(x=>[x.k,+x.sal.toFixed(3),+x.c1.toFixed(3),x.cap]));
+/* Recetas guardadas, de más antigua a más nueva: las de cada cambio (exactas) y, antes de que se guardaran, las de cada día */
+function hrEventos(){const cs=(st.cambios||[]).filter(c=>c.receta&&c.ts),pri=cs.map(c=>c.ts.slice(0,10)).sort()[0]||null,ev=[];
+  for(const r of st.hist||[])if(r.receta&&r.fecha&&(!pri||r.fecha<pri))ev.push({t:r.fecha+'T12:00:00',f:r.fecha,rec:r.receta});
+  for(const c of cs)ev.push({t:c.ts,f:c.fecha||isoD(new Date(c.ts)),rec:c.receta,por:c.por,lineas:c.lineas||[]});
+  ev.push({t:'9999',f:hoy(),rec:fotoDe(st.savedCfg),actual:true});
+  return ev.sort((a,b)=>a.t<b.t?-1:a.t>b.t?1:0)}
+function hojaReceta(cab,mes){const ev=hrEventos(),ini=mes+'-01',cols=[],obs=[];let base=null;
+  for(const e of ev){if(e.f>=ini)break;const v=recetaVals(e.rec,cab);if(v.length)base={f:ini,v,s:hrFirma(v)}}
+  if(base)cols.push(base);
+  for(const e of ev){if(e.f<ini||e.f.slice(0,7)!==mes)continue;const v=recetaVals(e.rec,cab);if(!v.length)continue;const s=hrFirma(v),ult=cols[cols.length-1];
+    if(e.lineas&&e.lineas.length&&!e.actual)obs.push({f:e.f,por:e.por||'',lineas:e.lineas});
+    if(ult&&ult.s===s)continue;
+    if(ult&&ult.f===e.f)cols[cols.length-1]={f:e.f,v,s};else cols.push({f:e.f,v,s})}
+  const vistos=new Map();for(const c of cols)for(const x of c.v)if(x.sal>0&&!vistos.has(x.k))vistos.set(x.k,x);
+  const orden=[];for(const b of st.cfg.bidones.filter(x=>x.cabezales.includes(cab)))for(const pr of b.productos)if(vistos.has(b.id+'|'+pr.p))orden.push(b.id+'|'+pr.p);
+  for(const k of vistos.keys())if(!orden.includes(k))orden.push(k);
+  const abonos=orden.map(k=>{const x=vistos.get(k),b=bid(x.b);return{k,n:prod(x.p).n,cap:(b&&b.capacidad)||x.cap,cel:cols.map(c=>c.v.find(y=>y.k===k)||null)}});
+  const cu=(st.cfg.cultivo||{})[cab]||{},[a,b]=campanaDe(ini);let vs=[],cs=[];
+  try{for(const{s,row}of ptFilas(cabById(cab))){const i=infoSector(s.id,cab,row);if(i.vari&&!vs.includes(i.vari))vs.push(i.vari);if(i.cult&&!cs.includes(i.cult))cs.push(i.cult)}}catch(e){}
+  if(cu.variedad)vs=[cu.variedad];if(cu.cultivo&&!cs.length)cs=[cu.cultivo];
+  return{cab:cabById(cab).nombre,cultivo:vs.length?vs.join(', ')+(cs.length?' ('+cs.join(', ').toLowerCase()+')':''):cs.join(', '),campana:[a,b],mes,fechas:cols.map(c=>c.f),abonos,obs}}
+const hrNum=v=>v==null||!isFinite(v)?'':(+v).toLocaleString('es-ES',{maximumFractionDigits:v>=100?1:2});
+function hrMeses(){const l=[],d=new Date();d.setDate(1);for(let i=0;i<12;i++){l.push(isoD(d).slice(0,7));d.setMonth(d.getMonth()-1)}return l}
+function hojaRecetaHTML(){if(st.hist===null||st.cambios===null){loadHist();return `<section class="card"><div><h3>Cambios de receta</h3></div><div class="note">Cargando…</div></section>`}
+  if(!st.hrMes)st.hrMes=hoy().slice(0,7);const H=hojaReceta(st.cab,st.hrMes);
+  let h=`<section class="card"><div class="tank-h"><div><h3>Cambios de receta · ${esc(H.cab)}</h3><div class="sub">Hoja mensual · ${esc(mesTxt(H.mes))} · campaña ${H.campana.join('/')}${H.cultivo?' · '+esc(H.cultivo):''}</div></div></div>
+    <div class="field"><label for="hr_mes">Mes</label><div class="inp"><select id="hr_mes" data-hr="mes">${hrMeses().map(m=>`<option value="${m}" ${m===st.hrMes?'selected':''}>${esc(mesTxt(m))}</option>`).join('')}</select></div></div>`;
+  if(!H.fechas.length)return h+`<div class="note">No hay ninguna receta guardada de este mes ni de antes.</div></section>`;
+  h+=`<div class="row"><button class="btn pri" data-act="hr-pdf">Hoja de cambios de receta (PDF)</button></div>
+    <div class="note">Se rellena sola: la primera columna es la receta del día 1 y cada vez que se guarda una receta distinta sale una columna nueva. ${H.fechas.length===1?'Este mes todavía no ha cambiado.':H.fechas.length-1+(H.fechas.length===2?' cambio':' cambios')+' este mes.'}</div>
+    <div class="tbl"><table class="hrt"><thead><tr><th>Abono</th><th></th>${H.fechas.map(f=>`<th>${fPunto(f)}</th>`).join('')}</tr></thead><tbody>`;
+  for(const a of H.abonos){const fil=[['1000 L',x=>x&&hrNum(x.c1)],...(a.cap!==1000?[[fmt(a.cap,0)+' L',x=>x&&hrNum(x.c2)]]:[]),['Salida',x=>x&&hrNum(x.sal)],['Constante',x=>x&&hrNum(x.cte)]];
+    fil.forEach(([t,fn],i)=>{h+=`<tr${i===0?' class="hr1"':''}>${i===0?`<td rowspan="${fil.length}"><b>${esc(a.n)}</b></td>`:''}<td class="u">${t}</td>${a.cel.map((x,j)=>{const v=fn(x),p=j?fn(a.cel[j-1]):v;return `<td${j&&v!==p?' class="hrc"':''}>${v||'—'}</td>`}).join('')}</tr>`})}
+  h+=`</tbody></table></div>${H.obs.length?`<details class="tv"><summary>Qué se cambió (${H.obs.length})</summary><div class="note">${H.obs.map(o=>`<b>${fPunto(o.f)}</b>${o.por?' · '+esc(o.por):''}: ${o.lineas.map(esc).join('; ')}`).join('<br>')}</div></details>`:''}</section>`;
+  return h}
+async function hojaRecetaPdf(cab,mes){let L;try{L=await pdfLib()}catch(e){toast('Hace falta conexión a internet para crear el PDF');return}
+  const H=hojaReceta(cab,mes),{PDFDocument,StandardFonts,rgb}=L,doc=await PDFDocument.create(),f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold),fo=await doc.embedFont(StandardFonts.HelveticaOblique);
+  const PW=595.28,PH=841.89,M=26,IW=PW-2*M,ink=rgb(.05,.08,.12),blue=rgb(.1,.2,.55),NC=17,LW=78,CW=(IW-LW)/NC;
+  const nombre=`Cambios de receta ${H.cab} ${mesTxt(mes)}`;doc.setTitle(pdfTxt(nombre));
+  const grupos=[];for(let i=0;i<Math.max(1,H.fechas.length);i+=NC)grupos.push(i);
+  const filasDe=a=>[['FECHA',(x,j)=>x?fPunto(H.fechas[j]):''],['1000',x=>x?hrNum(x.c1):''],...(a.cap!==1000?[[fmt(a.cap,0).replace(/\./g,''),x=>x?hrNum(x.c2):'']]:[]),['SALIDA',x=>x?hrNum(x.sal):''],['CONSTANTE',x=>x?hrNum(x.cte):'']];
+  const cabecera=(page,y)=>{const t=(s,x,yy,sz,fn,c)=>page.drawText(pdfTxt(s),{x,y:yy,size:sz,font:fn||f,color:c||ink});
+    t('PARCELA:',M,y,10,fb);t(H.cab,M+56,y+1,12,fo,blue);page.drawLine({start:{x:M+52,y:y-3},end:{x:M+200,y:y-3},thickness:.6,color:ink});
+    t('CULTIVO:',M+212,y,10,fb);t(H.cultivo,M+264,y+1,11,fo,blue);page.drawLine({start:{x:M+260,y:y-3},end:{x:M+390,y:y-3},thickness:.6,color:ink});
+    t('CAMPAÑA:',M+400,y,10,fb);t(H.campana[0]+' / '+H.campana[1],M+458,y+1,10,fo,blue);page.drawLine({start:{x:M+455,y:y-3},end:{x:M+IW,y:y-3},thickness:.6,color:ink});
+    t('Cambios de receta · '+mesTxt(mes),M,y+18,8,f,rgb(.4,.45,.5))};
+  for(const g of grupos){let page=doc.addPage([PW,PH]),y=PH-M-24;cabecera(page,y);y-=14;
+    const idx=[...Array(NC).keys()].map(i=>g+i);
+    for(let ai=0;ai<Math.max(H.abonos.length,12);ai++){const a=H.abonos[ai],fil=a?filasDe(a):[['FECHA'],['1000'],['SALIDA'],['CONSTANTE']],RH=10.2,bh=(fil.length+1)*RH;
+      if(y-bh<M+16){page.drawText(pdfTxt('OBSERVACIONES AL DORSO:'),{x:M,y:M,size:9,font:fb,color:ink});page=doc.addPage([PW,PH]);y=PH-M-24;cabecera(page,y);y-=14}
+      page.drawRectangle({x:M,y:y-bh,width:IW,height:bh,borderColor:ink,borderWidth:1.1});
+      page.drawText(pdfTxt('ABONO '+(ai+1)),{x:M+3,y:y-RH+2.6,size:7.5,font:fb,color:ink});
+      if(a){const n=a.n.toUpperCase(),w=fb.widthOfTextAtSize(pdfTxt(n),8.5);page.drawText(pdfTxt(n),{x:M+LW+(IW-LW-w)/2,y:y-RH+2.4,size:8.5,font:fb,color:blue})}
+      page.drawLine({start:{x:M,y:y-RH},end:{x:M+IW,y:y-RH},thickness:.9,color:ink});
+      fil.forEach(([lab,fn],r)=>{const yy=y-RH*(r+2);page.drawText(pdfTxt(lab),{x:M+3,y:yy+2.6,size:7.5,font:fb,color:ink});
+        if(r<fil.length-1)page.drawLine({start:{x:M,y:yy},end:{x:M+IW,y:yy},thickness:.4,color:ink});
+        if(a&&fn)idx.forEach((j,c)=>{if(j>=H.fechas.length)return;const v=fn(a.cel[j],j);if(!v)return;const s=pdfTxt(v);let sz=7;while(sz>4.5&&fo.widthOfTextAtSize(s,sz)>CW-2)sz-=.5;page.drawText(s,{x:M+LW+c*CW+1.5,y:yy+2.5,size:sz,font:fo,color:blue})})});
+      page.drawLine({start:{x:M+LW,y:y-RH},end:{x:M+LW,y:y-bh},thickness:.9,color:ink});
+      for(let c=1;c<NC;c++)page.drawLine({start:{x:M+LW+c*CW,y:y-RH},end:{x:M+LW+c*CW,y:y-bh},thickness:.4,color:ink});
+      y-=bh+2}
+    page.drawText(pdfTxt('OBSERVACIONES AL DORSO:'),{x:M,y:Math.max(M,y-14),size:9,font:fb,color:ink})}
+  /* Dorso: qué se cambió, cuándo y quién */
+  const page=doc.addPage([PW,PH]);let y=PH-M-24;cabecera(page,y);y-=30;page.drawText(pdfTxt('OBSERVACIONES'),{x:M,y,size:11,font:fb,color:ink});y-=18;
+  const lineas=(s,w,sz,fn)=>{const out=[];let cur='';for(const p of pdfTxt(s).split(/\s+/)){const t=cur?cur+' '+p:p;if(fn.widthOfTextAtSize(t,sz)>w&&cur){out.push(cur);cur=p}else cur=t}out.push(cur);return out};
+  if(!H.obs.length){page.drawText(pdfTxt('Sin cambios de receta anotados este mes.'),{x:M,y,size:9,font:fo,color:blue})}
+  for(const o of H.obs){if(y<M+40)break;page.drawText(pdfTxt(fPunto(o.f)+(o.por?' · '+o.por:'')),{x:M,y,size:9,font:fb,color:ink});y-=13;
+    for(const l of o.lineas)for(const s of lineas('- '+l,IW-12,8.5,fo)){if(y<M+20)break;page.drawText(s,{x:M+10,y,size:8.5,font:fo,color:blue});y-=11.5}y-=6}
+  const bytes=await doc.save();await saveBlob(new Blob([bytes],{type:'application/pdf'}),nombre+'.pdf')}
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.hr!=='mes')return;st.hrMes=t.value;renderMain()});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act="hr-pdf"]');if(!b)return;b.disabled=true;hojaRecetaPdf(st.cab,st.hrMes||hoy().slice(0,7)).finally(()=>{b.disabled=false})});
 
 /* ---------- Calculadora de solución nutritiva (meq/L): análisis de agua → abonos, con ajuste por el análisis de drenaje ----------
    Método clásico de cálculo de soluciones nutritivas (neutralizar bicarbonatos con ácidos y completar cada ion con sales).
