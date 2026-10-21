@@ -471,6 +471,13 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
   .bjh{display:none}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.sath{margin:12px 0 2px;font:600 12px var(--f-body);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.satbox{position:relative;width:100%;border-radius:10px;overflow:hidden;background:var(--surface-2);border:1px solid var(--line);margin:8px 0}
+.satbox>img,.satbox>svg{position:absolute;left:0;top:0;width:100%;height:100%}
+.satbox>img.satov{image-rendering:pixelated;opacity:.92}
+.satley{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin:4px 0}.satley i{flex:1;height:10px;border-radius:5px}
+.satp{margin:6px 0;font-size:14px}
+button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;background:none;border-right:0;border-bottom:0;cursor:pointer;padding-right:0}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -559,7 +566,7 @@ const fFecha=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'sho
 const fCorta=f=>{const p=f.split('-');return p[2]+'/'+p[1]};
 
 /* ---------- Almacenamiento: nube del artifact (db) o, si no hay, este navegador ---------- */
-const SYNC=new Set(['cuaderno','incidencias','almacen','llenados','tareas','material','mensajes','crecimiento','partes','registros','cambios','collas','jornadas','cincid','ctareas']);
+const SYNC=new Set(['satelite','cuaderno','incidencias','almacen','llenados','tareas','material','mensajes','crecimiento','partes','registros','cambios','collas','jornadas','cincid','ctareas']);
 const ahoraISO=()=>new Date().toISOString();
 const Store={db:null,mode:'local',
   /* En la nube: la primera vez descarga todo y lo guarda en el móvil; las siguientes solo pide lo cambiado (campo «mod»).
@@ -659,7 +666,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -688,7 +695,7 @@ function paisaje(f,i){const tonos=[['#f6c88a','#9ec6e8','#6f8f5a','#4f6b40'],['#
     <g transform="translate(6 20)">${inv}</g><path d="M0 182 H380 V214 H0z" fill="${tonos[3]}"/></svg>`}
 function avisosCampoF(f){if(!campoEnFinca(f)||st.collas===null)return [];const cs=(st.collas||[]).filter(c=>c.activa!==false&&(!c.finca||c.finca===f.id)&&(esGestor()||c.jefeEmail===miEmail()));if(!cs.length)return [];
   const sin=cs.filter(c=>st.jorDias&&!st.jor[jorKey(c.id,hoy())]);return sin.length?[[new Date().getHours()>=13?'bad':'warn',sin.length===1?'Parte de colla de hoy sin guardar':sin.length+' partes de colla de hoy sin guardar']]:st.jorDias?[['ok','Partes de colla de hoy guardados']]:[]}
-function avisosFinca(f){const r=veRiego()?fincaAvisos(f):[],c=avisosCampoF(f);if(!r.length&&!c.length)return [['nd',veRiego()?'Todo en orden':'Sin collas tuyas en esta finca']];return [...r.filter(x=>!(c.length&&x[1]==='Todo en orden')),...c]}
+function avisosFinca(f){const r=veRiego()?[...fincaAvisos(f),...satAvisosF(f)]:[],c=avisosCampoF(f);if(!r.length&&!c.length)return [['nd',veRiego()?'Todo en orden':'Sin collas tuyas en esta finca']];return [...r.filter(x=>!(c.length&&x[1]==='Todo en orden')),...c]}
 function fincaAvisos(f){const out=[],cabs=f.cabezales||[];if(!cabs.length)return [['nd','Todavía sin cabezales ni datos']];
   if(st.hist===null||st.llen===null)return [['nd','Cargando avisos…']];
   const d=new Date();d.setDate(d.getDate()-1);const ayer=isoD(d),ra=(st.hist||[]).find(r=>r.fecha===ayer);
@@ -723,7 +730,7 @@ function renderFincas(){const fs=fincasVis(),admin=!window.NUBE||(NUBE.user&&NUB
       <div class="avs"><h4>Avisos</h4>${av.slice(0,mx).map(([k,t])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span>${esc(t)}</span></div>`).join('')}${av.length>mx?`<div class="av note">y ${av.length-mx} más</div>`:''}</div>
       <button class="btn pri go" data-act="finca-go" data-id="${f.id}" ${off?'disabled':''}>${off?(veRiego()?'Sin datos todavía':'Sin collas tuyas aquí'):'Entrar en '+esc(f.nombre)}</button></div></article>`}).join('')}</div></div>`;
   hydrate()}
-function abrirFincas(){if(veRiego()){if(st.tareas===null)loadTareas();if(st.mat===null)loadMat()}renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(veRiego()){if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs()}if(st.collas===null)loadCollas();else if(st.collas.length&&!st.jorDias)loadJor(esGestor()?0:2)}
+function abrirFincas(){if(veRiego()){if(st.tareas===null)loadTareas();if(st.mat===null)loadMat()}renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(veRiego()){if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs();if(st.sat===null&&Store.mode==='fb')loadSat()}if(st.collas===null)loadCollas();else if(st.collas.length&&!st.jorDias)loadJor(esGestor()?0:2)}
 function coordsDe(t){t=String(t||'');let m=/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/.exec(t)||/@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(t)||/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/.exec(t);
   if(!m)return null;const lat=+m[1],lon=+m[2];return Math.abs(lat)<=90&&Math.abs(lon)<=180?{lat,lon}:null}
 async function guardarUbic(id,u){for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.ubic={lat:+u.lat.toFixed(5),lon:+u.lon.toFixed(5)}}
@@ -754,13 +761,13 @@ function entrarArea(a){if(a==='campo'&&!puedeCollas())return;if(a==='riego'&&(!v
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material'].includes(st.tab);
+function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite'].includes(st.tab);
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
 const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','solucion','parte','partes'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
-  {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','tiempo'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
+  {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 /* Personal de campo: su propio menú (de momento, las collas) */
@@ -917,7 +924,10 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
     <div class="note">Después pulsa «Guardar receta y ajustes». Vale para todo el equipo.</div></section>
   <section class="card"><div><h3>Avisos con la app cerrada</h3><div class="sub">Dirección del servidor de avisos (Cloudflare)</div></div>
     <div class="field"><label for="av_url_cfg">Servidor de avisos</label><div class="inp"><input class="wide" id="av_url_cfg" data-k="cfg.avisos.url" data-text="1" style="width:100%;text-transform:none" placeholder="https://abonado-avisos.….workers.dev" value="${esc(st.cfg.avisosUrl||'')}" autocomplete="off" spellcheck="false"></div></div>
-    <div class="note">Después pulsa «Guardar receta y ajustes». Cada persona tiene que activar los avisos en su móvil, en Ajustes → Aviso de llenado.</div></section>`;
+    <div class="note">Después pulsa «Guardar receta y ajustes». Cada persona tiene que activar los avisos en su móvil, en Ajustes → Aviso de llenado.</div></section>
+  <section class="card"><div><h3>Satélite (Copernicus)</h3><div class="sub">Dirección del servidor de satélite (Cloudflare)</div></div>
+    <div class="field"><label for="sat_url_aj">Servidor de satélite</label><div class="inp"><input class="wide" id="sat_url_aj" data-k="cfg.sat.url" data-text="1" style="width:100%;text-transform:none" placeholder="https://abonado-satelite.….workers.dev" value="${esc(st.cfg.satUrl||'')}" autocomplete="off" spellcheck="false"></div></div>
+    <div class="note">Después pulsa «Guardar receta y ajustes». La radiación solar funciona sin servidor; las parcelas al aire libre lo necesitan.</div></section>`;
   h+=cultivoAjHTML();
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Recetas y ajustes iniciales</div></div>
@@ -2425,10 +2435,10 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   const hide=()=>{tip.hidden=true;xh.setAttribute('visibility','hidden');hd.innerHTML='';el.querySelectorAll('.bar.on').forEach(b=>b.classList.remove('on'))};
   svg.addEventListener('pointermove',e=>{const r=svg.getBoundingClientRect(),px=e.clientX-r.left;let i=sp.bars?Math.floor((px-L)/step):Math.round((px-L)/step);show(Math.max(0,Math.min(n-1,i)))});
   svg.addEventListener('pointerleave',hide)}
-let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()},150)});
+let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='satelite'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()},150)});
 
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno};
-function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()}
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite};
+function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
 function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=VIEWS[st.tab]();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
@@ -2449,7 +2459,7 @@ function applyCfg(p,v){const b=bid(p[2]);switch(p[1]){
   case 'kg':b.kgPrincipal=v;break;case 'dosis':b.productos[+p[3]].dosis=v??0;break;case 'lpcm':if(v)b.lpcm=v;break;
   case 'cap':if(v)b.capacidad=v;break;case 'vent':b.venturis=v?Math.max(1,Math.round(v)):1;break;case 'rep':b.reparto=!!v;break;
   case 'al':if(v!=null)st.cfg.alertas[p[2]]=v;break;case 'ub':st.cfg.ubic={...(st.cfg.ubic||{}),[p[2]]:v};st.wx=null;break;case 'min':if(v==null)delete st.cfg.stockMin[p[2]];else st.cfg.stockMin[p[2]]=v;break;case 'saco':if(!(v>0))delete st.cfg.saco[p[2]];else st.cfg.saco[p[2]]=v;break;
-  case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'avisos':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.avisosUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.avisosUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'modo':if(MODOS[v])b.modo=v;break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
+  case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'avisos':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.avisosUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.avisosUrl=u;break}case 'sat':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.satUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.satUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'modo':if(MODOS[v])b.modo=v;break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
 function onInput(e){const t=e.target,k=t.dataset.k;if(!k)return;const p=k.split('.');const v=t.type==='checkbox'?t.checked:(t.dataset.text?t.value.trim():num(t.value));
   if(p[0]==='reg'){if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);for(const o of document.querySelectorAll('#main [data-k]'))if(o!==t&&o.dataset.k===k&&o.type!=='checkbox')o.value=t.value;if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
   softUpdate();renderSave()}
@@ -3743,6 +3753,213 @@ async function pfGuardar(){const v=clone(pfDraft()),cab=st.pfD.cab;for(const c o
 $('#main').addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.pf;if(!k)return;const v=pfDraft(),val=e.target.value;
   if(k==='productor')v.productor=val;else if(k==='sup')v.sup=num(val);else{const[,b,f]=k.split('|');(v.blk[b]=v.blk[b]||{})[f]=val.trim()}});
 document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('pfx'))st.pfOpen=e.target.open},true);
+
+/* ---------- Satélite: radiación solar (Meteosat) y seguimiento de parcelas al aire libre (Sentinel-2) ---------- */
+st.rad=null;st.sat=null;st.satSel=null;st.satFil=null;st.satNew=null;st.satImg={};st.satBusy={};st.satErr={};st.satTipo='ndvi';st.satFecha=null;st.satConfirm=null;
+const satUrl=()=>(st.cfg&&st.cfg.satUrl)||'';
+const satListo=()=>!!(satUrl()&&Store.mode==='fb'&&window.NUBE&&NUBE.user);
+const SAT_USO={IV:'Invernadero',FY:'Frutales',CI:'Cítricos',OV:'Olivar',FS:'Frutos secos',VI:'Viñedo',TA:'Tierra arable',TH:'Huerta',PS:'Pastizal',PR:'Pasto arbustivo',PA:'Pasto con arbolado',FO:'Forestal',IM:'Improductivo',ZU:'Zona urbana',CA:'Viales',ED:'Edificaciones',AG:'Agua',MT:'Matorral'};
+const usoTxt=u=>u?(SAT_USO[u]?SAT_USO[u]+' ('+u+')':u):'—';
+const refTxt=r=>Array.isArray(r)?r.join('-'):'';
+const SAT_ERR={sin_copernicus:'Falta poner las claves de Copernicus en el servidor',copernicus_clave:'Copernicus no acepta las claves del servidor',copernicus_cupo:'Se ha gastado el cupo gratuito de Copernicus de este mes',copernicus_permiso:'La cuenta de Copernicus no tiene permiso para este servicio',grande:'La parcela es demasiado grande (más de 6 km)',geom:'El contorno de la parcela no es válido',red:'Sin conexión con el servidor de satélite',cfg:'Falta la dirección del servidor de satélite',sesion:'Vuelve a entrar en la app',sin_acceso:'Tu cuenta no tiene acceso'};
+const satErrTxt=c=>SAT_ERR[c]||(String(c||'').startsWith('sigpac')?'SIGPAC no responde ahora mismo; prueba más tarde':String(c||'').startsWith('copernicus')?'Copernicus no responde ahora mismo; prueba más tarde':'Error del servidor de satélite ('+c+')');
+async function satApi(ruta,body){const u=satUrl(),cu=window.NUBE&&NUBE.auth&&NUBE.auth.currentUser;if(!u||!cu)throw{code:'cfg'};const tk=await cu.getIdToken();
+  let r;try{r=await fetch(u.replace(/\/+$/,'')+'/'+ruta,{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify(body)})}catch(e){throw{code:'red'}}
+  const j=await r.json().catch(()=>null);if(!r.ok||!j)throw{code:(j&&j.error)||('http'+r.status)};return j}
+
+/* Radiación: satélite Meteosat (EUMETSAT) a través de Open-Meteo; si falla, el modelo meteorológico */
+const radUbic=()=>{const f=fincaAct();return (f&&f.ubic)||(ubicOk()?st.cfg.ubic:null)||AGUILAS};
+let radLoading=false;
+function radParse(j,fuente,k,u){const h=j&&j.hourly;if(!h||!Array.isArray(h.time)||!Array.isArray(h.shortwave_radiation))throw new Error('datos');
+  const now=Date.now(),hh=hoy(),dias={},horas=[];
+  h.time.forEach((t,i)=>{const v=h.shortwave_radiation[i];if(v==null||new Date(t).getTime()>now+5*60e3)return;const f=t.slice(0,10);const d=dias[f]=dias[f]||{s:0,n:0};d.s+=v*0.36;d.n++;if(f===hh)horas.push([t,v])});
+  const l=Object.keys(dias).sort().map(f=>({f,j:Math.round(dias[f].s),n:dias[f].n}));if(!l.some(d=>d.j>0))throw new Error('vacio');
+  return{k,u,fuente,t:Date.now(),dias:l,horas}}
+async function loadRad(force){const u=radUbic(),k=u.lat.toFixed(3)+','+u.lon.toFixed(3);
+  if(!force&&st.rad&&st.rad.k===k&&!st.rad.fallo&&Date.now()-st.rad.t<30*60e3)return;if(radLoading)return;radLoading=true;
+  const d0=new Date();d0.setDate(d0.getDate()-35);const q=`latitude=${u.lat}&longitude=${u.lon}&hourly=shortwave_radiation&timezone=Europe%2FMadrid`;
+  try{let r=null;
+    try{const x=await fetch(`https://satellite-api.open-meteo.com/v1/archive?${q}&models=satellite_radiation_seamless&start_date=${isoD(d0)}&end_date=${hoy()}`);if(!x.ok)throw new Error(x.status);r=radParse(await x.json(),'sat',k,u)}
+    catch(e){const x=await fetch(`https://api.open-meteo.com/v1/forecast?${q}&past_days=35&forecast_days=1`);if(!x.ok)throw new Error(x.status);r=radParse(await x.json(),'modelo',k,u)}
+    st.rad=r;try{localStorage.setItem('abono.rad',JSON.stringify(r))}catch(e){}}
+  catch(e){let c=null;try{c=JSON.parse(localStorage.getItem('abono.rad')||'null')}catch(_){}st.rad=c&&c.k===k?{...c,viejo:true}:{k,fallo:true,t:Date.now()}}
+  radLoading=false;if(st.tab==='satelite')renderMain()}
+const radDias=()=>((st.rad&&st.rad.dias)||[]).filter(d=>d.f<hoy()&&d.n>=20);
+/* Riego de la finca frente al sol de cada día: m³ por cada 1.000 J/cm² */
+function radRiego(){const f=fincaAct();if(!f||!(f.cabezales||[]).length||!st.hist||!st.rad||!st.rad.dias)return null;
+  const m3=fe=>{const r=st.hist.find(x=>x.fecha===fe);if(!r||!r.m3)return null;let s=0,n=0;for(const c of f.cabezales)if(r.m3[c]!=null&&r.m3[c]!==''){s+=+r.m3[c]||0;n++}return n?s:null};
+  const filas=radDias().slice(-30).map(d=>({f:d.f,j:d.j,m3:m3(d.f)})).filter(x=>x.m3!=null&&x.m3>0&&x.j>=100);filas.forEach(x=>x.r=x.m3*1000/x.j);
+  if(filas.length<4)return{f,filas,poco:true};
+  const ult=filas[filas.length-1],prev=filas.slice(-15,-1).map(x=>x.r).sort((a,b)=>a-b),med=prev[Math.floor(prev.length/2)];
+  return{f,filas,ult,med,dif:(ult.r/med-1)*100}}
+function radHTML(){if(enClaude())return '';
+  if(!st.rad||radLoading&&!st.rad.dias){loadRad();return `<section class="card"><div><h3>Radiación solar por satélite</h3></div><div class="note">Cargando…</div></section>`}
+  const r=st.rad;if(r.fallo)return `<section class="card"><div><h3>Radiación solar por satélite</h3></div><div class="note">No se pudo cargar. Comprueba la conexión.</div><div class="row"><button class="btn" data-sat-act="rad-reload">Reintentar</button></div></section>`;
+  const ds=radDias(),hd=r.dias.find(d=>d.f===hoy()),ay=ds[ds.length-1],u7=ds.slice(-7),m7=u7.length?u7.reduce((a,b)=>a+b.j,0)/u7.length:null;
+  const uh=r.horas.length?r.horas[r.horas.length-1][0].slice(11,16):null;
+  let h=`<section class="card"><div class="tank-h"><div><h3>Radiación solar ${r.fuente==='sat'?'por satélite':'(estimada)'}</h3><div class="sub">${r.fuente==='sat'?'Medida por el satélite Meteosat sobre ':'Modelo meteorológico (el satélite no respondió) · '}${esc(fincaAct()?fincaAct().nombre:(r.u.nombre||'la finca'))}${r.viejo?' · sin conexión: últimos datos guardados':''}</div></div><button class="btn" data-sat-act="rad-reload">Actualizar</button></div>
+    <section class="summary"><div class="stat"><span>Hoy${uh?' hasta las '+uh:''}</span><b>${hd?fmt(hd.j,0):'—'}</b><small>J/cm²</small></div>
+    <div class="stat"><span>Ayer</span><b>${ay?fmt(ay.j,0):'—'}</b><small>J/cm²${ay&&m7?` · ${ay.j>=m7?'+':''}${fmt((ay.j/m7-1)*100,0)} % sobre la media`:''}</small></div>
+    <div class="stat"><span>Media 7 días</span><b>${fmt(m7,0)}</b><small>J/cm² al día</small></div></section>`;
+  const l30=ds.slice(-30);if(l30.length>1){G.g_rad={fechas:l30.map(d=>d.f),bars:true,values:l30.map(d=>d.j),zero:true,dec:0,suffix:' J/cm²',barName:'Radiación del día',aria:'Radiación solar diaria'};h+=`<h4 class="sath">Últimos ${l30.length} días</h4><div class="chart" id="g_rad"></div>`}
+  if(r.horas.length>2){G.g_radh={fechas:r.horas.map(x=>x[0]),series:[{name:'Ahora',full:'Radiación',color:SERIE[3],values:r.horas.map(x=>x[1])}],zero:true,dec:0,suffix:' W/m²',aria:'Radiación de hoy por horas',xlab:t=>t.slice(11,16),tlab:t=>'Hoy '+t.slice(11,16)};h+=`<h4 class="sath">Hoy, hora a hora</h4><div class="chart" id="g_radh"></div>`}
+  h+=`<div class="note">Es la radiación que llega fuera; dentro del invernadero llega menos por el plástico y el encalado. Sirve para comparar unos días con otros.</div></section>`;
+  if(st.hist===null)loadHist();const rr=radRiego();
+  if(rr&&rr.poco)h+=`<section class="card"><div><h3>Riego frente al sol</h3><div class="sub">${esc(rr.f.nombre)}</div></div><div class="note">Hacen falta al menos 4 días con cuentas guardadas en el último mes para comparar.</div></section>`;
+  else if(rr){const dif=rr.dif,cls=dif<=-20?'bad':dif>=25?'warn':'ok',txt=dif<=-20?'Se regó poco para el sol que hizo':dif>=25?'Se regó más de lo normal para el sol que hizo':'Riego acorde con el sol';
+    G.g_radr={fechas:rr.filas.map(x=>x.f),bars:true,values:rr.filas.map(x=>x.r),zero:true,dec:1,suffix:' m³',barName:'m³ por 1.000 J/cm²',aria:'Metros cúbicos regados por cada mil julios por centímetro cuadrado'};
+    h+=`<section class="card"><div><h3>Riego frente al sol</h3><div class="sub">${esc(rr.f.nombre)} · m³ regados por cada 1.000 J/cm² de radiación</div></div>
+      <div class="row"><span class="pill ${cls}">${txt}</span></div>
+      <p class="satp">El ${fFecha(rr.ult.f)} se regaron <b>${fmt(rr.ult.m3,0)} m³</b> con <b>${fmt(rr.ult.j,0)} J/cm²</b>: ${fmt(rr.ult.r,1)} m³ por cada 1.000 J/cm², un ${dif>=0?'+':''}${fmt(dif,0)} % respecto a lo normal de las dos semanas anteriores (${fmt(rr.med,1)}).</p>
+      <div class="chart" id="g_radr"></div>${tablaHTML(rr.filas.map(x=>x.f),[{h:'J/cm²',v:rr.filas.map(x=>x.j),d:0},{h:'m³',v:rr.filas.map(x=>x.m3),d:0},{h:'m³/1.000 J',v:rr.filas.map(x=>x.r),d:1}])}
+      <div class="note">Orientativo: también cuentan el drenaje, la fase del cultivo, el encalado y los días de viento o lluvia.</div></section>`}
+  return h}
+
+/* Parcelas al aire libre seguidas con Sentinel-2 (vigor NDVI y humedad de la hoja NDMI) */
+let satLoading=false;
+async function loadSat(){if(satLoading)return;satLoading=true;try{st.sat=await Store.listCol('satelite',500)}catch(e){st.sat=st.sat||[]}satLoading=false;
+  if(!$('#fincas').hidden)renderFincas();if(st.tab==='satelite')renderMain();satAuto()}
+const satGeom=p=>{try{return typeof p.geom==='string'?JSON.parse(p.geom):p.geom}catch(e){return null}};
+const satPols=g=>!g?[]:g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:[];
+const SR=6378137,mercP=([lon,lat])=>[SR*lon*Math.PI/180,SR*Math.log(Math.tan(Math.PI/4+lat*Math.PI/360))];
+function satCaja(g){let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;for(const pol of satPols(g))for(const p of pol[0]){const[x,y]=mercP(p);x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y)}return[x0,y0,x1,y1]}
+const satVal=p=>(p.serie||[]).filter(x=>x&&x.n!=null).sort((a,b)=>a.f<b.f?-1:1);
+function satEstado(p){if(p.bajo)return['nd','Bajo plástico o malla: el satélite no ve el cultivo'];const s=satVal(p);if(!s.length)return['nd',p.act?'Sin imágenes limpias todavía':'Sin datos todavía'];
+  const u=s[s.length-1],t=Date.parse(u.f),prev=s.filter(x=>{const d=(t-Date.parse(x.f))/864e5;return d>=8&&d<=45}).map(x=>x.n).sort((a,b)=>a-b);
+  const dias=Math.round((Date.parse(hoy())-t)/864e5);
+  if(prev.length>=2){const base=prev[Math.floor(prev.length/2)],caida=base-u.n;
+    if(caida>=0.08)return['bad',`Vigor bajando: ${fmt(u.n,2)} (antes ${fmt(base,2)})`];if(caida>=0.05)return['warn',`Vigor algo más bajo: ${fmt(u.n,2)} (antes ${fmt(base,2)})`]}
+  if(u.p10!=null&&u.p90!=null&&u.p90-u.p10>=0.25)return['warn',`Zonas desiguales en la parcela (vigor ${fmt(u.p10,2)} a ${fmt(u.p90,2)})`];
+  return[dias>20?'nd':'ok',`Vigor ${fmt(u.n,2)} el ${fFecha(u.f)}${dias>20?' · sin imagen limpia desde entonces (nubes)':''}`]}
+function satAvisosF(f){return (st.sat||[]).filter(p=>p.finca===f.id).map(p=>[p,satEstado(p)]).filter(([,e])=>e[0]==='bad'||e[0]==='warn').map(([p,e])=>[e[0],'Satélite · '+p.nombre+': '+e[1].replace(/^Vigor/,'vigor')])}
+async function satRefrescar(p,manual){if(p.bajo||st.satBusy[p.id]||!satListo())return;const g=satGeom(p);if(!g)return;st.satBusy[p.id]=1;delete st.satErr[p.id];if(st.tab==='satelite')renderMain();
+  const s=satVal(p),d=new Date();if(s.length&&!manual)d.setTime(Date.parse(s[s.length-1].f)-12*864e5);else d.setDate(d.getDate()-365);
+  try{const j=await satApi('serie',{geom:g,desde:isoD(d),hasta:hoy()});const m=new Map((p.serie||[]).map(x=>[x.f,x]));for(const x of j.puntos||[])m.set(x.f,x);
+    const lim=new Date();lim.setDate(lim.getDate()-420);const serie=[...m.values()].filter(x=>x.f>=isoD(lim)).sort((a,b)=>a.f<b.f?-1:1);
+    const patch={serie,act:ahoraISO()};await Store.updCol('satelite',p.id,patch);Object.assign(p,patch);if(manual)toast(j.puntos&&j.puntos.length?'Datos de satélite al día':'No hay imágenes nuevas sin nubes')}
+  catch(e){st.satErr[p.id]=e&&e.code||'red';if(manual)toast(satErrTxt(st.satErr[p.id]))}
+  delete st.satBusy[p.id];if(st.tab==='satelite')renderMain();else if(!$('#fincas').hidden)renderFincas()}
+let satAutoHecho=false;
+async function satAuto(){if(satAutoHecho||!satListo()||!st.sat)return;satAutoHecho=true;const viejo=Date.now()-2*864e5;
+  for(const p of st.sat.filter(p=>!p.bajo&&(!p.act||Date.parse(p.act)<viejo)).slice(0,6))await satRefrescar(p,false)}
+async function satImagen(p,f,tipo){const k=p.id+'|'+f+'|'+tipo;if(st.satImg[k])return;st.satImg[k]={cargando:true};const x=satVal(p).find(v=>v.f===f)||{};
+  const lo=x.p10!=null?x.p10-0.03:0.2,hi=x.p90!=null?x.p90+0.03:0.8;
+  try{const j=await satApi('imagen',{geom:satGeom(p),fecha:f,tipo,lo,hi});st.satImg[k]=j}catch(e){st.satImg[k]={err:e&&e.code||'red'}}
+  if(st.tab==='satelite'&&st.satSel===p.id)renderMain()}
+/* Vista de la parcela: ortofoto del PNOA (IGN) de fondo, imagen del satélite encima y el contorno SIGPAC */
+function satVisor(g,img,alt){const bb=satCaja(g);const w=bb[2]-bb[0],hh=bb[3]-bb[1],m=Math.max(w,hh)*0.18+30,pb=[bb[0]-m,bb[1]-m,bb[2]+m,bb[3]+m],W=pb[2]-pb[0],H=pb[3]-pb[1];
+  const pw=Math.min(800,Math.round(640*Math.max(1,W/H))),ph=Math.round(pw*H/W);
+  const orto=`https://www.ign.es/wms-inspire/pnoa-ma?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=OI.OrthoimageCoverage&STYLES=&CRS=EPSG:3857&BBOX=${pb.map(v=>v.toFixed(1)).join(',')}&WIDTH=${pw}&HEIGHT=${ph}&FORMAT=image/jpeg`;
+  const d=satPols(g).map(pol=>pol.map(an=>'M'+an.map(p=>{const[x,y]=mercP(p);return(x-pb[0]).toFixed(1)+','+(pb[3]-y).toFixed(1)}).join('L')+'Z').join('')).join('');
+  let ov='';if(img&&img.png&&img.bbox){const b=img.bbox;ov=`<img class="satov" alt="" src="data:image/png;base64,${img.png}" style="left:${((b[0]-pb[0])/W*100).toFixed(3)}%;top:${((pb[3]-b[3])/H*100).toFixed(3)}%;width:${((b[2]-b[0])/W*100).toFixed(3)}%;height:${((b[3]-b[1])/H*100).toFixed(3)}%">`}
+  return `<div class="satbox" style="aspect-ratio:${W.toFixed(0)}/${H.toFixed(0)}"><img class="satorto" alt="${esc(alt||'Ortofoto de la parcela')}" src="${orto}" loading="lazy" onerror="this.style.display='none'">${ov}
+    <svg viewBox="0 0 ${W.toFixed(1)} ${H.toFixed(1)}" preserveAspectRatio="none" aria-hidden="true"><path d="${d}" fill="none" stroke="#fff" stroke-width="2.5" vector-effect="non-scaling-stroke"/><path d="${d}" fill="none" stroke="#1b2f4a" stroke-width="1" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"/></svg></div>`}
+const SAT_LEY={ndvi:`<div class="satley"><span>Poco vigor</span><i style="background:linear-gradient(90deg,#a68c73,#d9bf73,#f2e659,#a6d94d,#4db333,#1a731f)"></i><span>Mucho vigor</span></div>`,
+  rel:`<div class="satley"><span>Lo más flojo de la parcela</span><i style="background:linear-gradient(90deg,#d63026,#f58c33,#ffe666,#8ccc59,#1a8c33)"></i><span>Lo más fuerte</span></div>`,color:''};
+function satDetalle(p){const g=satGeom(p),s=satVal(p),est=satEstado(p),gest=esGestor(),fin=(st.cfg.fincas||[]).find(f=>f.id===p.finca);
+  let h=`<div class="row"><button class="btn" data-sat-act="volver">‹ Todas las parcelas</button></div>
+  <section class="card"><div class="tank-h"><div><h3>${esc(p.nombre)}</h3><div class="sub">${[p.cultivo,fin&&fin.nombre,p.sup!=null?fmt(p.sup,2)+' ha':null].filter(Boolean).map(esc).join(' · ')}</div></div>
+    ${!p.bajo&&satListo()?`<button class="btn" data-sat-act="act" data-id="${p.id}" ${st.satBusy[p.id]?'disabled':''}>${st.satBusy[p.id]?'Actualizando…':'Actualizar'}</button>`:''}</div>
+    <div class="row"><span class="pill ${est[0]}">${esc(est[1])}</span></div>
+    ${st.satErr[p.id]?`<div class="banner">${esc(satErrTxt(st.satErr[p.id]))}</div>`:''}
+    <div class="note">SIGPAC ${esc(refTxt(p.ref)||'—')} · uso ${esc(usoTxt(p.uso))}${p.act?' · datos del '+fHora(p.act):''}</div>`;
+  const tipos=p.bajo?[['color','Color real']]:[['ndvi','Vigor'],['rel','Diferencias dentro'],['color','Color real']];if(!tipos.some(t=>t[0]===st.satTipo))st.satTipo=tipos[0][0];
+  const fechas=s.slice().reverse().map(x=>x.f);
+  if(p.bajo&&!fechas.length){const d=new Date();for(let i=0;i<6;i++){fechas.push(isoD(d));d.setDate(d.getDate()-5)}}
+  if(!st.satFecha||!fechas.includes(st.satFecha))st.satFecha=fechas[0]||null;
+  let img=null;if(st.satFecha&&satListo()&&g){const k=p.id+'|'+st.satFecha+'|'+st.satTipo;img=st.satImg[k];if(!img){satImagen(p,st.satFecha,st.satTipo);img={cargando:true}}}
+  h+=`<div class="pick">${tipos.map(([k,t])=>`<button class="chip" data-sat-tipo="${k}" aria-pressed="${st.satTipo===k}">${t}</button>`).join('')}</div>`;
+  if(fechas.length)h+=`<div class="field"><label for="sat_f">Fecha de la imagen</label><div class="inp"><select id="sat_f" data-sat-f="1">${fechas.slice(0,40).map(f=>{const x=s.find(v=>v.f===f);return `<option value="${f}" ${f===st.satFecha?'selected':''}>${fFecha(f)} ${f.slice(0,4)}${x?' · vigor '+fmt(x.n,2):''}</option>`}).join('')}</select></div></div>`;
+  h+=g?satVisor(g,img&&img.png?img:null,p.nombre):'<div class="note">Sin contorno.</div>';
+  h+=img&&img.cargando?'<div class="note">Pidiendo la imagen al satélite…</div>':img&&img.err?`<div class="note">${esc(img.err==='copernicus_400'?'Ese día no hay imagen del satélite sobre la parcela.':satErrTxt(img.err))}</div>`:'';
+  h+=SAT_LEY[st.satTipo]||'';
+  h+=`<div class="note">${st.satTipo==='rel'?'Colores relativos a la propia parcela ese día: el rojo marca las zonas más flojas. Sirve para ir a mirar esos árboles (riego, goteros, plaga, suelo).':st.satTipo==='ndvi'?'Cada cuadradito es de 10 × 10 m. En gris, nubes.':'Imagen del satélite tal cual (10 m por píxel). Sirve para ver plásticos, encalado o daños grandes tras un temporal.'} Fondo: ortofoto PNOA © IGN.</div></section>`;
+  if(!p.bajo){if(s.length>1){const fe=s.map(x=>x.f);
+      G.g_satn={fechas:fe,series:[{name:'Media',full:'Vigor medio (NDVI)',color:SERIE[2],values:s.map(x=>x.n)},{name:'Zona floja',full:'Zona más floja (10 % peor)',color:SERIE[1],values:s.map(x=>x.p10)}],dec:2,suffix:'',aria:'Vigor de la parcela a lo largo del año'};
+      h+=`<section class="card"><div><h3>Vigor (NDVI)</h3><div class="sub">De 0 (suelo desnudo) a 1 (vegetación muy densa) · ${s.length} imágenes sin nubes</div></div>${legendHTML(G.g_satn.series)}<div class="chart" id="g_satn"></div>
+        <div class="note">Lo que importa es la tendencia y comparar con el mismo mes de otros años: en árboles el valor depende de la especie, la edad, el marco y lo que se vea de suelo entre filas.</div></section>`;
+      if(s.some(x=>x.w!=null)){G.g_satw={fechas:fe,series:[{name:'NDMI',full:'Humedad de la hoja (NDMI)',color:SERIE[0],values:s.map(x=>x.w)}],dec:2,suffix:'',aria:'Humedad de la hoja'};
+        h+=`<section class="card"><div><h3>Humedad de la hoja (NDMI)</h3><div class="sub">Agua en la vegetación vista desde el satélite</div></div><div class="chart" id="g_satw"></div><div class="note">Una bajada clara y seguida, sin bajar el vigor, suele ser la primera señal de falta de agua.</div>
+          ${tablaHTML(fe.slice().reverse(),[{h:'Vigor',v:s.map(x=>x.n).reverse(),d:2},{h:'Zona floja',v:s.map(x=>x.p10).reverse(),d:2},{h:'Humedad',v:s.map(x=>x.w).reverse(),d:2},{h:'% visto',v:s.map(x=>x.c*100).reverse(),d:0}])}</section>`}}
+    else if(!st.satBusy[p.id])h+=`<section class="card"><div class="note">${satListo()?'Todavía no hay datos: pulsa «Actualizar».':'Cuando el servidor de satélite esté conectado aparecerá aquí la evolución del vigor.'}</div></section>`;
+    else h+=`<section class="card"><div class="note">Descargando el último año de imágenes…</div></section>`}
+  if(gest)h+=`<section class="card"><div class="row">${st.satConfirm===p.id?`<span class="note">¿Quitar la parcela del seguimiento?</span><button class="btn danger" data-sat-act="borrar-si" data-id="${p.id}">Sí, quitar</button><button class="btn" data-sat-act="borrar-no">Cancelar</button>`:`<button class="btn" data-sat-act="borrar" data-id="${p.id}">Quitar parcela</button>`}</div></section>`;
+  return h}
+function satConexionHTML(){const adm=window.NUBE&&NUBE.user&&NUBE.user.admin;if(satUrl())return '';
+  return `<section class="card"><div><h3>Conectar con Copernicus</h3><div class="sub">Imágenes Sentinel-2 de la Unión Europea, gratis</div></div>
+    ${adm?`<div class="note">Hace falta un servidor pequeño (Cloudflare, gratis) con las claves de Copernicus, igual que el de avisos. Cuando lo tengas, pega aquí su dirección y pulsa «Guardar receta y ajustes».</div>
+    <div class="field"><label for="sat_url_cfg">Servidor de satélite</label><div class="inp"><input class="wide" id="sat_url_cfg" data-k="cfg.sat.url" data-text="1" style="width:100%;text-transform:none" placeholder="https://abonado-satelite.….workers.dev" value="" autocomplete="off" spellcheck="false"></div></div>`
+    :'<div class="note">Todavía no está conectado. Lo tiene que hacer el administrador.</div>'}</section>`}
+function satNuevoHTML(){const n=st.satNew,fs=fincasVis();
+  let h=`<section class="card"><div><h3>Añadir parcela</h3><div class="sub">Se busca en SIGPAC y se sigue con el satélite</div></div>`;
+  if(!n.res){const cq=((st.cfg.cuad||{}).parcelas||[]).filter(x=>x.prov&&x.muni&&x.pol&&x.par&&x.rec);
+    h+=`<div class="pick">${[['gps','Estoy en la parcela'],['coord','Coordenadas'],['ref','Referencia SIGPAC'],...(cq.length?[['cuad','Del cuaderno']]:[])].map(([k,t])=>`<button class="chip" data-sat-modo="${k}" aria-pressed="${n.modo===k}">${t}</button>`).join('')}</div>`;
+    if(n.modo==='gps')h+=`<div class="note">Ponte dentro de la parcela y pulsa el botón: se usa la ubicación del móvil.</div><div class="row"><button class="btn pri" data-sat-act="gps" ${n.busca?'disabled':''}>${n.busca?'Buscando…':'Usar mi ubicación'}</button></div>`;
+    if(n.modo==='coord')h+=`<div class="field"><label for="sat_c">Coordenadas o enlace largo de Google Maps</label><div class="inp"><input id="sat_c" data-satn="coord" placeholder="37.4334, -1.6304" style="width:100%;text-align:left;text-transform:none" value="${esc(n.coord||'')}" autocomplete="off"></div></div><div class="row"><button class="btn pri" data-sat-act="buscar" ${n.busca?'disabled':''}>${n.busca?'Buscando…':'Buscar'}</button></div>`;
+    if(n.modo==='ref'){const R=n.ref;h+=`<div class="frm">${[['pr','Provincia'],['mu','Municipio'],['ag','Agregado'],['zo','Zona'],['po','Polígono'],['pa','Parcela'],['re','Recinto']].map(([k,t])=>`<div class="field"><label for="sat_r_${k}">${t}</label><div class="inp"><input id="sat_r_${k}" data-satn="ref.${k}" inputmode="numeric" value="${esc(R[k]??'')}"></div></div>`).join('')}</div>
+      <div class="note">Murcia es la provincia 30. Agregado y zona suelen ser 0.</div><div class="row"><button class="btn pri" data-sat-act="buscar" ${n.busca?'disabled':''}>${n.busca?'Buscando…':'Buscar'}</button></div>`}
+    if(n.modo==='cuad')h+=`<div class="tareas">${cq.map((x,i)=>`<div class="tarea"><div class="tt"><b>${esc(x.nom||x.n||'Parcela')}</b><span class="mini">${esc([x.prov,x.muni,x.agr||0,x.zona||0,x.pol,x.par,x.rec].join('-'))}</span></div><div class="tm"><span>${esc([x.cult,x.sist==='aire'?'Aire libre':x.sist==='malla'?'Malla':x.sist==='invernadero'?'Invernadero':''].filter(Boolean).join(' · '))}</span></div><div class="row"><button class="btn" data-sat-act="cuad" data-i="${((st.cfg.cuad||{}).parcelas||[]).indexOf(x)}" ${n.busca?'disabled':''}>Elegir</button></div></div>`).join('')}</div>`;
+    if(n.err)h+=`<div class="banner">${esc(n.err)}</div>`;
+    h+=`<div class="row"><button class="btn" data-sat-act="cancelar">Cancelar</button></div></section>`;return h}
+  const r=n.res;h+=satVisor(r.geom,null,'Parcela encontrada')+`<div class="note">SIGPAC ${esc(refTxt(r.ref))} · uso ${esc(usoTxt(r.uso))}${r.sup!=null?' · '+fmt(r.sup,2)+' ha':''}${r.alt!=null?' · '+fmt(r.alt,0)+' m de altitud':''}</div>
+    ${r.uso==='IV'?'<div class="banner">SIGPAC la tiene como invernadero: el satélite ve el plástico, no el cultivo. Se guardará solo con imagen en color, sin vigor.</div>':''}
+    <div class="frm"><div class="field"><label for="sat_n">Nombre</label><div class="inp"><input id="sat_n" data-satn="nombre" style="width:100%;text-align:left" value="${esc(n.nombre||'')}" placeholder="Ej.: Limoneros de la Rambla"></div></div>
+      <div class="field"><label for="sat_cu">Cultivo</label><div class="inp"><input id="sat_cu" data-satn="cultivo" style="width:100%;text-align:left" value="${esc(n.cultivo||'')}" placeholder="Ej.: Limonero"></div></div>
+      <div class="field"><label for="sat_fi">Finca</label><div class="inp"><select id="sat_fi" data-satn="finca">${fs.map(f=>`<option value="${f.id}" ${n.finca===f.id?'selected':''}>${esc(f.nombre)}</option>`).join('')}</select></div></div></div>
+    <label class="chk"><input type="checkbox" data-satn="bajo" ${n.bajo?'checked':''}> Bajo plástico o malla (el satélite no ve el cultivo)</label>
+    <div class="row"><button class="btn pri" data-sat-act="guardar" ${n.guarda?'disabled':''}>Guardar y seguir con el satélite</button><button class="btn" data-sat-act="otra">Buscar otra</button><button class="btn" data-sat-act="cancelar">Cancelar</button></div></section>`;
+  return h}
+function vSatelite(){for(const k in G)delete G[k];
+  if(enClaude())return `<section class="card"><div><h3>Satélite</h3></div><div class="note">Funciona en la app instalada en el móvil.</div></section>`;
+  if(st.sat===null)loadSat();
+  const sel=st.satSel&&(st.sat||[]).find(p=>p.id===st.satSel);if(st.satSel&&st.sat&&!sel)st.satSel=null;if(sel)return satDetalle(sel);
+  let h=radHTML();h+=satConexionHTML();
+  if(st.sat===null)return h+'<div class="card"><div class="note">Cargando parcelas…</div></div>';
+  const fs=fincasVis(),vis=st.sat.filter(p=>fs.some(f=>f.id===p.finca)||!p.finca);
+  if(st.satFil===null)st.satFil=vis.some(p=>p.finca===st.finca)?st.finca:'todas';
+  const l=st.satFil==='todas'?vis:vis.filter(p=>p.finca===st.satFil),fsP=fs.filter(f=>vis.some(p=>p.finca===f.id));
+  h+=`<section class="card"><div class="tank-h"><div><h3>Parcelas al aire libre</h3><div class="sub">Vigor y humedad de la hoja con Sentinel-2 (cada 5 días si no hay nubes)</div></div></div>`;
+  if(fsP.length>1)h+=`<div class="pick"><button class="chip" data-sat-fil="todas" aria-pressed="${st.satFil==='todas'}">Todas</button>${fsP.map(f=>`<button class="chip" data-sat-fil="${f.id}" aria-pressed="${st.satFil===f.id}">${esc(f.nombre)}</button>`).join('')}</div>`;
+  if(l.length)h+=`<div class="tareas">${l.map(p=>{const e=satEstado(p),s=satVal(p),u=s[s.length-1],fin=(st.cfg.fincas||[]).find(f=>f.id===p.finca);
+      return `<button class="tarea satp-b" data-sat-sel="${p.id}"><div class="tt"><b>${esc(p.nombre)}</b>${u&&!p.bajo?`<span class="mcant">${fmt(u.n,2)}</span>`:''}<span class="pill ${e[0]}">${e[0]==='ok'?'Bien':e[0]==='bad'?'Revisar':e[0]==='warn'?'Ojo':p.bajo?'Solo imagen':'Sin datos'}</span></div>
+        <div class="tm"><span>${esc([p.cultivo,fin&&fin.nombre,p.sup!=null?fmt(p.sup,2)+' ha':null].filter(Boolean).join(' · '))}</span>${st.satBusy[p.id]?'<span>Actualizando…</span>':''}</div><p>${esc(e[1])}</p></button>`}).join('')}</div>`;
+  else h+=`<div class="note">${vis.length?'No hay parcelas en esta finca.':'Todavía no hay parcelas. Sirve para árboles y cultivos al aire libre: en invernadero el satélite ve el plástico, no la planta.'}</div>`;
+  h+=`</section>`;
+  if(esGestor()&&Store.mode==='fb'){if(st.satNew)h+=satNuevoHTML();else h+=`<div class="row"><button class="btn pri" data-sat-act="nueva" ${satUrl()?'':'disabled'}>+ Añadir parcela</button>${satUrl()?'':'<span class="note">Primero hay que conectar el servidor de satélite.</span>'}</div>`}
+  return h}
+async function satBuscar(q){const n=st.satNew;n.busca=true;n.err=null;renderMain();
+  try{const j=await satApi('recinto',q);if(!j.encontrado){n.err='No hay ningún recinto SIGPAC ahí. Revisa el punto o la referencia.'}else{n.res=j;if(j.uso==='IV')n.bajo=true}}
+  catch(e){n.err=satErrTxt(e&&e.code)}n.busca=false;renderMain()}
+async function satGuardar(){const n=st.satNew,r=n&&n.res;if(!r)return;const nom=(n.nombre||'').trim();if(!nom){toast('Ponle un nombre a la parcela');return}
+  if((st.sat||[]).some(p=>refTxt(p.ref)===refTxt(r.ref))){toast('Esa parcela ya está en seguimiento');return}
+  n.guarda=true;renderMain();const p={ts:ahoraISO(),nombre:nom,cultivo:(n.cultivo||'').trim(),finca:n.finca||st.finca||'',ref:r.ref,uso:r.uso||'',sup:r.sup,geom:JSON.stringify(r.geom),bajo:!!n.bajo,serie:[],act:null,por:yoNombre()};
+  try{const id=await Store.addCol('satelite',p);const x={...p,id};st.sat=[x,...(st.sat||[])];st.satNew=null;st.satSel=id;st.satFecha=null;st.satTipo=x.bajo?'color':'ndvi';renderMain();toast('Parcela guardada');satRefrescar(x,true)}
+  catch(e){n.guarda=false;renderMain();toast(errMsg(e))}}
+document.addEventListener('click',e=>{if(st.tab!=='satelite')return;const b=e.target.closest('[data-sat-act],[data-sat-sel],[data-sat-tipo],[data-sat-fil],[data-sat-modo]');if(!b)return;const d=b.dataset,n=st.satNew;
+  if(d.satSel){st.satSel=d.satSel;st.satFecha=null;const p=st.sat.find(x=>x.id===d.satSel);st.satTipo=p&&p.bajo?'color':'ndvi';renderMain();window.scrollTo(0,0);return}
+  if(d.satTipo){st.satTipo=d.satTipo;renderMain();return}
+  if(d.satFil){st.satFil=d.satFil;renderMain();return}
+  if(d.satModo&&n){n.modo=d.satModo;n.err=null;renderMain();return}
+  const a=d.satAct,p=d.id&&(st.sat||[]).find(x=>x.id===d.id);
+  if(a==='rad-reload'){st.rad=null;loadRad(true);renderMain()}
+  else if(a==='volver'){st.satSel=null;st.satConfirm=null;renderMain()}
+  else if(a==='act'&&p)satRefrescar(p,true);
+  else if(a==='borrar'){st.satConfirm=d.id;renderMain()}else if(a==='borrar-no'){st.satConfirm=null;renderMain()}
+  else if(a==='borrar-si'&&p){Store.delCol('satelite',p.id).then(()=>{st.sat=st.sat.filter(x=>x.id!==p.id);st.satSel=null;st.satConfirm=null;renderMain();toast('Parcela quitada')}).catch(er=>toast(errMsg(er)))}
+  else if(a==='nueva'){st.satNew={modo:'gps',coord:'',ref:{pr:'30',mu:'',ag:'0',zo:'0',po:'',pa:'',re:''},finca:st.finca||((fincasVis()[0]||{}).id)||'',nombre:'',cultivo:'',bajo:false,res:null};renderMain()}
+  else if(a==='cancelar'){st.satNew=null;renderMain()}
+  else if(a==='otra'&&n){n.res=null;n.err=null;renderMain()}
+  else if(a==='gps'&&n){if(!navigator.geolocation){toast('Este móvil no da la ubicación');return}n.busca=true;renderMain();
+    navigator.geolocation.getCurrentPosition(pos=>satBuscar({lat:+pos.coords.latitude.toFixed(6),lon:+pos.coords.longitude.toFixed(6)}),()=>{n.busca=false;n.err='No se pudo leer la ubicación. Activa el GPS y da permiso a la app.';renderMain()},{enableHighAccuracy:true,timeout:20000,maximumAge:30000})}
+  else if(a==='buscar'&&n){if(n.modo==='coord'){const c=coordsDe(n.coord);if(!c){n.err='No se entienden las coordenadas. Ejemplo: 37.4334, -1.6304';renderMain();return}satBuscar(c)}
+    else{const R=n.ref,ks=['pr','mu','ag','zo','po','pa','re'];if(ks.some(k=>!/^\d+$/.test(String(R[k]??'').trim()))){n.err='Rellena los 7 números de la referencia SIGPAC.';renderMain();return}satBuscar({ref:ks.map(k=>+R[k])})}}
+  else if(a==='cuad'&&n){const x=((st.cfg.cuad||{}).parcelas||[])[+d.i];if(!x)return;n.nombre=x.nom||'';n.cultivo=[x.cult,x.vari].filter(Boolean).join(' ');n.bajo=x.sist==='invernadero'||x.sist==='malla';
+    satBuscar({ref:[x.prov,x.muni,x.agr||0,x.zona||0,x.pol,x.par,x.rec].map(v=>parseInt(v,10)||0)})}
+  else if(a==='guardar')satGuardar()});
+const onSatIn=e=>{if(st.tab!=='satelite')return;const t=e.target,d=t.dataset;
+  if(d.satF){st.satFecha=t.value;renderMain();return}
+  const k=d.satn,n=st.satNew;if(!k||!n)return;if(k==='bajo'){n.bajo=t.checked;return}if(k.startsWith('ref.'))n.ref[k.slice(4)]=t.value.trim();else n[k]=t.value};
+$('#main').addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.satn)onSatIn(e)});$('#main').addEventListener('change',onSatIn);
 
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
