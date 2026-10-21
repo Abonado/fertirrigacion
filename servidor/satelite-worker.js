@@ -103,16 +103,37 @@ function validarGeom(b) {
 
 /* ---------- Copernicus (Sentinel Hub) ---------- */
 let tok = null, tokHasta = 0;
+// Las claves se limpian de espacios y saltos de línea que se cuelan al pegarlas
+const idDe = env => String(env.CDSE_ID || '').trim(), secDe = env => String(env.CDSE_SECRET || '').trim();
+let ultErr = null;   // último fallo de Copernicus, para la página de diagnóstico (sin claves)
 async function token(env) {
   if (tok && Date.now() < tokHasta) return tok;
-  if (!env.CDSE_ID || !env.CDSE_SECRET) throw new Error('sin_copernicus');
-  const r = await fetch(CDSE_TOKEN, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'client_credentials', client_id: env.CDSE_ID, client_secret: env.CDSE_SECRET }) });
-  if (!r.ok) throw new Error(r.status === 401 || r.status === 400 ? 'copernicus_clave' : 'copernicus_' + r.status);
+  if (!idDe(env) || !secDe(env)) throw new Error('sin_copernicus');
+  const r = await fetch(CDSE_TOKEN, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ grant_type: 'client_credentials', client_id: idDe(env), client_secret: secDe(env) }) });
+  if (!r.ok) { const t = await r.text().catch(() => ''); ultErr = { paso: 'clave', estado: r.status, detalle: t.slice(0, 300), cuando: new Date().toISOString() }; throw new Error(r.status === 401 || r.status === 400 ? 'copernicus_clave' : 'copernicus_' + r.status); }
   const j = await r.json(); tok = j.access_token; tokHasta = Date.now() + Math.max(60, (j.expires_in || 600) - 60) * 1000; return tok;
+}
+// Diagnóstico: abre la dirección del servidor con ?probar en el navegador
+let diagCache = null, diagHasta = 0;
+async function diagnostico(env) {
+  if (diagCache && Date.now() < diagHasta) return diagCache;
+  const id = idDe(env), o = { claves: !!(id && secDe(env)), id_empieza_por: id.slice(0, 3), id_largo: id.length, secreto_largo: secDe(env).length };
+  if (o.claves) {
+    tok = null;
+    try { await token(env); o.clave = 'ok'; } catch (e) { o.clave = 'error'; o.detalle = ultErr; }
+    if (o.clave === 'ok') {
+      const r = await fetch(SH + '/catalog/1.0.0/search', { method: 'POST', headers: { authorization: 'Bearer ' + tok, 'content-type': 'application/json' }, body: JSON.stringify({ collections: ['sentinel-2-l2a'], bbox: [-1.61, 37.39, -1.60, 37.40], datetime: new Date(Date.now() - 20 * 864e5).toISOString() + '/' + new Date().toISOString(), limit: 3 }) }).catch(e => null);
+      o.sentinel = r && r.ok ? 'ok' : 'error ' + (r ? r.status : 'red');
+      if (r && !r.ok) o.sentinel_detalle = (await r.text().catch(() => '')).slice(0, 300);
+      else if (r) o.imagenes_ultimos_20_dias = ((await r.json().catch(() => ({}))).features || []).map(f => String((f.properties || {}).datetime || '').slice(0, 10));
+    }
+  }
+  diagCache = o; diagHasta = Date.now() + 60000; return o;
 }
 async function sh(env, ruta, cuerpo, accept) {
   const r = await fetch(SH + ruta, { method: 'POST', headers: { authorization: 'Bearer ' + (await token(env)), 'content-type': 'application/json', accept: accept || 'application/json' }, body: JSON.stringify(cuerpo) });
-  if (r.status === 401) { tok = null; throw new Error('copernicus_clave'); }
+  if (r.status === 401 || r.status === 403) { const t = await r.text().catch(() => ''); ultErr = { paso: 'sentinel', estado: r.status, detalle: t.slice(0, 300), cuando: new Date().toISOString() }; }
+  if (r.status === 401) { tok = null; throw new Error('copernicus_sentinel_401'); }
   if (r.status === 403) throw new Error('copernicus_permiso');
   if (r.status === 429) throw new Error('copernicus_cupo');
   if (!r.ok) { const t = await r.text().catch(() => ''); console.log('SH', ruta, r.status, t.slice(0, 400)); throw new Error('copernicus_' + r.status); }
@@ -209,7 +230,10 @@ export default {
     const cors = { 'Access-Control-Allow-Origin': ORIGENES.includes(origin) ? origin : ORIGENES[0], 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'content-type, authorization', 'Access-Control-Max-Age': '86400', 'Vary': 'Origin' };
     const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { ...cors, 'content-type': 'application/json' } });
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (request.method === 'GET') return json({ ok: true, servicio: 'Satélite de Abonado', copernicus: !!(env.CDSE_ID && env.CDSE_SECRET) });
+    if (request.method === 'GET') {
+      if (new URL(request.url).searchParams.has('probar')) return json({ servicio: 'Satélite de Abonado', ...(await diagnostico(env)) });
+      return json({ ok: true, servicio: 'Satélite de Abonado', copernicus: !!(idDe(env) && secDe(env)), version: 2 });
+    }
     if (request.method !== 'POST') return json({ error: 'metodo' }, 405);
     if (!ORIGENES.includes(origin)) return json({ error: 'origen' }, 403);
     const tk = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
