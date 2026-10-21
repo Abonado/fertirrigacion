@@ -776,7 +776,7 @@ const grupoDe=tab=>{const G=gruposAct();return G.find(g=>g.tabs.includes(tab))||
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(ptRevisa()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
   try{n.equipo=(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)+(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}
-  try{let a=0;if(st.mat&&esGestor()&&miEmail())a+=matPend().filter(mVisible).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
+  try{let a=0;if(st.mat&&miEmail())a+=matPend().filter(esGestor()?mVisible:mAmi).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
 function renderGrupos(){const g=grupoDe(st.tab),ins=insignias();$('#grupos').style.gridTemplateColumns=`repeat(${gruposAct().length},minmax(0,1fr))`;$('#grupos').classList.toggle('seis',gruposAct().length>5);$('#grupos').innerHTML=gruposAct().map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('')}
 function renderTabs(){renderGrupos();const g=grupoDe(st.tab);st.ultTab[g.id]=st.tab;$('#tabs').hidden=g.tabs.length<2;$('#tabs').innerHTML=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k)).map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
@@ -1058,7 +1058,7 @@ $('#main').addEventListener('input',onTInput);$('#main').addEventListener('chang
 async function wkBorrarRestos(){if(!esAdminU()||Store.mode!=='fb')return;try{if(localStorage.getItem('abono.wkfuera'))return}catch(e){}
   try{const q=await Store.db.collection('walkie').get();for(const d of q.docs){const w=d.data();try{if(w.audio)await Adj.del(w.audio);await Store.db.collection('walkie').doc(d.id).delete()}catch(e){}}try{localStorage.setItem('abono.wkfuera','1')}catch(e){}}catch(e){}}
 /* ---------- Material: pedidos de material ---------- */
-st.mat=null;st.mf={open:false,art:'',cant:'',ud:'unidades',finca:'',cab:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=null;st.mEdit=null;st.confirmM=null;
+st.mat=null;st.mf={open:false,art:'',cant:'',ud:'unidades',finca:'',cab:'',para:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=null;st.mEdit=null;st.confirmM=null;
 const MEST={pedido:['warn','Pedido'],encargado:['nd','Encargado'],recibido:['ok','Recibido'],rechazado:['bad','Rechazado']};
 const UDS=['unidades','metros','rollos','cajas','paquetes','sacos','litros','kg','juegos'];
 const MAT_SUG=['Goteros','Tubería PE 16 mm','Tubería PE 20 mm','Tubería PE 32 mm','Tubería PE 50 mm','Tes 16 mm','Codos 16 mm','Enlaces 16 mm','Tapones final de línea','Collarín de toma','Filtro de malla','Filtro de anillas','Juntas','Cinta de teflón','Válvula de bola','Electroválvula','Manómetro','Sonda de CE','Sonda de pH','Solución de calibración','Rafia','Clips de entutorar','Ganchos','Cuerda','Guantes','Tijeras de poda','Cajas de recolección','Plástico de invernadero','Malla de sombreo','Bridas','Pilas'];
@@ -1071,18 +1071,22 @@ const SOLO_GESTOR=new Set(['graficas','informe','cuaderno']);
 function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
-const mVisible=m=>!restringido()||m.pideEmail===miEmail()||fincasVis().some(f=>f.id===m.finca);
+const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||fincasVis().some(f=>f.id===m.finca);
 const mMio=m=>!!(miEmail()&&m.pideEmail===miEmail());
+const mAmi=m=>!!(miEmail()&&m.para===miEmail());
+/* A quién se le puede enviar un pedido: quien ve riego; primero administración y encargados */
+function mDestinos(){return equipo().filter(u=>veRiegoE(u.email)).map(u=>{const i=accInfo(u.email);return {...u,rol:i.admin?'admin':i.encargado?'encargado':'trabajador'}}).sort((a,b)=>((a.rol==='trabajador')-(b.rol==='trabajador'))||a.nombre.localeCompare(b.nombre))}
+const mParaNombre=e=>{const u=equipo().find(x=>x.email===e);return u?u.nombre:(e||'').split('@')[0]};
 const matPend=()=>(st.mat||[]).filter(m=>m.estado==='pedido');
 async function avisosMat(){if(!notifOk()||Notification.permission!=='granted')return;let vis=[];try{vis=JSON.parse(localStorage.getItem('abono.notifmat')||'[]')}catch(e){}
   for(const m of st.mat||[]){let k=null,t=null,b=null;
-    if(esGestor()&&m.estado==='pedido'&&!mMio(m)){k=m.id+':pedido';t='Pedido de material: '+m.art;b=`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`}
+    if(m.estado==='pedido'&&!mMio(m)&&(m.para?mAmi(m):esGestor())){k=m.id+':pedido';t='Pedido de material: '+m.art;b=`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`}
     else if(mMio(m)&&m.estado!=='pedido'){k=m.id+':'+m.estado;t='Tu pedido de '+m.art+': '+MEST[m.estado][1].toLowerCase();b=m.resp||''}
     if(!k||vis.includes(k))continue;await notificar(t,b,'mat-'+k);vis.push(k)}
   try{localStorage.setItem('abono.notifmat',JSON.stringify(vis.slice(-400)))}catch(e){}}
-function matHTML(m){const e=MEST[m.estado]||MEST.pedido,f=(st.cfg.fincas||[]).find(x=>x.id===m.finca),adm=esGestor(),ed=st.mEdit===m.id;
+function matHTML(m){const e=MEST[m.estado]||MEST.pedido,f=(st.cfg.fincas||[]).find(x=>x.id===m.finca),adm=esGestor()||mAmi(m),ed=st.mEdit===m.id;
   return `<div class="tarea mat ${m.estado}${m.urg&&m.estado==='pedido'?' urg':''}"><div class="tt"><b>${esc(m.art)}</b><span class="mcant">${esc(String(m.cant||''))} ${esc(m.ud||'')}</span>${m.urg&&(m.estado==='pedido'||m.estado==='encargado')?'<span class="pill bad">Urgente</span>':''}<span class="pill ${e[0]}">${e[1]}</span></div>
-    <div class="tm">${f?`<span class="mini">${esc(f.nombre)}${m.cab?' · '+esc(cabNombre(m.cab)):''}</span>`:''}<span>Pide ${mMio(m)?'<b>tú</b>':esc(m.pidePor||'')} · ${fHora(m.ts)}</span>${m.cuando?`<span>Lo necesita para el ${fFecha(m.cuando)}</span>`:''}</div>
+    <div class="tm">${f?`<span class="mini">${esc(f.nombre)}${m.cab?' · '+esc(cabNombre(m.cab)):''}</span>`:''}<span>Pide ${mMio(m)?'<b>tú</b>':esc(m.pidePor||'')} · ${fHora(m.ts)}</span>${m.para?`<span class="pill nd">Para ${mAmi(m)?'ti':esc(m.paraNombre||mParaNombre(m.para))}</span>`:''}${m.cuando?`<span>Lo necesita para el ${fFecha(m.cuando)}</span>`:''}</div>
     ${m.nota?`<p>${esc(m.nota)}</p>`:''}${adjHTML(m.adjuntos,false)}
     ${m.resp?`<div class="hecho"><b>${esc(m.respPor||'Respuesta')}:</b> ${esc(m.resp)}</div>`:''}
     ${(m.hist||[]).length>1?`<details class="tv"><summary>Historial</summary><div class="note">${m.hist.map(h=>`${fHora(h.ts)} · ${esc(MEST[h.estado]?MEST[h.estado][1]:h.estado)} · ${esc(h.por||'')}`).join('<br>')}</div></details>`:''}
@@ -1090,9 +1094,9 @@ function matHTML(m){const e=MEST[m.estado]||MEST.pedido,f=(st.cfg.fincas||[]).fi
       <div class="row"><button class="btn pri" data-act="m-est" data-id="${m.id}" data-e="encargado">Encargado</button><button class="btn" data-act="m-est" data-id="${m.id}" data-e="recibido">Recibido</button><button class="btn danger" data-act="m-est" data-id="${m.id}" data-e="rechazado">Rechazar</button><button class="btn" data-act="m-cancel">Cancelar</button></div></div>`
     :`<div class="row">${adm&&m.estado!=='recibido'?`<button class="btn pri" data-act="m-edit" data-id="${m.id}">Gestionar</button>`:''}${!adm&&mMio(m)&&m.estado==='encargado'?`<button class="btn pri" data-act="m-est" data-id="${m.id}" data-e="recibido">Ya lo tengo</button>`:''}
       ${adm&&m.estado==='recibido'?`<button class="btn" data-act="m-est" data-id="${m.id}" data-e="pedido">Volver a pedir</button>`:''}
-      ${(adm||(mMio(m)&&m.estado==='pedido'))?(st.confirmM===m.id?`<span class="note">¿Borrar pedido?</span><button class="btn danger" data-act="m-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="m-cancel">Cancelar</button>`:`<button class="btn" data-act="m-del" data-id="${m.id}">${mMio(m)&&m.estado==='pedido'&&!adm?'Anular':'Borrar'}</button>`):''}</div>`}</div>`}
+      ${(esGestor()||(mMio(m)&&m.estado==='pedido'))?(st.confirmM===m.id?`<span class="note">¿Borrar pedido?</span><button class="btn danger" data-act="m-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="m-cancel">Cancelar</button>`:`<button class="btn" data-act="m-del" data-id="${m.id}">${mMio(m)&&m.estado==='pedido'&&!esGestor()?'Anular':'Borrar'}</button>`):''}</div>`}</div>`}
 function vMaterial(){if(st.mat===null){loadMat();return '<div class="card"><div class="note">Cargando material…</div></div>'}
-  if(st.mFil===null)st.mFil=esGestor()?'pend':'mios';
+  if(st.mFil===null)st.mFil=esGestor()?'pend':(st.mat||[]).some(m=>mAmi(m)&&m.estado!=='recibido'&&m.estado!=='rechazado')?'ami':'mios';
   const g=st.mf,fs=fincasVis().filter(f=>f.cabezales.length),fsel=fs.find(x=>x.id===g.finca)||fincaAct()||fs[0],cabsF=fsel?fsel.cabezales:[];
   const all=(st.mat||[]).filter(mVisible).filter(m=>!st.finca||!fincaAct()||m.finca===st.finca||mMio(m));
   const pend=all.filter(m=>m.estado==='pedido'),enc=all.filter(m=>m.estado==='encargado');
@@ -1105,20 +1109,21 @@ function vMaterial(){if(st.mat===null){loadMat();return '<div class="card"><div 
       <div class="field"><label for="mf_ud">Unidad</label><div class="inp"><select id="mf_ud" data-mf="ud">${UDS.map(u=>`<option ${g.ud===u?'selected':''}>${u}</option>`).join('')}</select></div></div>
       <div class="field"><label for="mf_finca">Finca</label><div class="inp"><select id="mf_finca" data-mf="finca">${fs.map(f=>`<option value="${f.id}" ${fsel&&fsel.id===f.id?'selected':''}>${esc(f.nombre)}</option>`).join('')}</select></div></div>
       <div class="field"><label for="mf_cab">Cabezal</label><div class="inp"><select id="mf_cab" data-mf="cab"><option value="">Toda la finca</option>${cabsF.map(c=>`<option value="${c}" ${g.cab===c?'selected':''}>${esc(cabNombre(c))}</option>`).join('')}</select></div></div>
+      ${miEmail()&&mDestinos().length?`<div class="field"><label for="mf_para">Enviar a</label><div class="inp"><select id="mf_para" data-mf="para"><option value="">Administración y encargados</option>${mDestinos().map(u=>`<option value="${esc(u.email)}" ${g.para===u.email?'selected':''}>${esc(u.nombre)}${u.rol==='trabajador'?'':' · '+ROL_TXT[u.rol].toLowerCase()}</option>`).join('')}</select></div></div>`:''}
       <div class="field"><label for="mf_cuando">Lo necesito para</label><div class="inp"><input type="date" id="mf_cuando" data-mf="cuando" value="${g.cuando}"></div></div></div>
     <label class="chk"><input type="checkbox" data-mf="urg" ${g.urg?'checked':''}> Urgente</label>
     <div class="field"><label for="mf_nota">Detalles (medida, marca, para qué…)</label><textarea id="mf_nota" data-mf="nota" rows="2">${esc(g.nota)}</textarea></div>
     ${adjHTML(g.adj,true)}
     <div class="row">${Adj.can()?`<label class="btn" for="mf_foto">Añadir foto</label><input type="file" id="mf_foto" data-mf="file" accept="image/*" multiple hidden>`:''}<button class="btn pri" data-act="m-crear" ${g.adj.some(a=>a.tmp)?'disabled':''}>Enviar pedido</button><button class="btn" data-act="m-cerrar">Cancelar</button></div></section>`;
-  const fil=[['pend','Por gestionar'+(pend.length?' ('+pend.length+')':'')],['enc','Encargados'],...(miEmail()?[['mios','Mis pedidos']]:[]),['rec','Recibidos'],['todos','Todos']];
+  const fil=[['pend','Por gestionar'+(pend.length?' ('+pend.length+')':'')],['enc','Encargados'],...(miEmail()?[['mios','Mis pedidos']]:[]),...(all.some(mAmi)?[['ami','Para mí']]:[]),['rec','Recibidos'],['todos','Todos']];
   h+=`<div class="pick">${fil.map(([k,t])=>`<button class="chip" data-mfil="${k}" aria-pressed="${st.mFil===k}">${esc(t)}</button>`).join('')}</div>`;
-  let l=st.mFil==='pend'?pend:st.mFil==='enc'?enc:st.mFil==='mios'?all.filter(mMio):st.mFil==='rec'?all.filter(m=>m.estado==='recibido'||m.estado==='rechazado'):all;
+  let l=st.mFil==='pend'?pend:st.mFil==='enc'?enc:st.mFil==='mios'?all.filter(mMio):st.mFil==='ami'?all.filter(mAmi):st.mFil==='rec'?all.filter(m=>m.estado==='recibido'||m.estado==='rechazado'):all;
   l=l.slice().sort((a,b)=>(st.mFil==='pend'||st.mFil==='enc')?((b.urg?1:0)-(a.urg?1:0))||(a.ts<b.ts?-1:1):(a.ts<b.ts?1:-1)).slice(0,80);
-  h+=`<section class="card"><div><h3>${{pend:'Pedidos por gestionar',enc:'Encargados',mios:'Mis pedidos',rec:'Recibidos y rechazados',todos:'Todos los pedidos'}[st.mFil]}</h3><div class="sub">${l.length} ${l.length===1?'pedido':'pedidos'}${fincaAct()?' · '+esc(fincaAct().nombre):''}</div></div>${l.length?`<div class="tareas">${l.map(matHTML).join('')}</div>`:'<div class="note">Nada por aquí.</div>'}</section>`;
+  h+=`<section class="card"><div><h3>${{pend:'Pedidos por gestionar',enc:'Encargados',mios:'Mis pedidos',ami:'Pedidos enviados a mí',rec:'Recibidos y rechazados',todos:'Todos los pedidos'}[st.mFil]}</h3><div class="sub">${l.length} ${l.length===1?'pedido':'pedidos'}${fincaAct()?' · '+esc(fincaAct().nombre):''}</div></div>${l.length?`<div class="tareas">${l.map(matHTML).join('')}</div>`:'<div class="note">Nada por aquí.</div>'}</section>`;
   return h}
 async function crearMat(){const g=st.mf,art=g.art.trim();if(!art){toast('Escribe qué material necesitas');return}const fs=fincasVis().filter(f=>f.cabezales.length),f=fs.find(x=>x.id===g.finca)||fincaAct()||fs[0];const now=new Date().toISOString();
-  const m={ts:now,art,cant:num(String(g.cant))??(g.cant||''),ud:g.ud,finca:f?f.id:'',cab:g.cab||'',urg:!!g.urg,cuando:g.cuando||'',nota:g.nota.trim(),adjuntos:g.adj.filter(a=>!a.tmp),estado:'pedido',pidePor:yoNombre(),pideEmail:miEmail(),hist:[{estado:'pedido',por:yoNombre(),ts:now}]};
-  try{const id=await Store.addCol('material',m);st.mat.unshift({...m,id});pushEnviar([...adminsEmails(),...encargadosDe(m.finca)],'Pedido de material: '+art,`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`,'mat-'+id+':pedido','material');st.mf={open:false,art:'',cant:'',ud:'unidades',finca:m.finca,cab:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=esGestor()?'pend':'mios';renderMain();toast('Pedido enviado')}catch(e){toast(errMsg(e))}}
+  const m={ts:now,art,cant:num(String(g.cant))??(g.cant||''),ud:g.ud,finca:f?f.id:'',cab:g.cab||'',urg:!!g.urg,cuando:g.cuando||'',nota:g.nota.trim(),adjuntos:g.adj.filter(a=>!a.tmp),estado:'pedido',pidePor:yoNombre(),pideEmail:miEmail(),hist:[{estado:'pedido',por:yoNombre(),ts:now}]};if(g.para&&g.para!==miEmail()){m.para=g.para;m.paraNombre=mParaNombre(g.para)}
+  try{const id=await Store.addCol('material',m);st.mat.unshift({...m,id});pushEnviar(m.para?[m.para]:[...adminsEmails(),...encargadosDe(m.finca)],(m.para?'Te piden material: ':'Pedido de material: ')+art,`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`,'mat-'+id+':pedido','material');st.mf={open:false,art:'',cant:'',ud:'unidades',finca:m.finca,cab:'',para:'',urg:false,cuando:'',nota:'',adj:[]};st.mFil=esGestor()?'pend':'mios';renderMain();toast(m.para?'Pedido enviado a '+m.paraNombre:'Pedido enviado')}catch(e){toast(errMsg(e))}}
 async function estadoMat(id,est){const m=st.mat.find(x=>x.id===id);if(!m)return;const r=$('#mr_txt'),now=new Date().toISOString();
   const p={estado:est,hist:[...(m.hist||[]),{estado:est,por:yoNombre(),ts:now}]};if(r){p.resp=r.value.trim();p.respPor=yoNombre()}
   try{await Store.updCol('material',id,p);Object.assign(m,p);if(m.pideEmail)pushEnviar([m.pideEmail],'Tu pedido de '+m.art+': '+MEST[est][1].toLowerCase(),p.resp||('Por '+yoNombre()),'mat-'+id+':'+est,'material');st.mEdit=null;renderMain();toast('Pedido: '+MEST[est][1].toLowerCase())}catch(e){toast(errMsg(e))}}
@@ -2257,7 +2262,7 @@ function resumenHTML(){if(!veRiego()){const it=resumenCampo();return `<div><h3>T
   if(st.hist.some(r=>r.fecha===hoyS))items.push(['ok','Cuentas de hoy guardadas','cuentas-hoy']);
   const dep=depsBajos();
   if(dep.length)items.push(['warn',`${dep.length===1?'1 depósito':dep.length+' depósitos'} para rellenar: ${dep.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')}`,'rellenar:'+dep[0].cabezales[0]]);
-  if(st.mat===null)loadMat();if(esGestor()&&miEmail()){const mp=matPend().filter(mVisible).length;if(mp)items.push(['warn',mp===1?'1 pedido de material por gestionar':mp+' pedidos de material por gestionar','material'])}
+  if(st.mat===null)loadMat();if(miEmail()){const mp=matPend().filter(esGestor()?mVisible:mAmi).length;if(mp)items.push(['warn',mp===1?'1 pedido de material por gestionar':mp+' pedidos de material por gestionar','material'])}
   if(st.tareas===null)loadTareas();const tm=tareasMias();if(tm.length)items.push([tm.some(t=>t.fecha<hoy()||t.urg)?'bad':'warn',tm.length===1?'1 tarea para ti hoy':tm.length+' tareas para ti hoy','tareas']);
   const pv=privSinLeer().length;if(pv)items.push(['bad',pv===1?'1 mensaje privado para ti':pv+' mensajes privados para ti','mensajes-priv']);
   const pm=pendParaMi().length;if(pm)items.push(['bad',pm===1?'1 mensaje para ti':pm+' mensajes para ti','mensajes-mios']);
