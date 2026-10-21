@@ -34,5 +34,12 @@ async def main():
         async with pg.expect_download() as dl: await pg.click('[data-act="hr-pdf"]')
         d = await dl.value; await d.save_as('pruebas/salida/t76.pdf'); print('PDF:', d.suggested_filename)
         subprocess.run(['pdftoppm', '-r', '110', '-png', 'pruebas/salida/t76.pdf', 'pruebas/salida/t76'], check=True)
+        # receta que empezó antes de hoy: «Apuntar» desde la hoja y fecha del cambio al guardar la receta
+        r2 = await pg.evaluate("""(async()=>{const d=new Date();d.setDate(d.getDate()-1);const f=isoD(d);st.hrDesde=f;await hrApuntar();
+          const H=hojaReceta('gas',f.slice(0,7));const c1=(st.cambios||[]).find(c=>c.fecha===f);
+          const d2=new Date();d2.setDate(d2.getDate()-3);const f2=isoD(d2);st.recFecha=f2;const b=st.cfg.bidones.find(x=>x.cabezales.includes('gas')&&x.principal==='ca');b.productos[0].dosis=95;st.dirtyCfg=true;await saveCfg();
+          await loadHist_();const c2=(st.cambios||[]).find(c=>c.fecha===f2);return {fechas:H.fechas,f,apuntado:!!(c1&&c1.receta),f2,cambio2:!!(c2&&c2.receta),lineas:c2&&c2.lineas[0]}})()""")
+        print(r2); assert r2['apuntado'] and r2['f'] in r2['fechas'] or r2['f'][:7] != r2['fechas'][0][:7]
+        assert r2['cambio2'] and 'en vigor desde' in r2['lineas']
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

@@ -914,6 +914,7 @@ function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b)
   return h+`<div class="step water"><span>Agua (cm de depósito)</span><b>${fmt(cm-liqCm,1)} cm</b></div></div>`}
 
 function vReceta(){const c=cabById(st.cab);let h=`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
+  if(esGestor())h+=`<section class="card"><div class="field"><label for="rec_f">Este cambio de receta empieza el</label><div class="inp"><input type="date" id="rec_f" data-hr="rfecha" max="${hoy()}" value="${st.recFecha||hoy()}"></div></div><div class="note">Si os dieron la receta otro día y la metéis más tarde, pon aquí ese día: así sale bien en la hoja de cambios de receta.</div></section>`;
   for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}Capacidad ${fmt(b.capacidad,0)} L</div></div>
       <div class="field"><label for="kg_${b.id}">${esc(prod(b.principal).n)} por 1000 L</label><div class="inp"><input id="kg_${b.id}" data-k="cfg.kg.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(b.kgPrincipal)}"><span class="u">${uCant(b.principal)}</span></div></div></div>
@@ -2529,7 +2530,7 @@ async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{con
   for(const id of tocados){const b=bid(id);if(b&&modoDep(b)!=='manual')autoAlmacen(b,f).catch(e=>console.warn(e))}st.reg.ejemplo=false;st.dirtyReg=false;enviarPartes();st.hist=null;loadHist();toast('Día '+fCorta(st.fecha)+' guardado');if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave();if(st.tab==='cuentas'||st.tab==='drenaje'){const bn=$('.banner');if(bn&&!st.reg.ejemplo)bn.remove()}}
 async function saveCfg(){if(st.saving)return;if(!esGestor()){const n=clone(st.savedCfg);for(const b of n.bidones){const x=bid(b.id);if(!x)continue;b.kgPrincipal=x.kgPrincipal;b.productos.forEach((p,i)=>{const q=x.productos.find(y=>y.p===p.p);if(q)p.dosis=q.dosis})}st.cfg=n}st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
-  if(lineas.length)await Store.addCambio({ts:new Date().toISOString(),fecha:hoy(),lineas,por:yoNombre(),porEmail:miEmail(),receta:fotoReceta()});st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
+  const fch=st.recFecha&&st.recFecha<hoy()?st.recFecha:hoy();if(lineas.length)await Store.addCambio({ts:fch<hoy()?fch+'T12:00:00.000Z':new Date().toISOString(),fecha:fch,lineas:fch<hoy()?['Receta en vigor desde el '+fPunto(fch)+' (apuntada el '+fPunto(hoy())+')',...lineas]:lineas,por:yoNombre(),porEmail:miEmail(),receta:fotoReceta()});st.recFecha=null;st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave()}
 
 async function loadFecha(f){st.fecha=f;st.regMod=new Set();let r=null;try{r=await Store.getReg(f)}catch(e){}
@@ -3409,8 +3410,9 @@ function hojaRecetaHTML(){if(st.hist===null||st.cambios===null){loadHist();retur
   if(!st.hrMes)st.hrMes=hoy().slice(0,7);const H=hojaReceta(st.cab,st.hrMes);
   let h=`<section class="card"><div class="tank-h"><div><h3>Cambios de receta · ${esc(H.cab)}</h3><div class="sub">Hoja mensual · ${esc(mesTxt(H.mes))} · campaña ${H.campana.join('/')}${H.cultivo?' · '+esc(H.cultivo):''}</div></div></div>
     <div class="field"><label for="hr_mes">Mes</label><div class="inp"><select id="hr_mes" data-hr="mes">${hrMeses().map(m=>`<option value="${m}" ${m===st.hrMes?'selected':''}>${esc(mesTxt(m))}</option>`).join('')}</select></div></div>`;
-  if(!H.fechas.length)return h+`<div class="note">No hay ninguna receta guardada de este mes ni de antes.</div></section>`;
-  h+=`<div class="row"><button class="btn pri" data-act="hr-pdf">Hoja de cambios de receta (PDF)</button></div>
+  if(!H.fechas.length)return h+`<div class="note">No hay ninguna receta guardada de este mes ni de antes.</div>${esGestor()&&st.hrMes===hoy().slice(0,7)?`<div class="row"><div class="inp"><input type="date" id="hr_desde" max="${hoy()}" value="${st.hrDesde||''}" data-hr="desde"></div><button class="btn" data-act="hr-apuntar">Apuntar la receta actual desde ese día</button></div>`:''}</section>`;
+  const hrDesde=esGestor()?`<details class="tv"><summary>¿La receta actual empezó antes de hoy?</summary><div class="note">Apunta desde qué día está en vigor la receta que tiene ahora la app.</div><div class="row"><div class="inp"><input type="date" id="hr_desde" max="${hoy()}" value="${st.hrDesde||''}" data-hr="desde"></div><button class="btn" data-act="hr-apuntar">Apuntar</button></div></details>`:'';
+  h+=`<div class="row"><button class="btn pri" data-act="hr-pdf">Hoja de cambios de receta (PDF)</button></div>${hrDesde}
     <div class="note">Se rellena sola: la primera columna es la receta del día 1 y cada vez que se guarda una receta distinta sale una columna nueva. ${H.fechas.length===1?'Este mes todavía no ha cambiado.':H.fechas.length-1+(H.fechas.length===2?' cambio':' cambios')+' este mes.'}</div>
     <div class="tbl"><table class="hrt"><thead><tr><th>Abono</th><th></th>${H.fechas.map(f=>`<th>${fPunto(f)}</th>`).join('')}</tr></thead><tbody>`;
   for(const a of H.abonos){const fil=[['1000 L',x=>x&&hrNum(x.c1)],...(a.cap!==1000?[[fmt(a.cap,0)+' L',x=>x&&hrNum(x.c2)]]:[]),['Salida',x=>x&&hrNum(x.sal)],['Constante',x=>x&&hrNum(x.cte)]];
@@ -3450,7 +3452,11 @@ async function hojaRecetaPdf(cab,mes){let L;try{L=await pdfLib()}catch(e){toast(
   for(const o of H.obs){if(y<M+40)break;page.drawText(pdfTxt(fPunto(o.f)+(o.por?' · '+o.por:'')),{x:M,y,size:9,font:fb,color:ink});y-=13;
     for(const l of o.lineas)for(const s of lineas('- '+l,IW-12,8.5,fo)){if(y<M+20)break;page.drawText(s,{x:M+10,y,size:8.5,font:fo,color:blue});y-=11.5}y-=6}
   const bytes=await doc.save();await saveBlob(new Blob([bytes],{type:'application/pdf'}),nombre+'.pdf')}
-document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.hr!=='mes')return;st.hrMes=t.value;renderMain()});
+document.addEventListener('change',e=>{const t=e.target,k=t.dataset&&t.dataset.hr;if(!k)return;if(k==='mes'){st.hrMes=t.value;renderMain()}else if(k==='rfecha')st.recFecha=t.value&&t.value<hoy()?t.value:null;else if(k==='desde')st.hrDesde=t.value});
+async function hrApuntar(){const f=st.hrDesde;if(!f||!/^\d{4}-\d{2}-\d{2}$/.test(f)||f>hoy()){toast('Elige el día en que empezó la receta');return}
+  try{await Store.addCambio({ts:f+'T12:00:00.000Z',fecha:f,lineas:['Receta en vigor desde el '+fPunto(f)+' (apuntada el '+fPunto(hoy())+')'],por:yoNombre(),porEmail:miEmail(),receta:fotoDe(st.savedCfg)});
+    st.hrDesde=null;st.hrMes=f.slice(0,7);st.cambios=null;st.hist=null;await loadHist_();renderMain();toast('Receta apuntada desde el '+fPunto(f))}catch(e){toast(errMsg(e))}}
+document.addEventListener('click',e=>{if(e.target.closest('[data-act="hr-apuntar"]'))hrApuntar()});
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act="hr-pdf"]');if(!b)return;b.disabled=true;hojaRecetaPdf(st.cab,st.hrMes||hoy().slice(0,7)).finally(()=>{b.disabled=false})});
 
 /* ---------- Calculadora de solución nutritiva (meq/L): análisis de agua → abonos, con ajuste por el análisis de drenaje ----------
