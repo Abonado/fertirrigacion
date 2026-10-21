@@ -54,7 +54,7 @@ service cloud.firestore {
 
     // Partes diarios: los guarda cualquiera del equipo, solo los leen el administrador y los encargados
     match /abonado_partes/{doc} {
-      allow read: if esAdmin() || (autorizado() && esEncargado());
+      allow read: if veRiego();   // todo el personal de riego ve y descarga los partes
       allow create, update: if veRiego();
       allow delete: if esAdmin();
     }

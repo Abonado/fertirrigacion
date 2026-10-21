@@ -807,7 +807,7 @@ const areaDe=t=>CAMPO.has(t)?'campo':'riego';
 function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO;const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
 const grupoDe=tab=>{const G=gruposAct();return G.find(g=>g.tabs.includes(tab))||G[0]};
 st.ultTab=st.ultTab||{};
-function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(puedePartes()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
+function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(ptRevisa()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
   try{n.equipo=(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)+(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}
   try{let a=0;if(st.mat&&esGestor()&&miEmail())a+=matPend().filter(mVisible).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
@@ -1950,7 +1950,9 @@ function onEdInput(e){const t=e.target,k=t.dataset&&t.dataset.edv;if(!k)return;c
   else return;edMarca();if(rerender)renderAll()}
 $('#main').addEventListener('input',onEdInput);$('#main').addEventListener('change',onEdInput);
 /* ---------- Partes recibidos: llegan al encargado cada vez que se guarda el día ---------- */
-const puedePartes=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&(NUBE.user.admin||NUBE.user.encargado));
+/* Los partes guardados los ve y descarga todo el personal de riego; revisarlos, solo el administrador y los encargados */
+const puedePartes=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&veRiego());
+const ptRevisa=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&(NUBE.user.admin||NUBE.user.encargado));
 const encargadosDe=fid=>todosEmails().filter(e=>accInfo(e).encargado&&veFinca(e,fid));
 function cabConDatos(cab){const r=st.reg,c=cabById(cab);if(!c)return false;const bs=bidonesDe(cab),pr=bs.filter(b=>b.cabezales.length===1);if((pr.length?pr:bs).some(b=>r.cm[b.id]!=null))return true;if(['ceB','ceR','inc','phS'].some(k=>(r[k]||{})[cab]!=null))return true;
   return c.sectores.some(s=>s.bandejas.some(bj=>r.dren[bj.id]!=null||r.ceD[bj.id]!=null||r.phD[bj.id]!=null))}
@@ -1969,19 +1971,19 @@ const ptVisible=p=>{const u=NUBE.user;return u.admin||!Array.isArray(u.fincas)||
 const ptCambiado=p=>p.revisado&&p.revisadoTs&&p.ts>p.revisadoTs;
 const ptPend=()=>(st.partes||[]).filter(ptVisible).filter(p=>!p.revisado||ptCambiado(p));
 function ptDatos(p){return{...p.d,guardadoTxt:horaTxt(p.ts)+' por '+(p.por||''),revisadoPor:p.revisado?p.revisadoPor:'',revisadoTxt:p.revisadoTs?horaTxt(p.revisadoTs):'',nota:p.nota||''}}
-function vPartes(){if(!puedePartes())return `<section class="card"><div class="note">Este apartado solo lo ven el administrador y los encargados.</div></section>`;
+function vPartes(){if(!puedePartes())return `<section class="card"><div class="note">Este apartado es del personal de riego.</div></section>`;const rev=ptRevisa();if(!rev)st.ptFil='todos';
   if(st.partes===null){loadPartes();return '<section class="card"><div class="note">Cargando partes…</div></section>'}
   if(st.partesErr==='permission-denied')return `<section class="card"><div class="banner">Faltan las reglas de partes en Firebase. Hay que publicar las reglas nuevas.</div></section>`;
   const all=st.partes.filter(ptVisible),pend=ptPend(),fa=fincaAct();let l=st.ptFil==='pend'?pend:all;if(fa)l=l.filter(p=>p.finca===fa.id);
   l=l.slice().sort((a,b)=>a.fecha<b.fecha?1:a.fecha>b.fecha?-1:a.ts<b.ts?1:-1).slice(0,60);
-  let h=`<section class="card"><div><h3>Partes recibidos</h3><div class="sub">Llegan solos cada vez que alguien guarda el día · solo los ven el administrador y los encargados</div></div>
-    <div class="pick"><button class="chip" data-ptfil="pend" aria-pressed="${st.ptFil==='pend'}">Sin revisar (${pend.length})</button><button class="chip" data-ptfil="todos" aria-pressed="${st.ptFil==='todos'}">Todos</button></div></section>`;
+  let h=`<section class="card"><div><h3>Partes recibidos</h3><div class="sub">Llegan solos cada vez que alguien guarda el día · los ve y los descarga todo el personal de riego${rev?'; los revisan el administrador y los encargados':''}</div></div>
+    ${rev?`<div class="pick"><button class="chip" data-ptfil="pend" aria-pressed="${st.ptFil==='pend'}">Sin revisar (${pend.length})</button><button class="chip" data-ptfil="todos" aria-pressed="${st.ptFil==='todos'}">Todos</button></div>`:''}</section>`;
   if(!l.length)return h+`<section class="card"><div class="note">${st.ptFil==='pend'?'Todo revisado.':'Aún no ha llegado ningún parte.'}</div></section>`;
   for(const p of l){const d=p.d||{},ab=st.ptAbierto===p.id,cam=ptCambiado(p),est=!p.revisado?'<span class="pill warn">Sin revisar</span>':cam?'<span class="pill bad">Cambiado tras revisar</span>':'<span class="pill ok">Revisado</span>';
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(d.cab||p.cab)} · ${esc(fFecha(p.fecha))}</h3><div class="sub">${esc(d.finca||'')} · guardado ${esc(horaTxt(p.ts))} por ${esc(p.por||'')}</div></div>${est}</div>
       <div class="row" style="gap:6px"><span class="pill nd">${fmt(d.m3,0)} m³</span><span class="pill ${d.tot&&d.ok===d.tot?'ok':d.tot?'warn':'nd'}">En dosis ${d.tot?d.ok+' de '+d.tot:'—'}</span><span class="pill nd">Drenaje ${fmt(d.dren,1)} %</span>${d.ceD!=null?`<span class="pill ${d.alertas&&d.ceD>d.alertas.ceMax?'bad':'nd'}">CE ${fmt(d.ceD,2)}</span>`:''}${d.phD!=null?`<span class="pill nd">pH ${fmt(d.phD,1)}</span>`:''}</div>
       ${p.revisado?`<div class="note">Revisado por ${esc(p.revisadoPor||'')} · ${esc(horaTxt(p.revisadoTs))}${p.nota?' · «'+esc(p.nota)+'»':''}</div>`:''}
-      <div class="row"><button class="btn" data-act="pt-ver" data-id="${p.id}">${ab?'Ocultar':'Ver parte'}</button><button class="btn" data-act="pt-pdf" data-id="${p.id}">${d.hoja?'Parte grande PDF':'PDF'}</button>${d.hoja?`<button class="btn" data-act="pt-xlsx" data-id="${p.id}">Excel</button>`:''}${d.hojaP?`<button class="btn" data-act="pt-pdf" data-tipo="pequeno" data-id="${p.id}">Parte pequeño PDF</button><button class="btn" data-act="pt-xlsx" data-tipo="pequeno" data-id="${p.id}">Excel</button>`:''}${!p.revisado||cam?`<button class="btn pri" data-act="pt-rev" data-id="${p.id}">Marcar revisado</button>`:''}</div>
+      <div class="row"><button class="btn" data-act="pt-ver" data-id="${p.id}">${ab?'Ocultar':'Ver parte'}</button><button class="btn" data-act="pt-pdf" data-id="${p.id}">${d.hoja?'Parte grande PDF':'PDF'}</button>${d.hoja?`<button class="btn" data-act="pt-xlsx" data-id="${p.id}">Excel</button>`:''}${d.hojaP?`<button class="btn" data-act="pt-pdf" data-tipo="pequeno" data-id="${p.id}">Parte pequeño PDF</button><button class="btn" data-act="pt-xlsx" data-tipo="pequeno" data-id="${p.id}">Excel</button>`:''}${rev&&(!p.revisado||cam)?`<button class="btn pri" data-act="pt-rev" data-id="${p.id}">Marcar revisado</button>`:''}</div>
       ${st.ptRev===p.id?`<div class="panel"><div class="field"><label for="pt_nota">Observaciones (opcional)</label><div class="inp"><input class="wide" id="pt_nota" style="width:100%;text-transform:none" autocomplete="off"></div></div><div class="row"><button class="btn pri" data-act="pt-rev-ok" data-id="${p.id}">Guardar revisión</button><button class="btn" data-act="pt-rev-no">Cancelar</button></div></div>`:''}
       ${ab?`<div class="ptbody">${parteCuerpo(d)}</div>`:''}</section>`}
   return h}
