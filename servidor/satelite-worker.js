@@ -231,8 +231,9 @@ export default {
     const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { ...cors, 'content-type': 'application/json' } });
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
     if (request.method === 'GET') {
-      if (new URL(request.url).searchParams.has('probar')) return json({ servicio: 'Satélite de Abonado', ...(await diagnostico(env)) });
-      return json({ ok: true, servicio: 'Satélite de Abonado', copernicus: !!(idDe(env) && secDe(env)), version: 2 });
+      // Diagnóstico solo si se activa a mano (variable DIAGNOSTICO = si); el resto del tiempo no da ninguna pista a nadie de fuera
+      if (env.DIAGNOSTICO === 'si' && new URL(request.url).searchParams.has('probar')) return json({ servicio: 'Satélite de Abonado', ...(await diagnostico(env)) });
+      return json({ ok: true });
     }
     if (request.method !== 'POST') return json({ error: 'metodo' }, 405);
     if (!ORIGENES.includes(origin)) return json({ error: 'origen' }, 403);
