@@ -46,6 +46,8 @@ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}ca
 </script>""")
 head = """<!doctype html>
 <html lang="es"><head>
+<meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+<meta name="referrer" content="no-referrer">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1b2f4a">
@@ -65,7 +67,7 @@ head = """<!doctype html>
  "background_color":"#eef2ef","theme_color":"#1b2f4a",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
           {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]},ensure_ascii=False,indent=1))
-(out/'sw.js').write_text("""const C='abonado-v94';
+(out/'sw.js').write_text("""const C='abonado-v95';
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./badge-96.png','./pdf-lib.min.js','./parte-tpl.js','./parte-tpl-p.js'"""+(",'./nube.js'" if nube else '')+"""];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
@@ -83,6 +85,7 @@ self.addEventListener('notificationclick',e=>{e.notification.close();const tab=(
 (out/'_headers').write_text("/sw.js\n  Cache-Control: no-cache\n/index.html\n  Cache-Control: no-cache\n")
 import shutil
 shutil.copy('libs/pdf-lib.min.js', out/'pdf-lib.min.js')
+(out/'robots.txt').write_text('User-agent: *\nDisallow: /\n')   # que ningún buscador la indexe
 shutil.copy('plantilla/parte-tpl.js', out/'parte-tpl.js')
 shutil.copy('plantilla2/parte-tpl-p.js', out/'parte-tpl-p.js')
 shutil.copytree('fincas', out/'fincas', dirs_exist_ok=True)
