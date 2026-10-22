@@ -61,7 +61,7 @@ export default {
     const json = (obj, status) => new Response(JSON.stringify(obj), { status, headers: { ...cors, 'content-type': 'application/json' } });
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (request.method === 'GET') return json({ ok: true, servicio: 'IA de incidencias', configurado: !!env.ANTHROPIC_API_KEY }, 200);
+    if (request.method === 'GET') return json({ ok: true, configurado: !!env.ANTHROPIC_API_KEY }, 200);   // no da más pistas a nadie de fuera
     if (request.method !== 'POST') return json({ error: 'metodo' }, 405);
     if (!ORIGENES.includes(origin)) return json({ error: 'origen' }, 403);
     if (!env.ANTHROPIC_API_KEY) return json({ error: 'sin_clave' }, 500);
@@ -88,7 +88,7 @@ export default {
     // 3. Claude
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2026-10-21', 'content-type': 'application/json' },
       body: JSON.stringify({ model: env.MODEL || MODELO, max_tokens: 2000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
     });
     const j = await r.json().catch(() => null);
