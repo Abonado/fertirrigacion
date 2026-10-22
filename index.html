@@ -495,6 +495,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .satp{margin:6px 0;font-size:14px}
 button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;background:none;border-right:0;border-bottom:0;cursor:pointer;padding-right:0}
 .hrt td,.hrt th{text-align:right;white-space:nowrap}.hrt td:first-child,.hrt th:first-child{text-align:left;white-space:normal;min-width:110px}.hrt td.u{text-align:left}.hrt tr.hr1 td{border-top:2px solid var(--line)}.hrt td.hrc{background:var(--warn-bg);font-weight:700}
+.glf{margin:18px 2px 6px;font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.04em;color:var(--navy)}.gcab .row{margin:4px 0}.gtab td,.gtab th{padding:4px 6px}.gtab tr.gdep td{background:var(--surface-2);font-weight:600;font-size:12px}.tbad{color:var(--bad);font-weight:700}.glrow{margin:0 0 12px}.gres button.lnk{border:0;background:none;padding:0;font:700 13px var(--f-body);color:var(--navy);text-decoration:underline;cursor:pointer;text-align:left}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -702,7 +703,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['global','Todo junto'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -751,7 +752,7 @@ function fotoFinca(f,i){const ft=f.foto||FOTO_DEF[f.id];if(!ft)return paisaje(f,
   return (ft.local||ft.fb)?`<img alt="" data-local="${ft.id}">`:`<img alt="" src="${esc(Adj.src(ft))}">`}
 function renderFincas(){const fs=fincasVis(),admin=!window.NUBE||(NUBE.user&&NUBE.user.admin),hoyTxt=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
   $('#fincas').innerHTML=`<div class="in"><div class="fhead"><div><div class="eyebrow">Fertirrigación · cabezales de riego</div><h2>Fincas</h2></div><div class="fecha">${esc(hoyTxt)}</div></div>
-  ${fs.length?'':'<div class="banner">No tienes ninguna finca asignada. Habla con el administrador.</div>'}<div class="fgrid">${fs.map((f,i)=>{const cabs=(f.cabezales||[]).map(cabNombre),w=fwxDe(f),c=w&&w.current,dd=w&&w.daily,sinCab=!cabs.length,off=!((veRiego()&&!sinCab)||campoEnFinca(f)),av=avisosFinca(f),mx=4,u=f.ubic||AGUILAS;
+  ${esGestor()&&veRiego()&&cabsVis().length?'<div class="row glrow"><button class="btn pri" data-act="gl-abrir">Todo junto: cuentas y drenaje de todas las fincas</button></div>':''}${fs.length?'':'<div class="banner">No tienes ninguna finca asignada. Habla con el administrador.</div>'}<div class="fgrid">${fs.map((f,i)=>{const cabs=(f.cabezales||[]).map(cabNombre),w=fwxDe(f),c=w&&w.current,dd=w&&w.daily,sinCab=!cabs.length,off=!((veRiego()&&!sinCab)||campoEnFinca(f)),av=avisosFinca(f),mx=4,u=f.ubic||AGUILAS;
     const vto=c&&c.wind_direction_10m!=null?VIENTOS[Math.round(((c.wind_direction_10m%360)+360)%360/45)%8]:null;
     return `<article class="fcard${off?' off':''}"><div class="ph">${fotoFinca(f,i)}<span class="nfin">${String(i+1).padStart(2,'0')}</span>
       ${c?`<span class="wxc">${wxIcon(c.weather_code)}${fmt(c.temperature_2m,0)}°</span>`:''}${off?'<span class="ribbon">'+(veRiego()?'Sin datos todavía':'Sin collas tuyas')+'</span>':sinCab&&veRiego()?'<span class="ribbon">Solo personal de campo</span>':''}
@@ -797,10 +798,10 @@ function entrarArea(a){if(a==='campo'&&!puedeCollas())return;if(a==='riego'&&(!v
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite'].includes(st.tab);
+function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global'].includes(st.tab);
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
-const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','solucion','parte','partes'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['global','cuentas','drenaje','rellenar','receta','solucion','parte','partes'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
@@ -1115,7 +1116,7 @@ const esAdminU=()=>!window.NUBE||!!(NUBE.user&&NUBE.user.admin);
 const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';if(!u)return 'trabajador';return u.admin?'admin':u.encargado?'encargado':'trabajador'};
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
-const SOLO_GESTOR=new Set(['graficas','informe','cuaderno']);
+const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
 function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
@@ -2475,7 +2476,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='satelite'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()},150)});
 
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite};
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal};
 function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
@@ -4090,6 +4091,42 @@ const onSatIn=e=>{if(st.tab!=='satelite')return;const t=e.target,d=t.dataset;
   if(d.satF){st.satFecha=t.value;renderMain();return}
   const k=d.satn,n=st.satNew;if(!k||!n)return;if(k==='bajo'){n.bajo=t.checked;return}if(k.startsWith('ref.'))n.ref[k.slice(4)]=t.value.trim();else n[k]=t.value};
 $('#main').addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.satn)onSatIn(e)});$('#main').addEventListener('change',onSatIn);
+
+/* ---------- Todo junto: cuentas y drenaje del día de todas las fincas y cabezales, en una sola pantalla (encargados) ---------- */
+function globalCab(cid){const d=parteData(cid),al=st.cfg.alertas,hay=d.m3!=null||d.deps.some(b=>b.cm!=null)||d.sect.some(s=>s.min!=null);
+  const ceBad=v=>v!=null&&al.ceMax!=null&&v>al.ceMax,phBad=v=>v!=null&&((al.phMin!=null&&v<al.phMin)||(al.phMax!=null&&v>al.phMax));
+  const fuera=d.deps.flatMap(b=>b.filas).filter(x=>x.c==='bad'||x.c==='warn').length;
+  const sect=d.sect.map(s=>{const ps=s.band.map(x=>x.pct).filter(v=>v!=null);return{...s,pct:ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null}});
+  const drenBad=sect.filter(s=>ceBad(s.ce)||phBad(s.ph)).length;
+  return{d,hay,fuera,sect,drenBad,ceBad,phBad}}
+function vGlobal(){if(!esGestor())return `<section class="card"><div class="note">Este apartado es para encargados.</div></section>`;
+  const fs=fincasVis(),vis=new Set(cabsVis().map(c=>c.id)),G0=[];
+  for(const f of fs){const cs=(f.cabezales||[]).filter(id=>vis.has(id)&&cabById(id));G0.push({f,cs:cs.map(id=>({id,...globalCab(id)}))})}
+  const todos=G0.flatMap(g=>g.cs),con=todos.filter(c=>c.hay),m3=con.reduce((s,c)=>s+(c.d.m3||0),0),fuera=con.reduce((s,c)=>s+c.fuera,0),drenBad=con.reduce((s,c)=>s+c.drenBad,0);
+  const falta=todos.filter(c=>!c.hay||!c.d.guardado);
+  let h=`<section class="card"><div><h3>Todo junto · ${esc(fLarga(st.fecha))}</h3><div class="sub">Cuentas y drenaje de todas las fincas y cabezales. Para otro día, cambia la fecha arriba.</div></div>
+    <section class="summary"><div class="stat"><span>Agua regada</span><b>${fmt(m3,0)} m³</b><small>${con.length} de ${todos.length} cabezales con datos</small></div>
+    <div class="stat"><span>Abonos fuera de dosis</span><b class="${fuera?'tbad':''}">${fuera}</b><small>más de un 10 % de desviación</small></div>
+    <div class="stat"><span>Drenaje fuera de límites</span><b class="${drenBad?'tbad':''}">${drenBad}</b><small>sectores con CE o pH fuera</small></div></section>
+    ${falta.length?`<div class="banner">Sin cuentas guardadas de este día: ${falta.map(c=>esc(c.d.cab)).join(', ')}</div>`:''}
+    <div class="tbl"><table class="gtab gres"><thead><tr><th>Cabezal</th><th>m³</th><th>Dosis</th><th>Dren. %</th><th>CE</th><th>pH</th></tr></thead><tbody>${G0.map(g=>`<tr class="gdep"><td colspan="6">${esc(g.f.nombre)}</td></tr>`+(g.cs.length?g.cs.map(c=>{const d=c.d;return `<tr><td><button class="lnk" data-act="gl-ver" data-id="${c.id}">${esc(d.cab)}</button></td><td>${c.hay?fmt(d.m3,0):'—'}</td><td>${c.hay&&d.tot?`<span class="pill ${d.ok===d.tot?'ok':c.fuera>2?'bad':'warn'}">${d.ok}/${d.tot}</span>`:'—'}</td><td>${c.hay?fmt(d.dren,1):'—'}</td><td class="${c.ceBad(d.ceD)?'tbad':''}">${c.hay?fmt(d.ceD,2):'—'}</td><td class="${c.phBad(d.phD)?'tbad':''}">${c.hay?fmt(d.phD,1):'—'}</td></tr>`}).join(''):'<tr><td colspan="6" class="u">Sin cabezales</td></tr>')).join('')}</tbody></table></div>
+    <div class="note">Toca un cabezal para ver abajo todas sus cuentas y su drenaje. Dosis = abonos dentro del ±10 %.</div></section>`;
+  for(const g of G0){h+=`<h3 class="glf">${esc(g.f.nombre)}</h3>`;
+    if(!g.cs.length){h+=`<section class="card"><div class="note">Todavía sin cabezales ni datos.</div></section>`;continue}
+    for(const c of g.cs){const d=c.d,sa=d.salida||{};
+      h+=`<section class="card gcab" id="gl_${c.id}"><div class="tank-h"><div><h3>${esc(d.cab)}</h3><div class="sub">${d.m3!=null?fmt(d.m3,0)+' m³':'sin m³'} · drenaje ${d.dren!=null?fmt(d.dren,1)+' %':'—'}${d.ceD!=null?' · CE dren. '+fmt(d.ceD,2):''}${d.phD!=null?' · pH '+fmt(d.phD,1):''}${sa.tot!=null?' · CE salida '+fmt(sa.tot,2):''}</div></div>
+        <button class="btn" data-act="gl-ir" data-id="${c.id}">Abrir</button></div>`;
+      if(!c.hay){h+=`<div class="note">Sin cuentas de este día.</div></section>`;continue}
+      h+=`<div class="row">${d.tot?`<span class="pill ${d.ok===d.tot?'ok':c.fuera>2?'bad':'warn'}">Dosis: ${d.ok} de ${d.tot} en rango</span>`:''}${c.drenBad?`<span class="pill bad">${c.drenBad} ${c.drenBad===1?'sector':'sectores'} con CE o pH fuera</span>`:''}${d.provisional?'<span class="pill warn">Sin guardar</span>':''}</div>`;
+      h+=`<div class="tbl"><table class="gtab"><thead><tr><th>Cuentas</th><th>Deseada</th><th>Real</th><th>Desv.</th></tr></thead><tbody>${d.deps.map(b=>`<tr class="gdep"><td colspan="4">${esc(b.nombre.replace(/^Depósito /,''))} · ${b.cm!=null?fmt(b.cm,1)+' cm · '+fmt(b.L,0)+' L':'sin cm'}${b.otros.length?' · compartido':''}</td></tr>`+b.filas.map(x=>`<tr><td>${esc(x.n.replace(/\u00ad/g,''))}</td><td>${fmt(x.des,2)}</td><td><b>${fmt(x.real,2)}</b></td><td><span class="pill ${pillC[x.c]}">${x.dev}</span></td></tr>`).join('')).join('')}</tbody></table></div>`;
+      h+=`<div class="tbl"><table class="gtab"><thead><tr><th>Drenaje</th><th>Min</th><th>Riegos</th><th>%</th><th>CE</th><th>pH</th></tr></thead><tbody>${c.sect.map(s=>`<tr><td>${esc(s.nombre)}</td><td>${fmt(s.min,0)}</td><td>${fmt(s.riegos,0)}</td><td><b>${fmt(s.pct,1)}</b></td><td class="${c.ceBad(s.ce)?'tbad':''}">${fmt(s.ce,2)}</td><td class="${c.phBad(s.ph)?'tbad':''}">${fmt(s.ph,1)}</td></tr>`).join('')}</tbody></table></div></section>`}}
+  return h}
+function abrirGlobal(){if(!fincaAct()){const f=fincasVis().find(x=>(x.cabezales||[]).length);if(f){st.finca=f.id;if(!f.cabezales.includes(st.cab))st.cab=f.cabezales[0]}}
+  $('#fincas').hidden=true;document.documentElement.style.overflow='';st.tab='global';renderCabs();renderTabs();renderMain();window.scrollTo(0,0)}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act="gl-abrir"],[data-act="gl-ir"],[data-act="gl-ver"]');if(!b)return;
+  if(b.dataset.act==='gl-abrir'){abrirGlobal();return}
+  if(b.dataset.act==='gl-ver'){const el=document.getElementById('gl_'+b.dataset.id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
+  const id=b.dataset.id,f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(id));if(f)st.finca=f.id;st.cab=id;st.tab='cuentas';renderCabs();renderTabs();renderMain();window.scrollTo(0,0)});
 
 /* ---------- Copia de seguridad ---------- */
 async function backup(){toast('Preparando copia…');if(Store.mode==='fb'){try{const x=await NUBE.exportAll();await saveBlob(new Blob([JSON.stringify({app:'abonado-pinta-santos',v:2,exportado:new Date().toISOString(),ls:x.ls,adjuntos:x.adjuntos})],{type:'application/json'}),'abonado-copia-'+hoy()+'.json');toast('Copia descargada: '+x.dias+' días y '+Object.keys(x.adjuntos).length+' adjuntos')}catch(e){toast('Necesitas conexión para descargar la copia')}return}

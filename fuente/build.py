@@ -67,7 +67,7 @@ head = """<!doctype html>
  "background_color":"#eef2ef","theme_color":"#1b2f4a",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
           {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]},ensure_ascii=False,indent=1))
-(out/'sw.js').write_text("""const C='abonado-v95';
+(out/'sw.js').write_text("""const C='abonado-v96';
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./badge-96.png','./pdf-lib.min.js','./parte-tpl.js','./parte-tpl-p.js'"""+(",'./nube.js'" if nube else '')+"""];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
