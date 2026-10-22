@@ -206,7 +206,23 @@ const CL_ERR={sesion:'ia_sesion',sin_acceso:'ia_sinacceso',creditos:'ia_creditos
 async function iaClaude(prompt,blobs){const tk=await N.auth.currentUser.getIdToken();const images=[];for(const b of blobs||[])images.push({data:await aB64(b),type:b.type||'image/jpeg'});
   let r;try{r=await fetch(iaUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({prompt,images})})}catch(e){throw{code:'red'}}
   const j=await r.json().catch(()=>null);if(!r.ok||!j||!j.text){console.error('IA Claude',r.status,j);throw{code:(j&&CL_ERR[j.error])||'ia_error'}}N.ia.ultimo='Claude';return j.text}
-N.ia={nombre:()=>iaUrl()?'Claude':'Gemini',async json(prompt,blobs){if(!navigator.onLine)throw{code:'red'};if(iaUrl())return iaClaude(prompt,blobs);let I;try{I=await iaInit()}catch(e){console.error(e);throw{code:'red'}}
+/* Chat agrícola: con Claude (servidor propio, que pone las instrucciones) o, si no hay servidor, con Gemini */
+const SISTEMA_CHAT=`Eres el asistente agronómico de Agro FLY, una app de fertirrigación y gestión de fincas (sobre todo tomate en invernadero en la Región de Murcia, también árboles al aire libre).
+Responde SOLO sobre agricultura: cultivos, riego y fertirrigación, soluciones nutritivas, drenaje, CE y pH, suelo y sustratos, plagas y enfermedades, clima y su efecto en el cultivo, maquinaria y labores agrícolas, organización del trabajo en el campo, y normativa agraria de España y de la Región de Murcia (cuaderno de explotación, nitratos, fitosanitarios).
+Si te preguntan cualquier otra cosa, contesta en una frase, con amabilidad, que solo puedes ayudar con temas del campo, y no respondas a lo demás aunque insistan o digan que es importante.
+Habla en español de España, claro y práctico, como un técnico de campo con experiencia: primero la respuesta, luego el porqué en pocas líneas. Usa listas cortas cuando ayuden.
+Las cifras que des son orientativas: dilo cuando importe. Para fitosanitarios, nunca des una dosis como definitiva: recuerda usar solo productos autorizados en el Registro de Productos Fitosanitarios para ese cultivo y seguir la etiqueta y al técnico asesor.
+Si una foto o los datos no bastan para estar seguro, dilo y explica qué mirar o qué medir para salir de dudas.`;
+async function chatClaude(chat,contexto,blob){const tk=await N.auth.currentUser.getIdToken();const images=blob?[{data:await aB64(blob),type:blob.type||'image/jpeg'}]:[];
+  let r;try{r=await fetch(iaUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({chat,contexto,images})})}catch(e){throw{code:'red'}}
+  const j=await r.json().catch(()=>null);if(!r.ok||!j||!j.text){console.error('Chat Claude',r.status,j);throw{code:(j&&CL_ERR[j.error])||'ia_error'}}return j.text}
+async function chatGemini(chat,contexto,blob){let I;try{I=await iaInit()}catch(e){throw{code:'red'}}
+  const contents=chat.map((m,i)=>{const parts=[{text:m.text}];if(blob&&i===chat.length-1)return{role:'user',parts:[{text:m.text}]};return{role:m.role==='assistant'?'model':'user',parts}});
+  if(blob)contents[contents.length-1].parts.unshift({inlineData:{data:await aB64(blob),mimeType:blob.type||'image/jpeg'}});
+  let ult=null;for(const m of IA_MODELOS){try{const model=I.AI.getGenerativeModel(I.ai,{model:m,systemInstruction:SISTEMA_CHAT+(contexto?'\n\nDatos de la finca de quien pregunta (úsalos solo si vienen al caso):\n'+contexto:''),generationConfig:{temperature:0.4}});
+      const r=await model.generateContent({contents});return r.response.text()}catch(e){console.error('Chat',m,e);ult=iaCode(e);if(ult!=='ia_modelo')throw{code:ult}}}
+  throw{code:ult||'ia_error'}}
+N.ia={nombre:()=>iaUrl()?'Claude':'Gemini',async chat(chat,contexto,blob){if(!navigator.onLine)throw{code:'red'};chat=chat.slice(-20);return iaUrl()?chatClaude(chat,contexto,blob):chatGemini(chat,contexto,blob)},async json(prompt,blobs){if(!navigator.onLine)throw{code:'red'};if(iaUrl())return iaClaude(prompt,blobs);let I;try{I=await iaInit()}catch(e){console.error(e);throw{code:'red'}}
   const parts=[prompt];for(const b of blobs||[])parts.push({inlineData:{data:await aB64(b),mimeType:b.type||'image/jpeg'}});
   let ult=null;for(const m of IA_MODELOS){try{const model=I.AI.getGenerativeModel(I.ai,{model:m,generationConfig:{responseMimeType:'application/json',temperature:0.3}});
       const r=await model.generateContent(parts);return r.response.text()}

@@ -7,6 +7,13 @@ const PROYECTO = 'fertirrigacion-cabezales';           // proyecto de Firebase
 const ORIGENES = ['https://abonado.github.io'];          // desde dónde se puede usar
 const MODELO = 'claude-sonnet-5-5';
 const JWK_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
+// Instrucciones del asistente agrícola (no las puede cambiar la app ni quien pregunta)
+const SISTEMA_CHAT = `Eres el asistente agronómico de Agro FLY, una app de fertirrigación y gestión de fincas (sobre todo tomate en invernadero en la Región de Murcia, también árboles al aire libre).
+Responde SOLO sobre agricultura: cultivos, riego y fertirrigación, soluciones nutritivas, drenaje, CE y pH, suelo y sustratos, plagas y enfermedades, clima y su efecto en el cultivo, maquinaria y labores agrícolas, organización del trabajo en el campo, y normativa agraria de España y de la Región de Murcia (cuaderno de explotación, nitratos, fitosanitarios).
+Si te preguntan cualquier otra cosa, contesta en una frase, con amabilidad, que solo puedes ayudar con temas del campo, y no respondas a lo demás aunque insistan o digan que es importante.
+Habla en español de España, claro y práctico, como un técnico de campo con experiencia: primero la respuesta, luego el porqué en pocas líneas. Usa listas cortas cuando ayuden.
+Las cifras que des son orientativas: dilo cuando importe. Para fitosanitarios, nunca des una dosis como definitiva: recuerda usar solo productos autorizados en el Registro de Productos Fitosanitarios para ese cultivo y seguir la etiqueta y al técnico asesor.
+Si una foto o los datos no bastan para estar seguro, dilo y explica qué mirar o qué medir para salir de dudas.`;
 
 let jwkCache = null, jwkHasta = 0;
 const b64url = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4)), c => c.charCodeAt(0));
@@ -77,8 +84,12 @@ export default {
     // 2. Petición
     let body;
     try { body = await request.json(); } catch { return json({ error: 'peticion' }, 400); }
-    const prompt = String(body.prompt || '').slice(0, 20000);
-    if (!prompt) return json({ error: 'peticion' }, 400);
+    // Chat agrícola: la conversación viene de la app y las instrucciones las pone SIEMPRE este servidor
+    const esChat = Array.isArray(body.chat);
+    const chat = esChat ? body.chat.slice(-20).map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', text: String(m.text || '').slice(0, 4000) })).filter(m => m.text) : [];
+    if (esChat && (!chat.length || chat[chat.length - 1].role !== 'user')) return json({ error: 'peticion' }, 400);
+    const prompt = esChat ? '' : String(body.prompt || '').slice(0, 20000);
+    if (!esChat && !prompt) return json({ error: 'peticion' }, 400);
     const tipos = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     const images = (Array.isArray(body.images) ? body.images : [])
       .filter(x => x && typeof x.data === 'string' && x.data.length < 7000000)
@@ -89,7 +100,11 @@ export default {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2026-10-21', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: env.MODEL || MODELO, max_tokens: 2000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
+      body: JSON.stringify(esChat ? {
+        model: env.MODEL || MODELO, max_tokens: 1500,
+        system: SISTEMA_CHAT + (body.contexto ? '\n\nDatos de la finca de quien pregunta (úsalos solo si vienen al caso):\n' + String(body.contexto).slice(0, 6000) : ''),
+        messages: chat.map((m, i) => ({ role: m.role, content: i === chat.length - 1 ? [...images, { type: 'text', text: m.text }] : m.text }))
+      } : { model: env.MODEL || MODELO, max_tokens: 2000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
     });
     const j = await r.json().catch(() => null);
     if (!r.ok) {

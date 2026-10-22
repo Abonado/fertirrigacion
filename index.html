@@ -497,6 +497,7 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .hrt td,.hrt th{text-align:right;white-space:nowrap}.hrt td:first-child,.hrt th:first-child{text-align:left;white-space:normal;min-width:110px}.hrt td.u{text-align:left}.hrt tr.hr1 td{border-top:2px solid var(--line)}.hrt td.hrc{background:var(--warn-bg);font-weight:700}
 .glf{margin:18px 2px 6px;font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.04em;color:var(--navy)}.gcab .row{margin:4px 0}.gtab td,.gtab th{padding:4px 6px}.gtab tr.gdep td{background:var(--surface-2);font-weight:600;font-size:12px}.tbad{color:var(--bad);font-weight:700}.glrow{margin:0 0 12px}.gres button.lnk{border:0;background:none;padding:0;font:700 13px var(--f-body);color:var(--navy);text-decoration:underline;cursor:pointer;text-align:left}
 .ubmapa{height:360px}.ubp{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none}.ubp i{width:16px;height:16px;border-radius:50%;background:#1baf7a;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}.ubp b{margin-top:2px;background:#fff;color:#1b2f4a;font:700 11px var(--f-body);padding:1px 6px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.3);white-space:nowrap}.ubp.viejo i{background:#9aa3a8}.ubf{position:absolute;transform:translate(-50%,-50%);font:700 10px var(--f-body);color:#fff;text-shadow:0 1px 3px #000;text-transform:uppercase;pointer-events:none}
+.chbox{display:grid;gap:8px}.chm{max-width:88%;padding:8px 12px;border-radius:14px;font:400 15px/1.45 var(--f-body)}.chm,.chm *,#ch_txt{text-transform:none!important;letter-spacing:normal}.chm.yo{justify-self:end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}.chm.ia{justify-self:start;background:var(--surface-2);border:1px solid var(--line);border-bottom-left-radius:4px}.chm p{margin:4px 0}.chm ul{margin:4px 0;padding-left:20px}.chm li{margin:2px 0}.chf{font-size:11px;opacity:.8}.chprev{max-height:90px;border-radius:8px}.chsug .chip{white-space:normal;text-align:left;text-transform:none}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -689,7 +690,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -790,7 +791,7 @@ function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=cam
 const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
-  {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
+  {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 /* Personal de campo: su propio menú (de momento, las collas) */
@@ -2463,7 +2464,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='satelite'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()},150)});
 
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic};
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat};
 function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
@@ -4213,6 +4214,59 @@ const versionHTML=()=>`<section class="card"><div><h3>Versión de la app</h3><di
 document.addEventListener('click',async e=>{if(!e.target.closest('[data-act="app-act"]'))return;if(st.dirtyReg||st.dirtyCfg){toast('Guarda antes los cambios');return}toast('Actualizando…');
   try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}catch(_){}try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}catch(_){}
   location.replace(location.pathname+'?v='+Date.now())});
+/* ---------- Asistente IA agrícola (chat) ----------
+   Solo temas del campo (lo exige el servidor). La conversación se guarda en este móvil, no en la nube.
+   Puede usar los datos de la finca (receta, últimos días de riego y drenaje, tiempo) para responder en concreto. */
+st.ch=null;st.chBusy=false;st.chFoto=null;st.chCtx=true;
+const CH_SUG=['¿Por qué puede subir la CE del drenaje?','Síntomas de falta de calcio en tomate','¿Cómo ajusto el riego en días de mucha radiación?','Plagas típicas del tomate en otoño en Murcia','¿Qué hago si el pH del drenaje baja de 5,5?'];
+const chKey=()=>'abono.chat.'+(miEmail()||'local');
+function chCargar(){if(st.ch)return;try{st.ch=JSON.parse(localStorage.getItem(chKey())||'[]')}catch(e){st.ch=[]}}
+function chGuardar(){try{localStorage.setItem(chKey(),JSON.stringify(st.ch.slice(-40)))}catch(e){}}
+/* Lo que el asistente sabe de tu finca */
+function chContexto(){const L=[],f=fincaAct(),c=cabById(st.cab);if(f)L.push('Finca: '+f.nombre);if(c)L.push('Cabezal: '+c.nombre+' ('+c.sectores.length+' sectores)');
+  try{const cu=(st.cfg.cultivo||{})[st.cab]||{};const vs=[];for(const{s,row}of ptFilas(c)){const i=infoSector(s.id,st.cab,row);if(i.cult||i.vari)vs.push([i.cult,i.vari,i.sust].filter(Boolean).join(' '))}
+    if(vs.length)L.push('Cultivo: '+[...new Set(vs)].join('; '));else if(cu.cultivo)L.push('Cultivo: '+cu.cultivo+(cu.variedad?' '+cu.variedad:''));if(cu.plantacion)L.push('Plantación: '+cu.plantacion)}catch(e){}
+  try{L.push('Receta (salida deseada): '+bidonesDe(st.cab).flatMap(b=>b.productos.filter(x=>x.dosis).map(x=>pn(x.p).replace(/­/g,'')+' '+fmt(x.dosis,2)+' '+uDosis(x.p))).join(', '));L.push('Incremento de CE estimado por la receta: '+fmt(ceEstimada(st.cab),0)+' µS/cm')}catch(e){}
+  try{const al=st.cfg.alertas;L.push(`Límites: CE drenaje máx. ${al.ceMax} mS/cm, pH ${al.phMin}–${al.phMax}`)}catch(e){}
+  try{const rs=(st.hist||[]).filter(r=>r.m3&&r.m3[st.cab]!=null).sort((a,b)=>a.fecha<b.fecha?1:-1).slice(0,7);
+    if(rs.length){L.push('Últimos días (fecha: m³ regados · drenaje % · CE drenaje · pH drenaje):');for(const r of rs){const z=(r.resumen||{})[st.cab]||{};L.push(`- ${r.fecha}: ${fmt(r.m3[st.cab],0)} m³ · ${z.drenaje!=null?fmt(z.drenaje,1)+' %':'—'} · ${fmt(mediaSect(r,st.cab,'ceD'),2)} · ${fmt(mediaSect(r,st.cab,'phD'),1)}`)}}}catch(e){}
+  try{const d=st.wx&&st.wx.daily;if(d)L.push(`Tiempo hoy: máx ${fmt(d.temperature_2m_max[0],0)} °C, mín ${fmt(d.temperature_2m_min[0],0)} °C, ET0 ${fmt(d.et0_fao_evapotranspiration[0],1)} mm, lluvia ${fmt(d.precipitation_sum[0],1)} mm`)}catch(e){}
+  try{const r=st.rad&&st.rad.dias&&radDias();if(r&&r.length)L.push('Radiación de ayer: '+fmt(r[r.length-1].j,0)+' J/cm²')}catch(e){}
+  return L.join('\n')}
+/* Texto de la IA: negritas, listas y saltos de línea, sin dejar pasar HTML */
+function chFormato(t){const e=esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');const out=[];let lista=null;
+  for(const l of e.split('\n')){const m=/^\s*(?:[-•*]|\d+[.)])\s+(.*)/.exec(l);if(m){(lista=lista||[]).push(`<li>${m[1]}</li>`);continue}
+    if(lista){out.push(`<ul>${lista.join('')}</ul>`);lista=null}const h=/^#{1,4}\s+(.*)/.exec(l);out.push(h?`<p><b>${h[1]}</b></p>`:l.trim()?`<p>${l}</p>`:'')}
+  if(lista)out.push(`<ul>${lista.join('')}</ul>`);return out.join('')}
+function vChat(){chCargar();const iaOn=window.NUBE&&NUBE.ia&&NUBE.user;
+  if(!iaOn)return `<section class="card"><div><h3>Asistente agrícola</h3></div><div class="note">Necesita la app con tu cuenta y conexión.</div></section>`;
+  let h=`<section class="card"><div class="tank-h"><div><h3>Asistente agrícola</h3><div class="sub">Pregunta lo que quieras del campo · con ${esc(NUBE.ia.nombre())}</div></div>${st.ch.length?'<button class="btn" data-act="ch-nueva">Nueva conversación</button>':''}</div>
+    <label class="chk"><input type="checkbox" data-ch="ctx" ${st.chCtx?'checked':''}> Usar los datos de ${esc(cabById(st.cab)?cabById(st.cab).nombre:'mi cabezal')} (receta, riego, drenaje y tiempo)</label></section>`;
+  h+=`<section class="card chbox" id="ch_box">`;
+  if(!st.ch.length)h+=`<div class="note">Ejemplos para empezar:</div><div class="pick chsug">${CH_SUG.map((q,i)=>`<button class="chip" data-ch-sug="${i}">${esc(q)}</button>`).join('')}</div>`;
+  for(const m of st.ch)h+=`<div class="chm ${m.role==='user'?'yo':'ia'}">${m.foto?'<div class="chf">📷 Con foto</div>':''}${m.role==='user'?`<p>${esc(m.text).replace(/\n/g,'<br>')}</p>`:chFormato(m.text)}</div>`;
+  if(st.chBusy)h+=`<div class="chm ia"><p class="u">Pensando…</p></div>`;
+  h+=`</section><section class="card chin">${st.chFoto?`<div class="row"><img class="chprev" src="${st.chFoto.url}" alt="Foto adjunta"><button class="btn" data-act="ch-quitafoto">Quitar foto</button></div>`:''}
+    <div class="field"><label for="ch_txt">Tu pregunta</label><textarea id="ch_txt" rows="3" placeholder="Ej.: tengo hojas de tomate con bordes secos en la nave 3, ¿qué puede ser?" ${st.chBusy?'disabled':''}></textarea></div>
+    <div class="row"><button class="btn pri" data-act="ch-enviar" ${st.chBusy?'disabled':''}>Preguntar</button><label class="btn" for="ch_foto">Añadir foto</label><input type="file" id="ch_foto" data-ch="foto" accept="image/*" hidden></div>
+    <div class="note">Respuestas orientativas. Para tratamientos fitosanitarios, usa solo productos autorizados y consulta a vuestro técnico. La conversación se guarda solo en este móvil.</div></section>`;
+  setTimeout(()=>{const b=$('#ch_box');if(b&&st.ch.length)b.lastElementChild.scrollIntoView({block:'nearest'})},0);
+  return h}
+async function chEnviar(txt){txt=String(txt||'').trim();if(!txt||st.chBusy)return;chCargar();const foto=st.chFoto;st.ch.push({role:'user',text:txt,...(foto?{foto:true}:{}),ts:ahoraISO()});st.chFoto=null;st.chBusy=true;chGuardar();renderMain();
+  try{if(st.hist===null)await loadHist_().catch(()=>{});const r=await NUBE.ia.chat(st.ch.map(m=>({role:m.role,text:m.text})),st.chCtx?chContexto():'',foto&&foto.blob);
+    st.ch.push({role:'assistant',text:String(r||'').trim()||'No he podido responder.',ts:ahoraISO()})}
+  catch(e){st.ch.pop();toast(dgErr(e));setTimeout(()=>{const t=$('#ch_txt');if(t)t.value=txt},50)}
+  st.chBusy=false;chGuardar();if(st.tab==='chatia')renderMain()}
+document.addEventListener('click',e=>{if(st.tab!=='chatia')return;const b=e.target.closest('[data-act^="ch-"],[data-ch-sug]');if(!b)return;
+  if(b.dataset.chSug!=null){chEnviar(CH_SUG[+b.dataset.chSug]);return}const a=b.dataset.act;
+  if(a==='ch-enviar'){const t=$('#ch_txt');chEnviar(t&&t.value)}
+  else if(a==='ch-nueva'){st.ch=[];chGuardar();renderMain()}
+  else if(a==='ch-quitafoto'){st.chFoto=null;renderMain()}});
+document.addEventListener('change',async e=>{if(st.tab!=='chatia')return;const t=e.target,k=t.dataset&&t.dataset.ch;if(!k)return;
+  if(k==='ctx'){st.chCtx=t.checked;return}
+  if(k==='foto'&&t.files&&t.files[0]){let b=t.files[0];try{b=await compressImg(b)}catch(_){}st.chFoto={blob:b,url:URL.createObjectURL(b)};t.value='';renderMain()}});
+document.addEventListener('keydown',e=>{if(st.tab==='chatia'&&e.target.id==='ch_txt'&&e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();chEnviar(e.target.value)}});
+
 /* ---------- Copia de seguridad ---------- */
 async function backup(){toast('Preparando copia…');if(Store.mode==='fb'){try{const x=await NUBE.exportAll();await saveBlob(new Blob([JSON.stringify({app:'abonado-pinta-santos',v:2,exportado:new Date().toISOString(),ls:x.ls,adjuntos:x.adjuntos})],{type:'application/json'}),'abonado-copia-'+hoy()+'.json');toast('Copia descargada: '+x.dias+' días y '+Object.keys(x.adjuntos).length+' adjuntos')}catch(e){toast('Necesitas conexión para descargar la copia')}return}
   const ls={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('abono.'))ls[k]=localStorage.getItem(k)}}catch(e){}
@@ -4242,7 +4296,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
 
-window.APP_V='abonado-v102';
+window.APP_V='abonado-v103';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
