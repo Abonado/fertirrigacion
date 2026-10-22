@@ -54,7 +54,7 @@ service cloud.firestore {
 
     // Partes diarios: los guarda cualquiera del equipo, solo los leen el administrador y los encargados
     match /abonado_partes/{doc} {
-      allow read: if esAdmin() || (autorizado() && esEncargado());
+      allow read: if veRiego();   // todo el personal de riego ve y descarga los partes
       allow create, update: if veRiego();
       allow delete: if esAdmin();
     }
@@ -148,6 +148,25 @@ service cloud.firestore {
         && request.auth.token.email == resource.data.de;
     }
 
+    // Fichajes (registro de jornada): cada uno ficha lo suyo; lo ven él mismo y los encargados.
+    // Solo se pueden AÑADIR fichajes al día: los anteriores no se cambian ni se borran (los corrige el administrador).
+    match /abonado_fichajes/{doc} {
+      allow read: if autorizado() && (esGestor() || resource.data.email == request.auth.token.email);
+      allow create: if autorizado() && request.resource.data.email == request.auth.token.email
+        && doc == request.auth.token.email + '_' + request.resource.data.fecha;
+      allow update: if autorizado() && resource.data.email == request.auth.token.email
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.fecha == resource.data.fecha
+        && request.resource.data.eventos.size() > resource.data.eventos.size()
+        && request.resource.data.eventos[0:resource.data.eventos.size()] == resource.data.eventos;
+      allow delete: if esAdmin();
+    }
+    // Última posición de cada persona (solo con la jornada abierta): la escribe ella misma; la ven los encargados
+    match /abonado_posiciones/{email} {
+      allow read: if autorizado() && (esGestor() || email == request.auth.token.email);
+      allow write: if autorizado() && email == request.auth.token.email && request.resource.data.email == email;
+    }
+
     match /{coleccion}/{doc} {
       allow read, write: if coleccion.matches('abonado_.*')
         && coleccion != 'abonado_acceso'
@@ -162,6 +181,8 @@ service cloud.firestore {
         && coleccion != 'abonado_cmensajes'
         && coleccion != 'abonado_adjuntos'
         && coleccion != 'abonado_notas'
+        && coleccion != 'abonado_fichajes'
+        && coleccion != 'abonado_posiciones'
         && veRiego();
     }
   }
