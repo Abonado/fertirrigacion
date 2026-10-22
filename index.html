@@ -496,6 +496,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;background:none;border-right:0;border-bottom:0;cursor:pointer;padding-right:0}
 .hrt td,.hrt th{text-align:right;white-space:nowrap}.hrt td:first-child,.hrt th:first-child{text-align:left;white-space:normal;min-width:110px}.hrt td.u{text-align:left}.hrt tr.hr1 td{border-top:2px solid var(--line)}.hrt td.hrc{background:var(--warn-bg);font-weight:700}
 .glf{margin:18px 2px 6px;font:700 15px var(--f-display);text-transform:uppercase;letter-spacing:.04em;color:var(--navy)}.gcab .row{margin:4px 0}.gtab td,.gtab th{padding:4px 6px}.gtab tr.gdep td{background:var(--surface-2);font-weight:600;font-size:12px}.tbad{color:var(--bad);font-weight:700}.glrow{margin:0 0 12px}.gres button.lnk{border:0;background:none;padding:0;font:700 13px var(--f-body);color:var(--navy);text-decoration:underline;cursor:pointer;text-align:left}
+.ubmapa{height:360px}.ubp{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;pointer-events:none}.ubp i{width:16px;height:16px;border-radius:50%;background:#1baf7a;border:3px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4)}.ubp b{margin-top:2px;background:#fff;color:#1b2f4a;font:700 11px var(--f-body);padding:1px 6px;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.3);white-space:nowrap}.ubp.viejo i{background:#9aa3a8}.ubf{position:absolute;transform:translate(-50%,-50%);font:700 10px var(--f-body);color:#fff;text-shadow:0 1px 3px #000;text-transform:uppercase;pointer-events:none}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -703,7 +704,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -798,17 +799,17 @@ function entrarArea(a){if(a==='campo'&&!puedeCollas())return;if(a==='riego'&&(!v
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global'].includes(st.tab);
+function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
 const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
-  {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
+  {id:'equipo',n:'Equipo',tabs:['mapa','tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 /* Personal de campo: su propio menú (de momento, las collas) */
-const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctareas','corend','coparte'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
+const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctareas','corend','coparte','cubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'cmsg',n:'Mensajes',tabs:['cmensajes'],ic:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>'},
   {id:'ctiempo',n:'Tiempo',tabs:['ctiempo'],ic:'<circle cx="9" cy="9" r="3.2"/><path d="M9 2.8v1.6M3.6 9H2.4M4.6 4.6l1.1 1.1"/><path d="M8 19h9.5a3.5 3.5 0 0 0 .3-7 4.8 4.8 0 0 0-9.2 1.2A2.9 2.9 0 0 0 8 19z"/>'},
   {id:'cnotasg',n:'Notas',tabs:['cnotas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
@@ -1117,7 +1118,7 @@ const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';i
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
 const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
-function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
+function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||fincasVis().some(f=>f.id===m.finca);
@@ -2330,7 +2331,7 @@ function renderSplash(){const hoyTxt=new Date().toLocaleDateString('es-ES',{week
     ${(f=>`<p class="frase">«${esc(f[0])}»<small>${esc(f[1]||'Frase del día')}</small></p>`)(fraseHoy())}
     <div class="hoy">Hoy es ${esc(hoyTxt)}</div>
     <section class="card"><div class="tank-h"><div><h3>El tiempo hoy</h3><div class="sub">${AGUILAS.nombre}</div></div>${enClaude()?'':`<a class="btn" href="https://www.aemet.es/es/eltiempo/prediccion/avisos" target="_blank" rel="noopener">Avisos AEMET</a>`}</div>${splashWxHTML()}</section>
-    <section class="card" id="sp_res">${resumenHTML()}</section>
+    ${fichOk()?`<section class="card" id="sp_fich">${fichajeHTML()}</section>`:''}<section class="card" id="sp_res">${resumenHTML()}</section>
     <button class="btn pri entrar" data-act="entrar">Entrar</button></div>`}
 function abrirSplash(){renderSplash();$('#splash').hidden=false;document.documentElement.style.overflow='hidden';loadSplashWx()}
 
@@ -2476,7 +2477,7 @@ function drawChart(el,sp){const W=Math.max(260,el.clientWidth),H=220,L=40,R=sp.b
   svg.addEventListener('pointerleave',hide)}
 let rzT;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(st.tab==='graficas'||st.tab==='satelite'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()},150)});
 
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal};
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic};
 function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
@@ -4128,6 +4129,99 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act="gl-ab
   if(b.dataset.act==='gl-ver'){const el=document.getElementById('gl_'+b.dataset.id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
   const id=b.dataset.id,f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(id));if(f)st.finca=f.id;st.cab=id;st.tab='cuentas';renderCabs();renderTabs();renderMain();window.scrollTo(0,0)});
 
+/* ---------- Fichar y ubicación del equipo ----------
+   Cada persona ficha entrada y salida con su ubicación (registro de jornada). Mientras tiene la jornada abierta y la app
+   abierta en pantalla, manda su posición cada 5 minutos; al fichar la salida se borra. Fuera de la jornada no se registra nada
+   (art. 90 LOPDGDD: hay que informar antes a los trabajadores). Los encargados ven el mapa, la lista del día y el registro del mes. */
+st.fich=null;st.ubEq=null;st.ubMes=null;st.ubBusy=false;st.ubAviso=false;
+const fichOk=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&miEmail());
+const fichId=(e,f)=>e+'_'+f;
+const UB_AVISO='La empresa registra tu hora y tu ubicación al fichar la entrada y la salida, y tu posición cada pocos minutos solo mientras tienes la jornada abierta y la app abierta en el móvil. Sirve para el registro de jornada y para organizar el trabajo (art. 34.9 del Estatuto de los Trabajadores y art. 90 de la LOPDGDD). Fuera de la jornada no se registra nada. Lo ven solo los encargados y el administrador.';
+const kmEntre=(a,b,c,d)=>{const R=6371,t=x=>x*Math.PI/180,dl=t(c-a),dn=t(d-b),h=Math.sin(dl/2)**2+Math.cos(t(a))*Math.cos(t(c))*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(h))};
+function fincaCerca(lat,lon){if(lat==null||lon==null)return null;let m=null;for(const f of st.cfg.fincas||[]){if(!f.ubic)continue;const k=kmEntre(lat,lon,f.ubic.lat,f.ubic.lon);if(!m||k<m.km)m={id:f.id,nombre:f.nombre,km:k}}return m}
+const lugarTxt=e=>{if(!e||e.lat==null)return 'sin ubicación';const f=fincaCerca(e.lat,e.lon);return f?(f.km<=3?f.nombre:'a '+fmt(f.km,1)+' km de '+f.nombre):fmt(e.lat,4)+', '+fmt(e.lon,4)};
+const posicion=alta=>new Promise((res,rej)=>{if(!navigator.geolocation){rej({code:'nogps'});return}navigator.geolocation.getCurrentPosition(p=>res({lat:+p.coords.latitude.toFixed(6),lon:+p.coords.longitude.toFixed(6),prec:Math.round(p.coords.accuracy||0)}),e=>rej({code:e&&e.code===1?'permiso':'gps'}),{enableHighAccuracy:!!alta,timeout:alta?20000:15000,maximumAge:alta?0:60000})});
+async function loadFich(){if(!fichOk())return;if(!$('#sp_fich')&&$('#sp_res')){const s=document.createElement('section');s.className='card';s.id='sp_fich';$('#sp_res').before(s)}try{const s=await NUBE.db.doc('fichajes/'+fichId(miEmail(),hoy())).get();st.fich=s.exists?s.data():{eventos:[]}}catch(e){st.fich=st.fich||{eventos:[]}}const el=$('#sp_fich');if(el)el.innerHTML=fichajeHTML();if(['ubic','cubic'].includes(st.tab))renderMain();ubEnviar(true)}
+const jornadaAbierta=d=>{const ev=(d&&d.eventos)||[];return !!(ev.length&&ev[ev.length-1].tipo==='entrada')};
+/* Horas trabajadas de un día: suma de los tramos entrada → salida (el último, si sigue abierto, hasta ahora) */
+function horasDia(d,abiertoHasta){let ms=0,ini=null;for(const e of (d&&d.eventos)||[]){if(e.tipo==='entrada')ini=Date.parse(e.ts);else if(e.tipo==='salida'&&ini!=null){ms+=Date.parse(e.ts)-ini;ini=null}}if(ini!=null&&abiertoHasta)ms+=abiertoHasta-ini;return ms/36e5}
+const hmTxt=h=>h==null?'—':Math.floor(h)+' h '+String(Math.round((h%1)*60)).padStart(2,'0')+' min';
+const horaDe=ts=>new Date(ts).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+function fichajeHTML(){if(!fichOk())return '';const d=st.fich;if(!d)return `<div><h3>Jornada</h3></div><div class="note">Cargando…</div>`;
+  const ev=d.eventos||[],ab=jornadaAbierta(d),ent=ev.filter(e=>e.tipo==='entrada'),u=ev[ev.length-1];
+  let h=`<div class="tank-h"><div><h3>Jornada de hoy</h3><div class="sub">${ev.length?ab?`Trabajando desde las ${horaDe(ent[ent.length-1].ts)} · ${esc(lugarTxt(ent[ent.length-1]))}`:`Has salido a las ${horaDe(u.ts)} · ${hmTxt(horasDia(d))}`:'Sin fichar todavía'}</div></div>
+    ${ab?`<span class="pill ok">${hmTxt(horasDia(d,Date.now()))}</span>`:''}</div>`;
+  if(st.ubAviso)return h+`<div class="banner">${esc(UB_AVISO)}</div><div class="row"><button class="btn pri" data-act="fi-ok" data-t="${st.ubAviso}">Entendido, fichar ${st.ubAviso}</button><button class="btn" data-act="fi-no">Cancelar</button></div>`;
+  h+=`<div class="row"><button class="btn pri" data-act="fi-fichar" data-t="${ab?'salida':'entrada'}" ${st.ubBusy?'disabled':''}>${st.ubBusy?'Buscando tu ubicación…':ab?'Fichar salida':'Fichar entrada'}</button></div>`;
+  if(ev.length>1||(ev.length&&!ab))h+=`<div class="note">${ev.map(e=>`${e.tipo==='entrada'?'Entrada':'Salida'} ${horaDe(e.ts)}`).join(' · ')}</div>`;
+  if(ab)h+=`<div class="note">Mientras tengas la jornada abierta y la app abierta, los encargados ven dónde estás. Al fichar la salida se deja de registrar.</div>`;
+  return h}
+async function fichar(tipo){if(st.ubBusy||!fichOk())return;let ok=false;try{ok=localStorage.getItem('abono.ubic.aviso.'+miEmail())==='1'}catch(e){}
+  if(!ok){st.ubAviso=tipo;fiRefrescar();return}
+  st.ubBusy=true;fiRefrescar();let p=null,err=null;try{p=await posicion(true)}catch(e){err=e.code}
+  const now=new Date(),ev={tipo,ts:now.toISOString(),...(p||{}),...(p?{}:{sinUbic:err||'gps'})},f=fincaCerca(p&&p.lat,p&&p.lon);if(f&&f.km<=3)ev.finca=f.id;
+  try{const ref=NUBE.db.doc('fichajes/'+fichId(miEmail(),hoy()));let d=null;try{const s=await ref.get();d=s.exists?s.data():null}catch(e){}
+    const doc={email:miEmail(),nombre:yoNombre(),fecha:hoy(),eventos:[...((d&&d.eventos)||[]),ev],mod:ahoraISO()};await ref.set(doc);st.fich=doc;
+    if(tipo==='entrada'&&p)await NUBE.db.doc('posiciones/'+miEmail()).set({email:miEmail(),nombre:yoNombre(),lat:p.lat,lon:p.lon,prec:p.prec,ts:now.toISOString(),activo:true,finca:ev.finca||''});
+    if(tipo==='salida')await NUBE.db.doc('posiciones/'+miEmail()).set({email:miEmail(),nombre:yoNombre(),lat:null,lon:null,prec:null,ts:now.toISOString(),activo:false,finca:''});
+    ubUlt=Date.now();toast((tipo==='entrada'?'Entrada':'Salida')+' fichada a las '+horaDe(ev.ts)+(p?'':' (sin ubicación: '+(err==='permiso'?'da permiso de ubicación a la app':'el GPS no respondió')+')'))}
+  catch(e){toast(errMsg(e))}
+  st.ubBusy=false;fiRefrescar();if(st.ubEq)loadUbEq()}
+function fiRefrescar(){const el=$('#sp_fich');if(el)el.innerHTML=fichajeHTML();if(['ubic','cubic'].includes(st.tab))renderMain()}
+/* Posición cada 5 minutos, solo con la jornada abierta y la app en pantalla */
+let ubUlt=0;
+async function ubEnviar(forzar){if(!fichOk()||!jornadaAbierta(st.fich)||document.hidden)return;if(!forzar&&Date.now()-ubUlt<4.5*60e3)return;if(forzar&&Date.now()-ubUlt<60e3)return;ubUlt=Date.now();
+  let p=null;try{p=await posicion(true)}catch(e){return}const f=fincaCerca(p.lat,p.lon);   // GPS de verdad: en el campo la ubicación por antenas falla mucho
+  try{await NUBE.db.doc('posiciones/'+miEmail()).set({email:miEmail(),nombre:yoNombre(),lat:p.lat,lon:p.lon,prec:p.prec,ts:ahoraISO(),activo:true,finca:f&&f.km<=3?f.id:''})}catch(e){}}
+setInterval(()=>ubEnviar(false),60e3);document.addEventListener('visibilitychange',()=>{if(!document.hidden)ubEnviar(true)});
+/* Vista de encargados: mapa, lista de hoy y registro del mes */
+async function loadUbEq(){if(!fichOk()||!esGestor())return;try{const[a,b]=await Promise.all([NUBE.db.collection('posiciones').get(),NUBE.db.collection('fichajes').where('fecha','==',hoy()).get()]);
+    st.ubEq={pos:a.docs.map(d=>d.data()),fich:b.docs.map(d=>d.data()),t:Date.now()}}catch(e){st.ubEq={pos:[],fich:[],err:true,t:Date.now()}}if(['ubic','cubic'].includes(st.tab))renderMain()}
+setInterval(()=>{if(['ubic','cubic'].includes(st.tab)&&esGestor()&&!document.hidden)loadUbEq()},60e3);
+function ubMapa(pts){const el=document.getElementById('ubmapa');if(!el)return;const W=el.clientWidth||360,H=el.clientHeight||320;
+  const ref=[...pts.map(p=>[p.lat,p.lon]),...(st.cfg.fincas||[]).filter(f=>f.ubic).map(f=>[f.ubic.lat,f.ubic.lon])];if(!ref.length){el.innerHTML='<div class="nodata">Sin ubicaciones</div>';return}
+  let z=17;const caja=z=>{const xs=ref.map(r=>lonLatPx(r[0],r[1],z));return{x0:Math.min(...xs.map(p=>p.x)),x1:Math.max(...xs.map(p=>p.x)),y0:Math.min(...xs.map(p=>p.y)),y1:Math.max(...xs.map(p=>p.y))}};
+  while(z>5){const c=caja(z);if(c.x1-c.x0<W-60&&c.y1-c.y0<H-60)break;z--}
+  const c=caja(z),cx=(c.x0+c.x1)/2,cy=(c.y0+c.y1)/2,x0=cx-W/2,y0=cy-H/2,n=Math.pow(2,z),tiles=[];
+  for(let ty=Math.floor(y0/256);ty<=Math.floor((y0+H)/256);ty++)for(let tx=Math.floor(x0/256);tx<=Math.floor((x0+W)/256);tx++){if(ty<0||ty>=n)continue;tiles.push({x:((tx%n)+n)%n,y:ty,l:Math.round(tx*256-x0),t:Math.round(ty*256-y0)})}
+  const pnoa=t=>`https://www.ign.es/wmts/pnoa-ma?layer=OI.OrthoimageCoverage&style=default&tilematrixset=GoogleMapsCompatible&Service=WMTS&Request=GetTile&Version=1.0.0&Format=image/jpeg&TileMatrix=${z}&TileCol=${t.x}&TileRow=${t.y}`;
+  el.innerHTML=`<div class="rvbase">${tiles.map(t=>`<img alt="" src="${pnoa(t)}" onerror="if(this.dataset.f){this.style.visibility='hidden'}else{this.dataset.f=1;this.src='https://tile.openstreetmap.org/${z}/${t.x}/${t.y}.png'}" style="left:${t.l}px;top:${t.t}px">`).join('')}</div>`+
+    (st.cfg.fincas||[]).filter(f=>f.ubic).map(f=>{const q=lonLatPx(f.ubic.lat,f.ubic.lon,z);return `<span class="ubf" style="left:${Math.round(q.x-x0)}px;top:${Math.round(q.y-y0)}px">${esc(f.nombre)}</span>`}).join('')+
+    pts.map(p=>{const q=lonLatPx(p.lat,p.lon,z),viejo=Date.now()-Date.parse(p.ts)>20*60e3;return `<span class="ubp${viejo?' viejo':''}" style="left:${Math.round(q.x-x0)}px;top:${Math.round(q.y-y0)}px"><i></i><b>${esc((p.nombre||p.email).split(' ')[0])}</b></span>`}).join('')+
+    `<span class="attr">Ortofoto PNOA © IGN · © OpenStreetMap</span>`}
+function vUbic(){for(const k in G)delete G[k];if(!fichOk())return `<section class="card"><div class="note">Fichar necesita la app con tu cuenta.</div></section>`;
+  if(st.fich===null)loadFich();let h=`<section class="card" id="ub_mia">${fichajeHTML()}</section>`;if(!esGestor())return h;
+  if(st.ubEq===null){loadUbEq();return h+'<div class="card"><div class="note">Cargando el equipo…</div></div>'}
+  const E=st.ubEq,ahora=Date.now(),act=E.pos.filter(p=>p.activo&&p.lat!=null),gente=[{email:miEmail(),nombre:yoNombre()},...equipo()];
+  const fi=e=>E.fich.find(x=>x.email===e),po=e=>E.pos.find(x=>x.email===e);
+  const filas=gente.map(u=>{const d=fi(u.email),p=po(u.email),ab=jornadaAbierta(d),ev=(d&&d.eventos)||[],ent=ev.find(e=>e.tipo==='entrada'),sal=[...ev].reverse().find(e=>e.tipo==='salida');
+    return{u,d,p,ab,est:ab?'ok':ev.length?'nd':'',txt:ab?'Trabajando':ev.length?'Ha salido':'Sin fichar',ent,sal,h:d?horasDia(d,ab?ahora:null):null}}).sort((a,b)=>(b.ab-a.ab)||((b.d?1:0)-(a.d?1:0))||a.u.nombre.localeCompare(b.u.nombre));
+  const n=filas.filter(f=>f.ab).length;
+  h+=`<section class="card"><div class="tank-h"><div><h3>Dónde está el equipo</h3><div class="sub">${n} ${n===1?'persona trabajando':'personas trabajando'} · actualizado a las ${horaDe(E.t)}</div></div><button class="btn" data-act="ub-reload">Actualizar</button></div>
+    <div class="radar ubmapa" id="ubmapa"></div>
+    <div class="note">Se ve a quien tiene la jornada abierta y la app abierta en el móvil. En gris, posición de hace más de 20 minutos (móvil bloqueado o sin cobertura).</div></section>`;
+  h+=`<section class="card"><div><h3>Hoy · ${esc(fFecha(hoy()))}</h3></div><div class="tbl"><table class="gtab"><thead><tr><th>Persona</th><th>Estado</th><th>Entrada</th><th>Salida</th><th>Horas</th><th>Última posición</th></tr></thead><tbody>${filas.map(f=>`<tr><td><b>${esc(f.u.nombre)}</b></td><td>${f.est?`<span class="pill ${f.est}">${f.txt}</span>`:`<span class="u">${f.txt}</span>`}</td><td>${f.ent?horaDe(f.ent.ts)+'<br><small class="u">'+esc(lugarTxt(f.ent))+'</small>':'—'}</td><td>${f.sal&&!f.ab?horaDe(f.sal.ts):'—'}</td><td>${f.h!=null?hmTxt(f.h):'—'}</td><td>${f.ab&&f.p&&f.p.lat!=null?'hace '+Math.max(0,Math.round((ahora-Date.parse(f.p.ts))/60e3))+' min<br><small class="u">'+esc(lugarTxt(f.p))+'</small>':'—'}</td></tr>`).join('')}</tbody></table></div></section>`;
+  if(!st.ubMes)st.ubMes=hoy().slice(0,7);
+  h+=`<section class="card"><div><h3>Registro de jornada</h3><div class="sub">Obligatorio guardarlo 4 años (art. 34.9 del Estatuto de los Trabajadores)</div></div>
+    <div class="row"><div class="inp"><select data-ub="mes">${hrMeses().map(m=>`<option value="${m}" ${m===st.ubMes?'selected':''}>${esc(mesTxt(m))}</option>`).join('')}</select></div><button class="btn pri" data-act="ub-xlsx">Descargar el mes (Excel)</button></div></section>`;
+  setTimeout(()=>ubMapa(act),0);return h}
+async function ubExcel(){const m=st.ubMes||hoy().slice(0,7),prev=isoD(new Date(Date.parse(m+'-01T12:00:00')-864e5));let docs=[];
+  try{docs=(await NUBE.db.collection('fichajes').where('fecha','>',prev).get()).docs.map(d=>d.data()).filter(d=>d.fecha.slice(0,7)===m)}catch(e){toast(errMsg(e));return}
+  docs.sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:(a.nombre||'').localeCompare(b.nombre||''));
+  const r1=[['Fecha','Persona','Correo','Entrada','Lugar entrada','Salida','Lugar salida','Horas']],tot={};
+  for(const d of docs){let ini=null;for(const e of d.eventos||[]){if(e.tipo==='entrada')ini=e;else if(e.tipo==='salida'){const h=ini?(Date.parse(e.ts)-Date.parse(ini.ts))/36e5:'';r1.push([fD(d.fecha),d.nombre||'',d.email,ini?horaDe(ini.ts):'',ini?lugarTxt(ini):'',horaDe(e.ts),lugarTxt(e),h===''?'':+h.toFixed(2)]);if(h!=='')tot[d.email]={n:d.nombre||d.email,h:((tot[d.email]||{}).h||0)+h,dias:new Set([...(((tot[d.email]||{}).dias)||[]),d.fecha])};ini=null}}
+    if(ini)r1.push([fD(d.fecha),d.nombre||'',d.email,horaDe(ini.ts),lugarTxt(ini),'sin salida','',''])}
+  const r2=[['Persona','Días','Horas']];for(const t of Object.values(tot).sort((a,b)=>a.n.localeCompare(b.n)))r2.push([t.n,t.dias.size,+t.h.toFixed(2)]);
+  const tit='Registro de jornada · '+mesTxt(m),sh=(name,rows)=>({name,rows:[[tit+' · '+name],[],...rows],bold:[0,2]});
+  await saveBlob(xlsxBlob([sh('Fichajes',r1),sh('Por persona',r2)]),`registro-jornada-${m}.xlsx`)}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act^="fi-"],[data-act^="ub-"]');if(!b)return;const a=b.dataset.act;
+  if(a==='fi-fichar')fichar(b.dataset.t);
+  else if(a==='fi-ok'){try{localStorage.setItem('abono.ubic.aviso.'+miEmail(),'1')}catch(_){}const t=st.ubAviso;st.ubAviso=false;fichar(t)}
+  else if(a==='fi-no'){st.ubAviso=false;fiRefrescar()}
+  else if(a==='ub-reload')loadUbEq();
+  else if(a==='ub-xlsx'){b.disabled=true;ubExcel().finally(()=>{b.disabled=false})}});
+document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.ub==='mes')st.ubMes=e.target.value});
+
 /* ---------- Copia de seguridad ---------- */
 async function backup(){toast('Preparando copia…');if(Store.mode==='fb'){try{const x=await NUBE.exportAll();await saveBlob(new Blob([JSON.stringify({app:'abonado-pinta-santos',v:2,exportado:new Date().toISOString(),ls:x.ls,adjuntos:x.adjuntos})],{type:'application/json'}),'abonado-copia-'+hoy()+'.json');toast('Copia descargada: '+x.dias+' días y '+Object.keys(x.adjuntos).length+' adjuntos')}catch(e){toast('Necesitas conexión para descargar la copia')}return}
   const ls={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('abono.'))ls[k]=localStorage.getItem(k)}}catch(e){}
@@ -4147,7 +4241,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
-  st.ready=true;if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
+  st.ready=true;loadFich();if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}})();
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.abrir!=null&&st.ready)irA(d.abrir||'cuentas-hoy')});
