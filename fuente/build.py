@@ -41,7 +41,12 @@ if nube:
 else:
     (out/'nube.js').unlink(missing_ok=True)
 s = s.replace('</script>', """
-if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+window.APP_V='abonado-v101';
+/* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
+   (salvo que haya cambios sin guardar). */
+if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!habia||rec)return;rec=true;try{if(st.dirtyReg||st.dirtyCfg)return}catch(e){}location.reload()});
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(!document.hidden)r.update().catch(()=>{})})}).catch(()=>{})});
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 </script>""")
 head = """<!doctype html>
@@ -67,13 +72,14 @@ head = """<!doctype html>
  "background_color":"#eef2ef","theme_color":"#1b2f4a",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
           {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]},ensure_ascii=False,indent=1))
-(out/'sw.js').write_text("""const C='abonado-v100';
+(out/'sw.js').write_text("""const C='abonado-v101';
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./badge-96.png','./pdf-lib.min.js','./parte-tpl.js','./parte-tpl-p.js'"""+(",'./nube.js'" if nube else '')+"""];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(FILES)));self.skipWaiting()});
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(FILES.map(f=>new Request(f,{cache:'reload'})))));self.skipWaiting()});   // siempre de la red, nunca de la caché del navegador
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==location.origin&&!u.hostname.startsWith('fonts.g')&&!u.pathname.startsWith('/firebasejs/'))return;
   const same=u.origin===location.origin;
-  e.respondWith(fetch(e.request,same?{cache:'no-cache'}:undefined).then(r=>{const cp=r.clone();caches.open(C).then(c=>c.put(e.request,cp));return r})
+  const nav=e.request.mode==='navigate';   // Safari no deja reutilizar una petición de navegación con opciones: se pide por su dirección
+  e.respondWith((nav?fetch(e.request.url,{cache:'no-cache',credentials:'same-origin'}):fetch(e.request,same?{cache:'no-cache'}:undefined)).then(r=>{const cp=r.clone();caches.open(C).then(c=>c.put(e.request,cp));return r})
     .catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))))});
 /* Avisos con la app cerrada */
 self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(_){d={b:e.data?e.data.text():''}}

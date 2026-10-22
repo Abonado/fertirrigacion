@@ -902,7 +902,7 @@ function sumReceta(c){const rp=reparto(c.id);
   return `<div class="stat"><span>Incremento de CE estimado</span><b>${fmt(ceEstimada(c.id),0)}</b><small class="nt">µS/cm</small></div>
   <div class="stat wide"><span>Reparto de venturis</span><div class="tbl"><table><tbody>${rp.map(r=>`<tr><td>${esc(r.b.nombre)}</td><td><b>${fmt(r.pct,1)} %</b></td><td class="u">${r.b.venturis>1?r.b.venturis+' venturis × '+fmt(r.pct/r.b.venturis,1)+' %':'1 venturi'}</td></tr>`).join('')}</tbody></table></div></div>`}
 
-function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de llenado, mensajes, tareas e incidencias</div></div><div data-out="notif">${notifHTML()}</div></section>`+(window.NUBE&&NUBE.user?NUBE.cardHTML():'');const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
+function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de llenado, mensajes, tareas e incidencias</div></div><div data-out="notif">${notifHTML()}</div></section>`+(window.NUBE&&NUBE.user?NUBE.cardHTML():'')+versionHTML();const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
   for(const b of bidonesDe(st.cab)){h+=`<div class="cfgrow"><div class="field nmf"><label for="bn_${b.id}">Nombre</label><div class="inp"><input class="wide" id="bn_${b.id}" data-k="cfg.bname.${b.id}" data-text="1" value="${esc(b.nombre)}"></div></div>
     <div class="field"><label for="lp_${b.id}">L por cm</label><div class="inp sm"><input id="lp_${b.id}" data-k="cfg.lpcm.${b.id}" inputmode="decimal" value="${inVal(b.lpcm)}"></div></div>
     <div class="field"><label for="cp_${b.id}">Capacidad</label><div class="inp sm"><input id="cp_${b.id}" data-k="cfg.cap.${b.id}" inputmode="decimal" value="${inVal(b.capacidad)}"><span class="u">L</span></div></div>
@@ -934,6 +934,7 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
     <div class="note">Después pulsa «Guardar receta y ajustes». La radiación solar funciona sin servidor; las parcelas al aire libre lo necesitan.</div></section>`;
   h+=cultivoAjHTML();
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
+  h+=versionHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Recetas y ajustes iniciales</div></div>
     <div class="row">${st.confirmReset?`<span class="note">¿Restaurar recetas y ajustes iniciales?</span><button class="btn danger" data-act="reset-yes">Sí, restaurar</button><button class="btn" data-act="reset-no">Cancelar</button>`:`<button class="btn" data-act="reset">Restaurar recetas y ajustes iniciales</button>`}</div></section>`;
   return h}
@@ -4185,6 +4186,11 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act^="fi-"
   else if(a==='ub-xlsx'){b.disabled=true;ubExcel().finally(()=>{b.disabled=false})}});
 document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.ub==='mes')st.ubMes=e.target.value});
 
+/* Versión de la app y actualización a la fuerza (borra la copia guardada en el móvil y vuelve a cargar; los datos están en la nube) */
+const versionHTML=()=>`<section class="card"><div><h3>Versión de la app</h3><div class="sub">${esc(String(window.APP_V||'—').replace('abonado-',''))}</div></div><div class="row"><button class="btn" data-act="app-act">Buscar actualización</button></div><div class="note">Si a alguien no le aparece algo nuevo, que pulse aquí. No se pierde nada.</div></section>`;
+document.addEventListener('click',async e=>{if(!e.target.closest('[data-act="app-act"]'))return;if(st.dirtyReg||st.dirtyCfg){toast('Guarda antes los cambios');return}toast('Actualizando…');
+  try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}catch(_){}try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}catch(_){}
+  location.replace(location.pathname+'?v='+Date.now())});
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
