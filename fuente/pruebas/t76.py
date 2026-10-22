@@ -1,5 +1,5 @@
 """Hoja mensual «Cambios de receta»: la receta del día 1 y una columna por cada cambio guardado; PDF con el formato de la hoja."""
-import asyncio, sys, subprocess
+import asyncio, sys, subprocess, shutil
 from playwright.async_api import async_playwright
 MOCK = open('mock-firebase.js').read()
 async def main():
@@ -33,7 +33,8 @@ async def main():
         await pg.screenshot(path='pruebas/salida/t76-app.png', full_page=True)
         async with pg.expect_download() as dl: await pg.click('[data-act="hr-pdf"]')
         d = await dl.value; await d.save_as('pruebas/salida/t76.pdf'); print('PDF:', d.suggested_filename)
-        subprocess.run(['pdftoppm', '-r', '110', '-png', 'pruebas/salida/t76.pdf', 'pruebas/salida/t76'], check=True)
+        assert open('pruebas/salida/t76.pdf', 'rb').read(5) == b'%PDF-'
+        if shutil.which('pdftoppm'): subprocess.run(['pdftoppm', '-r', '110', '-png', 'pruebas/salida/t76.pdf', 'pruebas/salida/t76'], check=True)   # vista previa solo si está instalado (en GitHub no)
         # receta que empezó antes de hoy: «Apuntar» desde la hoja y fecha del cambio al guardar la receta
         r2 = await pg.evaluate("""(async()=>{const d=new Date();d.setDate(d.getDate()-1);const f=isoD(d);st.hrDesde=f;await hrApuntar();
           const H=hojaReceta('gas',f.slice(0,7));const c1=(st.cambios||[]).find(c=>c.fecha===f);

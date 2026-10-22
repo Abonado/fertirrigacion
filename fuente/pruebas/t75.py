@@ -77,7 +77,7 @@ async def main():
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         # 30 días de cuentas: m³ según el sol, y ayer bastante menos
         await pg.evaluate("""(()=>{cerrarSplash();st.finca='pinta';const l=[];const d=new Date();for(let i=1;i<=30;i++){const x=new Date(d);x.setDate(d.getDate()-i);const f=isoD(x);const k=x.getDate()%7===0?0.6:1;
-            const m=i===1?35:60*k;l.push({fecha:f,m3:{pla:m*0.5,gas:m*0.3,fra:m*0.2}})}st.hist=l;st.cfg.satUrl=null})()""")
+            const m=60*k*(i===1?0.55:1);l.push({fecha:f,m3:{pla:m*0.5,gas:m*0.3,fra:m*0.2}})}st.hist=l;st.cfg.satUrl=null})()""")
         # sin servidor: se ve la radiación y la tarjeta para conectar
         await pg.evaluate("st.tab='satelite';renderAll()"); await pg.wait_for_timeout(1500)
         txt = await pg.evaluate("document.querySelector('#main').textContent")
