@@ -1774,8 +1774,10 @@ const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633]
       fondo(){let s='';
         // bancales de cultivo al oeste
         s+=`<g fill="#dfe8cf" stroke="#c9d6b3" stroke-width="1.5">${[[40,20,130,455],[40,480,80,850],[40,930,200,1040],[40,1080,300,1190],[40,1210,300,1330],[40,1350,300,1460],[40,1480,300,1590]].map(([x0,y0,x1,y1])=>`<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" rx="6"/>`).join('')}</g>`;
-        // invernaderos vecinos (no son de la finca): solo contorno
-        s+=`<g fill="none" stroke="#cbbf9f" stroke-width="1.5" stroke-dasharray="6 5"><path d="M440 560L640 230L800 250L730 730L430 735Z"/><path d="M300 20L580 0L480 230Z"/></g>`;
+        // Los Metálicos (al norte de Franco, entre el camino y la RM-11) y otros invernaderos vecinos: solo contorno
+        s+=`<g fill="none" stroke="#cbbf9f" stroke-width="1.5" stroke-dasharray="6 5"><path d="M440 560L640 230L800 250L730 730L430 735Z"/><path d="M300 20L580 0L480 230Z"/></g><path d="M440 560L640 230L800 250L730 730L430 735Z" fill="#7f8c8d" opacity=".12"/><text x="612" y="500" text-anchor="middle" font-size="24" font-weight="800" fill="#5d6d7e" letter-spacing="2">LOS METÁLICOS</text>`;
+        // La Valla: donde se guardan los tractores, junto al cabezal de Franco y Metálicos
+        s+=`<g><rect x="492" y="170" width="96" height="70" rx="6" fill="none" stroke="#8a5a2b" stroke-width="2.5" stroke-dasharray="7 5"/><text x="540" y="160" text-anchor="middle" font-size="15" font-weight="800" fill="#8a5a2b">LA VALLA</text></g>`;
         // carretera RM-11 (punto kilométrico 24 al sur)
         const ctra='M1030 -125C935 120 852 330 792 520C762 620 746 700 730 800C712 900 692 990 672 1080C654 1170 634 1260 616 1340C600 1420 588 1500 576 1600';
         s+=`<path d="${ctra}" stroke="#d9c58f" stroke-width="70" fill="none"/><path d="${ctra}" stroke="#efe2b8" stroke-width="60" fill="none"/><path d="${ctra}" stroke="#fff" stroke-width="2" stroke-dasharray="18 14" fill="none"/>
@@ -2482,7 +2484,7 @@ const maqDe=id=>maquinas().find(m=>m.id===id);
 const VV_RUTA={
   gas:{base:[838,500],cas:[858,446,48,64],cam:[[300,1005],[432,872],[566,742],[700,452],[800,250],[858,140],[920,124],[1010,150]]},
   pla:{base:[462,150],cas:[330,110,100,70],cam:[[-30,-30],[495,-30],[495,1225],[-30,1225],[-30,-30]]},
-  fra:{base:[566,1070],cas:[582,1000,38,46],cam:[[600,120],[478,282],[398,525],[366,700],[356,1050],[400,1068],[408,1300],[420,1560]]}};
+  fra:{base:[540,252],cas:[520,190,40,36],cam:[[600,120],[478,282],[398,525],[366,700],[356,1050],[400,1068],[408,1300],[420,1560]]}};
 const vvDia=()=>{if(st.vv.dia!=='man')return hoy();const d=new Date();d.setDate(d.getDate()+1);return isoD(d)};
 /* Qué tareas cuentan para el día: hoy, las pendientes (también atrasadas) y las hechas hoy; mañana, las previstas */
 const vvToca=(t,F)=>F===hoy()?(t.hecha?(t.hechaTs||'').slice(0,10)===F:t.fecha<=F):(!t.hecha&&t.fecha===F);
@@ -2607,12 +2609,12 @@ const VV_FINCA={pinta:{nombre:'Pinta Santos',cabs:['gas','pla','fra'],vb:[260,20
   zonas:[{n:'Zona 1 · El Molino',c:'#e2b62c',p:[[985,35],[992,100],[975,150],[930,230],[880,300],[835,375],[808,425],[780,432],[735,418],[690,385],[678,358],[720,322],[790,268],[850,205],[900,140],[945,80]]},
     {n:'Zona 2 · Campo de Tiro',c:'#56b13a',p:[[785,490],[852,496],[1058,583],[1005,740],[975,830],[950,900],[935,1060],[850,1062],[760,1110],[640,1175],[590,1150],[560,1110],[590,1000],[640,880],[680,820],[720,740],[755,640],[775,560]]},
     {n:'Zona 3 · La Valla',c:'#2f8fd6',valla:true,p:[[498,560],[640,505],[690,555],[700,640],[662,760],[600,850],[545,905],[505,1000],[485,1150],[455,1340],[420,1345],[392,1200],[298,1150],[295,900],[300,800],[355,780],[430,700],[470,600]]},
-    {n:'Los Metálicos',c:'#7f8c8d',p:[[302,805],[358,788],[452,830],[492,880],[472,955],[300,960]]}],
+    {n:'Los Metálicos',c:'#7f8c8d',p:[[530,860],[552,865],[532,935],[514,990],[503,1052],[404,1052],[408,1000],[430,940],[480,890]]}],
   balsas:[[[512,532],[545,530],[547,578],[514,580]],[[580,512],[632,512],[630,570],[582,572]],[[860,930],[930,940],[905,1062],[842,1050]]],
   ctras:[{n:'RM-11',p:[[430,20],[455,100],[500,200],[560,280],[640,340],[720,410],[762,462],[775,500],[772,590],[752,660],[712,735],[655,810],[600,880],[560,950],[530,1030],[505,1120],[483,1210],[462,1300],[448,1360]],e:[585,868]},
     {n:'RM-332',p:[[805,450],[860,400],[930,330],[1000,240],[1080,160],[1140,125],[1180,120]],e:[905,350]},{n:'',p:[[683,703],[700,600],[690,500],[640,430],[560,330],[520,260]]}],
-  base:[650,690],cam:[[650,690],[683,703],[712,735],[655,810],[600,880],[560,950],[530,1030],[505,1120],[483,1210],[462,1300]],
-  anc:{gas:[[274,926],[715,107],[520,822],[628,640]],pla:[[232,0],[232,1200],[377,602],[503,758]],fra:[[792,520],[616,1340],[525,1077],[470,1280]]}}};
+  base:[492,872],cam:[[650,690],[610,760],[560,830],[492,872],[470,910],[405,985],[387,1060],[380,1180],[400,1335]],
+  anc:{gas:[[274,926],[715,107],[520,822],[628,640]],pla:[[232,0],[232,1200],[377,602],[503,758]],fra:[[90,42],[700,1558],[295,790],[516,1340]]}}};
 const vvFincaDe=cab=>Object.values(VV_FINCA).find(d=>d.cabs.includes(cab));
 function vvSim(a1,a2,b1,b2){const ax=a2[0]-a1[0],ay=a2[1]-a1[1],bx=b2[0]-b1[0],by=b2[1]-b1[1],s=Math.hypot(bx,by)/Math.hypot(ax,ay),t=Math.atan2(by,bx)-Math.atan2(ay,ax),c=Math.cos(t)*s,n=Math.sin(t)*s;
   return p=>[b1[0]+c*(p[0]-a1[0])-n*(p[1]-a1[1]),b1[1]+n*(p[0]-a1[0])+c*(p[1]-a1[1])]}
@@ -4561,7 +4563,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
 
-window.APP_V='abonado-v110';
+window.APP_V='abonado-v111';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
