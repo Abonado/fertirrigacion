@@ -27,9 +27,16 @@ def grupos(vals, tol=0.6):
     return [round(sum(g) / len(g), 2) for g in o]
 vx = grupos([e['x0'] for e in p.edges if e['orientation'] == 'v'])
 hy = grupos([e['top'] for e in p.edges if e['orientation'] == 'h'])
-# Columnas A..U: todas del mismo ancho; se miden el borde izquierdo y el derecho
-x0, x1 = vx[0], vx[-1]; cw = (x1 - x0) / 21
-cx = [round(x0 + i * cw, 2) for i in range(22)]
+# Columnas A..S (la N y la O de la hoja antigua se quitaron): todas del mismo ancho menos la N (trazabilidad), más ancha.
+# Se mide el ancho normal con las rayas de A..N y la N es lo que sobra hasta el borde derecho.
+NCOL, IN = 19, 13
+x0, x1 = vx[0], vx[-1]; cw = (x1 - x0) / (NCOL + 1)
+for _ in range(3):
+    ks = [(round((v - x0) / cw), v) for v in vx if 0 < v - x0 < (IN + .4) * cw]
+    cw = sum(k * (v - x0) for k, v in ks) / sum(k * k for k, v in ks)
+wn = (x1 - x0) - (NCOL - 1) * cw
+cx = [round(x0 + i * cw + (wn - cw if i > IN else 0), 2) for i in range(NCOL + 1)]
+print('ancho normal', round(cw, 2), 'ancho N', round(wn, 2))
 for v in vx: assert min(abs(v - c) for c in cx) < 0.8, v
 # Filas: 2, 4, 6 y luego una línea por fila de la 7 a la 39, y el pie
 assert len(hy) == 37, len(hy)

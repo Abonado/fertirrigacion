@@ -667,8 +667,8 @@ function resumen(cab){let fuera=0,total=0;for(const b of bidonesDe(cab))for(cons
   return{m3:st.reg.m3[cab]??null,drenaje:ps.length?ps.reduce((a,c)=>a+c,0)/ps.length:null,fuera,total,dosis:dosisPrincipales(cab),kg:kgDia(cab),
     ceE:mediaSect(st.reg,cab,'ceE'),phE:mediaSect(st.reg,cab,'phE'),ceD:mediaSect(st.reg,cab,'ceD'),phD:mediaSect(st.reg,cab,'phD')}}
 /* Agua de riego a la salida: total = CE balsa + incremento */
-function salidaDe(cab){const r=st.reg,g=k=>(r[k]||{})[cab]??null,ceB=g('ceB'),inc=g('inc'),incR=g('incR'),ent=ceB!=null?+(ceB+(incR||0)).toFixed(3):null;return{ceB,ceR:g('ceR'),incR,ent,inc,tot:ent!=null&&inc!=null?+(ent+inc).toFixed(3):null,phS:g('phS'),incEst:ceEstimada(cab)/1000}}
-function salidaHTML(cab){const x=salidaDe(cab);return `<div class="salida"><div><span>Total salida</span><b>${x.tot!=null?fmt(x.tot,2):'—'} <small class="nt">mS/cm</small></b><small>${x.tot!=null?`${fmt(x.ceB,2)} balsa${x.incR?' + '+fmt(x.incR,2)+' reciclada':''} + ${fmt(x.inc,2)} incremento`:'CE balsa + incremento salida'}</small></div>
+function salidaDe(cab){const r=st.reg,g=k=>(r[k]||{})[cab]??null,ceB=g('ceB'),inc=g('inc'),ent=ceB;return{ceB,phB:g('phB'),ent,inc,tot:ent!=null&&inc!=null?+(ent+inc).toFixed(3):null,phS:g('phS'),incEst:ceEstimada(cab)/1000}}
+function salidaHTML(cab){const x=salidaDe(cab);return `<div class="salida"><div><span>Total salida</span><b>${x.tot!=null?fmt(x.tot,2):'—'} <small class="nt">mS/cm</small></b><small>${x.tot!=null?`${fmt(x.ceB,2)} balsa + ${fmt(x.inc,2)} incremento`:'CE balsa + incremento salida'}</small></div>
   <div><span>Incremento según receta</span><b>${fmt(x.incEst,2)} <small class="nt">mS/cm</small></b><small>${x.inc!=null&&x.incEst?(Math.abs(x.inc-x.incEst)/x.incEst<=0.15?'el medido cuadra con la receta':'el medido se aparta '+fmt(Math.abs(x.inc-x.incEst)*100/x.incEst,0)+' % de la receta'):'estimado con la receta actual'}</small></div></div>`}
 const porRiego=s=>{const m=st.reg.min[s.id],n=(st.reg.rie||{})[s.id];return m!=null&&n>0?m/n:null};
 function valSect(r,s,k){const m=r[k]||{},v=s.bandejas.map(bj=>m[bj.id]).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:(m[s.id]??null)}
@@ -836,7 +836,7 @@ function tankDose(b,c){const shared=b.cabezales.length>1,cm=cmCab(b,c.id),L=litr
 function vDrenaje(){const c=cabById(st.cab);let h=banner();h+=`<section class="summary" data-out="dsum">${sumDren(c)}</section>`;
   const fld=(k,lab,u)=>`<div class="field"><label for="${k}_${c.id}">${lab}</label><div class="inp"><input id="${k}_${c.id}" data-k="reg.${k}.${c.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg[k]||{})[c.id])}">${u?`<span class="u nt">${u}</span>`:''}</div></div>`;
   h+=`<section class="card"><div><h3>Agua de riego · salida</h3><div class="sub">${esc(c.nombre)} · el total de salida se calcula solo</div></div>
-    <div class="frm">${fld('ceB','CE balsa','mS/cm')}${fld('phB','pH balsa','')}${fld('ceR','CE reciclada','mS/cm')}${fld('incR','Incr. reciclada','mS/cm')}${fld('inc','Incremento salida','mS/cm')}${fld('phS','pH salida','')}${fld('m3R','M³ reciclada','m³')}${fld('rad','Radiación','')}</div>
+    <div class="frm">${fld('ceB','CE balsa','mS/cm')}${fld('phB','pH balsa','')}${fld('inc','Incremento salida','mS/cm')}${fld('phS','pH salida','')}${fld('rad','Radiación','')}</div>
     <div data-out="salida_${c.id}">${salidaHTML(c.id)}</div>
     <div class="field"><label for="obs_${c.id}">Observaciones del parte (opcional)</label><textarea id="obs_${c.id}" data-k="reg.obs.${c.id}" data-text="1" rows="2" style="text-transform:none">${esc((st.reg.obs||{})[c.id]||'')}</textarea></div></section>`;
   for(const s of c.sectores){h+=`<section class="card"><div class="sector-h"><div><h3>${esc(s.nombre)}</h3><div class="sub">${s.bandejas.length} bandejas de drenaje</div></div>
@@ -1521,8 +1521,8 @@ function informeTablas(d){const cu=d.cabs.filter(x=>x.dias),ps=Object.keys(d.tot
     {hoja:'Abonos',titulo:'Abono aplicado (kg o L)',cab:['Producto',...cu.map(x=>x.c.nombre),'Total'],filas:ps.map(p=>[pn(p)+' ('+uCant(p)+')',...cu.map(x=>rN(x.kg[p]||0,1)),rN(d.tot[p],1)])},
     {hoja:'Almacén',titulo:'Almacén del mes',cab:['Producto','Entradas','Salidas','Stock hoy'],filas:pa.map(p=>[pn(p)+' ('+uCant(p)+')',rN(d.ent[p]||0,1),rN(d.sal[p]||0,1),rN(stockDe(p),1)])},
     {hoja:'Diario',titulo:'Detalle diario',cab:['Día','Cabezal','m³','Drenaje %','CE drenaje µS/cm','pH drenaje'],filas:d.regs.flatMap(r=>cu.filter(x=>r.m3&&r.m3[x.c.id]!=null).map(x=>[fD(r.fecha),x.c.nombre,rN(r.m3[x.c.id],0),rN(drenDia(r,x.c.id),1),uS(mediaSect(r,x.c.id,'ceD')),rN(mediaSect(r,x.c.id,'phD'),1)]))},
-    {hoja:'Salida',titulo:'Agua de riego (salida) y riegos',cab:['Día','Cabezal','CE balsa','CE recicl.','Increm.','Total sal.','pH sal.','Riegos'],filas:d.regs.flatMap(r=>d.cabs.map(x=>{const g=k=>(r[k]||{})[x.c.id],b=g('ceB'),i=g('inc'),rg=x.c.sectores.map(s=>(r.rie||{})[s.id]).filter(v=>v!=null);
-      if([b,g('ceR'),i,g('phS')].every(v=>v==null)&&!rg.length)return null;return[fD(r.fecha),x.c.nombre,rN(b,2),rN(g('ceR'),2),rN(i,2),rN(b!=null&&i!=null?b+i:null,2),rN(g('phS'),1),rg.length?rg.join(' / '):'']}).filter(Boolean))},
+    {hoja:'Salida',titulo:'Agua de riego (salida) y riegos',cab:['Día','Cabezal','CE balsa','pH balsa','Increm.','Total sal.','pH sal.','Riegos'],filas:d.regs.flatMap(r=>d.cabs.map(x=>{const g=k=>(r[k]||{})[x.c.id],b=g('ceB'),i=g('inc'),rg=x.c.sectores.map(s=>(r.rie||{})[s.id]).filter(v=>v!=null);
+      if([b,g('phB'),i,g('phS')].every(v=>v==null)&&!rg.length)return null;return[fD(r.fecha),x.c.nombre,rN(b,2),rN(g('phB'),1),rN(i,2),rN(b!=null&&i!=null?b+i:null,2),rN(g('phS'),1),rg.length?rg.join(' / '):'']}).filter(Boolean))},
     {hoja:'Bandejas',titulo:'Drenaje por bandeja',cab:['Día','Cabezal','Sector','Bandeja','Minutos','Volumen total L','Drenaje ml','Drenaje %','CE drenaje µS/cm','pH drenaje'],filas:d.regs.flatMap(r=>cu.flatMap(x=>x.c.sectores.flatMap(s=>s.bandejas.map(bj=>{const ml=(r.dren||{})[bj.id],min=(r.min||{})[s.id],ce=(r.ceD||{})[bj.id],ph=(r.phD||{})[bj.id];
       if(ml==null&&ce==null&&ph==null)return null;return[fD(r.fecha),x.c.nombre,s.nombre,bj.nombre.replace('Bandeja ',''),rN(min,0),rN(min&&bj.caudal?min*bj.caudal/1000:null,2),rN(ml,0),rN(ml!=null&&min&&bj.caudal?ml*100/(min*bj.caudal):null,1),uS(ce),rN(ph,1)]}).filter(Boolean))))},
     {hoja:'Movimientos',titulo:'Movimientos de almacén',cab:['Día','Tipo','Producto','Cantidad','Proveedor','Albarán'],filas:d.alm.slice().sort((a,b)=>a.ts<b.ts?-1:1).map(m=>[fD(m.fecha),m.tipo,pn(m.p),rN(m.qty,2),m.prov||'',m.alb||''])}]}
@@ -1948,7 +1948,7 @@ $('#main').addEventListener('input',onEdInput);$('#main').addEventListener('chan
 const puedePartes=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&veRiego());
 const ptRevisa=()=>!!(Store.mode==='fb'&&window.NUBE&&NUBE.user&&(NUBE.user.admin||NUBE.user.encargado));
 const encargadosDe=fid=>todosEmails().filter(e=>accInfo(e).encargado&&veFinca(e,fid));
-function cabConDatos(cab){const r=st.reg,c=cabById(cab);if(!c)return false;const bs=bidonesDe(cab),pr=bs.filter(b=>b.cabezales.length===1);if((pr.length?pr:bs).some(b=>r.cm[b.id]!=null))return true;if(['ceB','ceR','inc','phS'].some(k=>(r[k]||{})[cab]!=null))return true;
+function cabConDatos(cab){const r=st.reg,c=cabById(cab);if(!c)return false;const bs=bidonesDe(cab),pr=bs.filter(b=>b.cabezales.length===1);if((pr.length?pr:bs).some(b=>r.cm[b.id]!=null))return true;if(['ceB','phB','inc','phS'].some(k=>(r[k]||{})[cab]!=null))return true;
   return c.sectores.some(s=>s.bandejas.some(bj=>r.dren[bj.id]!=null||r.ceD[bj.id]!=null||r.phD[bj.id]!=null))}
 const horaTxt=ts=>new Date(ts).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 async function enviarPartes(){if(Store.mode!=='fb'||!window.NUBE||!NUBE.user)return;const ts=new Date().toISOString();await Promise.all(st.cfg.cabezales.filter(c=>cabConDatos(c.id)).map(c=>radCargar(c.id,st.fecha)));
@@ -2018,7 +2018,7 @@ function parteCuerpo(d){let h='';
     <div class="tbl"><table><thead><tr><th>Producto</th><th>Deseada</th><th>Real</th><th>Desv.</th><th>Aplicado</th></tr></thead><tbody>${b.filas.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmt(x.des,2)} <span class="u">${x.ud}</span></td><td><b>${fmt(x.real,2)}</b></td><td><span class="pill ${pillC[x.c]}">${x.dev}</span></td><td>${x.cant!=null?fmt(x.cant,2)+' '+x.uc:'—'}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
   const sa=d.salida||{};
   h+=`<section class="card"><div><h3>2. Agua de riego y drenaje</h3><div class="sub">Salida del cabezal, por sector y bandeja</div></div>
-    <div class="tbl"><table><thead><tr><th>CE balsa</th><th>CE reciclada</th><th>Incremento</th><th>Total salida</th><th>pH salida</th></tr></thead><tbody><tr><td>${fmt(sa.ceB,2)}</td><td>${fmt(sa.ceR,2)}</td><td>${fmt(sa.inc,2)}</td><td><b>${fmt(sa.tot,2)}</b></td><td>${fmt(sa.phS,1)}</td></tr></tbody></table></div>
+    <div class="tbl"><table><thead><tr><th>CE balsa</th><th>pH balsa</th><th>Incremento</th><th>Total salida</th><th>pH salida</th></tr></thead><tbody><tr><td>${fmt(sa.ceB,2)}</td><td>${fmt(sa.phB,1)}</td><td>${fmt(sa.inc,2)}</td><td><b>${fmt(sa.tot,2)}</b></td><td>${fmt(sa.phS,1)}</td></tr></tbody></table></div>
     <div class="note">CE en mS/cm · incremento según receta ${fmt(sa.incEst,2)} mS/cm</div>`+d.sect.map(s=>`<div><b>${esc(s.nombre)}</b> <span class="note">${s.min!=null?fmt(s.min,0)+' min de riego':'sin minutos'}${s.riegos?' · '+fmt(s.riegos,0)+' riegos'+(s.min?' (≈ '+fmt(s.min/s.riegos,1)+' min/riego)':''):''}</span></div>
     <div class="tbl"><table><thead><tr><th>Bandeja</th><th>Vol. total</th><th>Drenaje</th><th>%</th><th>CE</th><th>pH</th></tr></thead><tbody>${s.band.map(x=>`<tr><td>${esc(x.nombre)}</td><td>${fmt(x.vol,2)} L</td><td>${x.ml!=null?fmt(x.ml,0)+' ml':'—'}</td><td><b>${fmt(x.pct,1)}</b></td><td>${fUS(x.ce)}</td><td>${fmt(x.ph,1)}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
   h+=`<section class="card"><div><h3>3. Receta ${d.recetaDia?'de ese día':'(actual)'}</h3><div class="sub">Incremento de CE estimado ${fmt(d.ce,0)} µS/cm</div></div>`+d.receta.map(b=>`<div><b>${esc(b.nombre)}</b> <span class="note">${esc(b.principal)}: ${fmt(b.kg,1)} ${b.uP} por 1000 L · ${fmt(b.cap,0)} L</span></div>
@@ -2070,7 +2070,7 @@ async function partePdfDe(lista){let L;try{L=await pdfLib()}catch(e){toast('Hace
     // 2. Drenaje
     titulo('2. Agua de riego y drenaje');
     {const sa=d.salida||{};sub('Agua de riego (salida del cabezal)');
-      tabla(['CE balsa','CE reciclada','Incremento salida','Total salida','pH salida'],[[fmtP(sa.ceB,2),fmtP(sa.ceR,2),fmtP(sa.inc,2),fmtP(sa.tot,2),fmtP(sa.phS,1)]],[.2,.2,.2,.2,.2],[[0,0,0,'ok',0]]);y+=4;
+      tabla(['CE balsa','pH balsa','Incremento salida','Total salida','pH salida'],[[fmtP(sa.ceB,2),fmtP(sa.phB,1),fmtP(sa.inc,2),fmtP(sa.tot,2),fmtP(sa.phS,1)]],[.2,.2,.2,.2,.2],[[0,0,0,'ok',0]]);y+=4;
       nota('CE en mS/cm  ·  Total salida = CE balsa + incremento  ·  Incremento según receta: '+fmtP(sa.incEst,2)+' mS/cm');y-=6}
     for(const s of d.sect){sub(s.nombre);nota((s.min!=null?'Tiempo de riego: '+fmtP(s.min,0)+' min':'Sin minutos de riego')+(s.riegos?'  ·  '+fmtP(s.riegos,0)+' riegos'+(s.min?' (~ '+fmtP(s.min/s.riegos,1)+' min/riego)':''):'')+(s.ce!=null?'  ·  CE media '+fmtP(s.ce*1000,0)+' µS/cm':'')+(s.ph!=null?'  ·  pH medio '+fmtP(s.ph,1):''));
       const a=AL;tabla(['Bandeja','Caudal','Volumen total','Drenaje','% drenaje','CE µS','pH'],s.band.map(x=>[x.nombre,fmtP(x.caudal,0)+' ml/min',fmtP(x.vol,2)+' L',x.ml!=null?fmtP(x.ml,0)+' ml':'-',fmtP(x.pct,1)+(x.pct!=null?' %':''),x.ce!=null?fmtP(x.ce*1000,0):'-',fmtP(x.ph,1)]),[.22,.13,.14,.12,.13,.13,.13],
@@ -3912,7 +3912,7 @@ $('#main').addEventListener('change',e=>{const k=e.target.dataset&&e.target.data
 /* La plantilla original (PDF vectorial y Excel) va en parte-tpl.js; aquí solo se decide qué va en cada casilla. */
 /* Dos hojas de la empresa: el parte grande («Control de riegos») y el parte pequeño («Control de aportes», Anexo XI) */
 const PTIPO={grande:{titulo:'Control de riegos',corto:'Parte grande',js:'parte-tpl.js',g:'PARTE_TPL',hoja:'hoja',cab:'D1',cabPre:'PROCEDIMIENTO                         ',prod:'A7',fecha:'L7',prodHasta:11,hsz:9.5,hy:2},
-  pequeno:{titulo:'Control de aportes',corto:'Parte pequeño',js:'parte-tpl-p.js',g:'PARTE_TPL_P',hoja:'hojaP',cab:'E2',cabPre:'PROCEDIMIENTO                                                 ',prod:'A8',fecha:'P8',prodHasta:9,hsz:8,hy:1.3}};
+  pequeno:{titulo:'Control de aportes',corto:'Parte pequeño',js:'parte-tpl-p.js',g:'PARTE_TPL_P',hoja:'hojaP',cab:'E2',cabPre:'PROCEDIMIENTO                                                 ',prod:'A8',fecha:'N8',prodHasta:9,hsz:8,hy:1.3}};
 async function parteTpl(tipo){const T=PTIPO[tipo||'grande'];if(window[T.g])return window[T.g];await loadScript(T.js);return window[T.g]}
 const ptCover=(tipo,V)=>tipo==='pequeno'?((V._cover||{}).v||[]):PT_COVER;
 const b64u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -3955,7 +3955,7 @@ function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V=
     put('E'+row,r.ceD[bj.id]!=null?String(uS(r.ceD[bj.id])):null);   /* 4400, sin punto de miles: así lo leen */put('F'+row,ptNum(r.phD[bj.id],2));put('G'+row,ptNum(min!=null&&bj.caudal?min*bj.caudal/1000:null,2));/* volumen total en litros */put('H'+row,ptNum(r.dren[bj.id],0));
     put('I'+row,ptNum(drenPct(s,bj),1));put('J'+row,ptNum(rie,0));put('K'+row,ptNum(min,0))}
   const sa=salidaDe(cabId),m3=r.m3[cabId],m3R=(r.m3R||{})[cabId];
-  [['O10',sa.ceB,2],['O11',sa.ceR,2],['O12',sa.incR,2],['O13',sa.ent,2],['O14',sa.inc,2],['O15',sa.tot,2],['O16',sa.phS,2],['O17',m3R,1],['O18',m3,1],['O19',m3R!=null&&m3?m3R*100/m3:null,1],
+  [['O10',sa.ceB,2],['O11',(r.phB||{})[cabId],2],['O13',sa.ent,2],['O14',sa.inc,2],['O15',sa.tot,2],['O16',sa.phS,2],['O18',m3,1],
     ['O20',P.sup&&m3!=null?m3*1000/P.sup:null,2],['O21',(u=>u.real??u.des)(unidades(cabId)),1],['O22',(r.rad||{})[cabId]??radAuto(cabId,st.fecha),0]].forEach(([k,v,d])=>put(k,ptNum(v,d)));
   const nut={};for(const b of bidonesDe(cabId))for(const x of b.productos){if(!x.dosis)continue;const row=ptNutFila(x.p);if(!row)continue;const real=dosisReal(b,x,cabId);if(real!=null)nut[row]=(nut[row]||0)+real}
   for(const[row,v]of Object.entries(nut))put('O'+row,ptNum(v,2));
@@ -4013,15 +4013,15 @@ const PP_SECT=[{r0:11,n:5},{r0:16,n:5},{r0:21,n:4},{r0:25,n:5}];
 const PP_DEP=[{p:'kno3',n:1,hdr:'A30:D30',lab:'A|C',val:'D',cap:5000,tag:'N-P-K',fila:{kno3:31,k2so4:32,mkp:33,zn:34,mn:35},L:'A37:D37'},
   {p:'ca',n:2,hdr:'E30:I30',lab:'E|H',val:'I',cap:5000,tag:'S.CALCICA',fila:{ca:31,trad:32},L:'E37:I37'},
   {p:'fe',n:3,hdr:'J30:M30',lab:'J|L',val:'M',cap:1000,tag:'MICRO.ESP',fila:{fe:31},L:'J37:M37'},
-  {p:'hno3',n:4,hdr:'P30:Q30',lab:'P|P',val:'Q',cap:5000,tag:'A.NITRICO',fila:{hno3:31},L:'P37:Q37'}];
-const PP_VAL={D:[31,33,34],I:[31],M:[31],Q:[31]}; // casillas con números de ejemplo en la hoja
+  {p:'hno3',n:4,hdr:'N30:O30',lab:'N|N',val:'O',cap:5000,tag:'A.NITRICO',fila:{hno3:31},L:'N37:O37'}];
+const PP_VAL={D:[31,33,34],I:[31],M:[31],O:[31]}; // casillas con números de ejemplo en la hoja
 /* m³ de cada sector: los del contador repartidos por los minutos de riego (y por el caudal del sector si está puesto en Ajustes) */
 function m3Sectores(cabId){const r=st.reg,c=cabById(cabId),m3=r.m3[cabId];if(m3==null||!c)return null;const ss=c.sectores.filter(s=>r.min[s.id]>0);if(!ss.length)return null;
   const q=s=>num(((st.cfg.sectInfo||{})[s.id]||{}).qh),conQ=ss.every(s=>q(s)>0),w=s=>r.min[s.id]*(conQ?q(s):1),t=ss.reduce((a,s)=>a+w(s),0);
   return{conQ,m:Object.fromEntries(c.sectores.map(s=>[s.id,r.min[s.id]>0?m3*w(s)/t:null]))}}
 function parteHojaP(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V={},cover=[];
   const put=(ref,v,o)=>{if(v==null||v===''||(typeof v==='number'&&!isFinite(v)))return;V[ref]={v,...(o||{})}};
-  put('E2',c.nombre.toUpperCase());put('A8','PRODUCTOR: '+(infoFinca(cabId).productor||P.productor||''));put('P8','FECHA: '+fD(st.fecha));
+  put('E2',c.nombre.toUpperCase());put('A8','PRODUCTOR: '+(infoFinca(cabId).productor||P.productor||''));put('N8','FECHA: '+fD(st.fecha));
   cover.push('C9:I9');put('C9',c.nombre.toUpperCase(),{rng:'C9:I9',b:1,sz:9});
   // Medidas
   const sa=salidaDe(cabId),m3=r.m3[cabId];
@@ -4039,10 +4039,10 @@ function parteHojaP(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V
   for(const[row,v]of Object.entries(nut)){put('H'+row,ptNum(v,2),{rng:`H${row}:I${row}`});
     if(ms)for(const{s,row:rb}of filas){const m=ms.m[s.id];if(m!=null)put('JKLM'[ptBloque(rb)-1]+row,ptNum(v*m/100,2))}}
   // Trazabilidad y una fila por minisector: EC, pH y % de drenaje
-  cover.push('P11:P15','P16:P20');
-  for(const{s,row}of filas){const B=PP_SECT[ptBloque(row)-1],i=infoSector(s.id,cabId,row);put('P'+B.r0,i.traz,{rng:`P${B.r0}:P${B.r0+B.n-1}`,b:1,sz:9,wrap:1})}
+  cover.push('N11:N15','N16:N20');
+  for(const{s,row}of filas){const B=PP_SECT[ptBloque(row)-1],i=infoSector(s.id,cabId,row);put('N'+B.r0,i.traz,{rng:`N${B.r0}:N${B.r0+B.n-1}`,b:1,sz:9,wrap:1})}
   for(const{s,bj,row}of ptMini(c)){const b=ptBloque(row);if(b>4)continue;const B=PP_SECT[b-1],k=(row-10)%5;if(k>=B.n)continue;const rr=B.r0+k;
-    put('Q'+rr,r.ceD[bj.id]!=null?String(uS(r.ceD[bj.id])):null,{rng:`Q${rr}:R${rr}`});put('S'+rr,ptNum(r.phD[bj.id],2),{rng:`S${rr}:T${rr}`});put('U'+rr,ptNum(drenPct(s,bj),1))}
+    put('O'+rr,r.ceD[bj.id]!=null?String(uS(r.ceD[bj.id])):null,{rng:`O${rr}:P${rr}`});put('Q'+rr,ptNum(r.phD[bj.id],2),{rng:`Q${rr}:R${rr}`});put('S'+rr,ptNum(drenPct(s,bj),1))}
   // Depósitos: kg (o L) por depósito lleno y los litros gastados hoy (cm × L/cm)
   for(const[col,rows]of Object.entries(PP_VAL))for(const rr of rows)cover.push(col+rr);
   const usados=new Set();
@@ -4056,7 +4056,7 @@ function parteHojaP(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V
     const Lc=litros(b,cabId);if(Lc!=null)put(D.L.split(':')[0],'L. '+ptMiles(ptNum(Lc,Lc<100?1:0)),{rng:D.L,al:'l',b:1})}
   // Ácido fosfórico y ácido nítrico: litros de ácido puro que han entrado hoy en este cabezal
   const acido=p=>{let t=null;for(const b of bidonesDe(cabId))for(const x of b.productos){if(x.p!==p||!x.dosis)continue;const L=litros(b,cabId);if(L==null)continue;t=(t||0)+L*conc(b,x)/1000}return t};
-  for(const[p,ref]of [['h3po4','R37:S37'],['hno3','T37:U37']]){const v=acido(p);if(v==null)continue;cover.push(ref);put(ref.split(':')[0],'L. '+ptMiles(ptNum(v,1)),{rng:ref,al:'l',b:1})}
+  for(const[p,ref]of [['h3po4','P37:Q37'],['hno3','R37:S37']]){const v=acido(p);if(v==null)continue;cover.push(ref);put(ref.split(':')[0],'L. '+ptMiles(ptNum(v,1)),{rng:ref,al:'l',b:1})}
   V._cover={v:cover};return V}
 
 
