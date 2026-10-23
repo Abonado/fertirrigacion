@@ -50,6 +50,13 @@ async def main():
         t = await pg.evaluate("st.tareas[0]"); print('plastiqueros:', t['of'], t['np']); assert t['of'] == 'plastiquero' and t['np'] == 3
         # el dibujo
         await pg.evaluate("st.tab='vivo';renderAll()"); await pg.wait_for_timeout(800)
+        # primero, toda la finca: los tres cabezales de La Valla y las otras zonas
+        assert await pg.locator('#vvsvg [data-vv="cab:gas"]').count() > 0 and await pg.locator('#vvsvg [data-vv="cab:pla"]').count() > 0 and await pg.locator('#vvsvg [data-vv="cab:fra"]').count() > 0
+        assert 'El Molino' in await pg.evaluate("document.querySelector('#vvsvg').textContent")
+        n = await pg.locator('#vvsvg [data-vv^="ct:"] .vvp').count(); assert n == 3, n
+        assert await pg.locator('#vvsvg [data-vv^="maq:"] animateMotion').count() == 1
+        await pg.wait_for_timeout(5000); await pg.evaluate("window.scrollTo(0,0)"); await pg.wait_for_timeout(300); await pg.screenshot(path='pruebas/salida/t81-finca.png')
+        await pg.locator('#vvsvg [data-vv="cab:gas"]').first.dispatch_event('click'); await pg.wait_for_timeout(600)
         n = await pg.locator('#vvsvg [data-vv^="ct:"] .vvp').count(); print('personas de la colla:', n); assert n == 3
         assert await pg.locator('#vvsvg [data-vv^="maq:"] animateMotion').count() == 1, 'el tractor va de camino'
         txt = await pg.evaluate("document.querySelector('#main').textContent"); assert 'Sulfatar' in txt and 'Bajar planta' in txt

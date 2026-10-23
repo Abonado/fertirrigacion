@@ -2500,12 +2500,12 @@ function vvOfiSel(id,attr,val,np){return `<div class="field"><label for="${id}">
 function vvNomT(t){const n=+t.np||1,o=ofiTxt(t.of,n);return o?o+(t.paraNombre?' · '+t.paraNombre:n>1?'':''):(t.paraNombre||'Equipo')}
 function vvItems(cab,F){const it=[],M=MAPAS[cab];if(!M)return it;const hay=n=>M.naves.some(x=>x.n===n);
   for(const t of st.ctar||[]){const n=+t.nave;if(t.cab!==cab||!hay(n)||!vvToca(t,F))continue;const c=collaDe(t.colla);
-    it.push({k:'ct:'+t.id,tipo:'colla',t,nave:n,colla:c,cid:t.colla,of:t.of,nombre:t.collaNombre||(c&&c.nombre)||'Colla',maq:t.maq,hecha:!!t.hecha,titulo:t.titulo})}
+    it.push({cab,k:'ct:'+t.id,tipo:'colla',t,nave:n,colla:c,cid:t.colla,of:t.of,nombre:t.collaNombre||(c&&c.nombre)||'Colla',maq:t.maq,hecha:!!t.hecha,titulo:t.titulo})}
   for(const t of (st.tareas||[]).filter(tVisible)){const n=+t.nave;if(t.cab!==cab||!hay(n)||!vvToca(t,F))continue;
-    it.push({k:'t:'+t.id,tipo:'tarea',t,nave:n,of:t.of,nombre:vvNomT(t),maq:t.maq,hecha:!!t.hecha,titulo:t.titulo})}
+    it.push({cab,k:'t:'+t.id,tipo:'tarea',t,nave:n,of:t.of,nombre:vvNomT(t),maq:t.maq,hecha:!!t.hecha,titulo:t.titulo})}
   if(F===hoy()){const con=new Set(it.filter(i=>i.cid).map(i=>i.cid));
     for(const j of jornadas().filter(j=>j.fecha===F&&!con.has(j.colla))){const tr=(j.trabajos||[]).find(x=>x.cab===cab&&hay(+x.nave));if(!tr)continue;const c=collaDe(j.colla);con.add(j.colla);
-      it.push({k:'jo:'+j.id,tipo:'colla',j,nave:+tr.nave,colla:c,cid:j.colla,nombre:j.collaNombre||(c&&c.nombre)||'Colla',hecha:false,titulo:(LAB[tr.labor]||tr.txt||'Trabajo')+' (según el parte del día)'})}}
+      it.push({cab,k:'jo:'+j.id,tipo:'colla',j,nave:+tr.nave,colla:c,cid:j.colla,nombre:j.collaNombre||(c&&c.nombre)||'Colla',hecha:false,titulo:(LAB[tr.labor]||tr.txt||'Trabajo')+' (según el parte del día)'})}}
   return it}
 /* Cuántas personas dibujar: las que asisten hoy según el parte; si no hay parte, la gente activa de la colla */
 function vvGente(i){if(i.tipo!=='colla')return Math.max(1,Math.min(10,+(i.t&&i.t.np)||1));const j=st.jor&&st.jor[jorKey(i.cid,hoy())];const n=j&&vvDia()===hoy()?presentes(j).length:((i.colla&&i.colla.miembros)||[]).filter(m=>m.activo!==false).length;return Math.max(1,Math.min(8,n||1))}
@@ -2578,7 +2578,7 @@ function vvSVG(cab,F){const M=MAPAS[cab],R=VV_RUTA[cab],P=vvProj(M),[vx,vy,vw,vh
   s+=capa.sort((a,b)=>a.d-b.d).map(x=>x.s).join('');
   // máquinas: las mandadas salen de la caseta y van a su nave; el resto, aparcadas
   if(R){const usadas=new Set();let aparc=0;
-    for(const m of maquinas()){const it=items.find(i=>i.maq===m.id&&!i.hecha),col=m.tipo==='furgoneta'||m.tipo==='carretilla'?'#5d6d7e':m.tipo==='atomizador'?'#c0392b':'#3f8a4f',spr=m.tipo==='furgoneta'||m.tipo==='carretilla'?vvFurgo(col):vvTractor(col,m.tipo);
+    for(const m of maquinas()){if(!items.some(i=>i.maq===m.id&&!i.hecha)&&Object.keys(MAPAS).some(k=>k!==cab&&vvItems(k,F).some(i=>i.maq===m.id&&!i.hecha)))continue;const it=items.find(i=>i.maq===m.id&&!i.hecha),col=m.tipo==='furgoneta'||m.tipo==='carretilla'?'#5d6d7e':m.tipo==='atomizador'?'#c0392b':'#3f8a4f',spr=m.tipo==='furgoneta'||m.tipo==='carretilla'?vvFurgo(col):vvTractor(col,m.tipo);
       let g;if(it){const nv=M.naves.find(x=>x.n===it.nave),k=[...usadas].filter(x=>x===it.nave).length;usadas.add(it.nave);const ruta=vvRuta(R,nv).map(q=>P.p(q[0],q[1])),fin=ruta[ruta.length-1];fin[1]+=k*14*K;
         const largo=ruta.slice(1).reduce((a,q,i)=>a+Math.hypot(q[0]-ruta[i][0],q[1]-ruta[i][1]),0),izq=fin[0]<ruta[0][0],nuevo=!st.vv.vistos.has(it.k+'@'+st.vv.rot);st.vv.vistos.add(it.k+'@'+st.vv.rot);
         const cuerpo=`<g transform="scale(${(izq?-K:K)*1.15} ${K*1.15})"><g class="vvt">${spr}</g></g><g transform="translate(0 ${(12*K).toFixed(1)}) scale(${K.toFixed(3)})"><rect x="${-(m.n.length*3+8)}" y="-7" width="${m.n.length*6+16}" height="13" rx="6.5" fill="#fff" stroke="${col}" stroke-width="1.2"/><text y="2.6" text-anchor="middle" font-size="8.5" font-weight="700" fill="#1b2f4a">${esc(m.n)}</text></g>`;
@@ -2588,42 +2588,138 @@ function vvSVG(cab,F){const M=MAPAS[cab],R=VV_RUTA[cab],P=vvProj(M),[vx,vy,vw,vh
         g=`<g class="vvact vvmaq parada${sel==='maq:'+m.id?' sel':''}" data-vv="maq:${m.id}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><g transform="scale(${K*1.05})">${spr}</g></g>`}
       s+=g}}
   return s+'</svg>'}
-function vvDetalle(cab,F,items){const sel=st.vv.sel;if(!sel)return '';const M=MAPAS[cab],lug=n=>`${esc(M.titulo)} · nave ${n}`;
+function vvDetalle(cab,F,items){const sel=st.vv.sel;if(!sel)return '';const M=MAPAS[cab]||{titulo:'la finca'},lug=(n,c)=>`${esc((MAPAS[c]||M).titulo)} · nave ${n}`;
   if(sel.startsWith('nave:')){const n=+sel.slice(5),its=items.filter(i=>i.nave===n),ni=(st.inc||[]).filter(i=>i.cab===cab&&i.nave===n&&i.estado!=='resuelta').length;
     return `<section class="card" id="vvdet"><div><h3>Nave ${n} · ${esc(M.titulo)}</h3><div class="sub">${its.length?its.length+(its.length===1?' trabajo':' trabajos'):'Nadie trabajando aquí'}${F===hoy()?' hoy':' mañana'} · ${ni?ni+(ni===1?' incidencia abierta':' incidencias abiertas'):'sin incidencias abiertas'}</div></div>
       ${its.map(i=>`<button class="vvfila" data-vv="${i.k}"><i style="background:${i.colla?vvCol(i.cid):'#2f6f9f'}"></i><b>${esc(i.nombre)}</b><span>${esc(i.titulo)}</span></button>`).join('')}
       <div class="row">${veRiego()?'<button class="btn" data-tab="mapa">Ver incidencias en el mapa</button>':''}${esGestor()||algunaColla()?`<button class="btn" data-tab="${algunaColla()?'ctareas':'tareas'}">Mandar un trabajo</button>`:''}</div></section>`}
   if(sel.startsWith('maq:')){const m=maqDe(sel.slice(4));if(!m)return '';const it=items.find(i=>i.maq===m.id&&!i.hecha);
-    return `<section class="card" id="vvdet"><div><h3>${esc(m.n)}</h3><div class="sub">${esc(MAQ_TIPOS[m.tipo]||'Máquina')}</div></div><p>${it?`Va a <b>${lug(it.nave)}</b>: ${esc(it.titulo)}${it.tipo==='tarea'&&it.t.paraNombre?' · la lleva '+esc(it.t.paraNombre):it.tipo==='colla'?' · con '+esc(it.nombre):''}.`:`Aparcada en la caseta: ${F===hoy()?'hoy':'mañana'} no tiene trabajo en ${esc(M.titulo)}.`}</p></section>`}
+    return `<section class="card" id="vvdet"><div><h3>${esc(m.n)}</h3><div class="sub">${esc(MAQ_TIPOS[m.tipo]||'Máquina')}</div></div><p>${it?`Va a <b>${lug(it.nave,it.cab)}</b>: ${esc(it.titulo)}${it.tipo==='tarea'&&it.t.paraNombre?' · la lleva '+esc(it.t.paraNombre):it.tipo==='colla'?' · con '+esc(it.nombre):''}.`:`Aparcada en la caseta: ${F===hoy()?'hoy':'mañana'} no tiene trabajo en ${esc(M.titulo)}.`}</p></section>`}
   if(sel==='base')return `<section class="card" id="vvdet"><div><h3>Caseta · ${esc(M.titulo)}</h3><div class="sub">Aquí se guardan las máquinas y de aquí salen</div></div></section>`;
   const i=items.find(x=>x.k===sel);if(!i)return '';const t=i.t||{},m=i.maq&&maqDe(i.maq);
-  return `<section class="card" id="vvdet"><div class="tank-h"><div><h3>${esc(i.titulo)}</h3><div class="sub">${lug(i.nave)}${t.fecha?' · '+esc(fFecha(t.fecha)):''}</div></div><span class="pill ${i.hecha?'ok':t.fecha&&t.fecha<hoy()?'bad':'warn'}">${i.hecha?'Hecha':t.fecha&&t.fecha<hoy()?'Atrasada':i.tipo==='colla'&&i.j?'En el parte':'Pendiente'}</span></div>
+  return `<section class="card" id="vvdet"><div class="tank-h"><div><h3>${esc(i.titulo)}</h3><div class="sub">${lug(i.nave,i.cab)}${t.fecha?' · '+esc(fFecha(t.fecha)):''}</div></div><span class="pill ${i.hecha?'ok':t.fecha&&t.fecha<hoy()?'bad':'warn'}">${i.hecha?'Hecha':t.fecha&&t.fecha<hoy()?'Atrasada':i.tipo==='colla'&&i.j?'En el parte':'Pendiente'}</span></div>
     <p>${i.tipo==='colla'?`<b>${esc(i.nombre)}</b> · ${vvGente(i)} ${vvGente(i)===1?'persona':'personas'}`:`Para <b>${esc(i.nombre)}</b>`}${m?' · con '+esc(m.n):''}${t.urg&&!i.hecha?' · <b>urgente</b>':''}</p>${t.det?`<p>${esc(t.det)}</p>`:''}${i.hecha&&t.nota?`<div class="hecho"><b>Al terminar:</b> ${esc(t.nota)}</div>`:''}
     <div class="row"><button class="btn" data-tab="${i.tipo==='colla'?(i.j?'coparte':'ctareas'):'tareas'}">${i.j?'Abrir el parte de la colla':'Abrir la tarea'}</button></div></section>`}
+/* ---------- Finca en vivo · toda la finca: las zonas y los cabezales juntos ----------
+   Plano esquemático sacado de la foto de zonas (no a escala). Cada cabezal de La Valla se coloca con dos puntos:
+   anc = [punto A de su plano, punto B de su plano, dónde cae A, dónde cae B]. */
+const VV_FINCA={pinta:{nombre:'Pinta Santos',cabs:['gas','pla','fra'],vb:[420,0,800,790],
+  zonas:[{n:'Zona 1 · El Molino',c:'#e2b62c',p:[[1045,25],[1090,45],[1115,95],[1105,150],[1075,215],[1050,250],[975,272],[915,258],[885,218],[915,182],[965,150],[1010,95]]},
+    {n:'Zona 2 · Campo de Tiro',c:'#56b13a',p:[[925,298],[1000,300],[1145,402],[1110,500],[1050,572],[990,598],[950,648],[860,705],[828,742],[700,752],[730,640],[790,512],[850,402],[895,330]]},
+    {n:'Zona 3 · La Valla',c:'#2f8fd6',valla:true,p:[[772,284],[838,296],[812,380],[786,440],[770,500],[740,560],[712,640],[684,712],[662,770],[600,770],[560,700],[478,600],[440,470],[470,420],[560,398],[690,384],[722,330]]}],
+  balsas:[[[690,266],[722,268],[720,300],[688,298]],[[736,262],[776,262],[774,294],[734,294]],[[980,565],[1046,585],[1020,662],[958,642]]],
+  ctras:[{n:'RM-11',p:[[905,290],[880,332],[846,400],[808,470],[778,540],[748,612],[718,690],[690,790]],e:[790,505]},{n:'RM-332',p:[[905,290],[962,262],[1062,230],[1128,182],[1160,100],[1186,0]],e:[1080,222]},{n:'',p:[[905,290],[862,258],[815,215],[780,180]]}],
+  base:[836,318],cam:[[836,318],[872,330],[905,290],[880,332],[846,400],[808,470],[778,540],[748,612],[718,690],[690,790]],
+  anc:{gas:[[274,926],[715,107],[748,474],[806,300]],pla:[[232,0],[232,1200],[492,436],[618,600]],fra:[[792,520],[616,1340],[770,540],[722,676]]}}};
+const vvFincaDe=cab=>Object.values(VV_FINCA).find(d=>d.cabs.includes(cab));
+function vvSim(a1,a2,b1,b2){const ax=a2[0]-a1[0],ay=a2[1]-a1[1],bx=b2[0]-b1[0],by=b2[1]-b1[1],s=Math.hypot(bx,by)/Math.hypot(ax,ay),t=Math.atan2(by,bx)-Math.atan2(ay,ax),c=Math.cos(t)*s,n=Math.sin(t)*s;
+  return p=>[b1[0]+c*(p[0]-a1[0])-n*(p[1]-a1[1]),b1[1]+n*(p[0]-a1[0])+c*(p[1]-a1[1])]}
+function vvFincaGeo(d){const naves=[];
+  for(const cab of d.cabs){const M=MAPAS[cab],a=d.anc[cab];if(!M||!a)continue;const f=vvSim(...a);
+    for(const nv of M.naves){const segs=[];for(const l of pasLineas(cab,nv))for(const[p,q]of (nv.q?clipLinea(l.p1,l.p2,nv.p):[[l.p1,l.p2]]))segs.push([f(p),f(q)]);
+      naves.push({cab,n:nv.n,p:nv.p.map(f),c:f(nv.c||centro(nv.p)),segs})}}
+  return naves}
+function vvFincaCaja(d,rot){const P=vvProj(d,rot),pts=[];for(const z of d.zonas)for(const q of z.p)pts.push(P.p(q[0],q[1]),P.p(q[0],q[1],12));
+  const x0=Math.min(...pts.map(q=>q[0])),x1=Math.max(...pts.map(q=>q[0])),y0=Math.min(...pts.map(q=>q[1])),y1=Math.max(...pts.map(q=>q[1])),m=Math.max(x1-x0,y1-y0)*.05;
+  return{x0:x0-m,y0:y0-m-20,W:x1-x0+2*m,Hh:y1-y0+2*m+20}}
+function vvFincaSVG(d,F,items){const P=vvProj(d),bx=vvFincaCaja(d),x0=bx.x0,y0=bx.y0,W=bx.W,K=W/430,H=7,naves=vvFincaGeo(d),sel=st.vv.sel;
+  const pp=(pts,z)=>pts.map(q=>P.p(q[0],q[1],z).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const[vx,vy,vw,vh]=d.vb;let s=`<svg viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${W.toFixed(0)} ${bx.Hh.toFixed(0)}" class="vvsvg" id="vvsvg" role="img" aria-label="Dibujo en perspectiva de toda la finca ${esc(d.nombre)}">
+    <defs><linearGradient id="vvCielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d8ecf7"/><stop offset="1" stop-color="#eef4e6"/></linearGradient></defs>
+    <rect x="${x0}" y="${y0}" width="${W}" height="${bx.Hh}" fill="url(#vvCielo)"/><g transform="${P.mat}"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#cdbf98"/>`;
+  // monte alrededor (siempre igual)
+  let sd=5;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;for(let k=0;k<260;k++){const x=vx+rnd()*vw,y=vy+rnd()*vh,r=4+rnd()*9;s+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(1)}" fill="${rnd()<.5?'#8e8c5c':'#a39d6b'}" opacity=".45"/>`}
+  for(const z of d.zonas){s+=`<polygon points="${ptsS(z.p)}" fill="${z.c}" fill-opacity="${z.valla?.16:.3}" stroke="${z.c}" stroke-width="3" stroke-dasharray="${z.valla?'8 5':'0'}" stroke-linejoin="round"/>`;
+    if(!z.valla){let best=null;for(let k=0;k<z.p.length;k++){const a=z.p[k],b=z.p[(k+1)%z.p.length],L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(!best||L>best.L)best={L,u:[(b[0]-a[0])/L,(b[1]-a[1])/L]}}
+      const c=centro(z.p),nrm=[-best.u[1],best.u[0]];for(let k=-40;k<=40;k++){const o=[c[0]+nrm[0]*k*7,c[1]+nrm[1]*k*7];for(const[a,b]of clipLinea([o[0]-best.u[0]*600,o[1]-best.u[1]*600],[o[0]+best.u[0]*600,o[1]+best.u[1]*600],z.p))s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#f4f7f8" stroke-width="2.4" opacity=".7"/>`}}}
+  for(const b of d.balsas)s+=`<polygon points="${ptsS(b)}" fill="#1f4e6b" stroke="#9cc3d9" stroke-width="2"/>`;
+  for(const r of d.ctras){const pth='M'+r.p.map(q=>q.join(' ')).join('L');s+=`<path d="${pth}" stroke="#a99f86" stroke-width="15" fill="none" stroke-linejoin="round"/><path d="${pth}" stroke="#ece6d3" stroke-width="11" fill="none" stroke-linejoin="round"/>${r.n?`<path d="${pth}" stroke="#fff" stroke-width="1.2" stroke-dasharray="8 7" fill="none"/>`:''}`}
+  s+=`</g>`;
+  for(const r of d.ctras)if(r.n){const q=P.p(...r.e);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)}) scale(${K.toFixed(3)})"><rect x="-18" y="-8" width="36" height="13" rx="3" fill="#e8a33a"/><text y="2" text-anchor="middle" font-size="8" font-weight="800" fill="#fff">${esc(r.n)}</text></g>`}
+  // almacén de las máquinas
+  {const[x,y]=d.base,q=[[x-7,y-6],[x+7,y-6],[x+7,y+6],[x-7,y+6]],ws=q.map((a,k)=>({a,b:q[(k+1)%4],d:P.dep((a[0]+q[(k+1)%4][0])/2,(a[1]+q[(k+1)%4][1])/2)})).sort((u,v)=>u.d-v.d);
+    s+=`<g data-vv="base">`;for(const w of ws){const A=P.p(...w.a),B=P.p(...w.b);s+=`<polygon points="${pp([w.a,w.b],0)} ${pp([w.b,w.a],8)}" fill="${B[0]>A[0]?'#d6c8aa':'#e8dcc4'}" stroke="#5f5644" stroke-width=".8"/>`}s+=`<polygon points="${pp(q,8)}" fill="#c76f4a" stroke="#5f5644" stroke-width=".8"/></g>`}
+  // naves de los cabezales
+  const ocup=new Set(items.map(i=>i.cab+':'+i.nave));
+  for(const nv of naves.slice().sort((a,b)=>P.dep(...a.c)-P.dep(...b.c))){const on=ocup.has(nv.cab+':'+nv.n);
+    s+=`<g class="vvn${on?' on':''}" data-vv="cab:${nv.cab}"><polygon points="${pp(nv.p,0)}" fill="#c4d8a6"/>`;
+    const ws=nv.p.map((a,k)=>{const b=nv.p[(k+1)%nv.p.length];return{a,b,d:P.dep((a[0]+b[0])/2,(a[1]+b[1])/2)}}).sort((u,v)=>u.d-v.d);
+    for(const w of ws){const A=P.p(...w.a),B=P.p(...w.b);s+=`<polygon class="vvw" points="${pp([w.a,w.b],0)} ${pp([w.b,w.a],H)}" fill="${B[0]>A[0]?'#f3f7f9':'#d9e4ea'}" stroke="#7e97ad" stroke-width=".6"/>`}
+    s+=`<polygon class="vvr" points="${pp(nv.p,H)}" fill="#eef4f7" stroke="#5f7d99" stroke-width=".9"/>`;
+    for(const[a,b]of nv.segs){const A=P.p(a[0],a[1],H),B=P.p(b[0],b[1],H);s+=`<line class="vvrl" x1="${A[0].toFixed(1)}" y1="${A[1].toFixed(1)}" x2="${B[0].toFixed(1)}" y2="${B[1].toFixed(1)}" stroke="#b5c6d3" stroke-width=".7"/>`}
+    s+=`</g>`}
+  // carteles de zonas y cabezales
+  for(const z of d.zonas)if(!z.valla){const q=P.p(...centro(z.p),4);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)}) scale(${K.toFixed(3)})"><rect x="${-(z.n.length*2.9+8)}" y="-8" width="${z.n.length*5.8+16}" height="14" rx="7" fill="#fff" stroke="${z.c}" stroke-width="1.5"/><text y="2.5" text-anchor="middle" font-size="8" font-weight="800" fill="#1b2f4a">${esc(z.n)}</text></g>`}
+  {const z=d.zonas.find(z=>z.valla);if(z){const q=P.p(...z.p.reduce((a,b)=>P.dep(...a)<P.dep(...b)?a:b));s+=`<g transform="translate(${q[0].toFixed(1)} ${(q[1]-6*K).toFixed(1)}) scale(${K.toFixed(3)})"><text text-anchor="middle" font-size="8.5" font-weight="800" fill="#1f5f99" stroke="#fff" stroke-width="2.5" paint-order="stroke">${esc(z.n)}</text></g>`}}
+  for(const cab of d.cabs){const ns=naves.filter(n=>n.cab===cab);if(!ns.length)continue;const c=centro(ns.map(n=>n.c)),q=P.p(c[0],c[1],H),its=items.filter(i=>i.cab===cab),np=its.reduce((a,i)=>a+(i.tipo==='tarea'&&i.maq&&maqDe(i.maq)?0:vvGente(i)),0),nm=cabNombre(cab).toUpperCase();
+    s+=`<g data-vv="cab:${cab}" class="vvact" transform="translate(${q[0].toFixed(1)} ${(q[1]-30*K).toFixed(1)}) scale(${K.toFixed(3)})"><rect x="${-(nm.length*3.3+10)}" y="-10" width="${nm.length*6.6+20}" height="17" rx="8.5" fill="#1b2f4a"/><text y="2.5" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff" letter-spacing=".5">${esc(nm)}</text>${np?`<circle cx="${nm.length*3.3+10}" cy="-9" r="8" fill="#e2a32a"/><text x="${nm.length*3.3+10}" y="-5.5" text-anchor="middle" font-size="9" font-weight="800" fill="#fff">${np}</text>`:''}</g>`}
+  // la gente, en su nave
+  const capa=[],porNave={};for(const it of items)(porNave[it.cab+':'+it.nave]=porNave[it.cab+':'+it.nave]||[]).push(it);
+  for(const[k0,its]of Object.entries(porNave)){const nv=naves.find(n=>n.cab+':'+n.n===k0);if(!nv)continue;
+    its.forEach((it,k)=>{if(it.tipo==='tarea'&&it.maq&&maqDe(it.maq)&&!it.hecha)return;const n=Math.min(vvGente(it),5),col=OFICIOS[it.of]?OFICIOS[it.of][2]:it.colla?vvCol(it.cid):'#2f6f9f',zz=it.of==='plastiquero'?H:0;
+      let g=`<g class="vvact${sel===it.k?' sel':''}" data-vv="${it.k}">`;const bse=[nv.c[0]+(k-(its.length-1)/2)*9,nv.c[1]];
+      for(let m=0;m<n;m++){const q=P.p(bse[0]+(m-(n-1)/2)*4.2,bse[1]+(m%2)*3,zz);g+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)}) scale(${(K*.8).toFixed(3)})"><g class="vvp" style="animation-delay:${((m*.17+k*.3)%1.1).toFixed(2)}s">${vvPersona(col,it.hecha,it.of)}</g></g>`}
+      capa.push({d:P.dep(...bse),s:g+'</g>'})})}
+  s+=capa.sort((a,b)=>a.d-b.d).map(x=>x.s).join('');
+  // máquinas: salen del almacén por la carretera hasta su nave
+  {const R={base:d.base,cam:d.cam};let aparc=0;const usadas={};
+    for(const m of maquinas()){const it=items.find(i=>i.maq===m.id&&!i.hecha),col=m.tipo==='furgoneta'||m.tipo==='carretilla'?'#5d6d7e':m.tipo==='atomizador'?'#c0392b':'#3f8a4f',spr=m.tipo==='furgoneta'||m.tipo==='carretilla'?vvFurgo(col):vvTractor(col,m.tipo),cls=`vvact vvmaq${sel==='maq:'+m.id?' sel':''}`;
+      const nv=it&&naves.find(n=>n.cab===it.cab&&n.n===it.nave);
+      if(nv){const kk=usadas[it.cab+it.nave]=(usadas[it.cab+it.nave]||0)+1,ruta=vvRuta(R,nv).map(q=>P.p(q[0],q[1])),fin=ruta[ruta.length-1];fin[1]+=(kk-1)*10*K;
+        const largo=ruta.slice(1).reduce((a,q,i)=>a+Math.hypot(q[0]-ruta[i][0],q[1]-ruta[i][1]),0),izq=fin[0]<ruta[0][0],clave='f:'+it.k+'@'+st.vv.rot,nuevo=!st.vv.vistos.has(clave);st.vv.vistos.add(clave);
+        const cuerpo=`<g transform="scale(${((izq?-K:K)*.85).toFixed(3)} ${(K*.85).toFixed(3)})"><g class="vvt">${spr}</g></g>`;
+        s+=nuevo?`<g class="${cls}" data-vv="maq:${m.id}">${cuerpo}<animateMotion dur="${Math.max(3,Math.min(10,largo/(140*K))).toFixed(1)}s" fill="freeze" calcMode="linear" path="M${ruta.map(q=>q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' L')}"/></g>`
+          :`<g class="${cls}" data-vv="maq:${m.id}" transform="translate(${fin[0].toFixed(1)} ${fin[1].toFixed(1)})">${cuerpo}</g>`}
+      else{const q=P.p(d.base[0],d.base[1]);s+=`<g class="${cls} parada" data-vv="maq:${m.id}" transform="translate(${(q[0]+(aparc%3-1)*22*K).toFixed(1)} ${(q[1]+14*K+Math.floor(aparc/3)*14*K).toFixed(1)})"><g transform="scale(${(K*.8).toFixed(3)})">${spr}</g></g>`;aparc++}}}
+  return s+'</svg>'}
+function vvTodoItems(d,F){return d.cabs.flatMap(c=>vvItems(c,F))}
+function vvGiroFinca(d){let best=0,bs=1e18;for(const r of [0,3]){const c=vvFincaCaja(d,r),sc=c.W*Math.max(1,c.Hh/(1.3*c.W));if(sc<bs-1e-6){bs=sc;best=r}}return best}
+function vvChips(d,act){return `<button class="chip" data-act="vv-dia" data-d="hoy" aria-pressed="${st.vv.dia!=='man'}">Hoy</button><button class="chip" data-act="vv-dia" data-d="man" aria-pressed="${st.vv.dia==='man'}">Mañana</button>`
+  +(d?`<button class="chip" data-act="vv-todo" aria-pressed="${act==='todo'}">Toda la finca</button>`:'')
+  +(d?d.cabs:Object.keys(MAPAS)).filter(k=>MAPAS[k]&&cabsVis().some(x=>x.id===k)).map(k=>`<button class="chip" data-act="vv-cab" data-c="${k}" aria-pressed="${act===k}">${esc(cabNombre(k))}</button>`).join('')}
+const vvBotones=()=>`<div class="row" style="gap:6px"><button class="btn sm" data-act="vv-rot" data-d="-1" aria-label="Girar a la izquierda">⟲</button><button class="btn sm" data-act="vv-rot" data-d="1" aria-label="Girar a la derecha">⟳</button><button class="btn sm" data-act="vv-z" data-z="-1" aria-label="Alejar">−</button><button class="btn sm" data-act="vv-z" data-z="1" aria-label="Acercar">+</button></div>`;
+function vvResumen(items,F){const gente=items.reduce((a,i)=>a+(i.tipo==='tarea'&&i.maq&&maqDe(i.maq)?0:vvGente(i)),0),nm=items.filter(i=>i.maq&&maqDe(i.maq)&&!i.hecha).length,nn=new Set(items.map(i=>i.cab+':'+i.nave)).size;
+  return items.length?`${gente} ${gente===1?'persona':'personas'} en ${nn} ${nn===1?'nave':'naves'}${nm?` · ${nm} ${nm===1?'máquina':'máquinas'} en marcha`:''}`:`Sin trabajos con nave ${F===hoy()?'para hoy':'para mañana'}`}
+function vvFincaHTML(d){if(st.vv.cabG!=='finca:'+d.nombre){st.vv.cabG='finca:'+d.nombre;st.vv.rot=vvGiroFinca(d);st.vv.sel=null}
+  if(!st.vv.listo){vvCargar();return '<section class="card"><div class="note">Preparando el dibujo de la finca…</div></section>'}
+  const F=vvDia(),items=vvTodoItems(d,F);
+  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Finca en vivo · ${esc(d.nombre)}</h3><div class="sub">${vvResumen(items,F)} · toca un cabezal para verlo de cerca</div></div>${vvBotones()}</div>
+    <div class="pick">${vvChips(d,'todo')}</div>
+    <div class="mapwrap vvwrap" id="vvwrap"><div class="mapin" style="width:${st.vv.z*100}%">${vvFincaSVG(d,F,items)}</div></div>
+    <div class="note">Dibujo orientativo de la finca: las zonas y los cabezales están colocados a ojo, no a escala.</div>
+    ${items.length?`<div class="vvlista">${items.map(i=>{const m=i.maq&&maqDe(i.maq);return `<button class="vvfila${st.vv.sel===i.k?' sel':''}" data-vv="${i.k}"><i style="background:${OFICIOS[i.of]?OFICIOS[i.of][2]:i.colla?vvCol(i.cid):'#2f6f9f'}"></i><b>${esc(cabNombre(i.cab))} · ${i.nave}</b><span>${i.hecha?'✓ ':''}${esc(i.nombre)} · ${esc(i.titulo)}${m?' · '+esc(m.n):''}</span></button>`}).join('')}</div>`
+      :`<div class="note">Para que salgan aquí, al crear la tarea (de una colla o general) elige el cabezal y la nave${maquinas().length?', y la máquina si hace falta':''}.</div>`}</section>`;
+  const si=items.find(i=>i.k===st.vv.sel);h+=vvDetalle(si?si.cab:'_finca',F,items);
+  return h+vvMaqPanel()}
 function vVivo(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
   if(!M)return `<section class="card"><div><h3>Finca en vivo · ${esc(c?c.nombre:'')}</h3><div class="sub">Este cabezal todavía no tiene las naves dibujadas</div></div><div class="row">${Object.keys(MAPAS).filter(k=>cabsVis().some(x=>x.id===k)).map(k=>`<button class="btn" data-cab="${k}">Ver ${esc(cabNombre(k))}</button>`).join('')}</div></section>`;
+  {const d=vvFincaDe(cab);if(d&&st.vv.todo!==false)return vvFincaHTML(d)}
   if(st.vv.cabG!==cab){st.vv.cabG=cab;st.vv.rot=vvGiroInicial(cab);st.vv.sel=null}
   if(!st.vv.listo){vvCargar();return '<section class="card"><div class="note">Preparando el dibujo de la finca…</div></section>'}
   const F=vvDia(),items=vvItems(cab,F),otros=Object.keys(MAPAS).filter(k=>k!==cab&&cabsVis().some(x=>x.id===k)),gente=items.reduce((a,i)=>a+(i.tipo==='tarea'&&i.maq&&maqDe(i.maq)?0:vvGente(i)),0),nm=items.filter(i=>i.maq&&maqDe(i.maq)&&!i.hecha).length;
   let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Finca en vivo · ${esc(M.titulo)}</h3><div class="sub">${items.length?`${gente} ${gente===1?'persona':'personas'} en ${new Set(items.map(i=>i.nave)).size} ${new Set(items.map(i=>i.nave)).size===1?'nave':'naves'}${nm?` · ${nm} ${nm===1?'máquina':'máquinas'} en marcha`:''}`:`Sin trabajos con nave ${F===hoy()?'para hoy':'para mañana'}`} · toca cualquier cosa para ver qué hace</div></div>
     <div class="row" style="gap:6px"><button class="btn sm" data-act="vv-rot" data-d="-1" aria-label="Girar a la izquierda">⟲</button><button class="btn sm" data-act="vv-rot" data-d="1" aria-label="Girar a la derecha">⟳</button><button class="btn sm" data-act="vv-z" data-z="-1" aria-label="Alejar">−</button><button class="btn sm" data-act="vv-z" data-z="1" aria-label="Acercar">+</button></div></div>
-    <div class="pick"><button class="chip" data-act="vv-dia" data-d="hoy" aria-pressed="${st.vv.dia!=='man'}">Hoy</button><button class="chip" data-act="vv-dia" data-d="man" aria-pressed="${st.vv.dia==='man'}">Mañana</button>${otros.map(k=>`<button class="chip" data-cab="${k}">${esc(cabNombre(k))}</button>`).join('')}</div>
+    <div class="pick">${vvChips(vvFincaDe(cab),cab)}</div>
     <div class="mapwrap vvwrap" id="vvwrap"><div class="mapin" style="width:${st.vv.z*100}%">${vvSVG(cab,F)}</div></div>
     ${items.length?`<div class="vvlista">${items.map(i=>{const m=i.maq&&maqDe(i.maq);return `<button class="vvfila${st.vv.sel===i.k?' sel':''}" data-vv="${i.k}"><i style="background:${OFICIOS[i.of]?OFICIOS[i.of][2]:i.colla?vvCol(i.cid):'#2f6f9f'}"></i><b>Nave ${i.nave}</b><span>${i.hecha?'✓ ':''}${esc(i.nombre)} · ${esc(i.titulo)}${m?' · '+esc(m.n):''}</span></button>`}).join('')}</div>`
       :`<div class="note">Para que salgan aquí, al crear la tarea (de una colla o general) elige el cabezal y la nave${maquinas().length?', y la máquina si hace falta':''}.</div>`}</section>`;
   h+=vvDetalle(cab,F,items);
-  if(esGestor())h+=`<section class="card"><div><h3>Máquinas</h3><div class="sub">Las que se pueden mandar con una tarea. Salen de la caseta y van por el camino hasta la nave.</div></div>
+  return h+vvMaqPanel()}
+function vvMaqPanel(){if(!esGestor())return '';return `<section class="card"><div><h3>Máquinas</h3><div class="sub">Las que se pueden mandar con una tarea. Salen de la caseta y van por el camino hasta la nave.</div></div>
     ${maquinas().length?`<div class="vvmqs">${maquinas().map(m=>`<div class="vvmq"><b>${esc(m.n)}</b><span class="mini">${esc(MAQ_TIPOS[m.tipo]||'')}</span><button class="btn sm" data-act="vv-mq-del" data-id="${m.id}">Quitar</button></div>`).join('')}</div>`:'<div class="note">Todavía no hay máquinas. Añade los tractores y el resto para poder mandarlos con una tarea.</div>'}
     <div class="frm"><div class="field"><label for="vv_mqn">Nombre</label><div class="inp"><input id="vv_mqn" placeholder="Ej.: Tractor 1" maxlength="24" style="text-transform:none;text-align:left" autocomplete="off"></div></div>
       <div class="field"><label for="vv_mqt">Tipo</label><div class="inp"><select id="vv_mqt">${Object.entries(MAQ_TIPOS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div></div></div>
-    <div class="row"><button class="btn pri" data-act="vv-mq-add">Añadir máquina</button></div></section>`;
-  return h}
+    <div class="row"><button class="btn pri" data-act="vv-mq-add">Añadir máquina</button></div></section>`}
+function vvAbrirCab(c){if(!MAPAS[c])return;st.cab=c;try{renderCabs()}catch(e){}st.vv.todo=false;st.vv.sel=null;renderMain();const w=$('#vvwrap');if(w)w.closest('section').scrollIntoView({block:'start'})}
 async function vvGuardarMaq(l){for(const c of [st.cfg,st.savedCfg])c.maquinas=clone(l);try{await Store.setConfig(st.savedCfg);renderMain();return true}catch(e){toast(errMsg(e));return false}}
 document.addEventListener('click',async e=>{if(st.tab!=='vivo'&&st.tab!=='cvivo')return;const b=e.target.closest('[data-vv],[data-act^="vv-"]');if(!b||!b.closest('#main'))return;
+  if(b.dataset.vv&&b.dataset.vv.startsWith('cab:')){vvAbrirCab(b.dataset.vv.slice(4));return}
   if(b.dataset.vv){st.vv.sel=st.vv.sel===b.dataset.vv&&b.closest('svg')?null:b.dataset.vv;renderMain();if(st.vv.sel){const d=$('#vvdet');if(d&&!b.closest('#vvdet'))d.scrollIntoView({block:'nearest',behavior:'smooth'})}return}
   const a=b.dataset.act;
   if(a==='vv-rot'){st.vv.rot=(st.vv.rot+(+b.dataset.d)+4)%4;renderMain()}
   else if(a==='vv-z'){const zs=[1,1.5,2,3],i=zs.indexOf(st.vv.z);st.vv.z=zs[Math.max(0,Math.min(zs.length-1,(i<0?0:i)+(+b.dataset.z)))];renderMain()}
+  else if(a==='vv-todo'){st.vv.todo=true;st.vv.sel=null;renderMain()}
+  else if(a==='vv-cab'){vvAbrirCab(b.dataset.c)}
   else if(a==='vv-dia'){st.vv.dia=b.dataset.d;st.vv.sel=null;renderMain()}
   else if(a==='vv-mq-add'){const n=($('#vv_mqn').value||'').trim(),t=$('#vv_mqt').value;if(!n){toast('Escribe el nombre de la máquina');return}if(maquinas().some(m=>m.n.toLowerCase()===n.toLowerCase())){toast('Ya hay una máquina con ese nombre');return}
     if(await vvGuardarMaq([...maquinas(),{id:'mq'+Date.now().toString(36),n,tipo:t}]))toast(n+' añadida')}
@@ -4463,7 +4559,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
 
-window.APP_V='abonado-v106';
+window.APP_V='abonado-v107';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
