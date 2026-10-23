@@ -2582,14 +2582,16 @@ function vvDetalle(cab,F,items){const sel=st.vv.sel;if(!sel)return '';const M=MA
 /* ---------- Finca en vivo · toda la finca: las zonas y los cabezales juntos ----------
    Plano esquemático sacado de la foto de zonas (no a escala). Cada cabezal de La Valla se coloca con dos puntos:
    anc = [punto A de su plano, punto B de su plano, dónde cae A, dónde cae B]. */
-const VV_FINCA={pinta:{nombre:'Pinta Santos',cabs:['gas','pla','fra'],vb:[420,0,800,790],
-  zonas:[{n:'Zona 1 · El Molino',c:'#e2b62c',p:[[1045,25],[1090,45],[1115,95],[1105,150],[1075,215],[1050,250],[975,272],[915,258],[885,218],[915,182],[965,150],[1010,95]]},
-    {n:'Zona 2 · Campo de Tiro',c:'#56b13a',p:[[925,298],[1000,300],[1145,402],[1110,500],[1050,572],[990,598],[950,648],[860,705],[828,742],[700,752],[730,640],[790,512],[850,402],[895,330]]},
-    {n:'Zona 3 · La Valla',c:'#2f8fd6',valla:true,p:[[772,284],[838,296],[812,380],[786,440],[770,500],[740,560],[712,640],[684,712],[662,770],[600,770],[560,700],[478,600],[440,470],[470,420],[560,398],[690,384],[722,330]]}],
-  balsas:[[[690,266],[722,268],[720,300],[688,298]],[[736,262],[776,262],[774,294],[734,294]],[[980,565],[1046,585],[1020,662],[958,642]]],
-  ctras:[{n:'RM-11',p:[[905,290],[880,332],[846,400],[808,470],[778,540],[748,612],[718,690],[690,790]],e:[790,505]},{n:'RM-332',p:[[905,290],[962,262],[1062,230],[1128,182],[1160,100],[1186,0]],e:[1080,222]},{n:'',p:[[905,290],[862,258],[815,215],[780,180]]}],
-  base:[836,318],cam:[[836,318],[872,330],[905,290],[880,332],[846,400],[808,470],[778,540],[748,612],[718,690],[690,790]],
-  anc:{gas:[[274,926],[715,107],[748,474],[806,300]],pla:[[232,0],[232,1200],[492,436],[618,600]],fra:[[792,520],[616,1340],[770,540],[722,676]]}}};
+const VV_FINCA={pinta:{nombre:'Pinta Santos',cabs:['gas','pla','fra'],vb:[260,20,920,1360],
+  zonas:[{n:'Zona 1 · El Molino',c:'#e2b62c',p:[[985,35],[992,100],[975,150],[930,230],[880,300],[835,375],[808,425],[780,432],[735,418],[690,385],[678,358],[720,322],[790,268],[850,205],[900,140],[945,80]]},
+    {n:'Zona 2 · Campo de Tiro',c:'#56b13a',p:[[785,490],[852,496],[1058,583],[1005,740],[975,830],[950,900],[935,1060],[850,1062],[760,1110],[640,1175],[590,1150],[560,1110],[590,1000],[640,880],[680,820],[720,740],[755,640],[775,560]]},
+    {n:'Zona 3 · La Valla',c:'#2f8fd6',valla:true,p:[[498,560],[640,505],[690,555],[700,640],[662,760],[600,850],[545,905],[505,1000],[485,1150],[455,1340],[420,1345],[392,1200],[298,1150],[295,900],[300,800],[355,780],[430,700],[470,600]]},
+    {n:'Los Metálicos',c:'#7f8c8d',p:[[302,805],[358,788],[452,830],[492,880],[472,955],[300,960]]}],
+  balsas:[[[512,532],[545,530],[547,578],[514,580]],[[580,512],[632,512],[630,570],[582,572]],[[860,930],[930,940],[905,1062],[842,1050]]],
+  ctras:[{n:'RM-11',p:[[430,20],[455,100],[500,200],[560,280],[640,340],[720,410],[762,462],[775,500],[772,590],[752,660],[712,735],[655,810],[600,880],[560,950],[530,1030],[505,1120],[483,1210],[462,1300],[448,1360]],e:[585,868]},
+    {n:'RM-332',p:[[805,450],[860,400],[930,330],[1000,240],[1080,160],[1140,125],[1180,120]],e:[905,350]},{n:'',p:[[683,703],[700,600],[690,500],[640,430],[560,330],[520,260]]}],
+  base:[650,690],cam:[[650,690],[683,703],[712,735],[655,810],[600,880],[560,950],[530,1030],[505,1120],[483,1210],[462,1300]],
+  anc:{gas:[[274,926],[715,107],[520,822],[628,640]],pla:[[232,0],[232,1200],[377,602],[503,758]],fra:[[792,520],[616,1340],[525,1077],[470,1280]]}}};
 const vvFincaDe=cab=>Object.values(VV_FINCA).find(d=>d.cabs.includes(cab));
 function vvSim(a1,a2,b1,b2){const ax=a2[0]-a1[0],ay=a2[1]-a1[1],bx=b2[0]-b1[0],by=b2[1]-b1[1],s=Math.hypot(bx,by)/Math.hypot(ax,ay),t=Math.atan2(by,bx)-Math.atan2(ay,ax),c=Math.cos(t)*s,n=Math.sin(t)*s;
   return p=>[b1[0]+c*(p[0]-a1[0])-n*(p[1]-a1[1]),b1[1]+n*(p[0]-a1[0])+c*(p[1]-a1[1])]}
@@ -2599,7 +2601,7 @@ function vvFincaGeo(d){const naves=[];
       naves.push({cab,n:nv.n,p:nv.p.map(f),c:f(nv.c||centro(nv.p)),segs})}}
   return naves}
 function vvFincaCaja(d,rot){const P=vvProj(d,rot),pts=[];for(const z of d.zonas)for(const q of z.p)pts.push(P.p(q[0],q[1]),P.p(q[0],q[1],12));
-  const x0=Math.min(...pts.map(q=>q[0])),x1=Math.max(...pts.map(q=>q[0])),y0=Math.min(...pts.map(q=>q[1])),y1=Math.max(...pts.map(q=>q[1])),m=Math.max(x1-x0,y1-y0)*.05;
+  const x0=Math.min(...pts.map(q=>q[0])),x1=Math.max(...pts.map(q=>q[0])),y0=Math.min(...pts.map(q=>q[1])),y1=Math.max(...pts.map(q=>q[1])),m=Math.max(x1-x0,y1-y0)*.09;
   return{x0:x0-m,y0:y0-m-20,W:x1-x0+2*m,Hh:y1-y0+2*m+20}}
 function vvFincaSVG(d,F,items){const P=vvProj(d),bx=vvFincaCaja(d),x0=bx.x0,y0=bx.y0,W=bx.W,K=W/430,H=7,naves=vvFincaGeo(d),sel=st.vv.sel;
   const pp=(pts,z)=>pts.map(q=>P.p(q[0],q[1],z).map(v=>v.toFixed(1)).join(',')).join(' ');
@@ -2665,7 +2667,7 @@ function vvFincaHTML(d){if(st.vv.cabG!=='finca:'+d.nombre){st.vv.cabG='finca:'+d
   let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Finca en vivo · ${esc(d.nombre)}</h3><div class="sub">${vvResumen(items,F)} · toca un cabezal para verlo de cerca</div></div>${vvBotones()}</div>
     <div class="pick">${vvChips(d,'todo')}</div>
     <div class="mapwrap vvwrap" id="vvwrap"><div class="mapin" style="width:${st.vv.z*100}%">${vvFincaSVG(d,F,items)}</div></div>
-    <div class="note">Dibujo orientativo de la finca: las zonas y los cabezales están colocados a ojo, no a escala.</div>
+    <div class="note">Dibujo orientativo sacado de la foto aérea: no es un plano a escala.</div>
     ${items.length?`<div class="vvlista">${items.map(i=>{const m=i.maq&&maqDe(i.maq);return `<button class="vvfila${st.vv.sel===i.k?' sel':''}" data-vv="${i.k}"><i style="background:${OFICIOS[i.of]?OFICIOS[i.of][2]:i.colla?vvCol(i.cid):'#2f6f9f'}"></i><b>${esc(cabNombre(i.cab))} · ${i.nave}</b><span>${i.hecha?'✓ ':''}${esc(i.nombre)} · ${esc(i.titulo)}${m?' · '+esc(m.n):''}</span></button>`}).join('')}</div>`
       :`<div class="note">Para que salgan aquí, al crear la tarea (de una colla o general) elige el cabezal y la nave${maquinas().length?', y la máquina si hace falta':''}.</div>`}</section>`;
   const si=items.find(i=>i.k===st.vv.sel);h+=vvDetalle(si?si.cab:'_finca',F,items);
