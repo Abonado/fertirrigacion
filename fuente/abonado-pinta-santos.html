@@ -486,6 +486,8 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 @media (prefers-reduced-motion:reduce){.vvp,.vvt{animation:none}}
 .vvlista{display:grid;gap:6px;margin-top:10px}.vvfila{display:flex;gap:8px;align-items:center;text-align:left;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:inherit;font:inherit;cursor:pointer}.vvfila.sel{border-color:#e2a32a;box-shadow:0 0 0 2px #e2a32a55}.vvfila i{width:12px;height:12px;border-radius:50%;flex:none}.vvfila b{white-space:nowrap}.vvfila span{color:var(--muted);text-transform:none}
 .vvmqs{display:grid;gap:6px;margin:8px 0}.vvmq{display:flex;gap:10px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:10px}.vvmq b{flex:1}
+.bjml{display:flex;gap:6px;align-items:center}.mue{position:relative;display:inline-flex;align-items:center;padding:7px 10px;min-height:36px;border:1.5px solid var(--line);border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}.mue input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}.mue:has(input:checked){background:var(--ok);border-color:var(--ok);color:#fff}.mue:has(input:checked) span::before{content:'✓ '}.mue:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.tbfotos{display:flex;gap:8px;flex-wrap:wrap}.tbf{position:relative}.tbf img{width:96px;height:96px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block}.tbf .btn{position:absolute;top:4px;right:4px;padding:2px 8px;min-height:0}.tbpz{display:grid;gap:6px}.tbp{display:grid;grid-template-columns:auto 2.2em 1fr;gap:8px;align-items:start;padding:8px;border:1px solid var(--line);border-radius:10px;cursor:pointer}.tbp span,.tbp small,.tbpasos li,#tb_res li,#tb_res p,#tb_txt{text-transform:none}.tbp small{display:block;color:var(--muted)}.tbpasos li,#tb_res ul li{margin:4px 0}
 .chbox{display:grid;gap:8px}.chm{max-width:88%;padding:8px 12px;border-radius:14px;font:400 15px/1.45 var(--f-body)}.chm,.chm *,#ch_txt{text-transform:none!important;letter-spacing:normal}.chm.yo{justify-self:end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}.chm.ia{justify-self:start;background:var(--surface-2);border:1px solid var(--line);border-bottom-left-radius:4px}.chm p{margin:4px 0}.chm ul{margin:4px 0;padding-left:20px}.chm li{margin:2px 0}.chf{font-size:11px;opacity:.8}.chprev{max-height:90px;border-radius:8px}.chsug .chip{white-space:normal;text-align:left;text-transform:none}
 </style>
 
@@ -623,13 +625,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},sug:null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},sug:null}}
 /* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
 const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
 const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
 st.regMod=new Set();
 const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
-function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -677,7 +679,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
@@ -777,7 +779,7 @@ function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=cam
 /* Menú en 5 apartados */
 const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['mapa','vivo','tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
-  {id:'almacen',n:'Almacén',tabs:['almacen','material'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
+  {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
@@ -839,13 +841,13 @@ function vDrenaje(){const c=cabById(st.cab);let h=banner();h+=`<section class="s
     <div class="frm">${fld('ceB','CE balsa','mS/cm')}${fld('phB','pH balsa','')}${fld('inc','Incremento salida','mS/cm')}${fld('phS','pH salida','')}${fld('rad','Radiación','')}</div>
     <div data-out="salida_${c.id}">${salidaHTML(c.id)}</div>
     <div class="field"><label for="obs_${c.id}">Observaciones del parte (opcional)</label><textarea id="obs_${c.id}" data-k="reg.obs.${c.id}" data-text="1" rows="2" style="text-transform:none">${esc((st.reg.obs||{})[c.id]||'')}</textarea></div></section>`;
-  for(const s of c.sectores){h+=`<section class="card"><div class="sector-h"><div><h3>${esc(s.nombre)}</h3><div class="sub">${s.bandejas.length} bandejas de drenaje</div></div>
+  for(const s of c.sectores){h+=`<section class="card"><div class="sector-h"><div><h3>${esc(s.nombre)}</h3><div class="sub">${s.bandejas.length} bandejas de drenaje · ${muHTML(s)}</div></div>
     <div class="row" style="align-items:flex-end"><div class="field"><label for="min_${s.id}">Tiempo de riego (total del día)</label><div class="inp"><input id="min_${s.id}" data-k="reg.min.${s.id}" inputmode="decimal" autocomplete="off"${sugPh('min',s.id)} value="${inVal(st.reg.min[s.id])}"><span class="u">min</span></div></div>
       <div class="field"><label for="rie_${s.id}">Nº de riegos</label><div class="inp sm"><input id="rie_${s.id}" data-k="reg.rie.${s.id}" inputmode="numeric" autocomplete="off"${sugPh('rie',s.id)} value="${inVal((st.reg.rie||{})[s.id])}"><span class="u">riegos</span></div></div></div></div>
     <div class="note" data-out="pr_${s.id}">${porRiego(s)!=null?`≈ ${fmt(porRiego(s),1)} min por riego`:''}</div>
     <div data-out="ce_${s.id}">${ceOut(s)}</div><div class="bjh"><span>Bandeja</span><span>Drenaje</span><span>CE · pH</span><span>Volumen total · % drenaje</span></div><div>`;
     for(const bj of s.bandejas){h+=`<div class="bj"><div class="nm"><b>${esc(bj.nombre)}</b><small>${fmt(bj.caudal,0)} ml/min</small></div>
-      <div class="inp sm"><input id="dr_${bj.id}" data-k="reg.dren.${bj.id}" inputmode="decimal" autocomplete="off" aria-label="Drenaje ${esc(bj.nombre)}" value="${inVal(st.reg.dren[bj.id])}"><span class="u">ml</span></div>
+      <div class="bjml"><div class="inp sm"><input id="dr_${bj.id}" data-k="reg.dren.${bj.id}" inputmode="decimal" autocomplete="off" aria-label="Drenaje ${esc(bj.nombre)}" value="${inVal(st.reg.dren[bj.id])}"><span class="u">ml</span></div><label class="mue" title="Márcalo cuando hayas cogido la muestra"><input type="checkbox" data-k="reg.mue.${bj.id}" aria-label="Muestra cogida ${esc(bj.nombre)}" ${(st.reg.mue||{})[bj.id]?'checked':''}><span>Muestra</span></label></div>
       <div class="bjce"><div class="inp sm"><input id="ceD_${bj.id}" data-k="reg.ceD.${bj.id}" inputmode="decimal" autocomplete="off" aria-label="CE drenaje ${esc(bj.nombre)}" value="${inVal(uS(st.reg.ceD[bj.id]))}" placeholder="4400"><span class="u nt">µS</span></div>
       <div class="inp sm"><input id="phD_${bj.id}" data-k="reg.phD.${bj.id}" inputmode="decimal" autocomplete="off" aria-label="pH drenaje ${esc(bj.nombre)}" value="${inVal(st.reg.phD[bj.id])}"><span class="u nt">pH</span></div></div>
       <div class="meter" data-out="m_${bj.id}">${meter(s,bj)}</div></div>`}
@@ -2709,7 +2711,74 @@ document.addEventListener('click',async e=>{if(st.tab!=='vivo'&&st.tab!=='cvivo'
   else if(a==='vv-mq-del'){const m=maqDe(b.dataset.id);if(m&&await vvGuardarMaq(maquinas().filter(x=>x.id!==m.id)))toast(m.n+' quitada')}});
 function ctDondeHTML(f,vis){const c=collaDe(f.colla)||vis[0],fi=(st.cfg.fincas||[]).find(x=>x.id===(c&&c.finca)),cs=fi?fi.cabezales:cabsVis().map(x=>x.id);
   return `<div class="field"><label for="ct_cab">Cabezal</label><div class="inp"><select id="ct_cab" data-ct="cab"><option value="">Sin indicar</option>${cs.map(x=>`<option value="${x}" ${f.cab===x?'selected':''}>${esc(cabNombre(x))}</option>`).join('')}</select></div></div>${vvNaveSel('ct_nave','data-ct',f.cab,f.nave)}${vvMaqSel('ct_maq','data-ct',f.maq)}${vvOfiSel('ct_of','data-ct',f.of,null)}`}
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo};
+/* ---------- Muestras de drenaje: marcar en cada bandeja que se ha cogido la muestra ---------- */
+function muHTML(s){const n=s.bandejas.length,k=s.bandejas.filter(bj=>(st.reg.mue||{})[bj.id]).length;return `<span class="pill ${k===n?'ok':k?'warn':'nd'}" id="mu_${s.id}">Muestras ${k} de ${n}</span>`}
+/* Al guardar: si hay bandejas con drenaje apuntado y sin muestra, se avisa (no impide guardar) */
+function muFaltan(){if(st.fecha!==hoy())return [];const c=cabById(st.cab);if(!c)return [];const L=[];
+  for(const s of c.sectores)for(const bj of s.bandejas)if(st.reg.dren[bj.id]!=null&&!(st.reg.mue||{})[bj.id])L.push(s.nombre.replace(/^Sector\s*/i,'S')+' '+bj.nombre.replace(/^Bandeja\s*/i,'B'));return L}
+
+/* ---------- Montaje de tuberías con IA: foto del sitio + lo que se quiere hacer → piezas, pasos y pedido de material ---------- */
+st.tb={fotos:[],txt:'',diam:'',busy:false,err:null,res:null,marc:null,ctl:null};
+const TB_DIAM=['','16','20','25','32','40','50','63','75','90','110'];
+function tbPrompt(){const g=st.tb;return `Eres un fontanero de riego agrícola con mucha experiencia en fincas de invernadero de la Región de Murcia: tubería de polietileno (PE) de 16 a 63 mm y de PVC de presión, accesorios de compresión y de rosca, collarines de toma, enlaces, tes, codos, reducciones, manguitos, llaves de bola, grifos, válvulas antirretorno, filtros y cinta de teflón.
+${g.fotos.length?`Te paso ${g.fotos.length===1?'una foto':g.fotos.length+' fotos'} del sitio donde hay que hacer el montaje.`:'No hay foto: solo la descripción.'}
+Lo que quiere hacer el trabajador: «${g.txt.trim()||'(no lo ha escrito: dedúcelo de la foto y dilo)'}».
+Diámetro de la tubería: ${g.diam?g.diam+' mm (lo dice el trabajador)':'no lo sabe'}.
+
+Dime qué piezas hacen falta y cómo montarlo, paso a paso y en español de España sencillo.
+Reglas:
+- Si en la foto no se ve con seguridad el material o el diámetro, NO te lo inventes: pon "seguro": false y explica cómo medirlo (por ejemplo, el número impreso en la tubería o medir el diámetro exterior).
+- Cantidades exactas para ese montaje. Usa los nombres que se piden en un almacén de riego (por ejemplo «Te de compresión 32 mm», «Collarín de toma 32 x 1/2"», «Llave de bola 1/2" rosca hembra»).
+- Si hay que cortar o abrir la tubería, el primer paso es cerrar el agua y quitar presión.
+- Si se conecta agua limpia o de beber («agua buena») cerca de agua con abono, avisa de poner válvula antirretorno y de no mezclar nunca las dos.
+- Avisa si algo puede ser peligroso o si conviene llamar al encargado.
+Responde SOLO con un JSON así, sin texto fuera:
+{"titulo":"frase corta de lo que se va a montar","tuberia":{"material":"PE|PVC|otro|no se sabe","diametro_mm":32,"seguro":true,"como_medir":"cómo confirmarlo si no es seguro"},"piezas":[{"pieza":"nombre para pedirla","medida":"32 mm","cantidad":1,"ud":"unidades","para":"para qué sirve en este montaje"}],"herramientas":["..."],"pasos":["..."],"comprobar":["qué mirar antes de montar o al terminar"],"avisos":["..."]}`}
+async function tbAddFotos(files){for(const f of files){if(st.tb.fotos.length>=3){toast('Máximo 3 fotos');break}let b=f;try{b=await compressImg(f)}catch(e){}st.tb.fotos.push({blob:b,url:URL.createObjectURL(b)})}renderMain()}
+async function tbRun(){const g=st.tb;if(g.busy)return;if(!g.fotos.length&&!g.txt.trim()){toast('Haz una foto o escribe qué quieres montar');return}
+  const modo=iaModo();if(!modo){toast('La IA no está disponible: entra con tu cuenta y conexión');return}if(modo==='claude'&&g.fotos.length&&!smImgs){toast('Aquí no se pueden enviar fotos a la IA');return}
+  g.busy=true;g.err=null;g.res=null;g.ctl=new AbortController();renderMain();
+  try{let r;const blobs=g.fotos.map(f=>f.blob);
+    if(modo==='claude'){const o={signal:g.ctl.signal,modelTier:'default',cache:false};if(blobs.length)o.images=blobs;r=await SM.json(tbPrompt(),o)}
+    else if(modo==='gemini'){const ctl=g.ctl,t=await NUBE.ia.json(tbPrompt(),blobs);if(ctl.signal.aborted)throw{code:'cancelled'};r=jsonSuelto(t)}
+    else r=await iaServidor(tbPrompt(),blobs,g.ctl.signal);
+    if(!r||typeof r!=='object'||!Array.isArray(r.piezas))throw{code:'invalid_json'};r.piezas=r.piezas.filter(p=>p&&p.pieza).slice(0,40);g.res=r;g.marc=r.piezas.map(()=>true)}
+  catch(e){if(!e||e.code!=='cancelled')g.err=dgErr(e)}
+  g.busy=false;g.ctl=null;renderMain()}
+const tbLinea=p=>`${fmt(+p.cantidad||1,0)} ${p.ud&&p.ud!=='unidades'?p.ud+' ':'× '}${p.pieza}${p.medida&&!String(p.pieza).includes(String(p.medida).replace(/\s*mm$/i,''))?' '+p.medida:''}`;
+async function tbPedir(){const g=st.tb,r=g.res;if(!r)return;const ps=r.piezas.filter((p,i)=>g.marc[i]);if(!ps.length){toast('Marca alguna pieza');return}
+  const fs=fincasVis().filter(f=>f.cabezales.length),f=fincaAct()||fs[0],now=new Date().toISOString(),adj=[];
+  if(Adj.can()&&g.fotos[0]){try{adj.push(await Adj.put(new File([g.fotos[0].blob],'montaje.jpg',{type:'image/jpeg'})))}catch(e){}}
+  const m={ts:now,art:('Montaje: '+(r.titulo||'piezas de tubería')).slice(0,80),cant:ps.length,ud:'piezas',finca:f?f.id:'',cab:st.cab||'',urg:false,cuando:'',
+    nota:ps.map(tbLinea).join('\n')+(r.tuberia&&r.tuberia.seguro===false?'\n(Diámetro sin confirmar: medirlo antes de comprar)':''),adjuntos:adj,estado:'pedido',pidePor:yoNombre(),pideEmail:miEmail(),hist:[{estado:'pedido',por:yoNombre(),ts:now}],ia:true};
+  try{const id=await Store.addCol('material',m);if(st.mat)st.mat.unshift({...m,id});pushEnviar([...adminsEmails(),...encargadosDe(m.finca)],'Pedido de material: '+m.art,`${ps.length} piezas · ${m.pidePor||''}`,'mat-'+id+':pedido','material');toast('Pedido de material enviado');st.tb.pedido=id;renderMain()}catch(e){toast(errMsg(e))}}
+function vMontaje(){const g=st.tb,iaOn=!!iaModo();
+  let h=`<section class="card"><div><h3>Montaje de tuberías con IA</h3><div class="sub">Haz una foto del sitio y di qué quieres montar: te dice las piezas, cómo hacerlo y te prepara el pedido</div></div>
+    ${iaOn?'':'<div class="note">Necesita la app con tu cuenta y conexión.</div>'}
+    <div class="field"><label for="tb_txt">¿Qué quieres hacer?</label><textarea id="tb_txt" data-tb="txt" rows="3" style="text-transform:none" placeholder="Ej.: sacar el agua de esta tubería a dos bidones, con un grifo en cada uno">${esc(g.txt)}</textarea></div>
+    <div class="frm"><div class="field"><label for="tb_diam">Diámetro de la tubería</label><div class="inp"><select id="tb_diam" data-tb="diam">${TB_DIAM.map(d=>`<option value="${d}" ${g.diam===d?'selected':''}>${d?d+' mm':'No lo sé'}</option>`).join('')}</select></div></div></div>
+    ${g.fotos.length?`<div class="tbfotos">${g.fotos.map((f,i)=>`<div class="tbf"><img src="${f.url}" alt="Foto ${i+1} del montaje"><button class="btn sm" data-act="tb-quitar" data-i="${i}" aria-label="Quitar foto ${i+1}">✕</button></div>`).join('')}</div>`:''}
+    <div class="row"><label class="btn" for="tb_foto">${g.fotos.length?'Añadir otra foto':'Hacer o añadir foto'}</label><input type="file" id="tb_foto" data-tb="foto" accept="image/*" multiple hidden>
+      <button class="btn pri" data-act="tb-run" ${g.busy||!iaOn?'disabled':''}>${g.busy?'Pensando…':'Pedir a la IA'}</button>${g.busy?'<button class="btn" data-act="tb-cancel">Cancelar</button>':''}</div>
+    ${g.err?`<div class="banner">${esc(g.err)}</div>`:''}
+    <div class="note">Es una ayuda: antes de cortar nada, confirma el diámetro y el material. Si se trata de agua de beber, nunca la mezcles con agua con abono.</div></section>`;
+  const r=g.res;if(r){const t=r.tuberia||{},L=a=>Array.isArray(a)&&a.length?a:null;
+    h+=`<section class="card" id="tb_res"><div><h3>${esc(r.titulo||'Montaje')}</h3><div class="sub">Tubería: ${esc(t.material||'—')}${t.diametro_mm?' · '+esc(String(t.diametro_mm))+' mm':''} ${t.seguro===false?'<span class="pill warn">sin confirmar</span>':'<span class="pill ok">segura</span>'}</div></div>
+      ${t.seguro===false&&t.como_medir?`<div class="banner">Antes de pedir nada, confírmalo: ${esc(t.como_medir)}</div>`:''}
+      <div class="lbl">Piezas</div><div class="tbpz">${r.piezas.map((p,i)=>`<label class="tbp"><input type="checkbox" data-tb="marc" data-i="${i}" ${g.marc[i]?'checked':''}><b>${esc(fmt(+p.cantidad||1,0))}</b><span><b>${esc(p.pieza)}</b>${p.medida?' · '+esc(p.medida):''}${p.para?`<small>${esc(p.para)}</small>`:''}</span></label>`).join('')}</div>
+      ${L(r.herramientas)?`<div class="lbl">Herramientas</div><p>${r.herramientas.map(esc).join(' · ')}</p>`:''}
+      ${L(r.pasos)?`<div class="lbl">Cómo montarlo</div><ol class="tbpasos">${r.pasos.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}
+      ${L(r.comprobar)?`<div class="lbl">Comprueba</div><ul>${r.comprobar.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+      ${L(r.avisos)?`<div class="banner">${r.avisos.map(esc).join('<br>')}</div>`:''}
+      <div class="row">${g.pedido?'<span class="pill ok">Pedido enviado</span><button class="btn" data-tab="material">Ver en Material</button>':`<button class="btn pri" data-act="tb-pedir">Pedir el material marcado</button>`}<button class="btn" data-act="tb-nuevo">Nuevo montaje</button></div></section>`}
+  return h}
+document.addEventListener('click',e=>{if(st.tab!=='montaje')return;const b=e.target.closest('[data-act^="tb-"]');if(!b||!b.closest('#main'))return;const a=b.dataset.act,g=st.tb;
+  if(a==='tb-run')tbRun();else if(a==='tb-pedir')tbPedir();else if(a==='tb-cancel'){if(g.ctl)g.ctl.abort();g.busy=false;renderMain()}
+  else if(a==='tb-quitar'){g.fotos.splice(+b.dataset.i,1);renderMain()}else if(a==='tb-nuevo'){st.tb={fotos:[],txt:'',diam:'',busy:false,err:null,res:null,marc:null,ctl:null};renderMain()}});
+document.addEventListener('input',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(k==='txt')st.tb.txt=t.value});
+document.addEventListener('change',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(!k)return;
+  if(k==='diam')st.tb.diam=t.value;else if(k==='marc'){st.tb.marc[+t.dataset.i]=t.checked}else if(k==='foto'&&t.files&&t.files.length){const fs=[...t.files];t.value='';tbAddFotos(fs)}});
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje};
 function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=VIEWS[st.tab]();if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
@@ -2720,7 +2789,7 @@ function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCf
   $('#savebtns').innerHTML=(st.dirtyCfg?`<button class="btn" data-act="save-cfg" ${st.saving?'disabled':''}>Guardar receta y ajustes</button>`:'')+(st.dirtyReg?`<button class="btn pri" data-act="save-reg" ${st.saving?'disabled':''}>Guardar día ${fCorta(st.fecha)}</button>`:'')}
 function renderFoot(){}
 function renderAll(){$('#fecha').value=st.fecha;renderCabs();renderTabs();renderMain();renderSave();renderFoot()}
-let tt;function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,2600)}
+let tt;function toast(t,ms){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,ms||2600)}
 
 async function irA(g){g=String(g||'cuentas-hoy');cerrarSplash();st.tab=g.startsWith('rellenar:')?'rellenar':g.startsWith('cuentas')?'cuentas':g.startsWith('mensajes')?'mensajes':g;if(g==='mensajes-mios')st.msgF='mios';if(g==='mensajes-priv')st.msgF='priv';if(g.startsWith('rellenar:'))st.cab=g.split(':')[1];if(st.tab==='notas'&&!veRiego())st.tab='cnotas';if(!VIEWS[st.tab])st.tab='cuentas';
   if(g==='cuentas-ayer'){const d=new Date();d.setDate(d.getDate()-1);if(st.dirtyReg)await saveReg();await loadFecha(isoD(d))}else renderAll()}
@@ -2734,7 +2803,7 @@ function applyCfg(p,v){const b=bid(p[2]);switch(p[1]){
   case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'avisos':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.avisosUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.avisosUrl=u;break}case 'sat':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.satUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.satUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'modo':if(MODOS[v])b.modo=v;break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
 function onInput(e){const t=e.target,k=t.dataset.k;if(!k)return;const p=k.split('.');let v=t.type==='checkbox'?t.checked:(t.dataset.text?t.value.trim():num(t.value));
   if(p[0]==='reg'){if(p[1]==='ceD'&&v!=null&&v>=50)v=v/1000;   // 4400 µS → 4,4 mS (4,4 también vale)
-    if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);for(const o of document.querySelectorAll('#main [data-k]'))if(o!==t&&o.dataset.k===k&&o.type!=='checkbox')o.value=t.value;if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
+    if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);if(p[1]==='mue'){const s=((cabById(st.cab)||{}).sectores||[]).find(x=>x.bandejas.some(bj=>bj.id===p[2])),o=s&&$('#mu_'+s.id);if(o)o.outerHTML=muHTML(s)}for(const o of document.querySelectorAll('#main [data-k]'))if(o!==t&&o.dataset.k===k&&o.type!=='checkbox')o.value=t.value;if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
   softUpdate();renderSave()}
 $('#main').addEventListener('input',onInput);
 $('#main').addEventListener('change',e=>{if(e.target.type==='checkbox')onInput(e)});
@@ -2764,7 +2833,7 @@ async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{con
   if(f>=hoy()||(!base.receta&&f>=isoD(new Date(Date.now()-86400000))))parcial.receta=fotoReceta();
   st.reg.receta=parcial.receta||base.receta;st.reg.guardado=ahora;
   await Store.mergeReg(f,parcial);const tocados=new Set(mods.filter(k=>/^(cm|niv)\./.test(k)).map(k=>k.split('.')[1]));st.regMod=new Set();
-  for(const id of tocados){const b=bid(id);if(b&&modoDep(b)!=='manual')autoAlmacen(b,f).catch(e=>console.warn(e))}st.reg.ejemplo=false;st.dirtyReg=false;enviarPartes();st.hist=null;loadHist();toast('Día '+fCorta(st.fecha)+' guardado');if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
+  for(const id of tocados){const b=bid(id);if(b&&modoDep(b)!=='manual')autoAlmacen(b,f).catch(e=>console.warn(e))}st.reg.ejemplo=false;st.dirtyReg=false;enviarPartes();st.hist=null;loadHist();{const mf=muFaltan();toast('Día '+fCorta(st.fecha)+' guardado'+(mf.length?' · ojo: falta coger la muestra de '+mf.slice(0,4).join(', ')+(mf.length>4?'…':''):''),mf.length?7000:0)}if(st.tab!=='historial')softUpdate();else renderMain()}catch(e){toast(errMsg(e))}
   st.saving=false;renderSave();if(st.tab==='cuentas'||st.tab==='drenaje'){const bn=$('.banner');if(bn&&!st.reg.ejemplo)bn.remove()}}
 async function saveCfg(){if(st.saving)return;if(!esGestor()){const n=clone(st.savedCfg);for(const b of n.bidones){const x=bid(b.id);if(!x)continue;b.kgPrincipal=x.kgPrincipal;b.productos.forEach((p,i)=>{const q=x.productos.find(y=>y.p===p.p);if(q)p.dosis=q.dosis})}st.cfg=n}st.saving=true;renderSave();try{const lineas=diffCfg(st.savedCfg,st.cfg);await Store.setConfig(st.cfg);
   const fch=st.recFecha&&st.recFecha<hoy()?st.recFecha:hoy();if(lineas.length)await Store.addCambio({ts:fch<hoy()?fch+'T12:00:00.000Z':new Date().toISOString(),fecha:fch,lineas:fch<hoy()?['Receta en vigor desde el '+fPunto(fch)+' (apuntada el '+fPunto(hoy())+')',...lineas]:lineas,por:yoNombre(),porEmail:miEmail(),receta:fotoReceta()});st.recFecha=null;st.savedCfg=clone(st.cfg);st.dirtyCfg=false;st.cambios=null;st.hist=null;loadHist();toast(lineas.length?'Receta guardada y anotada en el historial':'Ajustes guardados')}catch(e){toast(errMsg(e))}
