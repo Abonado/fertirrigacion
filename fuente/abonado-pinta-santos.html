@@ -944,7 +944,7 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
     <div class="note">Después pulsa «Guardar receta y ajustes». La radiación solar funciona sin servidor; las parcelas al aire libre lo necesitan.</div></section>`;
   h+=cultivoAjHTML();
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
-  h+=versionHTML();
+  h+=(esAdminU()?copiaHTML():'')+versionHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Recetas y ajustes iniciales</div></div>
     <div class="row">${st.confirmReset?`<span class="note">¿Restaurar recetas y ajustes iniciales?</span><button class="btn danger" data-act="reset-yes">Sí, restaurar</button><button class="btn" data-act="reset-no">Cancelar</button>`:`<button class="btn" data-act="reset">Restaurar recetas y ajustes iniciales</button>`}</div></section>`;
   return h}
@@ -4526,6 +4526,16 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-act^="fi-"
 document.addEventListener('change',e=>{if(e.target.dataset&&e.target.dataset.ub==='mes')st.ubMes=e.target.value});
 
 /* Versión de la app y actualización a la fuerza (borra la copia guardada en el móvil y vuelve a cargar; los datos están en la nube) */
+/* ---------- Copia de seguridad: todo lo necesario para rehacer las cuentas (solo el administrador) ---------- */
+const copiaHTML=()=>`<section class="card"><div><h3>Copia de seguridad</h3><div class="sub">Ajustes, receta, cuentas y drenajes de todos los días, llenados y cambios de receta</div></div>
+  <div class="row"><button class="btn pri" data-act="copia-bajar">Descargar copia</button></div>
+  <div class="note">Guárdala en tu ordenador o en Drive cada semana. Sirve para no perder nada y para comprobar los cálculos de la app con días reales.</div></section>`;
+async function copiaBajar(){toast('Preparando la copia…',8000);
+  try{const[regs,llen,camb]=await Promise.all([Store.listRegs(),Store.listCol('llenados',0).catch(()=>[]),Store.listCol('cambios',0).catch(()=>[])]);
+    const o={app:'Abonado-Fertirrigación',version:window.APP_V||'',creada:new Date().toISOString(),por:miEmail()||'',config:st.savedCfg,registros:regs,llenados:llen,cambios:camb};
+    await saveBlob(new Blob([JSON.stringify(o)],{type:'application/json'}),`copia-abonado-${hoy()}.json`);toast(`Copia descargada: ${regs.length} días`)}
+  catch(e){toast('No se pudo hacer la copia. Prueba otra vez.')}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act="copia-bajar"]');if(b&&b.closest('#main'))copiaBajar()});
 const versionHTML=()=>`<section class="card"><div><h3>Versión de la app</h3><div class="sub">${esc(String(window.APP_V||'—').replace('abonado-',''))}</div></div><div class="row"><button class="btn" data-act="app-act">Buscar actualización</button></div><div class="note">Si a alguien no le aparece algo nuevo, que pulse aquí. No se pierde nada.</div></section>`;
 document.addEventListener('click',async e=>{if(!e.target.closest('[data-act="app-act"]'))return;if(st.dirtyReg||st.dirtyCfg){toast('Guarda antes los cambios');return}toast('Actualizando…');
   try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}catch(_){}try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}catch(_){}
