@@ -196,6 +196,7 @@ td.u{color:var(--muted);font-size:12px}
 .savebar .wrap{padding-block:10px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .savebar .btn{border-color:transparent}
 .savebar .msg{font-size:14px}
+.vzbtn{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:7;width:56px;height:56px;border-radius:50%;border:2px solid var(--navy);background:var(--bg);color:var(--navy);display:grid;place-items:center;padding:0;box-shadow:0 4px 14px rgba(0,0,0,.2);cursor:pointer}.vzbtn[hidden]{display:none}.vzbtn svg{width:26px;height:26px}.vzbtn.on{background:var(--navy);color:var(--bg)}.vzbtn.oye.on::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid #2e9e5b;animation:vzp 1.8s ease-out infinite}.vzbtn.arm{background:#1e7a4c;border-color:#1e7a4c;color:#fff}.vzbtn.habla{background:#1f78c1;border-color:#1f78c1;color:#fff}@keyframes vzp{from{opacity:.9;transform:scale(.92)}to{opacity:0;transform:scale(1.3)}}@media (prefers-reduced-motion:reduce){.vzbtn.oye.on::after{animation:none}}.vzglobo{position:fixed;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));bottom:calc(142px + env(safe-area-inset-bottom,0px));z-index:7;max-width:440px;margin-left:auto;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.35;text-transform:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}.vzglobo[hidden]{display:none}.vzglobo .o{opacity:.75;font-size:13px;margin-bottom:2px}.vzglobo.mal{background:#8e2b20}.vzok{outline:3px solid #2e9e5b;outline-offset:2px;border-radius:6px}.vzlista{margin:8px 0 0;padding-left:18px;text-transform:none}.vzlista li{margin:6px 0}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:14px;z-index:7;max-width:calc(100% - 32px)}
 .foot{padding-block:0 24px;font-size:12px;color:var(--muted)}
 .card>*{min-width:0}
@@ -934,7 +935,7 @@ function sumReceta(c){const rp=reparto(c.id);
   return `<div class="stat"><span>Incremento de CE estimado</span><b>${fmt(ceEstimada(c.id),0)}</b><small class="nt">µS/cm</small></div>
   <div class="stat wide"><span>Reparto de venturis</span><div class="tbl"><table><tbody>${rp.map(r=>`<tr><td>${esc(r.b.nombre)}</td><td><b>${fmt(r.pct,1)} %</b></td><td class="u">${r.b.venturis>1?r.b.venturis+' venturis × '+fmt(r.pct/r.b.venturis,1)+' %':'1 venturi'}</td></tr>`).join('')}</tbody></table></div></div>`}
 
-function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de llenado, mensajes, tareas e incidencias</div></div><div data-out="notif">${notifHTML()}</div></section>`+(window.NUBE&&NUBE.user?NUBE.cardHTML():'')+carpetasHTML()+versionHTML();const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
+function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de llenado, mensajes, tareas e incidencias</div></div><div data-out="notif">${notifHTML()}</div></section>`+(window.NUBE&&NUBE.user?NUBE.cardHTML():'')+vozHTML()+carpetasHTML()+versionHTML();const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
   for(const b of bidonesDe(st.cab)){h+=`<div class="cfgrow"><div class="field nmf"><label for="bn_${b.id}">Nombre</label><div class="inp"><input class="wide" id="bn_${b.id}" data-k="cfg.bname.${b.id}" data-text="1" value="${esc(b.nombre)}"></div></div>
     <div class="field"><label for="lp_${b.id}">L por cm</label><div class="inp sm"><input id="lp_${b.id}" data-k="cfg.lpcm.${b.id}" inputmode="decimal" value="${inVal(b.lpcm)}"></div></div>
     <div class="field"><label for="cp_${b.id}">Capacidad</label><div class="inp sm"><input id="cp_${b.id}" data-k="cfg.cap.${b.id}" inputmode="decimal" value="${inVal(b.capacidad)}"><span class="u">L</span></div></div>
@@ -966,7 +967,7 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
     <div class="note">Después pulsa «Guardar receta y ajustes». La radiación solar funciona sin servidor; las parcelas al aire libre lo necesitan.</div></section>`;
   h+=cultivoAjHTML();
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
-  h+=(esAdminU()?logoHTML():'')+carpetasHTML()+(esAdminU()?copiaHTML():'')+versionHTML();
+  h+=(esAdminU()?logoHTML():'')+vozHTML()+carpetasHTML()+(esAdminU()?copiaHTML():'')+versionHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Copia de seguridad, recetas y ajustes</div></div>
     <div class="row"><button class="btn pri" data-act="backup">Descargar copia de seguridad</button><label class="btn" for="restore">Restaurar copia</label><input type="file" id="restore" accept="application/json,.json" hidden></div>
     <div class="row">${st.confirmReset?`<span class="note">¿Restaurar recetas y ajustes iniciales?</span><button class="btn danger" data-act="reset-yes">Sí, restaurar</button><button class="btn" data-act="reset-no">Cancelar</button>`:`<button class="btn" data-act="reset">Restaurar recetas y ajustes iniciales</button>`}</div></section>`;
@@ -3476,7 +3477,7 @@ async function cmEnviar(){const c=collaDe(st.cm.colla),txt=st.cm.txt.trim(),adj=
 /* ---------- Ajustes de campo ---------- */
 function vCAjustes(){return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de incidencias, tareas y mensajes</div></div><div data-out="notif">${notifHTML()}</div></section>`
   +(esGestor()?`<section class="card"><div><h3>Collas y gente</h3><div class="sub">Crear collas, poner jefe y dar de alta o de baja a la gente</div></div><div class="row"><button class="btn pri" data-tab="cogente">Abrir collas y gente</button></div></section>`:'')
-  +(window.NUBE&&NUBE.user?NUBE.cardHTML():'')}
+  +(window.NUBE&&NUBE.user?NUBE.cardHTML():'')+vozHTML()}
 
 /* Tras dibujar: el chat se queda abajo del todo */
 function campoTrasRender(){if(st.tab==='cmensajes'){const el=$('#cm_hilo');if(el)el.scrollTop=el.scrollHeight}}
@@ -4642,6 +4643,221 @@ const versionHTML=()=>`<section class="card"><div><h3>Versión de la app</h3><di
 document.addEventListener('click',async e=>{if(!e.target.closest('[data-act="app-act"]'))return;if(st.dirtyReg||st.dirtyCfg){toast('Guarda antes los cambios');return}toast('Actualizando…');
   try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}catch(_){}try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}catch(_){}
   location.replace(location.pathname+'?v='+Date.now())});
+/* ---------- Control por voz ----------
+   Con la app abierta y la pantalla encendida escucha la palabra «Agro» y lo que va detrás: apuntar datos de riego
+   y drenaje, notas, mensajes, incidencias y preguntas a la IA (que contesta hablando, también por las gafas o los
+   auriculares). El micrófono redondo sirve para decir una orden sin la palabra. Lo que se oye sin «Agro» no se usa. */
+const VZ_REC=window.SpeechRecognition||window.webkitSpeechRecognition;
+const vz={on:false,rec:null,activo:false,armado:0,habla:false,boton:false,pila:[],timer:null,errores:0,globoT:null};
+const vzOk=()=>!!VZ_REC;
+const VZ_NOTA_IA='\nLa respuesta se va a escuchar en voz alta por unos auriculares: contesta en 2 o 3 frases cortas, sin listas, sin negritas y sin símbolos.';
+const VZ_WAKE=/(?:^|\s)(?:oye\s+|hey\s+|ok\s+|vale\s+)?[aá]gro(?:\s*fl[aeiy]+)?(?=$|[\s,.:;!?¡¿])[\s,.:;!?]*/i;
+const VZ_U={cero:0,un:1,uno:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,veintiun:21,veintiuno:21,veintidos:22,veintitres:23,veinticuatro:24,veinticinco:25,veintiseis:26,veintisiete:27,veintiocho:28,veintinueve:29};
+const VZ_D={treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90};
+const VZ_C={cien:100,ciento:100,doscientos:200,doscientas:200,trescientos:300,trescientas:300,cuatrocientos:400,cuatrocientas:400,quinientos:500,quinientas:500,seiscientos:600,seiscientas:600,setecientos:700,setecientas:700,ochocientos:800,ochocientas:800,novecientos:900,novecientas:900};
+const vzSin=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+/* Números dichos con palabras → cifras: «ochocientos cincuenta» 850, «cuatro coma dos» 4,2, «tres punto uno» 3.1 */
+function vzNums(t){const o=[];let i=0;
+  const lee=j=>{let tot=0,cur=0,ult=9,k=j,alg=false;
+    while(k<t.length){const w=t[k];
+      if(w==='mil'){tot+=(cur||1)*1000;cur=0;ult=4;alg=true;k++;continue}
+      if(w==='y'&&ult===2&&VZ_U[t[k+1]]>0&&VZ_U[t[k+1]]<10){k++;continue}
+      const ty=VZ_C[w]!=null?3:VZ_D[w]!=null?2:VZ_U[w]!=null?1:0;if(!ty)break;const v=VZ_C[w]??VZ_D[w]??VZ_U[w];
+      if(ty>=ult||(ult===2&&v>=10))break;   // «tres uno» son dos números, no cuatro
+      cur+=v;ult=ty;alg=true;k++}
+    return alg?[tot+cur,k]:null};
+  while(i<t.length){let n=null,k=i;
+    if(/^\d+([.,]\d+)?$/.test(t[i])){n=t[i];k=i+1}else{const r=lee(i);if(r){n=String(r[0]);k=r[1]}}
+    if(n==null){o.push(t[i]);i++;continue}
+    if(!/[.,]/.test(n)&&(t[k]==='coma'||t[k]==='punto')&&k+1<t.length){const sep=t[k]==='coma'?',':'.';let z='',m=k+1;while(m<t.length&&t[m]==='cero'){z+='0';m++}
+      let d=null;if(m<t.length&&/^\d+$/.test(t[m])){d=t[m];m++}else{const r=lee(m);if(r){d=String(r[0]);m=r[1]}}
+      if(d!=null||z){n=n+sep+z+(d??'');k=m}}
+    o.push(n);i=k}
+  return o}
+function vzToks(s){s=vzSin(String(s||'').replace(/m³/gi,' metroscubicos ')).replace(/(\d),(\d)/g,'$1\u0001$2').replace(/(\d)\.(\d)/g,'$1\u0002$2')
+    .replace(/\bm3\b/g,' metroscubicos ').replace(/\bmetros? cubicos?\b/g,' metroscubicos ').replace(/[^a-z0-9\u0001\u0002\s]/g,' ')
+    .replace(/(\d)([a-z])/g,'$1 $2').replace(/([a-z])(\d)/g,'$1 $2').replace(/\u0001/g,',').replace(/\u0002/g,'.')
+    .replace(/\bpe ?hache\b|\bpe ache\b|\bp h\b/g,'ph').replace(/\bc e\b/g,'ce');
+  return vzNums(s.split(/\s+/).filter(Boolean))}
+const vzEsN=x=>x!=null&&/^\d+([.,]\d+)?$/.test(x);
+const vzNum=(x,miles)=>miles&&/^\d{1,3}(\.\d{3})+$/.test(x)?+x.replace(/\./g,''):num(x);
+const vzF=v=>String(Math.round(v*1000)/1000).replace('.',',');
+const vzCap=s=>String(s||'').trim().replace(/^[\s:,.;-]+/,'').replace(/^([¿¡"«]*)(\S)/,(m,a,b)=>a+b.toUpperCase());
+/* Quita las n primeras palabras del texto original (para guardar notas y mensajes tal como se dicen) */
+const vzResto=(orig,n)=>String(orig||'').trim().split(/\s+/).slice(n).join(' ');
+
+/* ---- Reconocimiento y voz ---- */
+function vzCrear(){const r=new VZ_REC();r.lang='es-ES';r.interimResults=false;r.maxAlternatives=1;
+  r.onresult=e=>{vz.errores=0;for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(!x.isFinal)continue;const t=x[0]&&x[0].transcript,dir=vz.boton;vz.boton=false;vzOir(t,dir)}};
+  r.onerror=e=>{const c=e&&e.error;if(c==='not-allowed'||c==='service-not-allowed'){vzEncender(false);toast('El micrófono no tiene permiso: dáselo a la app en el navegador');return}
+    if(c==='network'){vz.errores++;if(vz.errores===3)toast('El control por voz necesita conexión')}else if(c==='audio-capture'){vz.errores++;if(vz.errores===3)toast('No se encuentra el micrófono')}};
+  r.onend=()=>{vz.activo=false;vz.boton=false;vzPintar();vzSeguir()};return r}
+function vzEmpezar(){if(!vzOk()||vz.activo||vz.habla)return;if(!vz.rec)vz.rec=vzCrear();vz.rec.continuous=vz.on;try{vz.rec.start();vz.activo=true}catch(e){}vzPintar()}
+function vzParar(){clearTimeout(vz.timer);if(vz.rec&&vz.activo){try{vz.rec.abort()}catch(e){}}}
+function vzSeguir(){clearTimeout(vz.timer);if(!vz.on||vz.habla||vz.activo||document.hidden)return;vz.timer=setTimeout(vzEmpezar,vz.errores>2?4000:300)}
+function vzEncender(on){vz.on=!!on;try{localStorage.setItem('abono.voz',on?'1':'0')}catch(e){}if(on)vzEmpezar();else{vzParar();vz.armado=0}vzPintar();
+  for(const i of document.querySelectorAll('[data-vz="on"]'))i.checked=vz.on}
+function vzHablar(t,fin){const S=window.speechSynthesis;t=String(t||'').trim();if(!S||!window.SpeechSynthesisUtterance||!t){if(fin)fin();return}
+  vz.habla=true;vzParar();try{S.cancel()}catch(e){}
+  const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1.05;try{const vs=S.getVoices()||[];const v=vs.find(x=>/^es[-_]ES/i.test(x.lang))||vs.find(x=>/^es/i.test(x.lang));if(v)u.voice=v}catch(e){}
+  let hecho=false,tm=null;const acaba=()=>{if(hecho)return;hecho=true;clearTimeout(tm);vz.habla=false;vzPintar();if(fin)fin();vzSeguir()};
+  tm=setTimeout(acaba,3000+t.length*90);u.onend=acaba;u.onerror=acaba;vzPintar();try{S.speak(u)}catch(e){acaba()}}
+/* Lo que se oye: solo se hace caso a lo que va después de «Agro» (o a lo que se dice justo después de «Agro» a secas o del botón) */
+function vzOir(texto,directo){texto=String(texto||'').trim();if(!texto)return;const m=VZ_WAKE.exec(texto);let orden;
+  if(m)orden=texto.slice(m.index+m[0].length).trim();else if(directo||Date.now()<vz.armado)orden=texto;else return;
+  if(!orden){vzGlobo('Dime…','');vzHablar('Dime',()=>{vz.armado=Date.now()+8000;vzPintar()});return}
+  vz.armado=0;vzPintar();return vzComando(orden)}
+async function vzComando(orden){vzGlobo(`«${orden}»`,'…');let r;
+  try{r=await vzEjecuta(orden)}catch(e){console.error('voz',e);r={txt:'No he podido hacerlo: '+(errMsg?errMsg(e):'error'),ok:false}}
+  if(!r)return;vzGlobo(`«${orden}»`,r.ver||r.txt,r.ok===false);vzHablar(r.txt);return r}
+
+/* ---- Órdenes ---- */
+const VZ_PREG=new Set(['que','como','porque','por','cuanto','cuanta','cuantos','cuantas','cual','cuales','cuando','donde','puedo','deberia','debo','es','hay','sabes','explicame','dime','pregunta','pregunto']);
+const VZ_IR=[[['drenaje','drenajes'],['drenaje']],[['cuentas','cuenta','bidones','depositos'],['cuentas']],[['notas','nota'],['notas','cnotas']],[['mensajes','mensaje'],['mensajes','cmensajes']],
+  [['incidencias','incidencia','mapa','plano'],['mapa','cincid']],[['asistente','ia','inteligencia'],['chatia']],[['tareas','tarea'],['tareas','ctareas']],[['tiempo'],['tiempo','ctiempo']],
+  [['parte','partes'],['parte','coparte']],[['receta'],['receta']],[['rellenar','llenar','llenado'],['rellenar']],[['ajustes','configuracion'],['ajustes','cajustes']],[['finca','vivo'],['vivo','cvivo']],[['material'],['material']],[['almacen'],['almacen']]];
+const VZ_ITIPO=[['plaga',['plaga','mosca','trips','arana','pulgon','tuta','minador','oruga','gusano','caracol','bicho','bichos']],['enfermedad',['enfermedad','hongo','oidio','botritis','botrytis','mildiu','virus','podredumbre','moho']],
+  ['riego',['gotero','goteros','goteo','riego','fuga','tuberia','manguera','ramal','agua','filtro','charco']],['estructura',['plastico','estructura','puerta','ventana','malla','viento','alambre','poste']],['nutricion',['carencia','amarillo','amarillas','nutricion','abono','clorosis']]];
+const VZ_CITIPO=[['accidente',['accidente','corte','cortado','golpe','herido','herida','lesion','caido','caida']],['material',['roto','rota','perdido','perdida','material','herramienta','tijera','carro','escalera']],
+  ['falta',['falta','faltado','retraso','tarde','venido']],['conducta',['conducta','discusion','pelea','bronca']],['planta',['plaga','planta','cultivo','hongo','mosca']]];
+const vzTipo=(toks,L,def)=>{for(const[k,ws]of L)if(toks.some(t=>ws.includes(t)))return k;return def};
+const VZ_TAB={dren:'drenaje',ceD:'drenaje',phD:'drenaje',mue:'drenaje',min:'drenaje',rie:'drenaje',ceB:'drenaje',phB:'drenaje',inc:'drenaje',phS:'drenaje',rad:'drenaje',m3:'cuentas',cm:'cuentas',niv:'cuentas'};
+function vzPon(g,id,v){if(!st.reg[g])st.reg[g]={};vz.pila.push({g,id,prev:st.reg[g][id],fecha:st.fecha});if(vz.pila.length>30)vz.pila.shift();st.reg[g][id]=v;marcaReg(g+'.'+id);if(g==='niv')autoCm(id)}
+/* Enseña en pantalla lo que se acaba de apuntar */
+function vzMostrar(sets){const tab=VZ_TAB[sets[0].g];if(tab&&st.tab!==tab&&tabPermitida(tab)){st.tab=tab;renderCabs();renderTabs()}renderMain();renderSave();
+  let pri=null;for(const{g,id}of sets)for(const o of document.querySelectorAll(`#main [data-k="reg.${g}.${id}"]`)){if(o.type==='checkbox')continue;const q=o.closest('.inp')||o;q.classList.add('vzok');setTimeout(()=>q.classList.remove('vzok'),3000);pri=pri||o}
+  if(pri)try{pri.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}}
+function vzBusca(lista,t){const u=t.map(x=>x.replace(',','.'));const prueba=(c,n)=>{const o=lista.find(x=>x.clave===c);return o?{o,n}:null};
+  for(const o of lista.slice().sort((a,b)=>b.clave.split(' ').length-a.clave.split(' ').length)){const k=o.clave.split(' ');if(k.length>1&&u.slice(0,k.length).join(' ')===o.clave)return{o,n:k.length}}
+  if(!u.length)return null;
+  if(u.length>2&&/^\d+$/.test(u[0])&&/^\d{1,2}$/.test(u[1])){const r=prueba(u[0]+'.'+u[1],2);if(r)return r}
+  return prueba(u[0],1)||(u.length>1&&/^\d+$/.test(u[0])&&/^\d{1,2}$/.test(u[1])&&prueba(u[0]+'.'+u[1],2))||(/^\d\d$/.test(u[0])&&prueba(u[0][0]+'.'+u[0][1],1))||null}
+const vzClave=(nombre,quita)=>vzToks(nombre).filter(x=>!quita.includes(x)).join(' ').replace(/,/g,'.');
+function vzBandeja(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un cabezal',ok:false};
+  const lista=c.sectores.flatMap(s=>s.bandejas.map(bj=>({clave:vzClave(bj.nombre,['bandeja','bandejas']),bj,s})));const f=vzBusca(lista,t);
+  if(!f)return{txt:`No encuentro esa bandeja en ${c.nombre}`,ok:false};const{bj}=f.o,r=t.slice(f.n),sets=[],dic=[];let campo=null,bare=false;
+  for(let i=0;i<r.length;i++){const w=r[i];
+    if(['ce','se','c','conductividad','electrica'].includes(w)){campo='ceD';continue}if(w==='ph'){campo='phD';continue}
+    if(['drenaje','drenado','drena'].includes(w)){campo='dren';continue}
+    if(w==='muestra'){sets.push(['mue',true]);dic.push('muestra cogida');continue}
+    if(!vzEsN(w))continue;let g=campo||(bare?null:'dren');campo=null;if(!g)continue;if(g==='dren')bare=true;
+    let v=vzNum(w,g!=='phD');if(v==null)continue;
+    if(g==='ceD'){if(v>=50)v=v/1000;if(v<=0||v>20)return{txt:`La CE ${vzF(v)} no me cuadra, repítela`,ok:false};dic.push('CE '+vzF(v))}
+    else if(g==='phD'){if(v<2||v>12)return{txt:`El pH ${vzF(v)} no me cuadra, repítelo`,ok:false};dic.push('pH '+vzF(v))}
+    else{if(v<0||v>100000)return{txt:'Ese drenaje no me cuadra, repítelo',ok:false};dic.push(vzF(v)+' mililitros')}
+    sets.push([g,v])}
+  if(!sets.length)return{txt:`${bj.nombre}: ¿qué apunto? Di los mililitros, la CE o el pH`,ok:false};
+  for(const[g,v]of sets)vzPon(g,bj.id,v);vzMostrar(sets.map(([g])=>({g,id:bj.id})));return{txt:`${bj.nombre}: ${dic.join(', ')}`}}
+function vzSector(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un cabezal',ok:false};
+  const lista=c.sectores.map(s=>({clave:vzClave(s.nombre,['sector','sectores']),s}));const f=vzBusca(lista,t);if(!f)return{txt:`No encuentro ese sector en ${c.nombre}`,ok:false};
+  const{s}=f.o,r=t.slice(f.n),sets=[],dic=[];const MIN=['minutos','minuto','min','tiempo'],RIE=['riegos','riego','pulsos','veces'];
+  for(let i=0;i<r.length;i++){const w=r[i];let g=null,v=null;
+    if(vzEsN(w)){v=vzNum(w,true);const nx=r[i+1];if(MIN.includes(nx)){g='min';i++}else if(RIE.includes(nx)){g='rie';i++}else if(nx==='horas'||nx==='hora'){g='min';v=v*60;i++}else g=sets.some(x=>x[0]==='min')?null:'min'}
+    else if((MIN.includes(w)||RIE.includes(w))&&vzEsN(r[i+1])){g=MIN.includes(w)?'min':'rie';v=vzNum(r[i+1],true);i++}
+    if(!g||v==null)continue;if(g==='min'&&(v<0||v>1440))return{txt:'Esos minutos no me cuadran, repítelo',ok:false};if(g==='rie'&&(v<0||v>200))return{txt:'Esos riegos no me cuadran, repítelo',ok:false};
+    sets.push([g,v]);dic.push(g==='min'?vzF(v)+' minutos':vzF(v)+' riegos')}
+  if(!sets.length)return{txt:`${s.nombre}: di los minutos o los riegos`,ok:false};
+  for(const[g,v]of sets)vzPon(g,s.id,v);vzMostrar(sets.map(([g])=>({g,id:s.id})));return{txt:`${s.nombre}: ${dic.join(', ')}`}}
+function vzBidon(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un cabezal',ok:false};const STOP=new Set(['de','del','el','la','los','las','en','con']);
+  let j=1;const ws=[];while(j<t.length&&!vzEsN(t[j])){if(!STOP.has(t[j]))ws.push(t[j]);j++}const val=t[j];
+  const bs=bidonesDe(st.cab).map(b=>{const tx=vzToks([b.nombre,...b.productos.map(x=>(prod(x.p)||{}).n||'')].join(' ')),bt=vzToks(b.nombre);
+    return{b,p:ws.filter(w=>(w.length>=3&&tx.some(x=>x.startsWith(w)||w.startsWith(x)&&x.length>=4))||(w.length<3&&bt.includes(w))).length}}).filter(x=>x.p>0).sort((a,b)=>b.p-a.p);
+  if(!bs.length)return{txt:'No sé qué bidón es. Di su nombre o lo que lleva',ok:false};if(bs.length>1&&bs[1].p===bs[0].p)return{txt:`Hay varios: ${bs.filter(x=>x.p===bs[0].p).map(x=>x.b.nombre).join(', ')}. Dímelo más claro`,ok:false};
+  const b=bs[0].b;if(!vzEsN(val))return{txt:`${b.nombre}: ¿cuántos centímetros?`,ok:false};const v=vzNum(val);if(v==null||v<0||v>400)return{txt:'Esos centímetros no me cuadran, repítelo',ok:false};
+  const g=esDirecto(b)||!lecturaAnt(b,false)?'cm':'niv';vzPon(g,b.id,v);vzMostrar([{g,id:b.id}]);return{txt:`${b.nombre}: ${g==='niv'?'nivel ':''}${vzF(v)} centímetros${g==='cm'?' gastados':''}`}}
+function vzValorCab(g,t,txt,lim,mili){const n=t.find(vzEsN);if(n==null)return{txt:`¿Cuánto? Di ${txt} y el número`,ok:false};let v=vzNum(n,g==='m3'||g==='rad');if(mili&&v>=50)v=v/1000;
+  if(v==null||v<lim[0]||v>lim[1])return{txt:`${vzCap(txt)} ${vzF(v)} no me cuadra, repítelo`,ok:false};vzPon(g,st.cab,v);vzMostrar([{g,id:st.cab}]);return{txt:g==='m3'?`${cabNombre(st.cab)}: ${vzF(v)} metros cúbicos`:`${cabNombre(st.cab)}: ${txt} ${vzF(v)}`}}
+async function vzNota(orig,n){const txt=vzCap(vzResto(orig,n).replace(/^que\s+/i,''));if(!txt)return{txt:'¿Qué te apunto?',ok:false};
+  const nt={id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),email:miEmail()||'',texto:txt.slice(0,140),det:txt.length>140?txt:'',cuando:null,rep:'',n:null,dm:null,hecha:false,hechaTs:null,ts:ahoraISO(),area:areaDe(st.tab)};
+  await ntGuardarDoc(nt);if(st.tab==='notas'||st.tab==='cnotas')renderMain();return{txt:'Nota guardada',ver:'Nota guardada: '+txt}}
+async function vzMensaje(orig){let txt=String(orig).replace(/^\s*(?:(?:manda|mándale|mandale|envía|envia|enviar|mandar|escribe)\s+(?:un\s+)?)?mensaje(?:\s+de\s+voz)?\b[\s:,.-]*/i,'');
+  let dest=null;const pm=/^(?:para|a)\s+([^\s:,.;]+)(?:\s+([^\s:,.;]+))?/i.exec(txt);
+  if(pm){const eq=equipo(),w1=vzSin(pm[1]).replace(/[^a-z]/g,''),w2=vzSin(pm[2]||'').replace(/[^a-z]/g,'');const c1=eq.filter(u=>vzSin(u.nombre).split(/\s+/)[0]===w1);
+    const c2=c1.length>1&&w2?c1.filter(u=>vzSin(u.nombre).split(/\s+/)[1]===w2):[];dest=c2.length===1?c2[0]:c1.length===1?c1[0]:null;
+    if(!dest)return{txt:c1.length>1?`Hay varios que se llaman ${pm[1]}. Di también el apellido`:`No encuentro a ${pm[1]} en el equipo`,ok:false};
+    const er=x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');txt=txt.replace(new RegExp('^(?:para|a)\\s+'+er(pm[1])+(c2.length===1?'\\s+'+er(pm[2]):'')+'[\\s:,.-]*','i'),'').replace(/^\s*(?:que|diciendo)\s+/i,'')}
+  txt=vzCap(txt);if(!txt)return{txt:'¿Qué mensaje mando?',ok:false};
+  const m={ts:new Date().toISOString(),fecha:hoy(),autor:autorActual(),...autorEmail(),cab:st.cab,txt,resuelto:false,adjuntos:[]};
+  if(dest){const p={ts:m.ts,fecha:m.fecha,de:miEmail(),deNombre:m.autor,para:dest.email,paraNombre:dest.nombre,miembros:[miEmail(),dest.email],txt,adjuntos:[],leido:false};
+    const id=await Store.addPriv(p);if(st.priv)st.priv.unshift({...p,id});pushEnviar([dest.email],'Mensaje privado de '+(m.autor||'alguien'),txt,'priv-'+id,'mensajes-priv');if(st.tab==='mensajes')renderMain();return{txt:'Mensaje enviado a '+dest.nombre,ver:`Para ${dest.nombre}: ${txt}`}}
+  if(!tabPermitida('mensajes'))return{txt:'Los mensajes por voz son los del personal de riego',ok:false};
+  const id=await Store.addMsg(m);if(st.msgs)st.msgs.unshift({...m,id});pushEnviar(quienVeCab(m.cab),'Mensaje de '+(m.autor||'alguien')+(m.cab?' · '+cabNombre(m.cab):''),txt,'msg-'+id,'mensajes');if(st.tab==='mensajes')renderMain();
+  return{txt:'Mensaje enviado',ver:'Mensaje: '+txt}}
+async function vzIncidencia(orig,t){let txt=String(orig).replace(/^\s*(?:(?:apunta|pon|crea|abre)\s+(?:una\s+)?)?(?:incidencia|aviso|averia|avería)\b[\s:,.-]*/i,'');const urg=t.includes('urgente');txt=vzCap(txt.replace(/^\s*urgente\b[\s:,.-]*/i,''));
+  if(!txt)return{txt:'¿Qué ha pasado?',ok:false};
+  const campo=tabPermitida('cincid')&&(areaDe(st.tab)==='campo'||!veRiego()||!MAPAS[st.cab]);
+  if(campo){const c=collaDe(st.co&&st.co.colla)||collasVis()[0];if(!c)return{txt:'No tienes ninguna colla para apuntar la incidencia',ok:false};
+    const i={ts:new Date().toISOString(),fecha:hoy(),colla:c.id,collaNombre:c.nombre,jefeEmail:c.jefeEmail||'',finca:c.finca||'',pid:'',pnom:'',tipo:vzTipo(t,VZ_CITIPO,'otra'),txt,urg,adjuntos:[],estado:'abierta',por:yoNombre(),porEmail:miEmail()};
+    const id=await Store.addCol('cincid',i);if(st.cinc)st.cinc.unshift({...i,id});pushCampo(c,(urg?'Incidencia URGENTE · ':'Incidencia · ')+c.nombre,`${CI_T[i.tipo]}: ${txt.slice(0,80)}`,'cinc-'+id,'cincid');renderGrupos();if(st.tab==='cincid')renderMain();
+    return{txt:(urg?'Incidencia urgente guardada':'Incidencia guardada')+' en '+c.nombre,ver:`${CI_T[i.tipo]} · ${txt}`}}
+  const M=MAPAS[st.cab],tipo=vzTipo(t,VZ_ITIPO,'otro'),prio=urg?'alta':'media';if(!M)return{txt:'Este cabezal no tiene plano de naves',ok:false};
+  const k=t.indexOf('nave'),nv=k>=0&&vzEsN(t[k+1])?M.naves.find(x=>String(x.n)===String(vzNum(t[k+1]))):null;
+  if(!nv){st.mNueva={tipo,prio,txt,adj:[]};st.mSel=null;if(tabPermitida('mapa')){st.tab='mapa';renderCabs();renderTabs();renderMain()}return{txt:'Toca la nave en el plano y guarda la incidencia',ver:'Falta la nave: tócala en el plano'}}
+  const pt=centro(nv.p),i={ts:new Date().toISOString(),fecha:hoy(),cab:st.cab,finca:fincaDeCab(st.cab),nave:nv.n,pasillo:null,x:+pt[0].toFixed(1),y:+pt[1].toFixed(1),tipo,prio,txt,fotos:[],estado:'abierta',por:yoNombre(),porEmail:miEmail()};
+  const id=await Store.addCol('incidencias',i);if(st.inc)st.inc.unshift({...i,id});renderGrupos();if(st.tab==='mapa')renderMain();const ti=ITIPOS[tipo]||ITIPOS.otro;
+  pushEnviar([...new Set([...encargadosDe(i.finca),...adminsEmails()])],`${urg?'URGENTE · ':''}${ti[0]} · ${lugar(i).toLowerCase()} · ${cabNombre(i.cab)}`,txt+' · '+yoNombre(),'inc-'+id,'mapa');
+  return{txt:`${urg?'Incidencia urgente':'Incidencia'} guardada en la nave ${nv.n}`,ver:`Nave ${nv.n} · ${ti[0]} · ${txt}`}}
+async function vzIA(orig){const q=vzCap(String(orig).replace(/^\s*(?:pregunta(?:le)?|pregunto|oye)\b[\s:,.-]*(?:a la ia[\s:,.-]*)?/i,''));if(!q)return{txt:'¿Qué quieres preguntar?',ok:false};
+  if(!(window.NUBE&&NUBE.ia&&NUBE.user))return{txt:'Para preguntar a la IA hace falta tu cuenta y conexión',ok:false};
+  vzGlobo(`«${orig}»`,'Pensando…');const n0=(st.ch||[]).length;await chEnviar(q,true);const l=st.ch[st.ch.length-1];
+  if(!l||l.role!=='assistant'||st.ch.length<=n0)return{txt:'No he podido preguntar a la IA',ok:false};
+  const r=String(l.text).replace(/\*\*|__|`|#+\s*/g,'').replace(/^\s*[-•*]\s+/gm,'').replace(/\n+/g,' ').trim();return{txt:r,ver:r}}
+function vzDeshacer(){const u=vz.pila.pop();if(!u)return{txt:'No hay nada que deshacer',ok:false};if(u.fecha!==st.fecha)return{txt:'Eso era de otro día',ok:false};
+  st.reg[u.g][u.id]=u.prev??null;marcaReg(u.g+'.'+u.id);if(u.g==='niv')autoCm(u.id);vzMostrar([{g:u.g,id:u.id}]);return{txt:'Deshecho'}}
+const VZ_AYUDA='Di Agro y, por ejemplo: bandeja tres punto uno, ochocientos cincuenta. Sector cuatro, ciento veinte minutos. Bidón nítrico, nueve coma siete. Guardar. Nota, y lo que quieras. Mensaje, incidencia, o una pregunta para la IA.';
+async function vzEjecuta(orig){let t=vzToks(orig);if(!t.length)return null;
+  /* el cabezal se puede decir delante: «Gasolinera, bandeja…» o «cabezal Franco» */
+  const cabs=(typeof cabsFinca==='function'?cabsFinca():cabsVis())||[];let nCab=0;
+  for(const c of cabs){const k=vzToks(c.nombre),ini=t[0]==='cabezal'?1:0;if(k.length&&t.slice(ini,ini+k.length).join(' ')===k.join(' ')){nCab=ini+k.length;if(c.id!==st.cab){st.cab=c.id;renderCabs()}break}}
+  if(nCab){t=t.slice(nCab);orig=vzResto(orig,nCab);if(!t.length){renderMain();return{txt:'Cabezal '+cabNombre(st.cab)}}}
+  const w=t[0],n=t.join(' ');
+  const datos=()=>veRiego()?null:{txt:'Los datos de riego solo los apunta el personal de riego',ok:false};
+  if(['guardar','guarda','graba','grabar','guardalo'].includes(w)){if(datos())return datos();if(!st.dirtyReg)return{txt:'No hay nada pendiente de guardar'};await saveReg();return{txt:'Guardado'}}
+  if(['deshacer','deshaz','anula','anular','borra','quita'].includes(w))return vzDeshacer();
+  if(w==='ayuda'||n==='que puedo decir'||n==='que puedes hacer')return{txt:VZ_AYUDA};
+  if(['nota','apunta','apuntame','recordatorio','recuerdame'].includes(w))return vzNota(orig,1);
+  if(w==='mensaje'||(['manda','mandale','envia','enviar','mandar','escribe'].includes(w)&&t.slice(1,3).includes('mensaje')))return vzMensaje(orig);
+  if(['incidencia','aviso','averia'].includes(w)||(['apunta','pon','crea','abre'].includes(w)&&t.slice(1,3).includes('incidencia')))return vzIncidencia(orig,t);
+  if(['abre','abrir','ve','vete','ir','ensename','muestrame','pon'].includes(w)){const r=t.slice(1).filter(x=>!['a','al','la','el','las','los','de','pantalla'].includes(x));
+    for(const[ws,tabs]of VZ_IR)if(r.some(x=>ws.includes(x))){const tb=tabs.find(x=>tabPermitida(x));if(!tb)return{txt:'Eso no lo tienes en tu app',ok:false};st.tab=tb;renderCabs();renderTabs();renderMain();window.scrollTo(0,0);return{txt:(TABS.find(x=>x[0]===tb)||[,''])[1]}}}
+  if(w==='bandeja'||w==='bandejas'){if(datos())return datos();return vzBandeja(t.slice(1))}
+  if(w==='sector'){if(datos())return datos();return vzSector(t.slice(1))}
+  if(['bidon','deposito','tanque','bidones'].includes(w)){if(datos())return datos();return vzBidon(t)}
+  if(t.includes('metroscubicos')||w==='contador'){if(datos())return datos();return vzValorCab('m3',t,'metros cúbicos',[0,100000])}
+  if(/^(ce|se|c|conductividad)( de( la)?)? balsa\b/.test(n)){if(datos())return datos();return vzValorCab('ceB',t,'CE balsa',[0,20],true)}
+  if(/^ph( de( la)?)? balsa\b/.test(n)){if(datos())return datos();return vzValorCab('phB',t,'pH balsa',[2,12])}
+  if(/^ph( de( la)?)? salida\b/.test(n)){if(datos())return datos();return vzValorCab('phS',t,'pH salida',[2,12])}
+  if(w==='incremento'){if(datos())return datos();return vzValorCab('inc',t,'incremento',[0,20],true)}
+  if(w==='radiacion'){if(datos())return datos();return vzValorCab('rad',t,'radiación',[0,100000])}
+  if(VZ_PREG.has(w)||/[?¿]/.test(orig))return vzIA(orig);
+  return{txt:'No te he entendido. Di Agro, ayuda, para ver ejemplos',ver:'No te he entendido',ok:false}}
+
+/* ---- Botón, globo y ajustes ---- */
+const VZ_MIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+const vzBtn=document.createElement('button');vzBtn.type='button';vzBtn.id='vzbtn';vzBtn.className='vzbtn';vzBtn.hidden=true;vzBtn.innerHTML=VZ_MIC;document.body.appendChild(vzBtn);
+const vzGl=document.createElement('div');vzGl.id='vzglobo';vzGl.className='vzglobo';vzGl.hidden=true;vzGl.setAttribute('role','status');vzGl.setAttribute('aria-live','polite');document.body.appendChild(vzGl);
+function vzPintar(){const ok=vzOk()&&st.ready;vzBtn.hidden=!ok;if(!ok)return;const arm=Date.now()<vz.armado||vz.boton;
+  vzBtn.classList.toggle('on',vz.on);vzBtn.classList.toggle('oye',vz.activo);vzBtn.classList.toggle('arm',arm);vzBtn.classList.toggle('habla',vz.habla);
+  vzBtn.setAttribute('aria-label',arm?'Te escucho: di la orden':vz.on?'Escuchando «Agro». Toca para decir una orden':'Toca para decir una orden');
+  if(arm){clearTimeout(vz.armT);vz.armT=setTimeout(vzPintar,Math.max(200,vz.armado-Date.now()+50))}}
+function vzGlobo(a,b,mal){clearTimeout(vz.globoT);vzGl.innerHTML=`<div class="o">${esc(a||'')}</div>${b?`<div>${esc(b)}</div>`:''}`;vzGl.classList.toggle('mal',!!mal);vzGl.hidden=false;vz.globoT=setTimeout(()=>{vzGl.hidden=true},b&&b.length>120?12000:6000)}
+vzBtn.addEventListener('click',()=>{if(vz.habla){try{speechSynthesis.cancel()}catch(e){}return}
+  if(vz.on&&vz.activo){vz.armado=Date.now()+8000;vzPintar();vzGlobo('Te escucho…','');return}
+  vz.boton=true;vz.armado=Date.now()+8000;vzGlobo('Te escucho…','');if(vz.activo)vzParar();setTimeout(vzEmpezar,vz.activo?250:0);vzPintar()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)vzParar();else vzSeguir()});
+document.addEventListener('click',()=>{if(vz.on&&!vz.activo&&!vz.habla)vzEmpezar()},true);   // por si el navegador pide un toque antes de abrir el micrófono
+document.addEventListener('change',e=>{if(e.target&&e.target.dataset&&e.target.dataset.vz==='on')vzEncender(e.target.checked)});
+const VZ_EJ=[['Gasolinera, bandeja 3.1, 850','apunta el drenaje de esa bandeja'],['bandeja 3.1, CE 4,2, pH 6,1','CE y pH del drenaje'],['sector 4, 120 minutos, 12 riegos','tiempo y riegos del sector'],
+  ['metros cúbicos 460','el contador del cabezal'],['bidón nítrico 9,7','los cm del bidón'],['CE balsa 1,5 · pH salida 5,6 · incremento 1,9','agua de riego'],['guardar · deshacer','guarda lo apuntado o quita lo último'],
+  ['nota: llamar al técnico','a Mis notas'],['mensaje: el filtro de Franco está sucio · mensaje para Pepe: …','a Mensajes'],['incidencia urgente nave 5 mosca blanca','a Incidencias'],
+  ['¿por qué sube la CE del drenaje?','la IA contesta hablando'],['abre drenaje','cambia de pantalla']];
+function vozHTML(){if(!vzOk())return `<section class="card"><div><h3>Control por voz</h3><div class="sub">Este navegador no reconoce la voz</div></div><div class="note">Usa la app en Chrome (Android) o Safari (iPhone) actualizados.</div></section>`;
+  return `<section class="card"><div><h3>Control por voz</h3><div class="sub">Di «Agro» y lo que quieras · con la app abierta y la pantalla encendida</div></div>
+    <label class="chk"><input type="checkbox" data-vz="on" ${vz.on?'checked':''}> Escuchar la palabra «Agro» en este móvil</label>
+    <details class="tv"><summary>Qué se le puede decir</summary><ul class="vzlista">${VZ_EJ.map(([a,b])=>`<li><b>«Agro, ${esc(a)}»</b> <span class="note">${esc(b)}</span></li>`).join('')}</ul></details>
+    <div class="note">El micrófono redondo de abajo sirve para decir una orden sin «Agro». Lo que se habla sin «Agro» no se guarda ni se usa. Con las gafas o unos auriculares conectados, la respuesta se oye por ellos. Necesita conexión.</div></section>`}
+if(vzOk()){try{vz.on=localStorage.getItem('abono.voz')==='1'}catch(e){}setInterval(()=>{vzPintar();if(vz.on&&!vz.activo&&!vz.habla&&!document.hidden&&st.ready)vzSeguir()},2000)}
+
 /* ---------- Asistente IA agrícola (chat) ----------
    Solo temas del campo (lo exige el servidor). La conversación se guarda en este móvil, no en la nube.
    Puede usar los datos de la finca (receta, últimos días de riego y drenaje, tiempo) para responder en concreto. */
@@ -4680,8 +4896,8 @@ function vChat(){chCargar();const iaOn=window.NUBE&&NUBE.ia&&NUBE.user;
     <div class="note">Respuestas orientativas. Para tratamientos fitosanitarios, usa solo productos autorizados y consulta a vuestro técnico. La conversación se guarda solo en este móvil.</div></section>`;
   setTimeout(()=>{const b=$('#ch_box');if(b&&st.ch.length)b.lastElementChild.scrollIntoView({block:'nearest'})},0);
   return h}
-async function chEnviar(txt){txt=String(txt||'').trim();if(!txt||st.chBusy)return;chCargar();const foto=st.chFoto;st.ch.push({role:'user',text:txt,...(foto?{foto:true}:{}),ts:ahoraISO()});st.chFoto=null;st.chBusy=true;chGuardar();renderMain();
-  try{if(st.hist===null)await loadHist_().catch(()=>{});const r=await NUBE.ia.chat(st.ch.map(m=>({role:m.role,text:m.text})),st.chCtx?chContexto():'',foto&&foto.blob);
+async function chEnviar(txt,voz){txt=String(txt||'').trim();if(!txt||st.chBusy)return;chCargar();const foto=st.chFoto;st.ch.push({role:'user',text:txt,...(foto?{foto:true}:{}),ts:ahoraISO()});st.chFoto=null;st.chBusy=true;chGuardar();renderMain();
+  try{if(st.hist===null)await loadHist_().catch(()=>{});const r=await NUBE.ia.chat(st.ch.map(m=>({role:m.role,text:m.text})),(st.chCtx?chContexto():'')+(voz?VZ_NOTA_IA:''),foto&&foto.blob);
     st.ch.push({role:'assistant',text:String(r||'').trim()||'No he podido responder.',ts:ahoraISO()})}
   catch(e){st.ch.pop();toast(dgErr(e));setTimeout(()=>{const t=$('#ch_txt');if(t)t.value=txt},50)}
   st.chBusy=false;chGuardar();if(st.tab==='chatia')renderMain()}
@@ -4724,7 +4940,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v118';
+window.APP_V='abonado-v119';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
