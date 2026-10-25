@@ -32,7 +32,11 @@ REPITE = r"""(copia)=>{const cfg0=clone(copia.config),out=[],U={};for(const k in
         u:{real:d.u.real??null,des:d.u.des??null},salida:{ent:d.salida.ent??null,tot:d.salida.tot??null},
         band:d.sect.flatMap(s=>s.band.map(b=>({s:s.nombre,b:b.nombre,pct:b.pct??null,vol:b.vol??null}))),
         hoja:Object.fromEntries(Object.entries(d.hoja||{}).filter(([k])=>k!=='_cover').map(([k,v])=>[k,v&&v.v!==undefined?v.v:v])),
-        hojaP:Object.fromEntries(Object.entries(d.hojaP||{}).filter(([k])=>k!=='_cover').map(([k,v])=>[k,v&&v.v!==undefined?v.v:v]))})}}
+        hojaP:Object.fromEntries(Object.entries(d.hojaP||{}).filter(([k])=>k!=='_cover').map(([k,v])=>[k,v&&v.v!==undefined?v.v:v])),
+        pantalla:(()=>{try{st.cab=c.id;st.tab='cuentas';const h=vistaTab(),vis=[...h.matchAll(/<td><b>([^<]*)<\/b><\/td>/g)].map(m=>m[1]).sort(),
+          par=d.deps.flatMap(x=>x.filas.map(f=>fmt(f.real,3))),lit=d.deps.map(x=>fmt(x.L,1)),resto=[...vis];
+          for(const v of par){const i=resto.indexOf(v);if(i<0)return 'en Cuentas falta la dosis real '+v+' del parte';resto.splice(i,1)}
+          for(const v of resto){const i=lit.indexOf(v);if(i<0)return 'Cuentas muestra '+v+', que no está en el parte';lit.splice(i,1)}return 'ok'}catch(e){return 'error al pintar Cuentas: '+e}})()})}}
   return{out,U,nombres:Object.fromEntries(Object.entries(PRODUCTOS).map(([k,v])=>[k,v.n]))}}"""
 
 # ---------- cálculo independiente (las fórmulas escritas otra vez, sin usar el código de la app) ----------
@@ -146,6 +150,7 @@ for ruta in copias:
     ind = calcular(copia, app['U']); n = 0
     def fallo(o, que, a, b): mal.append(f"{o['parte']} (apuntado {o['fecha']}) · {o['cabN']} · {que}: la app da {a} y el cálculo independiente {b}")
     for o in res:
+        if o.get('pantalla') != 'ok': mal.append(f"{o['parte']} (apuntado {o['fecha']}) · {o['cabN']} · la pantalla Cuentas no coincide con el parte: {o.get('pantalla')}")
         x = ind.get((o['fecha'], o['cab']))
         if not x: mal.append(f"{o['fecha']} · {o['cabN']}: falta en el cálculo independiente"); continue
         for d, e in zip(o['deps'], x['deps']):
@@ -181,7 +186,7 @@ for ruta in copias:
                 for parte in ('hoja', 'hojaP'):
                     for k in sorted(set(v[parte]) | set(o[parte])):
                         if v[parte].get(k) != o[parte].get(k): mal.append(f"{o['parte']} · {o['cabN']} · parte {'grande' if parte == 'hoja' else 'pequeño'} casilla {k}: antes «{v[parte].get(k)}», ahora «{o[parte].get(k)}»")
-                o2 = {k: o[k] for k in o if k not in ('hoja', 'hojaP')}; v2 = {k: v[k] for k in v if k not in ('hoja', 'hojaP')}
+                o2 = {k: o[k] for k in o if k not in ('hoja', 'hojaP', 'pantalla')}; v2 = {k: v[k] for k in v if k not in ('hoja', 'hojaP', 'pantalla')}
                 if o2 != v2: mal.append(f"{o['parte']} · {o['cabN']}: las cuentas han cambiado respecto a lo dado por bueno")
             print(f'  comparado con {esp}')
     inf = informe(ruta, res, app['nombres'])
