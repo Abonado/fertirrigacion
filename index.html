@@ -196,7 +196,7 @@ td.u{color:var(--muted);font-size:12px}
 .savebar .wrap{padding-block:10px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .savebar .btn{border-color:transparent}
 .savebar .msg{font-size:14px}
-.vzbtn{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:7;width:56px;height:56px;border-radius:50%;border:2px solid var(--navy);background:var(--bg);color:var(--navy);display:grid;place-items:center;padding:0;box-shadow:0 4px 14px rgba(0,0,0,.2);cursor:pointer}.vzbtn[hidden]{display:none}.vzbtn svg{width:26px;height:26px}.vzbtn.on{background:var(--navy);color:var(--bg)}.vzbtn.oye.on::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid #2e9e5b;animation:vzp 1.8s ease-out infinite}.vzbtn.arm{background:#1e7a4c;border-color:#1e7a4c;color:#fff}.vzbtn.habla{background:#1f78c1;border-color:#1f78c1;color:#fff}@keyframes vzp{from{opacity:.9;transform:scale(.92)}to{opacity:0;transform:scale(1.3)}}@media (prefers-reduced-motion:reduce){.vzbtn.oye.on::after{animation:none}}.vzglobo{position:fixed;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));bottom:calc(142px + env(safe-area-inset-bottom,0px));z-index:7;max-width:440px;margin-left:auto;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.35;text-transform:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}.vzglobo[hidden]{display:none}.vzglobo .o{opacity:.75;font-size:13px;margin-bottom:2px}.vzglobo.mal{background:#8e2b20}.vzok{outline:3px solid #2e9e5b;outline-offset:2px;border-radius:6px}.vzlista{margin:8px 0 0;padding-left:18px;text-transform:none}.vzlista li{margin:6px 0}.vzlog{font-size:13px;text-transform:none;max-height:260px;overflow:auto;margin-top:6px}.vzlog>div{padding:4px 0;border-bottom:1px solid rgba(0,0,0,.08)}.vzlog .si{font-weight:600}
+.vzbtn{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:7;width:56px;height:56px;border-radius:50%;border:2px solid var(--navy);background:var(--bg);color:var(--navy);display:grid;place-items:center;padding:0;box-shadow:0 4px 14px rgba(0,0,0,.2);cursor:pointer}.vzbtn[hidden]{display:none}.vzbtn svg{width:26px;height:26px}.vzbtn.on{background:var(--navy);color:var(--bg)}.vzbtn.oye.on::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid #2e9e5b;animation:vzp 1.8s ease-out infinite}.vzbtn.arm{background:#1e7a4c;border-color:#1e7a4c;color:#fff}.vzbtn.habla{background:#1f78c1;border-color:#1f78c1;color:#fff}@keyframes vzp{from{opacity:.9;transform:scale(.92)}to{opacity:0;transform:scale(1.3)}}@media (prefers-reduced-motion:reduce){.vzbtn.oye.on::after{animation:none}}.vzglobo{position:fixed;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));bottom:calc(142px + env(safe-area-inset-bottom,0px));z-index:7;max-width:440px;margin-left:auto;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.35;text-transform:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}.vzglobo[hidden]{display:none}.vzglobo .o{opacity:.75;font-size:13px;margin-bottom:2px}.vzglobo.mal{background:#8e2b20}.vzok{outline:3px solid #2e9e5b;outline-offset:2px;border-radius:6px}.vzlista{margin:8px 0 0;padding-left:18px;text-transform:none}.vzlista li{margin:6px 0}.vzgr{font-weight:700;margin-top:12px;font-size:14px}.vzlog{font-size:13px;text-transform:none;max-height:260px;overflow:auto;margin-top:6px}.vzlog>div{padding:4px 0;border-bottom:1px solid rgba(0,0,0,.08)}.vzlog .si{font-weight:600}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:14px;z-index:7;max-width:calc(100% - 32px)}
 .foot{padding-block:0 24px;font-size:12px;color:var(--muted)}
 .card>*{min-width:0}
@@ -4784,37 +4784,74 @@ function vzSector(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un 
     sets.push([g,v]);dic.push(g==='min'?vzF(v)+' minutos':vzF(v)+' riegos')}
   if(!sets.length)return{txt:`${s.nombre}: di los minutos o los riegos`,ok:false};
   for(const[g,v]of sets)vzPon(g,s.id,v);vzMostrar(sets.map(([g])=>({g,id:s.id})));return{txt:`${s.nombre}: ${dic.join(', ')}`}}
-function vzBidon(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un cabezal',ok:false};const STOP=new Set(['de','del','el','la','los','las','en','con']);
-  let j=1;const ws=[];while(j<t.length&&!vzEsN(t[j])){if(!STOP.has(t[j]))ws.push(t[j]);j++}const val=t[j];
-  const bs=bidonesDe(st.cab).map(b=>{const tx=vzToks([b.nombre,...b.productos.map(x=>(prod(x.p)||{}).n||'')].join(' ')),bt=vzToks(b.nombre);
+async function vzIA(orig){const q=vzCap(String(orig).replace(/^\s*(?:pregunta(?:le)?|pregunto|oye)\b[\s:,.-]*(?:a la ia[\s:,.-]*)?/i,''));if(!q)return{txt:'¿Qué quieres preguntar?',ok:false};
+  if(!(window.NUBE&&NUBE.ia&&NUBE.user))return{txt:'Para preguntar a la IA hace falta tu cuenta y conexión',ok:false};
+  vzGlobo(`«${orig}»`,'Pensando…');const n0=(st.ch||[]).length;await chEnviar(q,true);const l=st.ch[st.ch.length-1];
+  if(!l||l.role!=='assistant'||st.ch.length<=n0)return{txt:'No he podido preguntar a la IA',ok:false};
+  const r=String(l.text).replace(/\*\*|__|`|#+\s*/g,'').replace(/^\s*[-•*]\s+/gm,'').replace(/\n+/g,' ').trim();return{txt:r,ver:r}}
+/* Busca un bidón del cabezal por las palabras dichas (su nombre o lo que lleva) */
+function vzBuscaBidon(ws){const bs=bidonesDe(st.cab).map(b=>{const tx=vzToks([b.nombre,...b.productos.map(x=>(prod(x.p)||{}).n||'')].join(' ')),bt=vzToks(b.nombre);
     return{b,p:ws.filter(w=>(w.length>=3&&tx.some(x=>x.startsWith(w)||w.startsWith(x)&&x.length>=4))||(w.length<3&&bt.includes(w))).length}}).filter(x=>x.p>0).sort((a,b)=>b.p-a.p);
-  if(!bs.length)return{txt:'No sé qué bidón es. Di su nombre o lo que lleva',ok:false};if(bs.length>1&&bs[1].p===bs[0].p)return{txt:`Hay varios: ${bs.filter(x=>x.p===bs[0].p).map(x=>x.b.nombre).join(', ')}. Dímelo más claro`,ok:false};
-  const b=bs[0].b;vzSigue('bidon '+ws.join(' '));if(!vzEsN(val))return{txt:`${b.nombre}: ¿cuántos centímetros?`,ok:false};const v=vzNum(val);if(v==null||v<0||v>400)return{txt:'Esos centímetros no me cuadran, repítelo',ok:false};
+  if(!bs.length)return{err:{txt:'No sé qué bidón es. Di su nombre o lo que lleva',ok:false}};
+  if(bs.length>1&&bs[1].p===bs[0].p)return{err:{txt:`Hay varios: ${bs.filter(x=>x.p===bs[0].p).map(x=>x.b.nombre).join(', ')}. Dímelo más claro`,ok:false}};return{b:bs[0].b}}
+const VZ_STOP=new Set(['de','del','el','la','los','las','en','con','al','a']);
+function vzBidon(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un cabezal',ok:false};
+  let j=1;const ws=[];while(j<t.length&&!vzEsN(t[j])){if(!VZ_STOP.has(t[j]))ws.push(t[j]);j++}const val=t[j];
+  const f=vzBuscaBidon(ws);if(f.err)return f.err;const b=f.b;vzSigue('bidon '+ws.join(' '));
+  if(!vzEsN(val))return{txt:`${b.nombre}: ¿cuántos centímetros?`,ok:false};const v=vzNum(val);if(v==null||v<0||v>400)return{txt:'Esos centímetros no me cuadran, repítelo',ok:false};
   const g=esDirecto(b)||!lecturaAnt(b,false)?'cm':'niv';vzPon(g,b.id,v);vzMostrar([{g,id:b.id}]);return{txt:`${b.nombre}: ${g==='niv'?'nivel ':''}${vzF(v)} centímetros${g==='cm'?' gastados':''}`}}
 function vzValorCab(g,t,txt,lim,mili){const n=t.find(vzEsN);if(n==null)return{txt:`¿Cuánto? Di ${txt} y el número`,ok:false};let v=vzNum(n,g==='m3'||g==='rad');if(mili&&v>=50)v=v/1000;
   if(v==null||v<lim[0]||v>lim[1])return{txt:`${vzCap(txt)} ${vzF(v)} no me cuadra, repítelo`,ok:false};vzPon(g,st.cab,v);vzMostrar([{g,id:st.cab}]);return{txt:g==='m3'?`${cabNombre(st.cab)}: ${vzF(v)} metros cúbicos`:`${cabNombre(st.cab)}: ${txt} ${vzF(v)}`}}
-async function vzNota(orig,n){const txt=vzCap(vzResto(orig,n).replace(/^que\s+/i,''));if(!txt)return{txt:'¿Qué te apunto?',ok:false};
-  const nt={id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),email:miEmail()||'',texto:txt.slice(0,140),det:txt.length>140?txt:'',cuando:null,rep:'',n:null,dm:null,hecha:false,hechaTs:null,ts:ahoraISO(),area:areaDe(st.tab)};
-  await ntGuardarDoc(nt);if(st.tab==='notas'||st.tab==='cnotas')renderMain();return{txt:'Nota guardada',ver:'Nota guardada: '+txt}}
+/* Lo creado por voz se puede deshacer: se guarda cómo borrarlo */
+const vzDeshace=(txt,fn)=>{vz.pila.push({fn,txt,fecha:st.fecha});if(vz.pila.length>30)vz.pila.shift()};
+const vzQuitaDe=(lista,id)=>{if(Array.isArray(st[lista]))st[lista]=st[lista].filter(x=>x.id!==id)};
+/* Día y hora dichos: «mañana a las 8 y media», «el lunes», «el día 28», «en media hora», «a las 5 de la tarde» */
+const VZ_DIAS=['domingo','lunes','martes','miercoles','jueves','viernes','sabado'];
+const VZ_HN={una:1,un:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12};
+const vzHH=(h,m)=>String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+function vzCuando(orig){let s=' '+String(orig||'')+' ',fecha=null,hora=null;const ahora=new Date(),N=x=>{x=vzSin(x);return /^\d+$/.test(x)?+x:VZ_HN[x]??null};
+  let m=/\s(?:en|dentro\s+de)\s+(media|una|un|\d+|dos|tres|cuatro|cinco)\s+(horas?|minutos?)(?=[\s,.:;!?])/i.exec(s);
+  if(m){const q=vzSin(m[1])==='media'?30:(N(m[1])||1)*(/^h/i.test(m[2])?60:1);const d=new Date(ahora.getTime()+q*60000);fecha=isoD(d);hora=vzHH(d.getHours(),d.getMinutes());s=s.replace(m[0],' ')}
+  m=/\sa\s+las?\s+(\d{1,2}|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce)(?:[:.h](\d{2}))?(?:\s+y\s+(media|cuarto)|\s+(menos\s+cuarto))?(?:\s+(?:de\s+la\s+|por\s+la\s+|del\s+)?(mañana|manana|tarde|noche|mediod[ií]a))?(?=[\s,.:;!?])/i.exec(s);
+  if(m&&!hora){let h=N(m[1]),mi=m[2]?+m[2]:0;if(m[3])mi=vzSin(m[3])==='media'?30:15;if(m[4]){h=h-1;mi=45}const p=m[5]?vzSin(m[5]):'';
+    if((p==='tarde'||p==='noche')&&h<12)h+=12;if(p.startsWith('mediod')&&h<=4)h+=12;if(h!=null&&h>=0&&h<24&&mi<60){hora=vzHH(h,mi);s=s.replace(m[0],' ')}}
+  m=/\s(pasado\s+ma[ñn]ana|ma[ñn]ana|hoy|(?:el\s+)?(?:lunes|martes|mi[ée]rcoles|jueves|viernes|s[áa]bado|domingo)|(?:el\s+)?d[ií]a\s+(\d{1,2}))(?=[\s,.:;!?])/i.exec(s);
+  if(m&&!fecha){const w=vzSin(m[1]).replace(/^el\s+/,''),d=new Date(ahora.getFullYear(),ahora.getMonth(),ahora.getDate(),12);
+    if(w.startsWith('pasado'))d.setDate(d.getDate()+2);else if(w==='manana')d.setDate(d.getDate()+1);else if(m[2]){const n=+m[2];if(n<ahora.getDate())d.setMonth(d.getMonth()+1,1);d.setDate(n)}
+    else if(w!=='hoy'){const k=VZ_DIAS.indexOf(w);let dd=(k-d.getDay()+7)%7;if(!dd)dd=7;d.setDate(d.getDate()+dd)}
+    fecha=isoD(d);s=s.replace(m[0],' ')}
+  if(hora&&!fecha){const[h,mi]=hora.split(':').map(Number),d=new Date(ahora);if(h*60+mi<=ahora.getHours()*60+ahora.getMinutes())d.setDate(d.getDate()+1);fecha=isoD(d)}
+  return{fecha,hora,resto:s.replace(/\s+/g,' ').trim()}}
+function vzDiaTxt(f){if(!f)return '';const h=hoy(),d=new Date(h+'T12:00:00');const mas=k=>{const x=new Date(d);x.setDate(x.getDate()+k);return isoD(x)};
+  if(f===h)return 'hoy';if(f===mas(1))return 'mañana';if(f===mas(-1))return 'ayer';return new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}
+async function vzNota(orig,n){const q=vzCuando(vzResto(orig,n).replace(/^que\s+/i,''));const txt=vzCap(q.resto.replace(/^(?:que|de)\s+/i,''));if(!txt)return{txt:'¿Qué te apunto?',ok:false};
+  const hora=q.fecha?(q.hora||'08:00'):null,cuando=q.fecha?q.fecha+'T'+hora:null,d=ntDate(cuando);
+  const nt={id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),email:miEmail()||'',texto:txt.slice(0,140),det:txt.length>140?txt:'',cuando,rep:'',n:null,dm:d?d.getDate():null,hecha:false,hechaTs:null,ts:ahoraISO(),area:areaDe(st.tab)};
+  await ntGuardarDoc(nt);if(st.tab==='notas'||st.tab==='cnotas')renderMain();vzDeshace('Nota borrada',()=>ntBorrar(nt.id));
+  const av=cuando?`, te aviso ${vzDiaTxt(q.fecha)} a las ${hora}`:'';return{txt:'Nota guardada'+av,ver:`Nota${av}: ${txt}`}}
 async function vzMensaje(orig){let txt=String(orig).replace(/^\s*(?:(?:manda|mándale|mandale|envía|envia|enviar|mandar|escribe)\s+(?:un\s+)?)?mensaje(?:\s+de\s+voz)?\b[\s:,.-]*/i,'');
   let dest=null;const pm=/^(?:para|a)\s+([^\s:,.;]+)(?:\s+([^\s:,.;]+))?/i.exec(txt);
-  if(pm){const eq=equipo(),w1=vzSin(pm[1]).replace(/[^a-z]/g,''),w2=vzSin(pm[2]||'').replace(/[^a-z]/g,'');const c1=eq.filter(u=>vzSin(u.nombre).split(/\s+/)[0]===w1);
-    const c2=c1.length>1&&w2?c1.filter(u=>vzSin(u.nombre).split(/\s+/)[1]===w2):[];dest=c2.length===1?c2[0]:c1.length===1?c1[0]:null;
-    if(!dest)return{txt:c1.length>1?`Hay varios que se llaman ${pm[1]}. Di también el apellido`:`No encuentro a ${pm[1]} en el equipo`,ok:false};
-    const er=x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');txt=txt.replace(new RegExp('^(?:para|a)\\s+'+er(pm[1])+(c2.length===1?'\\s+'+er(pm[2]):'')+'[\\s:,.-]*','i'),'').replace(/^\s*(?:que|diciendo)\s+/i,'')}
+  if(pm){const r=vzPersona(pm,equipo());if(r.err)return r.err;dest=r.u;txt=r.resto(txt).replace(/^\s*(?:que|diciendo)\s+/i,'')}
   txt=vzCap(txt);if(!txt)return{txt:'¿Qué mensaje mando?',ok:false};
   const m={ts:new Date().toISOString(),fecha:hoy(),autor:autorActual(),...autorEmail(),cab:st.cab,txt,resuelto:false,adjuntos:[]};
   if(dest){const p={ts:m.ts,fecha:m.fecha,de:miEmail(),deNombre:m.autor,para:dest.email,paraNombre:dest.nombre,miembros:[miEmail(),dest.email],txt,adjuntos:[],leido:false};
     const id=await Store.addPriv(p);if(st.priv)st.priv.unshift({...p,id});pushEnviar([dest.email],'Mensaje privado de '+(m.autor||'alguien'),txt,'priv-'+id,'mensajes-priv');if(st.tab==='mensajes')renderMain();return{txt:'Mensaje enviado a '+dest.nombre,ver:`Para ${dest.nombre}: ${txt}`}}
   if(!tabPermitida('mensajes'))return{txt:'Los mensajes por voz son los del personal de riego',ok:false};
   const id=await Store.addMsg(m);if(st.msgs)st.msgs.unshift({...m,id});pushEnviar(quienVeCab(m.cab),'Mensaje de '+(m.autor||'alguien')+(m.cab?' · '+cabNombre(m.cab):''),txt,'msg-'+id,'mensajes');if(st.tab==='mensajes')renderMain();
-  return{txt:'Mensaje enviado',ver:'Mensaje: '+txt}}
+  vzDeshace('Mensaje borrado',async()=>{await Store.delMsg(id);vzQuitaDe('msgs',id);if(st.tab==='mensajes')renderMain()});return{txt:'Mensaje enviado',ver:'Mensaje: '+txt}}
+/* «para Pepe» / «para Pepe García» dentro de una lista de personas */
+function vzPersona(pm,lista){const w1=vzSin(pm[1]).replace(/[^a-z]/g,''),w2=vzSin(pm[2]||'').replace(/[^a-z]/g,'');
+  if(['mi','yo'].includes(w1)){const yo=lista.find(u=>u.email===miEmail());if(yo)return{u:yo,resto:t=>t.replace(/^(?:para|a)\s+(?:m[ií]|yo)(?=[\s:,.;]|$)[\s:,.-]*/i,'')}}
+  const nom=u=>vzSin(u.nombre.replace(/ \(yo\)$/,'')).split(/\s+/);const c1=lista.filter(u=>nom(u)[0]===w1),c2=c1.length>1&&w2?c1.filter(u=>nom(u)[1]===w2):[];const u=c2.length===1?c2[0]:c1.length===1?c1[0]:null;
+  if(!u)return{err:{txt:c1.length>1?`Hay varios que se llaman ${pm[1]}. Di también el apellido`:`No encuentro a ${pm[1]} en el equipo`,ok:false}};
+  const er=x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');return{u,resto:t=>t.replace(new RegExp('^(?:para|a)\\s+'+er(pm[1])+(c2.length===1?'\\s+'+er(pm[2]):'')+'[\\s:,.-]*','i'),'')}}
 async function vzIncidencia(orig,t){let txt=String(orig).replace(/^\s*(?:(?:apunta|pon|crea|abre)\s+(?:una\s+)?)?(?:incidencia|aviso|averia|avería)\b[\s:,.-]*/i,'');const urg=t.includes('urgente');txt=vzCap(txt.replace(/^\s*urgente\b[\s:,.-]*/i,''));
   if(!txt)return{txt:'¿Qué ha pasado?',ok:false};
   const campo=tabPermitida('cincid')&&(areaDe(st.tab)==='campo'||!veRiego()||!MAPAS[st.cab]);
   if(campo){const c=collaDe(st.co&&st.co.colla)||collasVis()[0];if(!c)return{txt:'No tienes ninguna colla para apuntar la incidencia',ok:false};
     const i={ts:new Date().toISOString(),fecha:hoy(),colla:c.id,collaNombre:c.nombre,jefeEmail:c.jefeEmail||'',finca:c.finca||'',pid:'',pnom:'',tipo:vzTipo(t,VZ_CITIPO,'otra'),txt,urg,adjuntos:[],estado:'abierta',por:yoNombre(),porEmail:miEmail()};
     const id=await Store.addCol('cincid',i);if(st.cinc)st.cinc.unshift({...i,id});pushCampo(c,(urg?'Incidencia URGENTE · ':'Incidencia · ')+c.nombre,`${CI_T[i.tipo]}: ${txt.slice(0,80)}`,'cinc-'+id,'cincid');renderGrupos();if(st.tab==='cincid')renderMain();
+    vzDeshace('Incidencia borrada',async()=>{await Store.delCol('cincid',id);vzQuitaDe('cinc',id);renderGrupos();if(st.tab==='cincid')renderMain()});
     return{txt:(urg?'Incidencia urgente guardada':'Incidencia guardada')+' en '+c.nombre,ver:`${CI_T[i.tipo]} · ${txt}`}}
   const M=MAPAS[st.cab],tipo=vzTipo(t,VZ_ITIPO,'otro'),prio=urg?'alta':'media';if(!M)return{txt:'Este cabezal no tiene plano de naves',ok:false};
   const k=t.indexOf('nave'),nv=k>=0&&vzEsN(t[k+1])?M.naves.find(x=>String(x.n)===String(vzNum(t[k+1]))):null;
@@ -4822,16 +4859,93 @@ async function vzIncidencia(orig,t){let txt=String(orig).replace(/^\s*(?:(?:apun
   const pt=centro(nv.p),i={ts:new Date().toISOString(),fecha:hoy(),cab:st.cab,finca:fincaDeCab(st.cab),nave:nv.n,pasillo:null,x:+pt[0].toFixed(1),y:+pt[1].toFixed(1),tipo,prio,txt,fotos:[],estado:'abierta',por:yoNombre(),porEmail:miEmail()};
   const id=await Store.addCol('incidencias',i);if(st.inc)st.inc.unshift({...i,id});renderGrupos();if(st.tab==='mapa')renderMain();const ti=ITIPOS[tipo]||ITIPOS.otro;
   pushEnviar([...new Set([...encargadosDe(i.finca),...adminsEmails()])],`${urg?'URGENTE · ':''}${ti[0]} · ${lugar(i).toLowerCase()} · ${cabNombre(i.cab)}`,txt+' · '+yoNombre(),'inc-'+id,'mapa');
+  vzDeshace('Incidencia borrada',async()=>{await Store.delCol('incidencias',id);vzQuitaDe('inc',id);renderGrupos();if(st.tab==='mapa')renderMain()});
   return{txt:`${urg?'Incidencia urgente':'Incidencia'} guardada en la nave ${nv.n}`,ver:`Nave ${nv.n} · ${ti[0]} · ${txt}`}}
-async function vzIA(orig){const q=vzCap(String(orig).replace(/^\s*(?:pregunta(?:le)?|pregunto|oye)\b[\s:,.-]*(?:a la ia[\s:,.-]*)?/i,''));if(!q)return{txt:'¿Qué quieres preguntar?',ok:false};
-  if(!(window.NUBE&&NUBE.ia&&NUBE.user))return{txt:'Para preguntar a la IA hace falta tu cuenta y conexión',ok:false};
-  vzGlobo(`«${orig}»`,'Pensando…');const n0=(st.ch||[]).length;await chEnviar(q,true);const l=st.ch[st.ch.length-1];
-  if(!l||l.role!=='assistant'||st.ch.length<=n0)return{txt:'No he podido preguntar a la IA',ok:false};
-  const r=String(l.text).replace(/\*\*|__|`|#+\s*/g,'').replace(/^\s*[-•*]\s+/gm,'').replace(/\n+/g,' ').trim();return{txt:r,ver:r}}
-function vzDeshacer(){const u=vz.pila.pop();if(!u)return{txt:'No hay nada que deshacer',ok:false};if(u.fecha!==st.fecha)return{txt:'Eso era de otro día',ok:false};
-  st.reg[u.g][u.id]=u.prev??null;marcaReg(u.g+'.'+u.id);if(u.g==='niv')autoCm(u.id);vzMostrar([{g:u.g,id:u.id}]);return{txt:'Deshecho'}}
-const VZ_AYUDA='Di Agro y, por ejemplo: bandeja tres punto uno, ochocientos cincuenta. Sector cuatro, ciento veinte minutos. Bidón nítrico, nueve coma siete. Guardar. Nota, y lo que quieras. Mensaje, incidencia, o una pregunta para la IA.';
-async function vzEjecuta(orig){let t=vzToks(orig);if(!t.length)return null;
+/* Pedido de material: «pide 10 goteros de 2 litros», «material urgente: 2 rollos de cinta de teflón para Franco» */
+const VZ_UDS={unidad:'unidades',unidades:'unidades',metro:'metros',metros:'metros',rollo:'rollos',rollos:'rollos',caja:'cajas',cajas:'cajas',paquete:'paquetes',paquetes:'paquetes',saco:'sacos',sacos:'sacos',litro:'litros',litros:'litros',kilo:'kg',kilos:'kg',kg:'kg',juego:'juegos',juegos:'juegos'};
+async function vzMaterial(orig,t){if(!tabPermitida('material'))return{txt:'Pedir material no lo tienes en tu app',ok:false};
+  let s=String(orig).replace(/^\s*(?:p[ií]de(?:me)?|pedir|necesito|necesitamos|hace\s+falta|haz)?\s*(?:un\s+)?(?:pedido|material(?:es)?)?\s*(?:de\s+material)?[\s:,.-]*/i,'');
+  const urg=/\burgente\b/i.test(s);s=s.replace(/\s*\burgente\b[\s:,.-]*/i,' ').trim();
+  let cab='';for(const c of cabsVis()){const re=new RegExp('\\s*\\b(?:para|en|de)\\s+(?:el\\s+cabezal\\s+(?:de\\s+)?)?'+c.nombre.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i');if(re.test(s)){cab=c.id;s=s.replace(re,' ').trim();break}}
+  const ws=s.split(/\s+/).filter(Boolean);let cant='',ud='unidades',k=0;
+  if(ws.length){const w0=vzSin(ws[0]).replace(/[^a-z0-9.,]/g,'');const v=/^\d+([.,]\d+)?$/.test(w0)?num(w0):(VZ_U[w0]??VZ_D[w0]??VZ_C[w0]??null);if(v!=null&&ws.length>1){cant=v;k=1;const u=VZ_UDS[vzSin(ws[1]).replace(/[^a-z]/g,'')];if(u){ud=u;k=2;if(vzSin(ws[2]||'')==='de')k=3}}}
+  const art=vzCap(ws.slice(k).join(' ').replace(/[\s.]+$/,''));if(!art)return{txt:'¿Qué material pido?',ok:false};
+  const fs=fincasVis().filter(f=>f.cabezales.length),f=(cab&&fs.find(x=>x.cabezales.includes(cab)))||fincaAct()||fs[0],now=new Date().toISOString();
+  const m={ts:now,art,cant,ud,finca:f?f.id:'',cab,urg,cuando:'',nota:'Pedido por voz',adjuntos:[],estado:'pedido',pidePor:yoNombre(),pideEmail:miEmail(),hist:[{estado:'pedido',por:yoNombre(),ts:now}]};
+  const id=await Store.addCol('material',m);if(st.mat)st.mat.unshift({...m,id});pushEnviar([...adminsEmails(),...encargadosDe(m.finca)],'Pedido de material: '+art,`${m.cant||''} ${m.ud||''} · ${m.pidePor||''}${m.urg?' · URGENTE':''}`,'mat-'+id+':pedido','material');
+  renderGrupos();if(st.tab==='material')renderMain();vzDeshace('Pedido de material borrado',async()=>{await Store.delCol('material',id);vzQuitaDe('mat',id);renderGrupos();if(st.tab==='material')renderMain()});
+  const q=cant!==''?`${vzF(cant)} ${ud==='unidades'?'':ud+' de '}`:'',al=art[0].toLowerCase()+art.slice(1);return{txt:`Pedido${urg?' urgente':''} enviado: ${q}${al}${cab?' para '+cabNombre(cab):''}`,ver:`Material${urg?' (urgente)':''}: ${q}${art}${cab?' · '+cabNombre(cab):''}`}}
+/* Tareas: «tarea para Pepe mañana: revisar los filtros de Franco», «tarea hecha: revisar filtros» */
+async function vzEspera(carga,prop){if(st[prop]===null){try{carga()}catch(e){}for(let i=0;i<40&&st[prop]===null;i++)await new Promise(r=>setTimeout(r,150))}return st[prop]||[]}
+async function vzTarea(orig,t,cabDicho){if(!tabPermitida('tareas'))return{txt:'Las tareas por voz son las del personal de riego',ok:false};
+  let s=String(orig).replace(/^\s*(?:(?:crea|pon|apunta|nueva|manda)\s+(?:una\s+)?)?tarea\b[\s:,.-]*/i,'');const urg=/^\s*urgente\b/i.test(s);s=s.replace(/^\s*urgente\b[\s:,.-]*/i,'');
+  let dest=null;const pm=/^(?:para|a)\s+([^\s:,.;]+)(?:\s+([^\s:,.;]+))?/i.exec(s);if(pm){const r=vzPersona(pm,personas());if(r.err)return r.err;dest=r.u;s=r.resto(s)}
+  const q=vzCuando(s);const titulo=vzCap(q.resto.replace(/^(?:que|de)\s+/i,'')).slice(0,120);if(!titulo)return{txt:'¿Qué tarea apunto?',ok:false};
+  const fs=fincasVis(),f=(cabDicho&&fs.find(x=>x.cabezales.includes(st.cab)))||fincaAct()||fs.find(x=>x.cabezales.length);
+  const tk={ts:new Date().toISOString(),titulo,finca:f?f.id:'',cab:cabDicho?st.cab:'',nave:null,maq:'',of:'',np:1,para:dest?dest.email:'',paraNombre:dest?dest.nombre.replace(/ \(yo\)$/,''):'',fecha:q.fecha||hoy(),urg,rep:'',det:'',adjuntos:[],hecha:false,creadaPor:yoNombre(),creadaEmail:miEmail()};
+  const id=await Store.addCol('tareas',tk);if(st.tareas)st.tareas.unshift({...tk,id});pushEnviar(tk.para?[tk.para]:quienVeFinca(tk.finca),(tk.urg?'Tarea URGENTE: ':'Tarea nueva: ')+tk.titulo,`${fFecha(tk.fecha)}${tk.para?'':' · para el equipo'} · de ${tk.creadaPor||''}`,'tarea-'+id,'tareas');
+  renderGrupos();if(st.tab==='tareas')renderMain();vzDeshace('Tarea borrada',async()=>{await Store.delCol('tareas',id);vzQuitaDe('tareas',id);renderGrupos();if(st.tab==='tareas')renderMain()});
+  const pa=dest?` para ${tk.paraNombre}`:'',cu=tk.fecha!==hoy()?' '+vzDiaTxt(tk.fecha):'';return{txt:`Tarea${urg?' urgente':''} creada${pa}${cu}`,ver:`Tarea${pa}${cu}: ${titulo}`}}
+const vzMias=l=>l.filter(x=>!x.hecha&&(!x.para||x.para===miEmail())&&x.fecha<=hoy()&&(!fincaAct()||!x.finca||x.finca===fincaAct().id));
+async function vzTareaHecha(orig){const s=vzToks(String(orig).replace(/^\s*(?:(?:la\s+)?tarea\s+(?:hecha|terminada|acabada)|(?:he\s+)?(?:terminado|acabado|hecho)(?:\s+la\s+tarea)?|termin[eé]|acab[eé])\b[\s:,.-]*(?:de\s+)?/i,'')).filter(w=>w.length>=4);
+  const l=vzMias(await vzEspera(loadTareas,'tareas'));if(!l.length)return{txt:'No tienes tareas pendientes',ok:false};
+  const sc=l.map(x=>{const tw=vzToks(x.titulo);return{x,p:s.filter(w=>tw.some(y=>y.startsWith(w.slice(0,5)))).length}}).sort((a,b)=>b.p-a.p);
+  if(!sc[0].p||(sc[1]&&sc[1].p===sc[0].p))return{txt:s.length?'No sé qué tarea es. Di alguna palabra más del título':'¿Qué tarea has terminado?',ok:false};
+  const tk=sc[0].x;st.td={id:tk.id,nota:'Hecha por voz',adj:[]};await tareaHecha(tk.id);return{txt:'Tarea hecha: '+tk.titulo}}
+async function vzTareasLista(){const l=vzMias(await vzEspera(loadTareas,'tareas'));if(!l.length)return{txt:'No tienes tareas pendientes para hoy'};
+  const u=l.filter(x=>x.urg);return{txt:`Tienes ${l.length} ${l.length===1?'tarea':'tareas'}${u.length?`, ${u.length} urgente${u.length>1?'s':''}`:''}: ${l.slice(0,5).map(x=>x.titulo).join('. ')}${l.length>5?'. Y más en la app':''}.`}}
+/* Llenado completo de un bidón (el parcial se abre en pantalla para revisarlo) */
+async function vzLlenado(t){const r=t.filter(w=>!['he','llenado','rellenado','lleno','llene','rellene','rellenar','llenar','hasta','arriba','entero','completo','centimetros','cm'].includes(w)&&!VZ_STOP.has(w));
+  const nums=r.filter(vzEsN),ws=r.filter(w=>!vzEsN(w)&&!['bidon','deposito','tanque'].includes(w));const f=vzBuscaBidon(ws);if(f.err)return f.err;const b=f.b;
+  await vzEspera(loadOps,'llen');
+  if(nums.length){const add=vzNum(nums[0]);lfOpen('llenado',{bidon:b.id,add});if(tabPermitida('rellenar')){st.tab='rellenar';renderCabs();renderTabs();renderMain()}return{txt:`${b.nombre}: revisa el llenado de ${vzF(add)} centímetros en la pantalla y guárdalo`,ver:'Llenado parcial: revísalo y guárdalo'}}
+  lfOpen('llenado',{bidon:b.id});await lfSave();if(st.lf){st.lf=null;return{txt:'No he podido guardar el llenado, hazlo en la pantalla',ok:false}}
+  const ll=(st.llen||[]).find(x=>x.bidon===b.id&&x.tipo==='llenado');if(ll)vzDeshace('Llenado borrado',()=>llDel(ll.id));return{txt:`Llenado de ${b.nombre} guardado y descontado del almacén`}}
+/* Cambiar de día: «ayer», «hoy», «día 24» */
+async function vzDia(t){let d=new Date(hoy()+'T12:00:00');const w=t.filter(x=>!['ve','vete','ir','pasa','cambia','al','a','el','dia','de','pon'].includes(x));
+  if(w.includes('anteayer')||(w.includes('antes')&&w.includes('ayer')))d.setDate(d.getDate()-2);else if(w.includes('ayer'))d.setDate(d.getDate()-1);
+  else if(w.includes('hoy')){}else{const n=w.find(vzEsN);if(n==null)return{txt:'¿Qué día? Di ayer, hoy o el número del día',ok:false};const k=+n;if(k<1||k>31)return{txt:'Ese día no existe',ok:false};if(k>d.getDate())d.setMonth(d.getMonth()-1);d.setDate(k)}
+  const f=isoD(d);if(f>hoy())return{txt:'Ese día todavía no ha llegado',ok:false};if(st.dirtyReg)await saveReg();await loadFecha(f);renderAll();return{txt:'Día de '+vzDiaTxt(f)}}
+async function vzFichar(tipo){if(!fichOk())return{txt:'Para fichar hace falta tu cuenta',ok:false};let ok=false;try{ok=localStorage.getItem('abono.ubic.aviso.'+miEmail())==='1'}catch(e){}
+  const tb=['ubic','cubic'].find(x=>tabPermitida(x));if(!ok){if(tb){st.tab=tb;renderCabs();renderTabs();renderMain()}return{txt:'La primera vez hay que aceptar el aviso de ubicación en la pantalla de fichar',ok:false}}
+  await fichar(tipo);const ev=st.fich&&st.fich.eventos&&st.fich.eventos[st.fich.eventos.length-1];if(!ev||ev.tipo!==tipo)return{txt:'No he podido fichar, inténtalo en la pantalla',ok:false};
+  return{txt:`${tipo==='entrada'?'Entrada':'Salida'} fichada a las ${horaDe(ev.ts)}${ev.sinUbic?', sin ubicación':''}`}}
+function vzObs(orig){const txt=vzCap(String(orig).replace(/^\s*(?:observaci[oó]n(?:es)?|observa|pon\s+en\s+observaciones)\b[\s:,.-]*/i,''));if(!txt)return{txt:'¿Qué pongo en observaciones?',ok:false};
+  const ant=((st.reg.obs||{})[st.cab]||'').trim();vzPon('obs',st.cab,ant?ant.replace(/[.\s]*$/,'')+'. '+txt:txt);vzMostrar([{g:'obs',id:st.cab}]);return{txt:'Observación apuntada en '+cabNombre(st.cab),ver:'Observaciones: '+txt}}
+/* Consultas que contesta la app con sus datos */
+function vzFalta(){const c=cabById(st.cab),r=st.reg,L=[];if(!c)return{txt:'Elige primero un cabezal',ok:false};
+  const sinMin=c.sectores.filter(s=>r.min[s.id]==null).map(s=>s.nombre.replace(/^Sector\s*/i,'')),sinDren=c.sectores.flatMap(s=>s.bandejas.filter(bj=>r.dren[bj.id]==null).map(bj=>bj.nombre.replace(/^Bandeja\s*/i,'')));
+  const sinCm=bidonesDe(st.cab).filter(b=>r.cm[b.id]==null&&(r.niv||{})[b.id]==null);
+  if(r.m3[st.cab]==null)L.push('los metros cúbicos');if(sinMin.length)L.push((sinMin.length===1?'el tiempo del sector ':'el tiempo de los sectores ')+sinMin.join(', '));
+  if(sinDren.length)L.push((sinDren.length===1?'el drenaje de la bandeja ':'el drenaje de las bandejas ')+sinDren.join(', '));
+  const mu=muFaltan();if(mu.length)L.push(mu.length===1?'coger una muestra':'coger '+mu.length+' muestras');if(sinCm.length)L.push(sinCm.length===1?'los centímetros de '+sinCm[0].nombre:`los centímetros de ${sinCm.length} depósitos`);
+  const pend=st.dirtyReg?' Y tienes cambios sin guardar.':'';return{txt:L.length?`En ${c.nombre}, ${vzDiaTxt(st.fecha)}, falta: ${L.join('; ')}.${pend}`:`En ${c.nombre} está todo apuntado.${pend}`}}
+function vzResumen(){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un cabezal',ok:false};const r=resumen(st.cab),P=[];
+  if(r.m3!=null)P.push(`${vzF(r.m3)} metros cúbicos`);if(r.drenaje!=null)P.push(`drenaje medio del ${vzF(Math.round(r.drenaje*10)/10)} por ciento`);
+  if(r.ceD!=null)P.push(`CE de drenaje ${uS(r.ceD)}`);if(r.phD!=null)P.push(`pH de drenaje ${vzF(Math.round(r.phD*10)/10)}`);
+  if(r.total)P.push(r.fuera?`${r.fuera} de ${r.total} abonos fuera de lo deseado`:'el abonado dentro de lo deseado');
+  return{txt:P.length?`${c.nombre}, ${vzDiaTxt(st.fecha)}: ${P.join(', ')}.`:`${c.nombre}: todavía faltan datos para hacer el resumen de ${vzDiaTxt(st.fecha)}. Pregúntame qué me falta.`}}
+async function vzMensajesLeer(){const ms=await vzEspera(loadMsgs,'msgs'),vis=new Set(cabsVis().map(c=>c.id));const l=ms.filter(m=>!m.resuelto&&(!m.cab||vis.has(m.cab)));const pv=(st.priv||[]).filter(p=>p.para===miEmail()&&!p.leido);
+  let t=l.length?`Hay ${l.length} ${l.length===1?'mensaje pendiente':'mensajes pendientes'}. El último, de ${l[0].autor||'alguien'}: ${l[0].txt||'una foto'}.`:'No hay mensajes pendientes.';
+  if(pv.length)t+=` Y tienes ${pv.length} ${pv.length===1?'mensaje privado sin leer':'mensajes privados sin leer'}: el último de ${pv[0].deNombre||'alguien'}: ${pv[0].txt||'una foto'}.`;return{txt:t}}
+async function vzTiempo(){if(!st.splashWx||st.splashWx.fallo)await loadSplashWx();const w=st.splashWx;if(!w||!w.daily||!w.current)return{txt:'No he podido cargar el tiempo',ok:false};
+  const c=w.current,d=w.daily,ds=WX_TXT[c.weather_code]||'',pl=d.precipitation_probability_max&&d.precipitation_probability_max[0];
+  return{txt:`En Águilas ahora hay ${Math.round(c.temperature_2m)} grados${ds?', '+ds.toLowerCase():''}. Hoy máxima de ${Math.round(d.temperature_2m_max[0])} y mínima de ${Math.round(d.temperature_2m_min[0])}, rachas de ${Math.round(d.wind_gusts_10m_max[0])} kilómetros por hora${pl?` y ${pl} por ciento de probabilidad de lluvia`:''}.`}}
+function vzDepositos(){const l=depsBajos();return{txt:l.length?`Toca llenar ${l.length===1?'un depósito':l.length+' depósitos'}: ${l.map(b=>b.nombre+' de '+b.cabezales.map(cabNombre).join(' y ')).join('; ')}.`:'Ningún depósito está bajo.'}}
+async function vzConsulta(n,w,orig){const preg=VZ_PREG.has(w)||/[?¿]/.test(orig)||['tengo','lee','leeme','dime','cuales','resumen'].includes(w);
+  if(/^(resumen|como (va|vamos|esta|estan|van))\b/.test(n))return vzResumen();
+  if(!preg)return null;
+  if(/\b(falta|faltan|queda por apuntar|me queda|quedan por)\b/.test(n))return vzFalta();
+  if(/\bmensajes?\b/.test(n))return vzMensajesLeer();
+  if(/\btareas?\b/.test(n))return vzTareasLista();
+  if(/\b(llenar|rellenar|bajos?|vacios?)\b/.test(n)&&/\b(depositos?|bidones?|llenar|rellenar)\b/.test(n))return vzDepositos();
+  if(/\b(tiempo|temperatura|grados|llover|llueve|lluvia|viento|calor|frio)\b/.test(n)&&!/\b(riego|sector|minutos)\b/.test(n))return vzTiempo();
+  return null}
+async function vzDeshacer(){const u=vz.pila.pop();if(!u)return{txt:'No hay nada que deshacer',ok:false};
+  if(u.fn){await u.fn();return{txt:'Deshecho: '+u.txt.toLowerCase()}}
+  if(u.fecha!==st.fecha)return{txt:'Eso era de otro día',ok:false};st.reg[u.g][u.id]=u.prev??null;marcaReg(u.g+'.'+u.id);if(u.g==='niv')autoCm(u.id);vzMostrar([{g:u.g,id:u.id}]);return{txt:'Deshecho'}}
+const VZ_AYUDA='Te enseño en pantalla todo lo que me puedes decir. Por ejemplo: bandeja tres punto uno, ochocientos cincuenta. Pide diez goteros. Nota mañana a las ocho, llamar al técnico. Qué me falta.';
+async function vzEjecuta(orig){let t=vzToks(orig);if(!t.length)return null;vz.verAyuda=false;
   /* el cabezal se puede decir delante: «Gasolinera, bandeja…» o «cabezal Franco» */
   const cabs=(typeof cabsFinca==='function'?cabsFinca():cabsVis())||[];let nCab=0;
   for(const c of cabs){const k=vzToks(c.nombre),ini=t[0]==='cabezal'?1:0;if(k.length&&t.slice(ini,ini+k.length).join(' ')===k.join(' ')){nCab=ini+k.length;if(c.id!==st.cab){st.cab=c.id;renderCabs()}break}}
@@ -4840,10 +4954,17 @@ async function vzEjecuta(orig){let t=vzToks(orig);if(!t.length)return null;
   const datos=()=>veRiego()?null:{txt:'Los datos de riego solo los apunta el personal de riego',ok:false};
   if(['guardar','guarda','graba','grabar','guardalo'].includes(w)){if(datos())return datos();if(!st.dirtyReg)return{txt:'No hay nada pendiente de guardar'};await saveReg();return{txt:'Guardado'}}
   if(['deshacer','deshaz','anula','anular','borra','quita'].includes(w))return vzDeshacer();
-  if(w==='ayuda'||n==='que puedo decir'||n==='que puedes hacer')return{txt:VZ_AYUDA};
-  if(['nota','apunta','apuntame','recordatorio','recuerdame'].includes(w))return vzNota(orig,1);
+  if(w==='ayuda'||/^que (puedo decir|puedes hacer|te puedo decir|se puede decir)/.test(n)){vz.verAyuda=true;const tb=['ajustes','cajustes'].find(x=>tabPermitida(x));if(tb){st.tab=tb;renderCabs();renderTabs();renderMain();const a=$('#vz_ej');if(a)try{a.scrollIntoView({block:'start',behavior:'smooth'})}catch(e){}}return{txt:VZ_AYUDA}}
+  if(/^(la )?tarea (hecha|terminada|acabada)\b|^(he )?(terminado|acabado)\b|^(termine|acabe)\b/.test(n))return vzTareaHecha(orig);
+  if(['nota','apunta','apuntame','recordatorio','recuerdame','recordar','avisame'].includes(w)&&!t.slice(1,3).includes('incidencia'))return vzNota(orig,1);
   if(w==='mensaje'||(['manda','mandale','envia','enviar','mandar','escribe'].includes(w)&&t.slice(1,3).includes('mensaje')))return vzMensaje(orig);
   if(['incidencia','aviso','averia'].includes(w)||(['apunta','pon','crea','abre'].includes(w)&&t.slice(1,3).includes('incidencia')))return vzIncidencia(orig,t);
+  if(w==='tarea'||(['crea','pon','nueva','manda'].includes(w)&&t.slice(1,3).includes('tarea')))return vzTarea(orig,t,!!nCab);
+  if(['pide','pideme','pedir','pedido','material','materiales','necesito','necesitamos'].includes(w)||/^hace falta\b/.test(n))return vzMaterial(orig,t);
+  if(/^(fich\w*|marca\w*)( la| el)? (entrada|salida)\b/.test(n))return vzFichar(n.includes('salida')?'salida':'entrada');
+  if(/^(observaci|observa\b|pon en observaciones)/.test(n)){if(datos())return datos();return vzObs(orig)}
+  if(/^(he )?(llenado|rellenado|lleno|llene|rellene)\b|^llenado\b/.test(n)){if(datos())return datos();return vzLlenado(t)}
+  if(w==='dia'||(['ayer','anteayer','hoy'].includes(w)&&t.length<=3)||/^(ve|vete|ir|pasa|cambia|pon)( a| al)?( el)? (dia|ayer|anteayer|hoy)\b/.test(n))return vzDia(t);
   if(['abre','abrir','ve','vete','ir','ensename','muestrame','pon'].includes(w)){const r=t.slice(1).filter(x=>!['a','al','la','el','las','los','de','pantalla'].includes(x));
     for(const[ws,tabs]of VZ_IR)if(r.some(x=>ws.includes(x))){const tb=tabs.find(x=>tabPermitida(x));if(!tb)return{txt:'Eso no lo tienes en tu app',ok:false};st.tab=tb;renderCabs();renderTabs();renderMain();window.scrollTo(0,0);return{txt:(TABS.find(x=>x[0]===tb)||[,''])[1]}}}
   if(w==='bandeja'||w==='bandejas'){if(datos())return datos();return vzBandeja(t.slice(1))}
@@ -4855,6 +4976,7 @@ async function vzEjecuta(orig){let t=vzToks(orig);if(!t.length)return null;
   if(/^ph( de( la)?)? salida\b/.test(n)){if(datos())return datos();return vzValorCab('phS',t,'pH salida',[2,12])}
   if(w==='incremento'){if(datos())return datos();return vzValorCab('inc',t,'incremento',[0,20],true)}
   if(w==='radiacion'){if(datos())return datos();return vzValorCab('rad',t,'radiación',[0,100000])}
+  const cq=await vzConsulta(n,w,orig);if(cq)return cq;
   if(VZ_PREG.has(w)||/[?¿]/.test(orig))return vzIA(orig);
   return{txt:'No te he entendido. Di Agro, ayuda, para ver ejemplos',ver:'No te he entendido',ok:false}}
 
@@ -4870,19 +4992,28 @@ function vzGlobo(a,b,mal){clearTimeout(vz.globoT);vzGl.innerHTML=`<div class="o"
 vzBtn.addEventListener('click',()=>{if(vz.habla){try{speechSynthesis.cancel()}catch(e){}vz.habla=false}
   /* se empieza dentro del toque: en iPhone el micrófono solo se abre seguro así */
   vz.pausa=false;vz.armado=Date.now()+8000;vzGlobo('Te escucho…','');vzSoltar();vz.boton=true;vzCiclo();vzPintar()});
+document.addEventListener('toggle',e=>{if(e.target&&e.target.id==='vz_ej')vz.verAyuda=e.target.open},true);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)vzParar();else vzSeguir(300)});
 document.addEventListener('click',e=>{if(e.target&&e.target.closest&&e.target.closest('#vzbtn'))return;if(vz.on&&!vz.activo&&!vz.habla){vz.pausa=false;vzCiclo()}},true);   // un toque en la pantalla reanuda la escucha si el móvil la cortó
 document.addEventListener('change',e=>{const k=e.target&&e.target.dataset&&e.target.dataset.vz;if(k==='on')vzEncender(e.target.checked);else if(k==='habla'){try{localStorage.setItem('abono.vozHabla',e.target.checked?'1':'0')}catch(_){}}});
-const VZ_EJ=[['Gasolinera, bandeja 3.1, 850','apunta el drenaje de esa bandeja'],['bandeja 3.1, CE 4,2, pH 6,1','CE y pH del drenaje'],['sector 4, 120 minutos, 12 riegos','tiempo y riegos del sector'],
-  ['metros cúbicos 460','el contador del cabezal'],['bidón nítrico 9,7','los cm del bidón'],['CE balsa 1,5 · pH salida 5,6 · incremento 1,9','agua de riego'],['guardar · deshacer','guarda lo apuntado o quita lo último'],
-  ['nota: llamar al técnico','a Mis notas'],['mensaje: el filtro de Franco está sucio · mensaje para Pepe: …','a Mensajes'],['incidencia urgente nave 5 mosca blanca','a Incidencias'],
-  ['¿por qué sube la CE del drenaje?','la IA contesta hablando'],['abre drenaje','cambia de pantalla']];
+const VZ_EJ=[
+  ['Datos de riego',[['Gasolinera, bandeja 3.1, 850','drenaje de la bandeja (cambia de cabezal si lo dices delante)'],['bandeja 3.1, CE 4,2, pH 6,1','CE y pH del drenaje'],['bandeja 3.1, muestra','muestra cogida'],
+    ['sector 4, 120 minutos, 12 riegos','tiempo y riegos'],['metros cúbicos 460','contador del cabezal'],['CE balsa 1,5 · pH balsa 7,8 · pH salida 5,6 · incremento 1,9','agua de riego'],
+    ['observaciones: se ha cambiado el filtro','observaciones del parte'],['guardar · deshacer','guarda lo apuntado o quita lo último que hiciste por voz']]],
+  ['Depósitos',[['bidón nítrico 9,7','centímetros del bidón'],['he llenado el bidón nítrico','llenado hasta arriba, descontado del almacén'],['llenado bidón calcio 40','llenado parcial: lo abre para que lo revises'],['¿qué depósitos hay que llenar?','te dice los que están bajos']]],
+  ['Pedidos y trabajo',[['pide 10 goteros de 2 litros','pedido de material'],['material urgente: filtro de anillas para Franco','pedido urgente para un cabezal'],
+    ['tarea para Pepe mañana: revisar los filtros','tarea con persona y día'],['tarea hecha: revisar los filtros','marca la tarea como hecha'],['¿qué tareas tengo?','te lee tus tareas de hoy'],
+    ['incidencia urgente nave 5 mosca blanca','incidencia en el plano'],['fichar entrada · fichar salida','fichaje con ubicación']]],
+  ['Notas y mensajes',[['nota: llamar al técnico','a Mis notas'],['recuérdame mañana a las 8 llamar al técnico','nota con aviso (también «el lunes», «en media hora», «a las 5 de la tarde»)'],
+    ['mensaje: el filtro de Franco está sucio','mensaje al equipo'],['mensaje para Pepe: …','mensaje privado'],['¿tengo mensajes?','te lee los pendientes']]],
+  ['Preguntar',[['¿qué me falta?','lo que queda por apuntar hoy en el cabezal'],['resumen','drenaje, CE, pH y abonado del día'],['¿qué tiempo hace?','el tiempo de hoy'],['¿por qué sube la CE del drenaje?','la IA contesta hablando']]],
+  ['Moverse',[['abre drenaje · abre material · abre tareas','cambia de pantalla'],['cabezal Franco','cambia de cabezal'],['ayer · día 24 · hoy','cambia de día (guarda antes lo pendiente)'],['ayuda','enseña esta lista']]]];
 const vzIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 function vozHTML(){if(!vzOk())return `<section class="card"><div><h3>Control por voz</h3><div class="sub">Este navegador no reconoce la voz</div></div><div class="note">${vzIOS?'En el iPhone hace falta tener activado Siri y el dictado (Ajustes del iPhone → Siri y General → Teclado → Dictado).':'Usa la app en Chrome (Android) o Safari (iPhone) actualizados.'}</div></section>`;
   return `<section class="card"><div><h3>Control por voz</h3><div class="sub">Di «Agro» y lo que quieras · con la app abierta y la pantalla encendida</div></div>
     <label class="chk"><input type="checkbox" data-vz="on" ${vz.on?'checked':''}> Escuchar la palabra «Agro» en este móvil</label>
     <label class="chk"><input type="checkbox" data-vz="habla" ${vzHablaOn()?'checked':''}> Contestar hablando</label>
-    <details class="tv"><summary>Qué se le puede decir</summary><ul class="vzlista">${VZ_EJ.map(([a,b])=>`<li><b>«Agro, ${esc(a)}»</b> <span class="note">${esc(b)}</span></li>`).join('')}</ul>
+    <details class="tv" id="vz_ej" ${vz.verAyuda?'open':''}><summary>Qué se le puede decir</summary>${VZ_EJ.map(([g,l])=>`<div class="vzgr">${esc(g)}</div><ul class="vzlista">${l.map(([a,b])=>`<li><b>«Agro, ${esc(a)}»</b> <span class="note">${esc(b)}</span></li>`).join('')}</ul>`).join('')}
       <div class="note">Después de una orden de datos tienes 10 segundos para seguir sin decir «Agro»: «Agro, bandeja 3.1» … «850» … «pH 6,1».</div></details>
     <details class="tv"><summary>Lo último que ha oído</summary><div id="vz_log" class="vzlog">${vzLogHTML()}</div><div class="note">✓ = lo ha usado · = no iba con «Agro» y no lo ha usado.</div></details>
     <div class="note">${vzIOS?'En iPhone la escucha seguida es menos fiable que en Android: si deja de hacer caso, toca el micrófono redondo y di la orden sin «Agro». Hace falta tener Siri y el dictado activados. ':''}El micrófono redondo de abajo sirve para decir una orden sin «Agro». Lo que se habla sin «Agro» no se guarda ni se usa. Con las gafas o unos auriculares conectados, la respuesta se oye por ellos. Necesita conexión.</div></section>`}
@@ -4969,7 +5100,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v120';
+window.APP_V='abonado-v121';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
