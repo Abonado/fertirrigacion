@@ -196,7 +196,7 @@ td.u{color:var(--muted);font-size:12px}
 .savebar .wrap{padding-block:10px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .savebar .btn{border-color:transparent}
 .savebar .msg{font-size:14px}
-.vzbtn{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:7;width:56px;height:56px;border-radius:50%;border:2px solid var(--navy);background:var(--bg);color:var(--navy);display:grid;place-items:center;padding:0;box-shadow:0 4px 14px rgba(0,0,0,.2);cursor:pointer}.vzbtn[hidden]{display:none}.vzbtn svg{width:26px;height:26px}.vzbtn.on{background:var(--navy);color:var(--bg)}.vzbtn.oye.on::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid #2e9e5b;animation:vzp 1.8s ease-out infinite}.vzbtn.arm{background:#1e7a4c;border-color:#1e7a4c;color:#fff}.vzbtn.habla{background:#1f78c1;border-color:#1f78c1;color:#fff}@keyframes vzp{from{opacity:.9;transform:scale(.92)}to{opacity:0;transform:scale(1.3)}}@media (prefers-reduced-motion:reduce){.vzbtn.oye.on::after{animation:none}}.vzglobo{position:fixed;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));bottom:calc(142px + env(safe-area-inset-bottom,0px));z-index:7;max-width:440px;margin-left:auto;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.35;text-transform:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}.vzglobo[hidden]{display:none}.vzglobo .o{opacity:.75;font-size:13px;margin-bottom:2px}.vzglobo.mal{background:#8e2b20}.vzok{outline:3px solid #2e9e5b;outline-offset:2px;border-radius:6px}.vzlista{margin:8px 0 0;padding-left:18px;text-transform:none}.vzlista li{margin:6px 0}
+.vzbtn{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:7;width:56px;height:56px;border-radius:50%;border:2px solid var(--navy);background:var(--bg);color:var(--navy);display:grid;place-items:center;padding:0;box-shadow:0 4px 14px rgba(0,0,0,.2);cursor:pointer}.vzbtn[hidden]{display:none}.vzbtn svg{width:26px;height:26px}.vzbtn.on{background:var(--navy);color:var(--bg)}.vzbtn.oye.on::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid #2e9e5b;animation:vzp 1.8s ease-out infinite}.vzbtn.arm{background:#1e7a4c;border-color:#1e7a4c;color:#fff}.vzbtn.habla{background:#1f78c1;border-color:#1f78c1;color:#fff}@keyframes vzp{from{opacity:.9;transform:scale(.92)}to{opacity:0;transform:scale(1.3)}}@media (prefers-reduced-motion:reduce){.vzbtn.oye.on::after{animation:none}}.vzglobo{position:fixed;left:max(14px,env(safe-area-inset-left,0px));right:max(14px,env(safe-area-inset-right,0px));bottom:calc(142px + env(safe-area-inset-bottom,0px));z-index:7;max-width:440px;margin-left:auto;background:var(--ink);color:var(--bg);border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.35;text-transform:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}.vzglobo[hidden]{display:none}.vzglobo .o{opacity:.75;font-size:13px;margin-bottom:2px}.vzglobo.mal{background:#8e2b20}.vzok{outline:3px solid #2e9e5b;outline-offset:2px;border-radius:6px}.vzlista{margin:8px 0 0;padding-left:18px;text-transform:none}.vzlista li{margin:6px 0}.vzlog{font-size:13px;text-transform:none;max-height:260px;overflow:auto;margin-top:6px}.vzlog>div{padding:4px 0;border-bottom:1px solid rgba(0,0,0,.08)}.vzlog .si{font-weight:600}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:14px;z-index:7;max-width:calc(100% - 32px)}
 .foot{padding-block:0 24px;font-size:12px;color:var(--muted)}
 .card>*{min-width:0}
@@ -4648,10 +4648,12 @@ document.addEventListener('click',async e=>{if(!e.target.closest('[data-act="app
    y drenaje, notas, mensajes, incidencias y preguntas a la IA (que contesta hablando, también por las gafas o los
    auriculares). El micrófono redondo sirve para decir una orden sin la palabra. Lo que se oye sin «Agro» no se usa. */
 const VZ_REC=window.SpeechRecognition||window.webkitSpeechRecognition;
-const vz={on:false,rec:null,activo:false,armado:0,habla:false,boton:false,pila:[],timer:null,errores:0,globoT:null};
+const vz={on:false,rec:null,activo:false,armado:0,habla:false,boton:false,pila:[],timer:null,errores:0,globoT:null,log:[],ctx:null,pausa:false,vale:false,audioOk:false};
+const vzSigue=pref=>{vz.ctx={pref,hasta:Date.now()+10000}};
 const vzOk=()=>!!VZ_REC;
 const VZ_NOTA_IA='\nLa respuesta se va a escuchar en voz alta por unos auriculares: contesta en 2 o 3 frases cortas, sin listas, sin negritas y sin símbolos.';
-const VZ_WAKE=/(?:^|\s)(?:oye\s+|hey\s+|ok\s+|vale\s+)?[aá]gro(?:\s*fl[aeiy]+)?(?=$|[\s,.:;!?¡¿])[\s,.:;!?]*/i;
+/* «Agro» y cómo lo suelen escribir los móviles: agro, agró, hagro, ogro, agros, a gro… */
+const VZ_WAKE=/(?:^|[\s,.¡¿])(?:oye\s+|hey\s+|ok\s+|vale\s+)?(?:h?[aáoó]gr[oóa]s?|a\s+gro)(?:\s*fl[aeiy]+)?(?=$|[\s,.:;!?¡¿])[\s,.:;!?]*/i;
 const VZ_U={cero:0,un:1,uno:1,una:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,veintiun:21,veintiuno:21,veintidos:22,veintitres:23,veinticuatro:24,veinticinco:25,veintiseis:26,veintisiete:27,veintiocho:28,veintinueve:29};
 const VZ_D={treinta:30,cuarenta:40,cincuenta:50,sesenta:60,setenta:70,ochenta:80,noventa:90};
 const VZ_C={cien:100,ciento:100,doscientos:200,doscientas:200,trescientos:300,trescientas:300,cuatrocientos:400,cuatrocientas:400,quinientos:500,quinientas:500,seiscientos:600,seiscientas:600,setecientos:700,setecientas:700,ochocientos:800,ochocientas:800,novecientos:900,novecientas:900};
@@ -4686,30 +4688,54 @@ const vzCap=s=>String(s||'').trim().replace(/^[\s:,.;-]+/,'').replace(/^([¿¡"�
 /* Quita las n primeras palabras del texto original (para guardar notas y mensajes tal como se dicen) */
 const vzResto=(orig,n)=>String(orig||'').trim().split(/\s+/).slice(n).join(' ');
 
-/* ---- Reconocimiento y voz ---- */
-function vzCrear(){const r=new VZ_REC();r.lang='es-ES';r.interimResults=false;r.maxAlternatives=1;
-  r.onresult=e=>{vz.errores=0;for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(!x.isFinal)continue;const t=x[0]&&x[0].transcript,dir=vz.boton;vz.boton=false;vzOir(t,dir)}};
-  r.onerror=e=>{const c=e&&e.error;if(c==='not-allowed'||c==='service-not-allowed'){vzEncender(false);toast('El micrófono no tiene permiso: dáselo a la app en el navegador');return}
-    if(c==='network'){vz.errores++;if(vz.errores===3)toast('El control por voz necesita conexión')}else if(c==='audio-capture'){vz.errores++;if(vz.errores===3)toast('No se encuentra el micrófono')}};
-  r.onend=()=>{vz.activo=false;vz.boton=false;vzPintar();vzSeguir()};return r}
-function vzEmpezar(){if(!vzOk()||vz.activo||vz.habla)return;if(!vz.rec)vz.rec=vzCrear();vz.rec.continuous=vz.on;try{vz.rec.start();vz.activo=true}catch(e){}vzPintar()}
-function vzParar(){clearTimeout(vz.timer);if(vz.rec&&vz.activo){try{vz.rec.abort()}catch(e){}}}
-function vzSeguir(){clearTimeout(vz.timer);if(!vz.on||vz.habla||vz.activo||document.hidden)return;vz.timer=setTimeout(vzEmpezar,vz.errores>2?4000:300)}
-function vzEncender(on){vz.on=!!on;try{localStorage.setItem('abono.voz',on?'1':'0')}catch(e){}if(on)vzEmpezar();else{vzParar();vz.armado=0}vzPintar();
+/* ---- Reconocimiento y voz ----
+   Cada escucha es una frase corta (continuous=false) con un reconocedor nuevo cada vez. Así funciona también en iPhone,
+   donde la escucha seguida deja de dar resultados y reutilizar el reconocedor se cuelga. Un vigilante lo reinicia si se queda colgado. */
+const vzTexto=res=>{const s=[];for(let i=0;i<res.length;i++){const x=res[i]&&res[i][0];if(x&&x.transcript)s.push(x.transcript.trim())}
+  if(s.length>1&&s.every((x,i)=>!i||x.startsWith(s[i-1])))return s[s.length-1];return s.join(' ')};   // iPhone repite el texto acumulado
+const vzHablaOn=()=>{try{return localStorage.getItem('abono.vozHabla')!=='0'}catch(e){return true}};
+const vzLogHTML=()=>vz.log.length?vz.log.map(x=>`<div class="${x.u?'si':''}"><span class="mini">${esc(x.h)}</span> ${x.u?'✓':'·'} «${esc(x.t)}»</div>`).join(''):'<div class="note">Todavía nada.</div>';
+function vzLog(t,u){vz.log.unshift({t,u,h:new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'})});if(vz.log.length>15)vz.log.length=15;const l=$('#vz_log');if(l)l.innerHTML=vzLogHTML()}
+function vzCiclo(){if(!vzOk()||vz.activo||vz.habla||document.hidden)return;
+  const r=new VZ_REC(),c={txt:'',hecho:false,dir:vz.boton,audio:false};vz.boton=false;vz.rec=r;window.__vzRec=r;
+  r.lang='es-ES';r.continuous=false;r.interimResults=true;r.maxAlternatives=1;
+  const procesa=()=>{if(c.hecho)return;c.hecho=true;const t=c.txt.trim();if(t)vzOir(t,c.dir)};
+  r.onaudiostart=()=>{c.audio=true;vz.audioOk=true};
+  r.onresult=e=>{if(vz.rec!==r)return;vz.errores=0;vz.vale=true;c.txt=vzTexto(e.results);let fin=false;for(let i=0;i<e.results.length;i++)if(e.results[i].isFinal)fin=true;
+    if(!c.hecho&&(c.dir||Date.now()<vz.armado||VZ_WAKE.test(c.txt)))vzGlobo(`«${c.txt}»`,'');if(fin)procesa()};
+  r.onerror=e=>{if(vz.rec!==r)return;const k=e&&e.error;vz.ultErr=k;if(k&&k!=='no-speech'&&k!=='aborted')vzLog('(fallo: '+k+')',false);
+    if(k==='not-allowed'||k==='service-not-allowed'){if(vz.vale){vz.pausa=true;vzGlobo('El móvil ha cortado el micrófono','Toca el micrófono redondo para seguir escuchando',true)}else{vzEncender(false);toast('El micrófono no tiene permiso: dáselo a la app en los ajustes del móvil')}}
+    else if(k==='network'||k==='audio-capture'){vz.errores++;if(vz.errores===3)toast(k==='network'?'El control por voz necesita conexión':'No se encuentra el micrófono')}};
+  r.onend=()=>{if(vz.rec!==r)return;clearTimeout(vz.perro);vz.rec=null;vz.activo=false;procesa();vzPintar();vzSeguir()};
+  try{r.start();vz.activo=true}catch(e){vz.rec=null;vz.activo=false;vzSeguir(1500);return}
+  /* vigilantes: si no llega a abrir el micrófono o se queda colgado, se tira y se empieza otro */
+  clearTimeout(vz.perro);vz.perro=setTimeout(()=>{if(vz.rec!==r)return;if(vz.audioOk&&!c.audio){vzSoltar();vzSeguir(200);return}
+    vz.perro=setTimeout(()=>{if(vz.rec!==r)return;procesa();vzSoltar();vzSeguir()},11000)},3500);
+  vzPintar()}
+/* Suelta el reconocedor sin esperar a que el navegador conteste (en iPhone a veces no contesta) */
+function vzSoltar(){clearTimeout(vz.perro);const r=vz.rec;vz.rec=null;vz.activo=false;if(r){try{r.abort()}catch(e){}}}
+function vzParar(){clearTimeout(vz.timer);vzSoltar();vzPintar()}
+function vzSeguir(ms){clearTimeout(vz.timer);if(!vz.on||vz.pausa||vz.habla||vz.activo||document.hidden)return;vz.timer=setTimeout(vzCiclo,ms!=null?ms:vz.errores>2?4000:60)}
+function vzEncender(on){vz.on=!!on;vz.pausa=false;try{localStorage.setItem('abono.voz',on?'1':'0')}catch(e){}if(on)vzCiclo();else{vzParar();vz.armado=0;vz.ctx=null}vzPintar();
   for(const i of document.querySelectorAll('[data-vz="on"]'))i.checked=vz.on}
 function vzHablar(t,fin){const S=window.speechSynthesis;t=String(t||'').trim();if(!S||!window.SpeechSynthesisUtterance||!t){if(fin)fin();return}
   vz.habla=true;vzParar();try{S.cancel()}catch(e){}
   const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=1.05;try{const vs=S.getVoices()||[];const v=vs.find(x=>/^es[-_]ES/i.test(x.lang))||vs.find(x=>/^es/i.test(x.lang));if(v)u.voice=v}catch(e){}
-  let hecho=false,tm=null;const acaba=()=>{if(hecho)return;hecho=true;clearTimeout(tm);vz.habla=false;vzPintar();if(fin)fin();vzSeguir()};
-  tm=setTimeout(acaba,3000+t.length*90);u.onend=acaba;u.onerror=acaba;vzPintar();try{S.speak(u)}catch(e){acaba()}}
-/* Lo que se oye: solo se hace caso a lo que va después de «Agro» (o a lo que se dice justo después de «Agro» a secas o del botón) */
+  let hecho=false,tm=null;const acaba=()=>{if(hecho)return;hecho=true;clearTimeout(tm);vz.habla=false;vzPintar();if(fin)fin();vzSeguir(150)};
+  tm=setTimeout(acaba,2500+t.length*85);u.onend=acaba;u.onerror=acaba;vzPintar();try{S.speak(u)}catch(e){acaba()}}
+/* Lo que se oye: solo se hace caso a lo que va después de «Agro», a lo que se dice justo después de «Agro» a secas o del botón,
+   y a un número o un dato que sigue a la orden anterior («Agro, bandeja 3.1» … «850» … «pH 6,1») */
+const VZ_SIGUE=/^(\d|(ce|se|c|ph|pe|muestra|drenaje|minutos|riegos|tiempo|cero|un|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|trece|catorce|quince|dieci\w*|veint\w*|treinta|cuarenta|cincuenta|sesenta|setenta|ochenta|noventa|cien|ciento|\w+cient[oa]s|mil)\b)/;
 function vzOir(texto,directo){texto=String(texto||'').trim();if(!texto)return;const m=VZ_WAKE.exec(texto);let orden;
-  if(m)orden=texto.slice(m.index+m[0].length).trim();else if(directo||Date.now()<vz.armado)orden=texto;else return;
-  if(!orden){vzGlobo('Dime…','');vzHablar('Dime',()=>{vz.armado=Date.now()+8000;vzPintar()});return}
+  if(m)orden=texto.slice(m.index+m[0].length).trim();else if(directo||Date.now()<vz.armado)orden=texto;
+  else if(vz.ctx&&Date.now()<vz.ctx.hasta&&VZ_SIGUE.test(vzSin(texto)))orden=vz.ctx.pref+' '+texto;
+  else{vzLog(texto,false);return}
+  vzLog(texto,true);
+  if(!orden){vz.armado=Date.now()+8000;vzGlobo('Dime…','');vzPintar();return}
   vz.armado=0;vzPintar();return vzComando(orden)}
 async function vzComando(orden){vzGlobo(`«${orden}»`,'…');let r;
   try{r=await vzEjecuta(orden)}catch(e){console.error('voz',e);r={txt:'No he podido hacerlo: '+(errMsg?errMsg(e):'error'),ok:false}}
-  if(!r)return;vzGlobo(`«${orden}»`,r.ver||r.txt,r.ok===false);vzHablar(r.txt);return r}
+  if(!r)return;vzGlobo(`«${orden}»`,r.ver||r.txt,r.ok===false);if(vzHablaOn())vzHablar(r.txt);return r}
 
 /* ---- Órdenes ---- */
 const VZ_PREG=new Set(['que','como','porque','por','cuanto','cuanta','cuantos','cuantas','cual','cuales','cuando','donde','puedo','deberia','debo','es','hay','sabes','explicame','dime','pregunta','pregunto']);
@@ -4735,7 +4761,7 @@ function vzBusca(lista,t){const u=t.map(x=>x.replace(',','.'));const prueba=(c,n
 const vzClave=(nombre,quita)=>vzToks(nombre).filter(x=>!quita.includes(x)).join(' ').replace(/,/g,'.');
 function vzBandeja(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un cabezal',ok:false};
   const lista=c.sectores.flatMap(s=>s.bandejas.map(bj=>({clave:vzClave(bj.nombre,['bandeja','bandejas']),bj,s})));const f=vzBusca(lista,t);
-  if(!f)return{txt:`No encuentro esa bandeja en ${c.nombre}`,ok:false};const{bj}=f.o,r=t.slice(f.n),sets=[],dic=[];let campo=null,bare=false;
+  if(!f)return{txt:`No encuentro esa bandeja en ${c.nombre}`,ok:false};const{bj}=f.o,r=t.slice(f.n),sets=[],dic=[];let campo=null,bare=false;vzSigue('bandeja '+f.o.clave);
   for(let i=0;i<r.length;i++){const w=r[i];
     if(['ce','se','c','conductividad','electrica'].includes(w)){campo='ceD';continue}if(w==='ph'){campo='phD';continue}
     if(['drenaje','drenado','drena'].includes(w)){campo='dren';continue}
@@ -4750,7 +4776,7 @@ function vzBandeja(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un
   for(const[g,v]of sets)vzPon(g,bj.id,v);vzMostrar(sets.map(([g])=>({g,id:bj.id})));return{txt:`${bj.nombre}: ${dic.join(', ')}`}}
 function vzSector(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un cabezal',ok:false};
   const lista=c.sectores.map(s=>({clave:vzClave(s.nombre,['sector','sectores']),s}));const f=vzBusca(lista,t);if(!f)return{txt:`No encuentro ese sector en ${c.nombre}`,ok:false};
-  const{s}=f.o,r=t.slice(f.n),sets=[],dic=[];const MIN=['minutos','minuto','min','tiempo'],RIE=['riegos','riego','pulsos','veces'];
+  const{s}=f.o,r=t.slice(f.n),sets=[],dic=[];vzSigue('sector '+f.o.clave);const MIN=['minutos','minuto','min','tiempo'],RIE=['riegos','riego','pulsos','veces'];
   for(let i=0;i<r.length;i++){const w=r[i];let g=null,v=null;
     if(vzEsN(w)){v=vzNum(w,true);const nx=r[i+1];if(MIN.includes(nx)){g='min';i++}else if(RIE.includes(nx)){g='rie';i++}else if(nx==='horas'||nx==='hora'){g='min';v=v*60;i++}else g=sets.some(x=>x[0]==='min')?null:'min'}
     else if((MIN.includes(w)||RIE.includes(w))&&vzEsN(r[i+1])){g=MIN.includes(w)?'min':'rie';v=vzNum(r[i+1],true);i++}
@@ -4763,7 +4789,7 @@ function vzBidon(t){const c=cabById(st.cab);if(!c)return{txt:'Elige primero un c
   const bs=bidonesDe(st.cab).map(b=>{const tx=vzToks([b.nombre,...b.productos.map(x=>(prod(x.p)||{}).n||'')].join(' ')),bt=vzToks(b.nombre);
     return{b,p:ws.filter(w=>(w.length>=3&&tx.some(x=>x.startsWith(w)||w.startsWith(x)&&x.length>=4))||(w.length<3&&bt.includes(w))).length}}).filter(x=>x.p>0).sort((a,b)=>b.p-a.p);
   if(!bs.length)return{txt:'No sé qué bidón es. Di su nombre o lo que lleva',ok:false};if(bs.length>1&&bs[1].p===bs[0].p)return{txt:`Hay varios: ${bs.filter(x=>x.p===bs[0].p).map(x=>x.b.nombre).join(', ')}. Dímelo más claro`,ok:false};
-  const b=bs[0].b;if(!vzEsN(val))return{txt:`${b.nombre}: ¿cuántos centímetros?`,ok:false};const v=vzNum(val);if(v==null||v<0||v>400)return{txt:'Esos centímetros no me cuadran, repítelo',ok:false};
+  const b=bs[0].b;vzSigue('bidon '+ws.join(' '));if(!vzEsN(val))return{txt:`${b.nombre}: ¿cuántos centímetros?`,ok:false};const v=vzNum(val);if(v==null||v<0||v>400)return{txt:'Esos centímetros no me cuadran, repítelo',ok:false};
   const g=esDirecto(b)||!lecturaAnt(b,false)?'cm':'niv';vzPon(g,b.id,v);vzMostrar([{g,id:b.id}]);return{txt:`${b.nombre}: ${g==='niv'?'nivel ':''}${vzF(v)} centímetros${g==='cm'?' gastados':''}`}}
 function vzValorCab(g,t,txt,lim,mili){const n=t.find(vzEsN);if(n==null)return{txt:`¿Cuánto? Di ${txt} y el número`,ok:false};let v=vzNum(n,g==='m3'||g==='rad');if(mili&&v>=50)v=v/1000;
   if(v==null||v<lim[0]||v>lim[1])return{txt:`${vzCap(txt)} ${vzF(v)} no me cuadra, repítelo`,ok:false};vzPon(g,st.cab,v);vzMostrar([{g,id:st.cab}]);return{txt:g==='m3'?`${cabNombre(st.cab)}: ${vzF(v)} metros cúbicos`:`${cabNombre(st.cab)}: ${txt} ${vzF(v)}`}}
@@ -4841,23 +4867,26 @@ function vzPintar(){const ok=vzOk()&&st.ready;vzBtn.hidden=!ok;if(!ok)return;con
   vzBtn.setAttribute('aria-label',arm?'Te escucho: di la orden':vz.on?'Escuchando «Agro». Toca para decir una orden':'Toca para decir una orden');
   if(arm){clearTimeout(vz.armT);vz.armT=setTimeout(vzPintar,Math.max(200,vz.armado-Date.now()+50))}}
 function vzGlobo(a,b,mal){clearTimeout(vz.globoT);vzGl.innerHTML=`<div class="o">${esc(a||'')}</div>${b?`<div>${esc(b)}</div>`:''}`;vzGl.classList.toggle('mal',!!mal);vzGl.hidden=false;vz.globoT=setTimeout(()=>{vzGl.hidden=true},b&&b.length>120?12000:6000)}
-vzBtn.addEventListener('click',()=>{if(vz.habla){try{speechSynthesis.cancel()}catch(e){}return}
-  if(vz.on&&vz.activo){vz.armado=Date.now()+8000;vzPintar();vzGlobo('Te escucho…','');return}
-  vz.boton=true;vz.armado=Date.now()+8000;vzGlobo('Te escucho…','');if(vz.activo)vzParar();setTimeout(vzEmpezar,vz.activo?250:0);vzPintar()});
-document.addEventListener('visibilitychange',()=>{if(document.hidden)vzParar();else vzSeguir()});
-document.addEventListener('click',()=>{if(vz.on&&!vz.activo&&!vz.habla)vzEmpezar()},true);   // por si el navegador pide un toque antes de abrir el micrófono
-document.addEventListener('change',e=>{if(e.target&&e.target.dataset&&e.target.dataset.vz==='on')vzEncender(e.target.checked)});
+vzBtn.addEventListener('click',()=>{if(vz.habla){try{speechSynthesis.cancel()}catch(e){}vz.habla=false}
+  /* se empieza dentro del toque: en iPhone el micrófono solo se abre seguro así */
+  vz.pausa=false;vz.armado=Date.now()+8000;vzGlobo('Te escucho…','');vzSoltar();vz.boton=true;vzCiclo();vzPintar()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)vzParar();else vzSeguir(300)});
+document.addEventListener('click',e=>{if(e.target&&e.target.closest&&e.target.closest('#vzbtn'))return;if(vz.on&&!vz.activo&&!vz.habla){vz.pausa=false;vzCiclo()}},true);   // un toque en la pantalla reanuda la escucha si el móvil la cortó
+document.addEventListener('change',e=>{const k=e.target&&e.target.dataset&&e.target.dataset.vz;if(k==='on')vzEncender(e.target.checked);else if(k==='habla'){try{localStorage.setItem('abono.vozHabla',e.target.checked?'1':'0')}catch(_){}}});
 const VZ_EJ=[['Gasolinera, bandeja 3.1, 850','apunta el drenaje de esa bandeja'],['bandeja 3.1, CE 4,2, pH 6,1','CE y pH del drenaje'],['sector 4, 120 minutos, 12 riegos','tiempo y riegos del sector'],
   ['metros cúbicos 460','el contador del cabezal'],['bidón nítrico 9,7','los cm del bidón'],['CE balsa 1,5 · pH salida 5,6 · incremento 1,9','agua de riego'],['guardar · deshacer','guarda lo apuntado o quita lo último'],
   ['nota: llamar al técnico','a Mis notas'],['mensaje: el filtro de Franco está sucio · mensaje para Pepe: …','a Mensajes'],['incidencia urgente nave 5 mosca blanca','a Incidencias'],
   ['¿por qué sube la CE del drenaje?','la IA contesta hablando'],['abre drenaje','cambia de pantalla']];
-function vozHTML(){if(!vzOk())return `<section class="card"><div><h3>Control por voz</h3><div class="sub">Este navegador no reconoce la voz</div></div><div class="note">Usa la app en Chrome (Android) o Safari (iPhone) actualizados.</div></section>`;
+const vzIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function vozHTML(){if(!vzOk())return `<section class="card"><div><h3>Control por voz</h3><div class="sub">Este navegador no reconoce la voz</div></div><div class="note">${vzIOS?'En el iPhone hace falta tener activado Siri y el dictado (Ajustes del iPhone → Siri y General → Teclado → Dictado).':'Usa la app en Chrome (Android) o Safari (iPhone) actualizados.'}</div></section>`;
   return `<section class="card"><div><h3>Control por voz</h3><div class="sub">Di «Agro» y lo que quieras · con la app abierta y la pantalla encendida</div></div>
     <label class="chk"><input type="checkbox" data-vz="on" ${vz.on?'checked':''}> Escuchar la palabra «Agro» en este móvil</label>
-    <details class="tv"><summary>Qué se le puede decir</summary><ul class="vzlista">${VZ_EJ.map(([a,b])=>`<li><b>«Agro, ${esc(a)}»</b> <span class="note">${esc(b)}</span></li>`).join('')}</ul></details>
-    <div class="note">El micrófono redondo de abajo sirve para decir una orden sin «Agro». Lo que se habla sin «Agro» no se guarda ni se usa. Con las gafas o unos auriculares conectados, la respuesta se oye por ellos. Necesita conexión.</div></section>`}
-if(vzOk()){try{vz.on=localStorage.getItem('abono.voz')==='1'}catch(e){}setInterval(()=>{vzPintar();if(vz.on&&!vz.activo&&!vz.habla&&!document.hidden&&st.ready)vzSeguir()},2000)}
-
+    <label class="chk"><input type="checkbox" data-vz="habla" ${vzHablaOn()?'checked':''}> Contestar hablando</label>
+    <details class="tv"><summary>Qué se le puede decir</summary><ul class="vzlista">${VZ_EJ.map(([a,b])=>`<li><b>«Agro, ${esc(a)}»</b> <span class="note">${esc(b)}</span></li>`).join('')}</ul>
+      <div class="note">Después de una orden de datos tienes 10 segundos para seguir sin decir «Agro»: «Agro, bandeja 3.1» … «850» … «pH 6,1».</div></details>
+    <details class="tv"><summary>Lo último que ha oído</summary><div id="vz_log" class="vzlog">${vzLogHTML()}</div><div class="note">✓ = lo ha usado · = no iba con «Agro» y no lo ha usado.</div></details>
+    <div class="note">${vzIOS?'En iPhone la escucha seguida es menos fiable que en Android: si deja de hacer caso, toca el micrófono redondo y di la orden sin «Agro». Hace falta tener Siri y el dictado activados. ':''}El micrófono redondo de abajo sirve para decir una orden sin «Agro». Lo que se habla sin «Agro» no se guarda ni se usa. Con las gafas o unos auriculares conectados, la respuesta se oye por ellos. Necesita conexión.</div></section>`}
+if(vzOk()){try{vz.on=localStorage.getItem('abono.voz')==='1'}catch(e){}setInterval(()=>{vzPintar();if(vz.on&&!vz.pausa&&!vz.activo&&!vz.habla&&!document.hidden&&st.ready)vzSeguir()},2000)}
 /* ---------- Asistente IA agrícola (chat) ----------
    Solo temas del campo (lo exige el servidor). La conversación se guarda en este móvil, no en la nube.
    Puede usar los datos de la finca (receta, últimos días de riego y drenaje, tiempo) para responder en concreto. */
@@ -4940,7 +4969,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v119';
+window.APP_V='abonado-v120';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;

@@ -12,6 +12,9 @@ class FalsoRec{constructor(){this.activo=false;window.__rec.push(this)}
   abort(){this.stop()}}
 window.SpeechRecognition=FalsoRec;window.webkitSpeechRecognition=FalsoRec;
 window.__oye=t=>{const r=window.__rec.find(x=>x.activo);if(!r)return false;const res=[{transcript:t,confidence:.9}];res.isFinal=true;r.onresult({resultIndex:0,results:[res]});if(!r.continuous)r.stop();return true};
+// como el iPhone: el texto llega creciendo en el mismo resultado y a veces sin marca de final; la frase se cierra al acabar
+window.__oyeIOS=(partes,final)=>{const r=window.__rec.find(x=>x.activo);if(!r)return false;for(const t of partes){const res=[{transcript:t,confidence:.9}];res.isFinal=false;r.onresult({resultIndex:0,results:[res]})}
+  if(final){const res=[{transcript:partes[partes.length-1],confidence:.9}];res.isFinal=true;r.onresult({resultIndex:0,results:[res]})}r.stop();return true};
 Object.defineProperty(window,'speechSynthesis',{configurable:true,value:{speak(u){window.__dichos.push(u.text);setTimeout(()=>u.onend&&u.onend(),30)},cancel(){},getVoices(){return[]}}});
 window.SpeechSynthesisUtterance=class{constructor(t){this.text=t}};
 """
@@ -61,15 +64,33 @@ async def main():
         # 3. sin «Agro» no se hace nada
         d = await oye('bandeja 3.2 900'); assert d == [] and await pg.evaluate(f"st.reg.dren['{ids['b32']}']") is None
         # 4. «Agro» a secas y la orden después, con números en palabras y la CE en µS
-        d = await oye('agro', 500); assert d == ['Dime']
+        d = await oye('agro', 500); assert d == [] and await pg.evaluate('Date.now()<vz.armado'), 'con «Agro» a secas espera la orden (sin hablar, para no cortar el micrófono)'
         d = await oye('bandeja tres punto dos novecientos ce cuatro mil cuatrocientos')
         assert await pg.evaluate(f"[st.reg.dren['{ids['b32']}'],st.reg.ceD['{ids['b32']}']]") == [900, 4.4]
+        # 4b. iPhone: texto que crece y sin marca de final; «Agro» escrito de otras formas
+        async def oye_ios(partes, final=False, ms=700):
+            n = await pg.evaluate("window.__dichos.length")
+            for _ in range(30):
+                if await pg.evaluate(f"window.__oyeIOS({json.dumps(partes)},{'true' if final else 'false'})"): break
+                await pg.wait_for_timeout(100)
+            else: raise AssertionError('no escuchaba')
+            await pg.wait_for_timeout(ms); d = await pg.evaluate(f"window.__dichos.slice({n})"); print(f'  iPhone {partes[-1]!r} →', d); return d
+        d = await oye_ios(['Agro', 'Agro bandeja', 'Agro bandeja 3.2 950'])
+        assert await pg.evaluate(f"st.reg.dren['{ids['b32']}']") == 950 and len(d) == 1, 'la frase se usa una sola vez al acabar'
+        d = await oye_ios(['Hagro bandeja 3,2 960'], final=True); assert await pg.evaluate(f"st.reg.dren['{ids['b32']}']") == 960
+        d = await oye('Ogro, bandeja 3.2 970'); assert await pg.evaluate(f"st.reg.dren['{ids['b32']}']") == 970
+        # 4c. seguir sin «Agro» justo después de una orden de datos, y no hacer caso a una conversación
+        d = await oye('Agro bandeja 3.1'); assert 'qué apunto' in d[0]
+        await oye('870'); await oye('pH 6,2')
+        assert await pg.evaluate(f"[st.reg.dren['{ids['b31']}'],st.reg.phD['{ids['b31']}']]") == [870, 6.2]
+        d = await oye('mañana vamos al almacén'); assert d == []
+        log = await pg.evaluate("vz.log.slice(0,3).map(x=>[x.t,x.u])"); print('registro:', log); assert log[0] == ['mañana vamos al almacén', False]
         # 5. sector, deshacer
         await oye('Agro sector 4 ciento veinte minutos doce riegos')
         assert await pg.evaluate(f"[st.reg.min['{ids['s4']}'],st.reg.rie['{ids['s4']}']]") == [120, 12]
         d = await oye('agro deshacer'); assert d == ['Deshecho'] and await pg.evaluate(f"st.reg.rie['{ids['s4']}']") is None
         # 6. valores que no cuadran no se apuntan
-        d = await oye('agro bandeja 3.1 pH 61'); assert 'no me cuadra' in d[0] and await pg.evaluate(f"st.reg.phD['{ids['b31']}']") == 6.1
+        d = await oye('agro bandeja 3.1 pH 61'); assert 'no me cuadra' in d[0] and await pg.evaluate(f"st.reg.phD['{ids['b31']}']") == 6.2
         # 7. contador, balsa y bidón
         await oye('Agro metros cúbicos 460'); await oye('agro CE balsa 1,5'); await oye('agro pe hache de salida 5,6')
         assert await pg.evaluate("[st.reg.m3.gas,st.reg.ceB.gas,st.reg.phS.gas,st.tab]") == [460, 1.5, 5.6, 'drenaje']
@@ -78,7 +99,7 @@ async def main():
         assert await pg.evaluate(f"st.reg.cm['{bn['id']}']===9.7||st.reg.niv['{bn['id']}']===9.7")
         # 8. guardar
         d = await oye('agro guardar', 2500); assert d == ['Guardado']
-        g = await pg.evaluate(f"Store.getReg(st.fecha).then(r=>[r.dren['{ids['b31']}'],r.m3.gas])"); print('guardado:', g); assert g == [850, 460]
+        g = await pg.evaluate(f"Store.getReg(st.fecha).then(r=>[r.dren['{ids['b31']}'],r.m3.gas])"); print('guardado:', g); assert g == [870, 460]
         # 9. nota, mensaje e incidencia en el plano
         await oye('Agro, nota: llamar al técnico del riego', 1200)
         nt = await pg.evaluate("(st.notas||[]).map(n=>n.texto)"); print('notas:', nt); assert 'Llamar al técnico del riego' in nt
@@ -98,6 +119,12 @@ async def main():
         # 12. si el navegador corta el micrófono, vuelve a escuchar solo
         n0 = await pg.evaluate("window.__starts"); await pg.evaluate("(()=>{const r=window.__rec.find(x=>x.activo);r.activo=false;r.onend()})()"); await pg.wait_for_timeout(800)
         assert await pg.evaluate("window.__starts") == n0 + 1 and await pg.evaluate("vz.activo")
+        # 12b. iPhone colgado: el reconocedor no abre el micrófono ni contesta al pararlo → el vigilante lo tira y empieza otro
+        n0 = await pg.evaluate("(()=>{const r=window.__rec.find(x=>x.activo);window.__colgado=r;r.stop=r.abort=()=>{};vz.audioOk=true;return window.__starts})()")
+        await pg.wait_for_timeout(4500)
+        assert await pg.evaluate("window.__starts") > n0 and await pg.evaluate("vz.activo&&vz.rec&&vz.rec!==window.__colgado"), 'el vigilante tiene que reiniciar la escucha'
+        await pg.evaluate("vz.audioOk=false;window.__colgado.activo=false")   # el sistema acaba soltándolo
+        d = await oye('Agro abre cuentas'); assert await pg.evaluate("st.tab") == 'cuentas'
         # 13. botón sin palabra clave (con la escucha apagada)
         await pg.evaluate("st.tab='ajustes';renderMain()"); await pg.wait_for_timeout(200); await pg.uncheck('[data-vz="on"]'); await pg.wait_for_timeout(300)
         assert not await pg.evaluate("vz.on") and not await pg.evaluate("window.__rec.some(x=>x.activo)")
