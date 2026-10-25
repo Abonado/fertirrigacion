@@ -112,5 +112,11 @@ async def main():
         print('ayuda:', await pg.evaluate("[st.tab,!!$('#vz_ej'),$('#vz_ej')&&$('#vz_ej').open]"))
         assert await pg.evaluate("st.tab") == 'ajustes' and await pg.evaluate("$('#vz_ej')&&$('#vz_ej').open")
         await pg.locator('#vz_ej').screenshot(path='pruebas/salida/t90-chuleta.png')
+        # 11. la voz: selector, velocidad y probar
+        assert await pg.locator('#vz_voz').count() == 1 and await pg.locator('#vz_ritmo').count() == 1
+        n = await pg.evaluate("window.__dichos.length"); await pg.click('[data-vzp="probar"]'); await pg.wait_for_timeout(300)
+        assert any('soy la voz de Agro FLY' in x for x in await pg.evaluate(f"window.__dichos.slice({n})"))
+        await pg.select_option('#vz_ritmo', '1.25'); await pg.wait_for_timeout(200); assert await pg.evaluate("vzRitmo()") == 1.25
+        await pg.locator('#vz_vozbox').screenshot(path='pruebas/salida/t90-voz.png')
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())
