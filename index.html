@@ -505,6 +505,7 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .bjml{display:flex;gap:6px;align-items:center}.mue{position:relative;display:inline-flex;align-items:center;padding:7px 10px;min-height:36px;border:1.5px solid var(--line);border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}.mue input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}.mue:has(input:checked){background:var(--ok);border-color:var(--ok);color:#fff}.mue:has(input:checked) span::before{content:'✓ '}.mue:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
 .tbfotos{display:flex;gap:8px;flex-wrap:wrap}.tbf{position:relative}.tbf img{width:96px;height:96px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block}.tbf .btn{position:absolute;top:4px;right:4px;padding:2px 8px;min-height:0}.tbpz{display:grid;gap:6px}.tbp{display:grid;grid-template-columns:auto 2.2em 1fr;gap:8px;align-items:start;padding:8px;border:1px solid var(--line);border-radius:10px;cursor:pointer}.tbp span,.tbp small,.tbpasos li,#tb_res li,#tb_res p,#tb_txt{text-transform:none}.tbp small{display:block;color:var(--muted)}.tbpasos li,#tb_res ul li{margin:4px 0}
 .carpr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}.carpr small{display:block;color:var(--muted);text-transform:none}
+.splogo{display:grid;place-items:center;width:min(380px,100%);margin:0 auto;padding:22px;background:#fff;border:1px solid var(--line);border-radius:24px;box-sizing:border-box}.splogo img{display:block;max-width:100%;max-height:150px;object-fit:contain}.splogo.sm{width:min(260px,100%);padding:14px;margin:8px 0}.splogo.sm img{max-height:90px}
 .chbox{display:grid;gap:8px}.chm{max-width:88%;padding:8px 12px;border-radius:14px;font:400 15px/1.45 var(--f-body)}.chm,.chm *,#ch_txt{text-transform:none!important;letter-spacing:normal}.chm.yo{justify-self:end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}.chm.ia{justify-self:start;background:var(--surface-2);border:1px solid var(--line);border-bottom-left-radius:4px}.chm p{margin:4px 0}.chm ul{margin:4px 0;padding-left:20px}.chm li{margin:2px 0}.chf{font-size:11px;opacity:.8}.chprev{max-height:90px;border-radius:8px}.chsug .chip{white-space:normal;text-align:left;text-transform:none}
 </style>
 
@@ -965,7 +966,7 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
     <div class="note">Después pulsa «Guardar receta y ajustes». La radiación solar funciona sin servidor; las parcelas al aire libre lo necesitan.</div></section>`;
   h+=cultivoAjHTML();
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
-  h+=carpetasHTML()+(esAdminU()?copiaHTML():'')+versionHTML();
+  h+=(esAdminU()?logoHTML():'')+carpetasHTML()+(esAdminU()?copiaHTML():'')+versionHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Copia de seguridad, recetas y ajustes</div></div>
     <div class="row"><button class="btn pri" data-act="backup">Descargar copia de seguridad</button><label class="btn" for="restore">Restaurar copia</label><input type="file" id="restore" accept="application/json,.json" hidden></div>
     <div class="row">${st.confirmReset?`<span class="note">¿Restaurar recetas y ajustes iniciales?</span><button class="btn danger" data-act="reset-yes">Sí, restaurar</button><button class="btn" data-act="reset-no">Cancelar</button>`:`<button class="btn" data-act="reset">Restaurar recetas y ajustes iniciales</button>`}</div></section>`;
@@ -2329,7 +2330,7 @@ function spRes(){const el=$('#sp_res');if(el&&!$('#splash').hidden)el.innerHTML=
 function cerrarSplash(){$('#splash').hidden=true;document.documentElement.style.overflow='';window.scrollTo(0,0)}
 function renderSplash(){const hoyTxt=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const nom=(st.autor||'').trim().split(/\s+/)[0];
-  $('#splash').innerHTML=`<div class="in">${emblema()}<div class="saludo"><div class="eyebrow">Bienvenido</div><h1 class="hola">${saludo()}${nom?`, ${esc(nom)}`:''}</h1></div>
+  $('#splash').innerHTML=`<div class="in">${logoEmpresa()||emblema()}<div class="saludo"><div class="eyebrow">Bienvenido</div><h1 class="hola">${saludo()}${nom?`, ${esc(nom)}`:''}</h1></div>
     ${(f=>`<p class="frase">«${esc(f[0])}»<small>${esc(f[1]||'Frase del día')}</small></p>`)(fraseHoy())}
     <div class="hoy">Hoy es ${esc(hoyTxt)}</div>
     <section class="card"><div class="tank-h"><div><h3>El tiempo hoy</h3><div class="sub">${AGUILAS.nombre}</div></div>${enClaude()?'':`<a class="btn" href="https://www.aemet.es/es/eltiempo/prediccion/avisos" target="_blank" rel="noopener">Avisos AEMET</a>`}</div>${splashWxHTML()}</section>
@@ -4593,6 +4594,22 @@ async function guardarParte(blob,name,tipo,d){const h=carpOk()?(st.carp?st.carp[
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-act^="carp-"]');if(!b||!b.closest('#main'))return;const t=b.dataset.t;
   if(b.dataset.act==='carp-elegir'){try{const h=await window.showDirectoryPicker({id:'partes-'+t,mode:'readwrite'});await idbSet(t,h);st.carp=st.carp||{};st.carp[t]=h;renderMain();toast('Carpeta para el '+PTIPO[t].corto.toLowerCase()+': '+h.name)}catch(e){if(!e||e.name!=='AbortError')toast('No se pudo elegir la carpeta')}}
   else if(b.dataset.act==='carp-quitar'){await idbSet(t,null);if(st.carp)st.carp[t]=null;renderMain()}});
+/* ---------- Logo de la empresa: sale arriba en la pantalla principal. Se guarda en los ajustes (no en el código), así cada empresa lleva el suyo ---------- */
+/* Si el logo llega (o cambia) con la pantalla de inicio abierta, se vuelve a pintar */
+function splashLogo(){try{const sp=$('#splash');if(sp&&!sp.hidden&&!!sp.querySelector('.splogo')!==!!(st.cfg&&st.cfg.logo))renderSplash()}catch(e){}}
+const logoEmpresa=()=>st.cfg&&st.cfg.logo?`<div class="splogo"><img src="${st.cfg.logo}" alt="Logo de la empresa"></div>`:'';
+const logoHTML=()=>`<section class="card"><div><h3>Logo de la empresa</h3><div class="sub">Sale arriba en la pantalla de inicio de todos</div></div>
+  ${st.cfg.logo?`<div class="splogo sm"><img src="${st.cfg.logo}" alt="Logo actual"></div>`:'<div class="note">Sin logo: sale el dibujo del invernadero.</div>'}
+  <div class="row"><label class="btn${st.cfg.logo?'':' pri'}" for="logo_f">${st.cfg.logo?'Cambiar logo':'Subir logo'}</label><input type="file" id="logo_f" accept="image/*" hidden>${st.cfg.logo?'<button class="btn" data-act="logo-quitar">Quitar</button>':''}</div>
+  <div class="note">Mejor en PNG con fondo transparente o blanco. Se ajusta solo de tamaño.</div></section>`;
+/* Reduce la imagen (máx. 640×320) para que pese poco; PNG si cabe, si no WebP */
+async function logoPreparar(file){const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=URL.createObjectURL(file)});
+  const k=Math.min(1,640/img.width,320/img.height),c=document.createElement('canvas');c.width=Math.max(1,Math.round(img.width*k));c.height=Math.max(1,Math.round(img.height*k));c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+  let u=c.toDataURL('image/png');if(u.length>180000)u=c.toDataURL('image/webp',0.9);if(u.length>180000)throw{code:'grande'};return u}
+async function logoGuardar(u){for(const c of [st.cfg,st.savedCfg]){if(u)c.logo=u;else delete c.logo}try{await Store.setConfig(st.savedCfg);renderMain();renderSplash();toast(u?'Logo guardado: ya sale en la pantalla de inicio':'Logo quitado')}catch(e){toast(errMsg(e))}}
+document.addEventListener('change',async e=>{if(e.target.id!=='logo_f'||!e.target.files||!e.target.files[0])return;const f=e.target.files[0];e.target.value='';
+  try{await logoGuardar(await logoPreparar(f))}catch(err){toast(err&&err.code==='grande'?'La imagen es demasiado grande: prueba con otra más sencilla':'No se pudo leer la imagen')}});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act="logo-quitar"]');if(b&&b.closest('#main'))logoGuardar(null)});
 const versionHTML=()=>`<section class="card"><div><h3>Versión de la app</h3><div class="sub">${esc(String(window.APP_V||'—').replace('abonado-',''))}</div></div><div class="row"><button class="btn" data-act="app-act">Buscar actualización</button></div><div class="note">Si a alguien no le aparece algo nuevo, que pulse aquí. No se pierde nada.</div></section>`;
 document.addEventListener('click',async e=>{if(!e.target.closest('[data-act="app-act"]'))return;if(st.dirtyReg||st.dirtyCfg){toast('Guarda antes los cambios');return}toast('Actualizando…');
   try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}catch(_){}try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}catch(_){}
@@ -4668,7 +4685,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
-  try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c)}}catch(e){}
+  try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c);splashLogo()}}catch(e){}
   st.ready=true;loadFich();if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}})();
@@ -4677,9 +4694,9 @@ if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('messag
 setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
 let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(document.hidden||Store.mode!=='fb'||!st.ready||Date.now()-ultRec<30000)return;ultRec=Date.now();
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
-  if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
+  if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v116';
+window.APP_V='abonado-v117';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
