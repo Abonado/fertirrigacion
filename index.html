@@ -1976,12 +1976,14 @@ const encargadosDe=fid=>todosEmails().filter(e=>accInfo(e).encargado&&veFinca(e,
 function cabConDatos(cab){const r=st.reg,c=cabById(cab);if(!c)return false;const bs=bidonesDe(cab),pr=bs.filter(b=>b.cabezales.length===1);if((pr.length?pr:bs).some(b=>r.cm[b.id]!=null))return true;if(['ceB','phB','inc','phS'].some(k=>(r[k]||{})[cab]!=null))return true;
   return c.sectores.some(s=>s.bandejas.some(bj=>r.dren[bj.id]!=null||r.ceD[bj.id]!=null||r.phD[bj.id]!=null))}
 const horaTxt=ts=>new Date(ts).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+/* Los partes se hacen a la mañana siguiente: llevan la fecha del día del riego, el anterior al día en que se apuntan en la app */
+const diaRiego=f=>{if(!f)return f;const d=new Date(f+'T12:00:00');d.setDate(d.getDate()-1);return isoD(d)};
 async function enviarPartes(){if(Store.mode!=='fb'||!window.NUBE||!NUBE.user)return;const ts=new Date().toISOString();await Promise.all(st.cfg.cabezales.filter(c=>cabConDatos(c.id)).map(c=>radCargar(c.id,st.fecha)));
   for(const c of st.cfg.cabezales){if(!cabConDatos(c.id))continue;const d=parteData(c.id);d.provisional=false;
     const doc={fecha:st.fecha,cab:c.id,finca:d.fincaId,ts,por:yoNombre(),porEmail:miEmail(),d:JSON.parse(JSON.stringify(d))};
     try{await NUBE.db.collection('partes').doc(st.fecha+'_'+c.id).merge({...doc,mod:ahoraISO()})}catch(e){console.warn('parte',e);continue}
     let para=encargadosDe(d.fincaId);if(!para.length)para=adminsEmails();
-    pushEnviar(para,'Parte diario: '+c.nombre+' · '+fD(st.fecha),`Guardado por ${yoNombre()}${d.m3!=null?' · '+fmt(d.m3,0)+' m³':''}${d.dren!=null?' · drenaje '+fmt(d.dren,1)+' %':''}${d.tot?' · en dosis '+d.ok+' de '+d.tot:''}`,'parte-'+st.fecha+'-'+c.id,'partes',{unico:'parte-'+st.fecha+'-'+c.id})}
+    pushEnviar(para,'Parte diario: '+c.nombre+' · '+fD(diaRiego(st.fecha)),`Guardado por ${yoNombre()}${d.m3!=null?' · '+fmt(d.m3,0)+' m³':''}${d.dren!=null?' · drenaje '+fmt(d.dren,1)+' %':''}${d.tot?' · en dosis '+d.ok+' de '+d.tot:''}`,'parte-'+st.fecha+'-'+c.id,'partes',{unico:'parte-'+st.fecha+'-'+c.id})}
   if(st.partes)loadPartes()}
 st.partes=null;st.ptFil='pend';st.ptAbierto=null;st.ptRev=null;
 let ptLoading=false;
@@ -1999,7 +2001,7 @@ function vPartes(){if(!puedePartes())return `<section class="card"><div class="n
     ${rev?`<div class="pick"><button class="chip" data-ptfil="pend" aria-pressed="${st.ptFil==='pend'}">Sin revisar (${pend.length})</button><button class="chip" data-ptfil="todos" aria-pressed="${st.ptFil==='todos'}">Todos</button></div>`:''}</section>`;
   if(!l.length)return h+`<section class="card"><div class="note">${st.ptFil==='pend'?'Todo revisado.':'Aún no ha llegado ningún parte.'}</div></section>`;
   for(const p of l){const d=p.d||{},ab=st.ptAbierto===p.id,cam=ptCambiado(p),est=!p.revisado?'<span class="pill warn">Sin revisar</span>':cam?'<span class="pill bad">Cambiado tras revisar</span>':'<span class="pill ok">Revisado</span>';
-    h+=`<section class="card"><div class="tank-h"><div><h3>${esc(d.cab||p.cab)} · ${esc(fFecha(p.fecha))}</h3><div class="sub">${esc(d.finca||'')} · guardado ${esc(horaTxt(p.ts))} por ${esc(p.por||'')}</div></div>${est}</div>
+    h+=`<section class="card"><div class="tank-h"><div><h3>${esc(d.cab||p.cab)} · ${esc(fFecha(diaRiego(p.fecha)))}</h3><div class="sub">${esc(d.finca||'')} · guardado ${esc(horaTxt(p.ts))} por ${esc(p.por||'')}</div></div>${est}</div>
       <div class="row" style="gap:6px"><span class="pill nd">${fmt(d.m3,0)} m³</span><span class="pill ${d.tot&&d.ok===d.tot?'ok':d.tot?'warn':'nd'}">En dosis ${d.tot?d.ok+' de '+d.tot:'—'}</span><span class="pill nd">Drenaje ${fmt(d.dren,1)} %</span>${d.ceD!=null?`<span class="pill ${d.alertas&&d.ceD>d.alertas.ceMax?'bad':'nd'}">CE ${fUS(d.ceD)} µS</span>`:''}${d.phD!=null?`<span class="pill nd">pH ${fmt(d.phD,1)}</span>`:''}</div>
       ${p.revisado?`<div class="note">Revisado por ${esc(p.revisadoPor||'')} · ${esc(horaTxt(p.revisadoTs))}${p.nota?' · «'+esc(p.nota)+'»':''}</div>`:''}
       <div class="row"><button class="btn" data-act="pt-ver" data-id="${p.id}">${ab?'Ocultar':'Ver parte'}</button><button class="btn" data-act="pt-pdf" data-id="${p.id}">${d.hoja?'Parte grande PDF':'PDF'}</button>${d.hoja?`<button class="btn" data-act="pt-xlsx" data-id="${p.id}">Excel</button>`:''}${d.hojaP?`<button class="btn" data-act="pt-pdf" data-tipo="pequeno" data-id="${p.id}">Parte pequeño PDF</button><button class="btn" data-act="pt-xlsx" data-tipo="pequeno" data-id="${p.id}">Excel</button>`:''}${rev&&(!p.revisado||cam)?`<button class="btn pri" data-act="pt-rev" data-id="${p.id}">Marcar revisado</button>`:''}</div>
@@ -2029,12 +2031,12 @@ const parteCabs=()=>{const f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(st
 const fLarga=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 const pillC={ok:'ok',warn:'warn',bad:'bad',nd:'nd'};
 function vParte(){if(st.cfg.cabezales.length&&!cabById(st.cab))return '';const d=parteData(st.cab),fs=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(st.cab)),nCab=parteCabs().length;
-  let h=`<section class="card"><div><h3>Parte diario · ${esc(d.cab)}</h3><div class="sub">${esc(d.finca)} · ${esc(fLarga(d.fecha))} · Sectores: ${esc(d.sectores.join(', '))}</div></div>
+  let h=`<section class="card"><div><h3>Parte diario · ${esc(d.cab)}</h3><div class="sub">${esc(d.finca)} · ${esc(fLarga(diaRiego(d.fecha)))} · Sectores: ${esc(d.sectores.join(', '))}</div></div>
     ${d.provisional?`<div class="banner">${st.dirtyReg?'Hay cambios sin guardar en este día: el parte sale con lo que ves ahora. Guarda el día para que quede igual para todos.':'Este día aún no está guardado: el parte saldría con datos provisionales.'}</div>`:''}
     ${d.recetaDia?'':`<div class="note">${d.fecha<hoy()?'Este día se guardó antes de que la app apuntara la receta de cada día: sale la receta actual.':'La receta queda apuntada con el parte al guardar el día.'}</div>`}
     ${['grande','pequeno'].map(t=>{const K=PTIPO[t];return `<div class="ptipo"><div><b>${K.corto}</b> <span class="note">· hoja «${K.titulo}»${t==='pequeno'?' (Anexo XI)':''}</span></div>
       <div class="row"><button class="btn pri" data-act="parte-pdf" data-tipo="${t}">${K.corto} (PDF) · ${esc(d.cab)}</button><button class="btn" data-act="parte-xlsx" data-tipo="${t}">Excel</button>${nCab>1?`<button class="btn" data-act="parte-pdf" data-tipo="${t}" data-todos="1">Todos los cabezales de ${esc(fs?fs.nombre:'la finca')} (PDF)</button>`:''}</div></div>`}).join('')}
-    <div class="note">Los dos salen en las hojas de la empresa (PR101 / Ed.05) con los datos del día. Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`+parteFijosInfo(st.cab)+hojaRecetaHTML();
+    <div class="note">Los dos salen en las hojas de la empresa (PR101 / Ed.05) con los datos del día. El parte lleva la fecha del día del riego (el anterior a la fecha de arriba, que es cuando se apunta). Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`+parteFijosInfo(st.cab)+hojaRecetaHTML();
   h+=parteCuerpo(d);
   return h}
 function parteCuerpo(d){let h='';
@@ -2049,11 +2051,11 @@ function parteCuerpo(d){let h='';
   h+=`<section class="card"><div><h3>3. Receta ${d.recetaDia?'de ese día':'(actual)'}</h3><div class="sub">Incremento de CE estimado ${fmt(d.ce,0)} µS/cm</div></div>`+d.receta.map(b=>`<div><b>${esc(b.nombre)}</b> <span class="note">${esc(b.principal)}: ${fmt(b.kg,1)} ${b.uP} por 1000 L · ${fmt(b.cap,0)} L</span></div>
     <div class="tbl"><table><thead><tr><th>Producto</th><th>Salida deseada</th><th>Por 1000 L</th><th>Por ${fmt(b.cap,0)} L</th></tr></thead><tbody>${b.filas.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmt(x.des,2)} <span class="u">${x.ud}</span></td><td>${fmt(x.c1,2)} ${x.uc}</td><td>${fmt(x.c2,1)} ${x.uc}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
   return h}
-async function partePdf(cabs,tipo){tipo=tipo||'grande';await Promise.all(cabs.map(c=>radCargar(c,st.fecha)));const l=cabs.map(c=>parteData(c));return parteHojaPdf(l,cabs.length>1?`${PTIPO[tipo].titulo} ${fD(st.fecha).replace(/\//g,'-')}`:parteNombre(l[0],tipo),tipo)}
+async function partePdf(cabs,tipo){tipo=tipo||'grande';await Promise.all(cabs.map(c=>radCargar(c,st.fecha)));const l=cabs.map(c=>parteData(c));return parteHojaPdf(l,cabs.length>1?`${PTIPO[tipo].titulo} ${fD(diaRiego(st.fecha)).replace(/\//g,'-')}`:parteNombre(l[0],tipo),tipo)}
 async function partePdfAntiguo(cabs){return partePdfDe(cabs.map(c=>({...parteData(c),gen:new Date().toLocaleString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' por '+yoNombre(),aviso:st.dirtyReg?'Atención: incluye cambios que aún no se han guardado en la app.':'Atención: este día no está guardado en la app; datos provisionales.'})))}
 async function partePdfDe(lista){let L;try{L=await pdfLib()}catch(e){toast('Hace falta conexión a internet para crear el PDF');return}
   const{PDFDocument,StandardFonts,rgb}=L,doc=await PDFDocument.create(),f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
-  doc.setTitle(pdfTxt('Parte diario '+fD(st.fecha)));doc.setAuthor(pdfTxt(yoNombre()));doc.setCreator('Abonado-Fertirrigacion');
+  doc.setTitle(pdfTxt('Parte diario '+fD(diaRiego(st.fecha))));doc.setAuthor(pdfTxt(yoNombre()));doc.setCreator('Abonado-Fertirrigacion');
   const PW=595.28,PH=841.89,M=36,IW=PW-2*M,ink=rgb(.08,.13,.17),mut=rgb(.36,.42,.45),navy=rgb(.106,.184,.29),acc=rgb(.114,.42,.278),lin=rgb(.85,.88,.86),bg=rgb(.94,.955,.945),wh=rgb(1,1,1);
   const COL={ok:rgb(.11,.48,.28),warn:rgb(.7,.45,.02),bad:rgb(.75,.15,.12),nd:mut};
   const fmtP=(v,d)=>v==null||!isFinite(v)?'-':v.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -2062,7 +2064,7 @@ async function partePdfDe(lista){let L;try{L=await pdfLib()}catch(e){toast('Hace
   for(const d of lista){let page,y;const AL=d.alertas||st.cfg.alertas;
     const T=(t,x,yy,o={})=>page.drawText(fit(t,o.w||IW,o.size||9,o.bold),{x,y:yy,size:o.size||9,font:o.bold?fb:f,color:o.color||ink});
     const nueva=()=>{page=doc.addPage([PW,PH]);page.drawRectangle({x:0,y:PH-6,width:PW,height:6,color:acc});y=PH-M;
-      T('Parte diario · '+d.cab+' · '+fD(d.fecha),M,y-6,{size:8,color:mut});y-=20};
+      T('Parte diario · '+d.cab+' · '+fD(diaRiego(d.fecha)),M,y-6,{size:8,color:mut});y-=20};
     const sitio=h=>{if(y-h<M+18)nueva()};
     const titulo=t=>{sitio(60);page.drawRectangle({x:M,y:y-20,width:IW,height:20,color:navy});T(t.toUpperCase(),M+8,y-14,{size:10,bold:true,color:wh});y-=30};
     const sub=t=>{sitio(44);T(t,M,y-10,{size:10,bold:true});y-=16};
@@ -2077,9 +2079,9 @@ async function partePdfDe(lista){let L;try{L=await pdfLib()}catch(e){toast('Hace
     page=doc.addPage([PW,PH]);page.drawRectangle({x:0,y:PH-92,width:PW,height:92,color:navy});page.drawRectangle({x:0,y:PH-96,width:PW,height:4,color:acc});
     T('PARTE DIARIO DE FERTIRRIGACIÓN',M,PH-38,{size:17,bold:true,color:wh});
     T(d.cab+'  ·  '+d.finca,M,PH-58,{size:12,bold:true,color:wh});
-    T(fLarga(d.fecha).replace(/^./,x=>x.toUpperCase()),M,PH-76,{size:10,color:rgb(.82,.87,.92)});
+    T(fLarga(diaRiego(d.fecha)).replace(/^./,x=>x.toUpperCase()),M,PH-76,{size:10,color:rgb(.82,.87,.92)});
     y=PH-112;
-    const datos=[['Finca',d.finca||'-'],['Cabezal',d.cab],['Sectores',d.sectores.join(', ')||'-'],['Fecha',fD(d.fecha)],['Agua regada',fmtP(d.m3,0)+' m³'],[d.guardadoTxt?'Guardado':'Generado',d.guardadoTxt||d.gen||ahora]];
+    const datos=[['Finca',d.finca||'-'],['Cabezal',d.cab],['Sectores',d.sectores.join(', ')||'-'],['Fecha',fD(diaRiego(d.fecha))],['Agua regada',fmtP(d.m3,0)+' m³'],[d.guardadoTxt?'Guardado':'Generado',d.guardadoTxt||d.gen||ahora]];
     const cw2=IW/3;datos.forEach((kv,i)=>{const x=M+(i%3)*cw2,yy=y-Math.floor(i/3)*30;T(kv[0].toUpperCase(),x,yy-8,{size:7,bold:true,color:mut,w:cw2-10});T(kv[1],x,yy-21,{size:10,bold:true,w:cw2-10})});
     y-=66;
     if(d.provisional){page.drawRectangle({x:M,y:y-18,width:IW,height:18,color:rgb(1,.95,.86)});T(d.aviso||'Atención: datos provisionales.',M+6,y-12.5,{size:8.5,bold:true,color:COL.warn});y-=28}
@@ -4039,7 +4041,7 @@ const ptNum=(v,d)=>v==null||!isFinite(v)?null:+(+v).toFixed(d);
 /* Qué va en cada casilla, con los datos del día (se guarda con el parte para poder rehacerlo igual) */
 function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V={};
   const put=(ref,v,o)=>{if(v==null||v===''||(typeof v==='number'&&!isFinite(v)))return;V[ref]={v,...(o||{})}};
-  put('D1',c.nombre.toUpperCase());put('A7','PRODUCTOR: '+(infoFinca(cabId).productor||P.productor||''));put('L7','FECHA: '+fD(st.fecha));
+  put('D1',c.nombre.toUpperCase());put('A7','PRODUCTOR: '+(infoFinca(cabId).productor||P.productor||''));put('L7','FECHA: '+fD(diaRiego(st.fecha)));
   // cabecera de cada sector: trazabilidad, variedad, cultivo y sustrato
   for(const{s,row:r0}of ptFilas(c)){const i=infoSector(s.id,cabId,r0);
     put('B'+r0,i.traz,{rng:`B${r0}:B${r0+4}`,al:'l',b:1,sz:11,wrap:1});put('C'+r0,i.vari,{al:'l',b:1});put('C'+(r0+1),i.cult,{al:'l',b:1});put('D'+r0,i.sust,{al:'l',b:1})}
@@ -4093,7 +4095,7 @@ async function parteHojaXlsx(d,nombre,tipo){tipo=tipo||'grande';const K=PTIPO[ti
   for(const[k,o]of Object.entries(V))if(k[0]!=='_')setC(k,k===K.cab?K.cabPre+o.v:o.v);
   const files=T.xlsx.files.map(([n,b])=>({name:n,data:b64u8(b)})),i=files.findIndex(z=>z.name==='xl/workbook.xml');files.splice(i+1,0,{name:'xl/worksheets/sheet1.xml',data:x});
   await saveBlob(zipStore(files),nombre+'.xlsx')}
-const parteNombre=(d,tipo)=>`${PTIPO[tipo||'grande'].titulo} ${d.cab} ${fD(d.fecha).replace(/\//g,'-')}`;
+const parteNombre=(d,tipo)=>`${PTIPO[tipo||'grande'].titulo} ${d.cab} ${fD(diaRiego(d.fecha)).replace(/\//g,'-')}`;
 
 /* ---------- Parte pequeño: hoja «Control de aportes» (Anexo XI, PR101 / Ed.05) ---------- */
 /* Filas de «Nutrientes/100 m³» (columna H) y sus kg por sector S1…S4 (J…M) */
@@ -4114,7 +4116,7 @@ function m3Sectores(cabId){const r=st.reg,c=cabById(cabId),m3=r.m3[cabId];if(m3=
   return{conQ,m:Object.fromEntries(c.sectores.map(s=>[s.id,r.min[s.id]>0?m3*w(s)/t:null]))}}
 function parteHojaP(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V={},cover=[];
   const put=(ref,v,o)=>{if(v==null||v===''||(typeof v==='number'&&!isFinite(v)))return;V[ref]={v,...(o||{})}};
-  put('E2',c.nombre.toUpperCase());put('A8','PRODUCTOR: '+(infoFinca(cabId).productor||P.productor||''));put('N8','FECHA: '+fD(st.fecha));
+  put('E2',c.nombre.toUpperCase());put('A8','PRODUCTOR: '+(infoFinca(cabId).productor||P.productor||''));put('N8','FECHA: '+fD(diaRiego(st.fecha)));
   cover.push('C9:I9');put('C9',c.nombre.toUpperCase(),{rng:'C9:I9',b:1,sz:9});
   // Medidas
   const sa=salidaDe(cabId),m3=r.m3[cabId];
@@ -4428,7 +4430,7 @@ function vGlobal(){if(!esGestor())return `<section class="card"><div class="note
   for(const f of fs){const cs=(f.cabezales||[]).filter(id=>vis.has(id)&&cabById(id));G0.push({f,cs:cs.map(id=>({id,...globalCab(id)}))})}
   const todos=G0.flatMap(g=>g.cs),con=todos.filter(c=>c.hay),m3=con.reduce((s,c)=>s+(c.d.m3||0),0),fuera=con.reduce((s,c)=>s+c.fuera,0),drenBad=con.reduce((s,c)=>s+c.drenBad,0);
   const falta=todos.filter(c=>!c.hay||!c.d.guardado);
-  let h=`<section class="card"><div><h3>Datos totales · ${esc(fLarga(st.fecha))}</h3><div class="sub">Cuentas y drenaje de todas las fincas y cabezales. Para otro día, cambia la fecha arriba.</div></div>
+  let h=`<section class="card"><div><h3>Datos totales · ${esc(fLarga(diaRiego(st.fecha)))}</h3><div class="sub">Cuentas y drenaje de todas las fincas y cabezales. Es el riego de ese día: se apunta a la mañana siguiente. Para otro día, cambia la fecha arriba.</div></div>
     <section class="summary"><div class="stat"><span>Agua regada</span><b>${fmt(m3,0)} m³</b><small>${con.length} de ${todos.length} cabezales con datos</small></div>
     <div class="stat"><span>Abonos fuera de dosis</span><b class="${fuera?'tbad':''}">${fuera}</b><small>más de un 10 % de desviación</small></div>
     <div class="stat"><span>Drenaje fuera de límites</span><b class="${drenBad?'tbad':''}">${drenBad}</b><small>sectores con CE o pH fuera</small></div></section>
@@ -4632,7 +4634,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
 
-window.APP_V='abonado-v112';
+window.APP_V='abonado-v113';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
