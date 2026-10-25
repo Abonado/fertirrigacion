@@ -644,7 +644,7 @@ const Store={db:null,mode:'local',
 /* ---------- Estado ---------- */
 const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fecha:hoy(),cab:'gas',tab:'cuentas',
   dirtyReg:false,dirtyCfg:false,fill:{},fillB:{},hist:null,cambios:null,ready:false,saving:false,confirmReset:false,
-  gRange:30,dg:{cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
+  gRange:30,dg:{tipo:'planta',cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
 function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},sug:null}}
@@ -2178,7 +2178,32 @@ function datosCab(cab){const r=resumen(cab),L=[];L.push(`Agua regada en el día:
   if(r.phE!=null||r.phD!=null)L.push(`pH gotero ${r.phE!=null?r.phE.toFixed(1):'sin dato'} · pH drenaje ${r.phD!=null?r.phD.toFixed(1):'sin dato'}`);
   for(const b of bidonesDe(cab))for(const x of b.productos){if(!x.dosis)continue;const d=dosisReal(b,x,cab);L.push(`${pn(x.p)}: salida deseada ${x.dosis} ${uDosis(x.p)}${d!=null?`, real ${d.toFixed(2)}`:''}`)}
   L.push(`Incremento de CE estimado por el abonado: ${Math.round(ceEstimada(cab))} µS/cm`);return L.join('\n')}
-function dgPrompt(){const g=st.dg,cab=g.cab??st.cab;
+const DG_TIPOS=[['planta','Planta'],['riego','Riego e instalación']];
+/* Datos de riego y drenaje por sector del día, para relacionar lo que se ve en la foto con lo que dicen los números */
+function datosSectores(cab){const c=cabById(cab),r=st.reg,L=[];if(!c||!r)return '';
+  for(const s of c.sectores){const pz=[`${s.nombre}: ${r.min[s.id]!=null?r.min[s.id]+' min':'minutos sin dato'}${r.rie&&r.rie[s.id]!=null?' en '+r.rie[s.id]+' riegos':''}`];
+    for(const bj of s.bandejas){const d=drenPct(s,bj),ce=r.ceD[bj.id],ph=r.phD[bj.id];if(d==null&&ce==null&&ph==null)continue;
+      pz.push(`${bj.nombre}: drenaje ${d!=null?d.toFixed(1)+' %':'sin dato'}${ce!=null?', CE '+uS(ce)+' µS/cm':''}${ph!=null?', pH '+(+ph).toFixed(1):''}`)}
+    L.push('- '+pz.join(' · '))}
+  return L.length?'Por sector y bandeja:\n'+L.join('\n'):''}
+function dgPromptRiego(){const g=st.dg,cab=g.cab??st.cab;
+  return `Eres un técnico con mucha experiencia en riego por goteo y cabezales de fertirrigación de invernaderos del sureste de España (Almería y Murcia).
+Analiza ${g.fotos.length?`las ${g.fotos.length} foto(s) adjuntas`:'el caso (no hay fotos)'} y la información de abajo. Busca fallos de la instalación de riego: goteros obstruidos (cal, precipitados de hierro o fosfatos, algas, bacterias, raíces), goteros que gotean de más o están arrancados, fugas y roturas en tuberías, ramales y conexiones, falta de presión o caudal desigual a lo largo de la línea, filtros sucios, electroválvulas o reguladores que fallan, problemas en el cabezal (bombas, inyectores o Venturi, bidones, agitadores, sondas de CE y pH descalibradas) y precipitados en depósitos por mezclar productos incompatibles.
+Reglas:
+- Como máximo 4 posibles fallos, del más probable al menos probable.
+- Sé prudente: si con las fotos no se puede estar seguro, dilo y explica qué foto o medida haría falta (por ejemplo, medir el caudal de varios goteros con un vaso y un reloj, o la presión al principio y al final del ramal).
+- Usa los datos del día si los hay: un sector o una bandeja con mucho menos drenaje que los demás con los mismos minutos apunta a goteros obstruidos o falta de agua en esa zona; uno con mucho más, a fugas o goteros de más; dosis reales muy distintas de las deseadas apuntan al cabezal o a los bidones.
+- En "actuacion" da pasos concretos que pueda hacer el personal de la finca: limpiar o cambiar, purgar, revisar, medir, a quién avisar.
+- Seguridad: si hay ácidos o abonos concentrados, recuerda gafas y guantes; si hay algo eléctrico (bombas, cuadro, sondas), corta la corriente y que lo revise el electricista.
+- Español de España, frases cortas y claras para alguien de campo.
+Responde solo con un objeto JSON con esta forma exacta:
+{"resumen":"2-3 frases","urgencia":"baja|media|alta","posibles":[{"problema":"nombre","tipo":"obstrucción|fuga|rotura|presión|filtrado|cabezal|dosificación|sonda|precipitado|otro","probabilidad":"alta|media|baja","senales":"lo que se ve o lo que dicen los datos que apunta a esto","comprobar":"cómo confirmarlo en campo","actuacion":"qué hacer"}],"faltan":"fotos o datos que ayudarían, o cadena vacía"}
+
+Cultivo: ${g.cultivo||'tomate'}
+Cabezal: ${cabNombre(cab)}${g.sector?` · zona: ${g.sector}`:''}
+Lo que ha visto el trabajador: ${g.sint.trim()||'no lo ha descrito'}
+${g.datos?`Datos de riego y fertirrigación del ${fFecha(st.fecha)}:\n${datosCab(cab)}\n${datosSectores(cab)}`:'Sin datos de riego.'}`}
+function dgPrompt(){const g=st.dg,cab=g.cab??st.cab;if(g.tipo==='riego')return dgPromptRiego();
   return `Eres un técnico agrónomo con mucha experiencia en cultivos hortícolas de invernadero del sureste de España con fertirrigación.
 Analiza ${g.fotos.length?`las ${g.fotos.length} foto(s) adjuntas de una planta de ${g.cultivo||'tomate'}`:`el caso de una planta de ${g.cultivo||'tomate'} (no hay fotos)`} y la información de abajo. Identifica los problemas más probables: carencias o excesos de nutrientes, plagas, enfermedades, fisiopatías, problemas de riego o de salinidad.
 Reglas:
@@ -2204,14 +2229,14 @@ async function dgRun(){const g=st.dg;if(g.busy)return;if(!g.fotos.length&&!g.sin
     else r=await iaServidor(dgPrompt(),g.fotos.map(f=>f.blob),g.ctl.signal);if(!r||typeof r!=='object'||!Array.isArray(r.posibles))throw{code:'invalid_json'};g.res=r;await dgSave(r)}
   catch(e){if(!e||e.code!=='cancelled')g.err=dgErr(e)}
   g.busy=false;g.ctl=null;renderMain()}
-async function dgSave(r){const g=st.dg,adj=[];if(Adj.can())for(let i=0;i<g.fotos.length;i++){try{adj.push(await Adj.put(new File([g.fotos[i].blob],`planta-${i+1}.jpg`,{type:'image/jpeg'})))}catch(e){}}
-  const d={ts:new Date().toISOString(),fecha:st.fecha,cultivo:g.cultivo,cab:g.cab??st.cab,sector:g.sector,sint:g.sint.trim(),adjuntos:adj,res:r};
+async function dgSave(r){const g=st.dg,adj=[];if(Adj.can())for(let i=0;i<g.fotos.length;i++){try{adj.push(await Adj.put(new File([g.fotos[i].blob],`${g.tipo==='riego'?'riego':'planta'}-${i+1}.jpg`,{type:'image/jpeg'})))}catch(e){}}
+  const d={ts:new Date().toISOString(),fecha:st.fecha,tipo:g.tipo||'planta',cultivo:g.cultivo,cab:g.cab??st.cab,sector:g.sector,sint:g.sint.trim(),adjuntos:adj,res:r};
   try{const id=await Store.addCol('diagnosticos',d);g.resId=id;if(st.diags)st.diags.unshift({...d,id})}catch(e){toast('El diagnóstico no se pudo guardar en el historial')}}
 async function loadDiags(){try{st.diags=await Store.listCol('diagnosticos',100)}catch(e){st.diags=[]}if(st.tab==='diagnostico')renderMain()}
 function posiblesHTML(r){return (r.posibles||[]).map((x,i)=>`<div class="dgp"><div class="h"><b>${i+1}. ${esc(x.problema||'')}</b>${x.tipo?`<span class="pill nd">${esc(x.tipo)}</span>`:''}${x.probabilidad?`<span class="pill nd">Prob. ${esc(x.probabilidad)}</span>`:''}</div>
   ${x.senales?`<p><b>Señales:</b> ${esc(x.senales)}</p>`:''}${x.comprobar?`<p><b>Comprobar:</b> ${esc(x.comprobar)}</p>`:''}${x.actuacion?`<p><b>Qué hacer:</b> ${esc(x.actuacion)}</p>`:''}</div>`).join('')+(r.faltan?`<p class="note"><b>Ayudaría:</b> ${esc(r.faltan)}</p>`:'')}
-async function dgMsg(id){const d=id==='cur'?{res:st.dg.res,cab:st.dg.cab??st.cab,sector:st.dg.sector,adjuntos:((st.diags||[]).find(x=>x.id===st.dg.resId)||{}).adjuntos||[]}:(st.diags||[]).find(x=>x.id===id);if(!d||!d.res)return;
-  const txt=`Diagnóstico IA${d.sector?' · '+d.sector:''}: ${d.res.resumen||''}\nPosibles: ${(d.res.posibles||[]).map(x=>x.problema).join(', ')}`;
+async function dgMsg(id){const d=id==='cur'?{res:st.dg.res,tipo:st.dg.tipo,cab:st.dg.cab??st.cab,sector:st.dg.sector,adjuntos:((st.diags||[]).find(x=>x.id===st.dg.resId)||{}).adjuntos||[]}:(st.diags||[]).find(x=>x.id===id);if(!d||!d.res)return;
+  const txt=`Diagnóstico IA${d.tipo==='riego'?' (riego e instalación)':''}${d.sector?' · '+d.sector:''}: ${d.res.resumen||''}\nPosibles: ${(d.res.posibles||[]).map(x=>x.problema).join(', ')}`;
   const m={ts:new Date().toISOString(),fecha:hoy(),autor:autorActual(),...autorEmail(),cab:d.cab||'',txt,resuelto:false,adjuntos:d.adjuntos||[]};
   try{const mid=await Store.addMsg(m);if(st.msgs)st.msgs.unshift({...m,id:mid});pushEnviar(quienVeCab(m.cab),'Mensaje de '+(m.autor||'alguien')+(m.cab?' · '+cabNombre(m.cab):''),txt,'msg-'+mid,'mensajes');toast('Enviado a Mensajes')}catch(e){toast(errMsg(e))}}
 async function dgDel(id){const d=(st.diags||[]).find(x=>x.id===id);try{await Store.delCol('diagnosticos',id);for(const a of (d&&d.adjuntos)||[])await Adj.del(a);st.diags=st.diags.filter(x=>x.id!==id);st.confirmDg=null;renderMain();toast('Diagnóstico borrado')}catch(e){toast(errMsg(e))}}
@@ -2222,13 +2247,15 @@ function vDiagnostico(){const g=st.dg,cab=g.cab??st.cab;
     :`<section class="card"><div><h3>Conectar la IA</h3><div class="sub">Servidor de IA y clave de acceso</div></div>${iaForm()}</section>`;
   const fotosOk=modo!=='claude'||smImgs;
   if(st.diags===null)loadDiags();
-  let h=`<section class="card"><div><h3>Analizar una incidencia</h3><div class="sub">Fotos de la planta, la hoja y el detalle del daño · hasta 3${modo==='gemini'?' · analiza '+NUBE.ia.nombre():''}</div></div>
+  const rg=g.tipo==='riego';
+  let h=`<section class="card"><div><h3>Analizar una incidencia</h3><div class="sub">${rg?'Fotos del gotero, la tubería, el filtro, el bidón o el cabezal':'Fotos de la planta, la hoja y el detalle del daño'} · hasta 3${modo==='gemini'?' · analiza '+NUBE.ia.nombre():''}</div></div>
+    <div class="pick" role="group" aria-label="Qué quieres revisar">${DG_TIPOS.map(([k,t])=>`<button class="chip" data-dgtipo="${k}" aria-pressed="${(g.tipo||'planta')===k}">${t}</button>`).join('')}</div>
     <div class="frm"><div class="field"><label for="dg_cultivo">Cultivo</label><div class="inp"><input class="wide" id="dg_cultivo" data-dg="cultivo" value="${esc(g.cultivo)}"></div></div>
     <div class="field"><label for="dg_cab">Cabezal</label><div class="inp"><select id="dg_cab" data-dg="cab">${cabsFinca().map(c=>`<option value="${c.id}" ${cab===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div>
     <div class="field"><label for="dg_sector">Sector</label><div class="inp"><input class="wide" id="dg_sector" data-dg="sector" value="${esc(g.sector)}" placeholder="Opcional"></div></div></div>
-    <div class="field"><label for="dg_sint">Qué le notas</label><textarea id="dg_sint" data-dg="sint" rows="3" placeholder="Ej.: hojas de abajo amarillas entre los nervios desde hace una semana">${esc(g.sint)}</textarea></div>
+    <div class="field"><label for="dg_sint">${rg?'Qué ves':'Qué le notas'}</label><textarea id="dg_sint" data-dg="sint" rows="3" placeholder="${rg?'Ej.: en el sector 2 hay goteros que no echan agua y otros con costra blanca':'Ej.: hojas de abajo amarillas entre los nervios desde hace una semana'}">${esc(g.sint)}</textarea></div>
     ${g.fotos.length?`<div class="adjs">${g.fotos.map((f,i)=>`<span class="adjwrap"><span class="thumb"><img alt="Foto ${i+1}" src="${f.url}"></span><button class="rm" data-rmfoto="${i}" aria-label="Quitar foto ${i+1}">×</button></span>`).join('')}</div>`:''}
-    <label class="chk"><input type="checkbox" id="dg_datos" data-dg="datos" ${g.datos?'checked':''}> Incluir los datos de fertirrigación del ${fFecha(st.fecha)}</label>
+    <label class="chk"><input type="checkbox" id="dg_datos" data-dg="datos" ${g.datos?'checked':''}> Incluir los datos de ${rg?'riego y drenaje por sector':'fertirrigación'} del ${fFecha(st.fecha)}</label>
     <div class="row">${fotosOk?`<label class="btn" for="dg_foto">Añadir foto</label><input type="file" id="dg_foto" data-dg="file" accept="image/*" multiple hidden>`:''}
       ${g.busy?`<button class="btn" data-act="dg-stop">Parar</button>`:`<button class="btn pri" data-act="dg-run">Analizar con IA</button>`}</div></section>`;
   if(g.busy)h+=`<section class="card"><div class="dgwait"><b>Analizando…</b><span class="note">Puede tardar hasta un minuto.</span></div></section>`;
@@ -2236,7 +2263,7 @@ function vDiagnostico(){const g=st.dg,cab=g.cab??st.cab;
   if(g.res){const r=g.res;h+=`<section class="card"><div class="tank-h"><div><h3>Resultado</h3><div class="sub">Orientativo: confírmalo en campo y con tu técnico</div></div>${r.urgencia?`<span class="pill ${URG[r.urgencia]||'nd'}">Urgencia ${esc(r.urgencia)}</span>`:''}</div>
     ${r.resumen?`<p class="dgres">${esc(r.resumen)}</p>`:''}${posiblesHTML(r)}<div class="row"><button class="btn" data-act="dg-msg" data-id="cur">Enviar a Mensajes</button></div></section>`}
   const ds=st.diags||[];
-  h+=`<section class="card"><div><h3>Diagnósticos anteriores</h3><div class="sub">${ds.length} guardados</div></div>`+(ds.length?`<div class="msgs">${ds.map(d=>`<div class="msg"><div class="h"><b>${fFecha(d.fecha)}</b><span class="mini">${esc(cabNombre(d.cab))}${d.sector?' · '+esc(d.sector):''}</span>${d.res&&d.res.urgencia?`<span class="pill ${URG[d.res.urgencia]||'nd'}">Urgencia ${esc(d.res.urgencia)}</span>`:''}</div>
+  h+=`<section class="card"><div><h3>Diagnósticos anteriores</h3><div class="sub">${ds.length} guardados</div></div>`+(ds.length?`<div class="msgs">${ds.map(d=>`<div class="msg"><div class="h"><b>${fFecha(d.fecha)}</b><span class="mini">${d.tipo==='riego'?'Riego e instalación · ':''}${esc(cabNombre(d.cab))}${d.sector?' · '+esc(d.sector):''}</span>${d.res&&d.res.urgencia?`<span class="pill ${URG[d.res.urgencia]||'nd'}">Urgencia ${esc(d.res.urgencia)}</span>`:''}</div>
     ${d.res&&d.res.resumen?`<p>${esc(d.res.resumen)}</p>`:''}${adjHTML(d.adjuntos,false)}<details class="tv"><summary>Ver detalle</summary>${d.res?posiblesHTML(d.res):''}</details>
     <div class="row">${st.confirmDg===d.id?`<span class="note">¿Borrar diagnóstico?</span><button class="btn danger" data-act="dg-del-yes" data-id="${d.id}">Sí, borrar</button><button class="btn" data-act="dg-del-no">Cancelar</button>`:`<button class="btn" data-act="dg-msg" data-id="${d.id}">Enviar a Mensajes</button><button class="btn" data-act="dg-del" data-id="${d.id}">Borrar</button>`}</div></div>`).join('')}</div>`:`<div class="note">Sin diagnósticos.</div>`)+`</section>`;
   if(modo==='servidor')h+=`<section class="card"><details class="tv"><summary>Servidor de IA</summary>${iaForm()}</details></section>`;
@@ -2973,6 +3000,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='geo')geoUbic();
   else if(t.dataset.act==='ia-save'){const u=($('#ia_url')||{}).value||'',k=($('#ia_pin')||{}).value||'';if(!/^https:\/\//.test(u.trim())||!k.trim()){toast('Pon la dirección (https://…) y la clave');}else{try{localStorage.setItem('abono.ia',JSON.stringify({url:u.trim(),pin:k.trim()}))}catch(e){}toast('Servidor de IA guardado');renderMain()}}
   else if(t.dataset.act==='ia-del'){try{localStorage.removeItem('abono.ia')}catch(e){}renderMain()}
+  else if(t.dataset.dgtipo){if(!st.dg.busy){st.dg.tipo=t.dataset.dgtipo;st.dg.res=null;st.dg.err=null;renderMain()}}
   else if(t.dataset.act==='dg-run')dgRun();
   else if(t.dataset.act==='dg-stop'){if(st.dg.ctl)st.dg.ctl.abort()}
   else if(t.dataset.rmfoto!==undefined){const f=st.dg.fotos.splice(+t.dataset.rmfoto,1)[0];if(f)URL.revokeObjectURL(f.url);renderMain()}
@@ -4696,7 +4724,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v117';
+window.APP_V='abonado-v118';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
