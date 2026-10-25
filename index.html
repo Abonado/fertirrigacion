@@ -504,6 +504,7 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .vvmqs{display:grid;gap:6px;margin:8px 0}.vvmq{display:flex;gap:10px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:10px}.vvmq b{flex:1}
 .bjml{display:flex;gap:6px;align-items:center}.mue{position:relative;display:inline-flex;align-items:center;padding:7px 10px;min-height:36px;border:1.5px solid var(--line);border-radius:999px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap}.mue input{position:absolute;inset:0;opacity:0;margin:0;cursor:pointer}.mue:has(input:checked){background:var(--ok);border-color:var(--ok);color:#fff}.mue:has(input:checked) span::before{content:'✓ '}.mue:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
 .tbfotos{display:flex;gap:8px;flex-wrap:wrap}.tbf{position:relative}.tbf img{width:96px;height:96px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block}.tbf .btn{position:absolute;top:4px;right:4px;padding:2px 8px;min-height:0}.tbpz{display:grid;gap:6px}.tbp{display:grid;grid-template-columns:auto 2.2em 1fr;gap:8px;align-items:start;padding:8px;border:1px solid var(--line);border-radius:10px;cursor:pointer}.tbp span,.tbp small,.tbpasos li,#tb_res li,#tb_res p,#tb_txt{text-transform:none}.tbp small{display:block;color:var(--muted)}.tbpasos li,#tb_res ul li{margin:4px 0}
+.carpr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}.carpr small{display:block;color:var(--muted);text-transform:none}
 .chbox{display:grid;gap:8px}.chm{max-width:88%;padding:8px 12px;border-radius:14px;font:400 15px/1.45 var(--f-body)}.chm,.chm *,#ch_txt{text-transform:none!important;letter-spacing:normal}.chm.yo{justify-self:end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}.chm.ia{justify-self:start;background:var(--surface-2);border:1px solid var(--line);border-bottom-left-radius:4px}.chm p{margin:4px 0}.chm ul{margin:4px 0;padding-left:20px}.chm li{margin:2px 0}.chf{font-size:11px;opacity:.8}.chprev{max-height:90px;border-radius:8px}.chsug .chip{white-space:normal;text-align:left;text-transform:none}
 </style>
 
@@ -932,7 +933,7 @@ function sumReceta(c){const rp=reparto(c.id);
   return `<div class="stat"><span>Incremento de CE estimado</span><b>${fmt(ceEstimada(c.id),0)}</b><small class="nt">µS/cm</small></div>
   <div class="stat wide"><span>Reparto de venturis</span><div class="tbl"><table><tbody>${rp.map(r=>`<tr><td>${esc(r.b.nombre)}</td><td><b>${fmt(r.pct,1)} %</b></td><td class="u">${r.b.venturis>1?r.b.venturis+' venturis × '+fmt(r.pct/r.b.venturis,1)+' %':'1 venturi'}</td></tr>`).join('')}</tbody></table></div></div>`}
 
-function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de llenado, mensajes, tareas e incidencias</div></div><div data-out="notif">${notifHTML()}</div></section>`+(window.NUBE&&NUBE.user?NUBE.cardHTML():'')+versionHTML();const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
+function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de llenado, mensajes, tareas e incidencias</div></div><div data-out="notif">${notifHTML()}</div></section>`+(window.NUBE&&NUBE.user?NUBE.cardHTML():'')+carpetasHTML()+versionHTML();const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
   for(const b of bidonesDe(st.cab)){h+=`<div class="cfgrow"><div class="field nmf"><label for="bn_${b.id}">Nombre</label><div class="inp"><input class="wide" id="bn_${b.id}" data-k="cfg.bname.${b.id}" data-text="1" value="${esc(b.nombre)}"></div></div>
     <div class="field"><label for="lp_${b.id}">L por cm</label><div class="inp sm"><input id="lp_${b.id}" data-k="cfg.lpcm.${b.id}" inputmode="decimal" value="${inVal(b.lpcm)}"></div></div>
     <div class="field"><label for="cp_${b.id}">Capacidad</label><div class="inp sm"><input id="cp_${b.id}" data-k="cfg.cap.${b.id}" inputmode="decimal" value="${inVal(b.capacidad)}"><span class="u">L</span></div></div>
@@ -964,7 +965,7 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
     <div class="note">Después pulsa «Guardar receta y ajustes». La radiación solar funciona sin servidor; las parcelas al aire libre lo necesitan.</div></section>`;
   h+=cultivoAjHTML();
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
-  h+=(esAdminU()?copiaHTML():'')+versionHTML();
+  h+=carpetasHTML()+(esAdminU()?copiaHTML():'')+versionHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Copia de seguridad, recetas y ajustes</div></div>
     <div class="row"><button class="btn pri" data-act="backup">Descargar copia de seguridad</button><label class="btn" for="restore">Restaurar copia</label><input type="file" id="restore" accept="application/json,.json" hidden></div>
     <div class="row">${st.confirmReset?`<span class="note">¿Restaurar recetas y ajustes iniciales?</span><button class="btn danger" data-act="reset-yes">Sí, restaurar</button><button class="btn" data-act="reset-no">Cancelar</button>`:`<button class="btn" data-act="reset">Restaurar recetas y ajustes iniciales</button>`}</div></section>`;
@@ -4103,7 +4104,7 @@ async function parteHojaXlsx(d,nombre,tipo){tipo=tipo||'grande';const K=PTIPO[ti
   for(const k of ptCover(tipo,V))setC(k.split(':')[0],null);
   for(const[k,o]of Object.entries(V))if(k[0]!=='_')setC(k,k===K.cab?K.cabPre+o.v:o.v);
   const files=T.xlsx.files.map(([n,b])=>({name:n,data:b64u8(b)})),i=files.findIndex(z=>z.name==='xl/workbook.xml');files.splice(i+1,0,{name:'xl/worksheets/sheet1.xml',data:x});
-  await saveBlob(zipStore(files),nombre+'.xlsx')}
+  await guardarParte(zipStore(files),nombre+'.xlsx',tipo,d)}
 const parteNombre=(d,tipo)=>`${PTIPO[tipo||'grande'].titulo} ${d.cab} ${fD(diaRiego(d.fecha)).replace(/\//g,'-')}`;
 
 /* ---------- Parte pequeño: hoja «Control de aportes» (Anexo XI, PR101 / Ed.05) ---------- */
@@ -4567,6 +4568,31 @@ async function copiaBajar(){toast('Preparando la copia…',8000);
     await saveBlob(new Blob([JSON.stringify(o)],{type:'application/json'}),`copia-abonado-${hoy()}.json`);toast(`Copia descargada: ${regs.length} días`)}
   catch(e){toast('No se pudo hacer la copia. Prueba otra vez.')}}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act="copia-bajar"]');if(b&&b.closest('#main'))copiaBajar()});
+/* ---------- Carpetas de los partes en este ordenador (Chrome o Edge en PC) ----------
+   Se elige una carpeta para el parte grande y otra para el pequeño; al descargar el Excel se guarda en
+   «carpeta / 2026-10 Octubre / Planos / Control de riegos Planos 24-10-2026.xlsx». La carpeta elegida se recuerda en este ordenador. */
+function idbAbrir(){return new Promise((res,rej)=>{const r=indexedDB.open('abono-carpetas',1);r.onupgradeneeded=()=>r.result.createObjectStore('h');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbGet(k){try{const db=await idbAbrir();return await new Promise(res=>{const q=db.transaction('h').objectStore('h').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)})}catch(e){return null}}
+async function idbSet(k,v){try{const db=await idbAbrir();return await new Promise(res=>{const t=db.transaction('h','readwrite'),o=t.objectStore('h');if(v==null)o.delete(k);else o.put(v,k);t.oncomplete=()=>res(true);t.onerror=()=>res(false)})}catch(e){return false}}
+st.carp=null;
+async function carpCargar(){st.carp={grande:await idbGet('grande'),pequeno:await idbGet('pequeno')};if(st.tab==='ajustes')renderMain()}
+const carpOk=()=>typeof window.showDirectoryPicker==='function';
+function carpetasHTML(){if(!carpOk())return '';if(st.carp===null){carpCargar();return ''}
+  return `<section class="card"><div><h3>Carpetas de los partes en este ordenador</h3><div class="sub">Al descargar un parte en Excel se guarda solo en su carpeta, por mes y cabezal</div></div>
+    ${['grande','pequeno'].map(t=>{const h=st.carp[t];return `<div class="carpr"><div><b>${PTIPO[t].titulo}</b><small>${h?'Carpeta: '+esc(h.name)+' · dentro, por mes y cabezal':'Sin elegir: se descarga en Descargas'}</small></div><div class="row"><button class="btn${h?'':' pri'}" data-act="carp-elegir" data-t="${t}">${h?'Cambiar':'Elegir carpeta'}</button>${h?`<button class="btn" data-act="carp-quitar" data-t="${t}">Quitar</button>`:''}</div></div>`}).join('')}
+    <div class="note">Solo en el ordenador, con Chrome o Edge. Puede que el navegador pida permiso para guardar en la carpeta: elige «Permitir siempre» (o «Permitir en cada visita»).</div></section>`}
+const carpNom=s=>String(s||'').replace(/[\\/:*?"<>|]+/g,'-').trim()||'Sin nombre';
+async function carpPermiso(h){try{const o={mode:'readwrite'};if(await h.queryPermission(o)==='granted')return true;return await h.requestPermission(o)==='granted'}catch(e){return false}}
+/* Guarda el parte en su carpeta; si no hay carpeta o algo falla, se descarga como siempre */
+async function guardarParte(blob,name,tipo,d){const h=carpOk()?(st.carp?st.carp[tipo]:await idbGet(tipo)):null;
+  if(h){try{if(await carpPermiso(h)){const f=diaRiego(d.fecha),mes=f.slice(0,7)+' '+MESES[+f.slice(5,7)-1].replace(/^./,x=>x.toUpperCase()),cab=carpNom(d.cab);
+        const dm=await h.getDirectoryHandle(mes,{create:true}),dc=await dm.getDirectoryHandle(cab,{create:true}),fh=await dc.getFileHandle(carpNom(name),{create:true}),w=await fh.createWritable();
+        await w.write(blob);await w.close();toast(`Guardado en ${h.name} / ${mes} / ${cab}`,5000);return}
+      toast('Sin permiso para la carpeta: se descarga en Descargas',5000)}catch(e){console.warn('carpeta',e);toast('No se pudo guardar en la carpeta: se descarga en Descargas',5000)}}
+  await saveBlob(blob,name)}
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-act^="carp-"]');if(!b||!b.closest('#main'))return;const t=b.dataset.t;
+  if(b.dataset.act==='carp-elegir'){try{const h=await window.showDirectoryPicker({id:'partes-'+t,mode:'readwrite'});await idbSet(t,h);st.carp=st.carp||{};st.carp[t]=h;renderMain();toast('Carpeta para el '+PTIPO[t].corto.toLowerCase()+': '+h.name)}catch(e){if(!e||e.name!=='AbortError')toast('No se pudo elegir la carpeta')}}
+  else if(b.dataset.act==='carp-quitar'){await idbSet(t,null);if(st.carp)st.carp[t]=null;renderMain()}});
 const versionHTML=()=>`<section class="card"><div><h3>Versión de la app</h3><div class="sub">${esc(String(window.APP_V||'—').replace('abonado-',''))}</div></div><div class="row"><button class="btn" data-act="app-act">Buscar actualización</button></div><div class="note">Si a alguien no le aparece algo nuevo, que pulse aquí. No se pierde nada.</div></section>`;
 document.addEventListener('click',async e=>{if(!e.target.closest('[data-act="app-act"]'))return;if(st.dirtyReg||st.dirtyCfg){toast('Guarda antes los cambios');return}toast('Actualizando…');
   try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}catch(_){}try{const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}catch(_){}
@@ -4653,7 +4679,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain()}}).catch(()=>{})});
 
-window.APP_V='abonado-v115';
+window.APP_V='abonado-v116';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
