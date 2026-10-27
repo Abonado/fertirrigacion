@@ -41,6 +41,7 @@ GEOM = {'type': 'Polygon', 'coordinates': [[[-1.6010, 37.3950], [-1.5985, 37.395
 llamadas = []
 async def servidor(route):
     rq = route.request
+    if rq.method == 'GET': return await route.fulfill(status=200, headers={'access-control-allow-origin': '*', 'content-type': 'application/json'}, body='{"ok": true, "configurado": true, "proveedor": "OpenAI"}')
     if rq.method == 'OPTIONS': return await route.fulfill(status=204, headers=CORS)
     ruta = rq.url.rstrip('/').split('/')[-1]; b = json.loads(rq.post_data or '{}'); llamadas.append(ruta)
     assert rq.headers.get('authorization', '').startswith('Bearer tok-'), 'falta el token'

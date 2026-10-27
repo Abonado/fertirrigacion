@@ -12,6 +12,7 @@ RESP = {'titulo': 'Toma para dos bidones con grifo', 'tuberia': {'material': 'PE
 pedidos = []
 async def servidor(route):
     rq = route.request
+    if rq.method == 'GET': return await route.fulfill(status=200, headers={'access-control-allow-origin': '*', 'content-type': 'application/json'}, body=json.dumps({'ok': True, 'configurado': True, 'proveedor': 'OpenAI'}))
     if rq.method == 'OPTIONS': return await route.fulfill(status=204, headers={'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type, authorization', 'access-control-allow-methods': 'POST, OPTIONS'})
     pedidos.append(json.loads(rq.post_data))
     await route.fulfill(status=200, headers={'access-control-allow-origin': '*', 'content-type': 'application/json'}, body=json.dumps({'text': '```json\n' + json.dumps(RESP) + '\n```'}))

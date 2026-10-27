@@ -6,6 +6,7 @@ MOCK = open('mock-firebase.js').read()
 pedidos = []
 async def servidor(route):
     rq = route.request
+    if rq.method == 'GET': return await route.fulfill(status=200, headers={'access-control-allow-origin': '*', 'content-type': 'application/json'}, body='{"ok": true, "configurado": true, "proveedor": "OpenAI"}')
     if rq.method == 'OPTIONS': return await route.fulfill(status=204, headers={'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type, authorization', 'access-control-allow-methods': 'POST, OPTIONS'})
     b = json.loads(rq.post_data); pedidos.append(b)
     txt = '**Causas más probables**\n- Poco drenaje: las sales se acumulan\n- Receta fuerte para la radiación de estos días\n\nSube un poco el riego y mira la CE de la bandeja mañana.' if len(pedidos) == 1 else 'Con la foto: bordes secos típicos de **falta de calcio** o de salinidad.'

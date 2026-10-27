@@ -10,9 +10,10 @@ RESP = {'resumen': 'Parece obstrucción de goteros por cal en el sector 1.', 'ur
 pedidos = []
 async def servidor(route):
     rq = route.request
+    if rq.method == 'GET': return await route.fulfill(status=200, headers={'access-control-allow-origin': '*', 'content-type': 'application/json'}, body=json.dumps({'ok': True, 'configurado': True, 'proveedor': 'OpenAI'}))
     if rq.method == 'OPTIONS': return await route.fulfill(status=204, headers={'access-control-allow-origin': '*', 'access-control-allow-headers': 'content-type, authorization', 'access-control-allow-methods': 'POST, OPTIONS'})
     pedidos.append(json.loads(rq.post_data))
-    await route.fulfill(status=200, headers={'access-control-allow-origin': '*', 'content-type': 'application/json'}, body=json.dumps({'text': json.dumps(RESP)}))
+    await route.fulfill(status=200, headers={'access-control-allow-origin': '*', 'content-type': 'application/json'}, body=json.dumps({'text': json.dumps(RESP), 'proveedor': 'OpenAI'}))
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); ctx = await b.new_context(service_workers='block', viewport={'width': 430, 'height': 900}, locale='es-ES', timezone_id='Europe/Madrid')
@@ -43,6 +44,7 @@ async def main():
         assert 'Por sector y bandeja' in pr and f'- {s1}: 120 min' in pr and 'drenaje' in pr, 'el prompt de riego tiene que llevar el drenaje por sector'
         assert await pg.locator('section.card:has(h3:text-is("Resultado")) .dgp').count() == 2 and 'Goteros obstruidos' in await pg.text_content('#main')
         await pg.screenshot(path='pruebas/salida/t88-riego.png', full_page=True)
+        print('IA:', await pg.evaluate('NUBE.ia.nombre()')); assert await pg.evaluate('NUBE.ia.nombre()') == 'OpenAI'
         d = await pg.evaluate("Store.listCol('diagnosticos',10).then(l=>l[0])"); print('guardado:', d['tipo'], d['sint'][:40])
         assert d['tipo'] == 'riego'
         assert 'Riego e instalación ·' in await pg.text_content('.msgs')

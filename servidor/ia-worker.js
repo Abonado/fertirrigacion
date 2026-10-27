@@ -1,11 +1,15 @@
-// IA de incidencias para «Abonado Pinta Santos» con Claude (Cloudflare Worker)
-// Solo hay que crear UNA variable secreta en Cloudflare (Settings → Variables and Secrets):
-//   ANTHROPIC_API_KEY  →  tu clave de la API de Claude (platform.claude.com → API keys)
+// IA de la app «Abonado Pinta Santos» (Cloudflare Worker): OpenAI ahora, Claude cuando se active.
+// Variables secretas en Cloudflare (Settings → Variables and Secrets). Basta con UNA de las dos claves:
+//   OPENAI_API_KEY     →  clave de la API de OpenAI (platform.openai.com → API keys)
+//   ANTHROPIC_API_KEY  →  clave de la API de Claude (platform.claude.com → API keys)
+// Si están las dos, se usa Claude (salvo que pongas PROVEEDOR = openai).
+// Opcionales: OPENAI_MODEL (por defecto gpt-6-sol; gpt-6-luna es mucho más barato) y MODEL (modelo de Claude).
 // Solo responde a personas que han entrado en la app y que el administrador ha dado de alta.
 
 const PROYECTO = 'fertirrigacion-cabezales';           // proyecto de Firebase
 const ORIGENES = ['https://abonado.github.io'];          // desde dónde se puede usar
 const MODELO = 'claude-sonnet-5-5';
+const MODELO_OPENAI = 'gpt-6-sol';
 const JWK_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 // Instrucciones del asistente agrícola (no las puede cambiar la app ni quien pregunta)
 const SISTEMA_CHAT = `Eres el asistente agronómico de Agro FLY, una app de fertirrigación y gestión de fincas (sobre todo tomate en invernadero en la Región de Murcia, también árboles al aire libre).
@@ -68,10 +72,12 @@ export default {
     const json = (obj, status) => new Response(JSON.stringify(obj), { status, headers: { ...cors, 'content-type': 'application/json' } });
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (request.method === 'GET') return json({ ok: true, configurado: !!env.ANTHROPIC_API_KEY }, 200);   // no da más pistas a nadie de fuera
+    const prov = env.OPENAI_API_KEY && (env.PROVEEDOR === 'openai' || !env.ANTHROPIC_API_KEY) ? 'openai' : env.ANTHROPIC_API_KEY ? 'claude' : null;
+    const nombre = prov === 'openai' ? 'OpenAI' : 'Claude';
+    if (request.method === 'GET') return json({ ok: true, configurado: !!prov, proveedor: prov ? nombre : null }, 200);   // no da más pistas a nadie de fuera
     if (request.method !== 'POST') return json({ error: 'metodo' }, 405);
     if (!ORIGENES.includes(origin)) return json({ error: 'origen' }, 403);
-    if (!env.ANTHROPIC_API_KEY) return json({ error: 'sin_clave' }, 500);
+    if (!prov) return json({ error: 'sin_clave' }, 500);
 
     // 1. ¿Quién es? (sesión de la app)
     const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
@@ -96,7 +102,29 @@ export default {
       .slice(0, 3)
       .map(x => ({ type: 'image', source: { type: 'base64', media_type: tipos.includes(x.type) ? x.type : 'image/jpeg', data: x.data } }));
 
-    // 3. Claude
+    // 3a. OpenAI
+    if (prov === 'openai') {
+      const imgs = images.map(x => ({ type: 'image_url', image_url: { url: `data:${x.source.media_type};base64,${x.source.data}` } }));
+      const messages = esChat
+        ? [{ role: 'system', content: SISTEMA_CHAT + (body.contexto ? '\n\nDatos de la finca de quien pregunta (úsalos solo si vienen al caso):\n' + String(body.contexto).slice(0, 6000) : '') },
+           ...chat.map((m, i) => ({ role: m.role, content: i === chat.length - 1 ? [{ type: 'text', text: m.text }, ...imgs] : m.text }))]
+        : [{ role: 'user', content: [{ type: 'text', text: prompt }, ...imgs] }];
+      const ro = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { authorization: 'Bearer ' + env.OPENAI_API_KEY, 'content-type': 'application/json' },
+        body: JSON.stringify({ model: env.OPENAI_MODEL || MODELO_OPENAI, messages, max_completion_tokens: esChat ? 4000 : 8000 })
+      });
+      const jo = await ro.json().catch(() => null);
+      if (!ro.ok) {
+        const e = (jo && jo.error) || {}, msg = e.message || ('HTTP ' + ro.status);
+        const code = e.code === 'insufficient_quota' || /quota|billing|credit/i.test(msg) ? 'creditos' : ro.status === 429 ? 'limite' : ro.status === 401 ? 'clave' : ro.status >= 500 ? 'ocupada' : 'api';
+        return json({ error: code, detail: msg }, 502);
+      }
+      const texto = (((jo.choices || [])[0] || {}).message || {}).content || '';
+      return json({ text: texto, modelo: jo.model, proveedor: nombre, quien: email }, 200);
+    }
+
+    // 3b. Claude
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2026-10-21', 'content-type': 'application/json' },
@@ -113,6 +141,6 @@ export default {
       return json({ error: code, detail: msg }, 502);
     }
     const text = (j.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
-    return json({ text, modelo: j.model, quien: email }, 200);
+    return json({ text, modelo: j.model, proveedor: nombre, quien: email }, 200);
   }
 };
