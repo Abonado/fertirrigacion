@@ -687,8 +687,11 @@ function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const
 const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Instalación y sensores'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
-function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin||!Array.isArray(u.fincas))return fs;return fs.filter(f=>u.fincas.includes(f.id))}
-const restringido=()=>{const u=window.NUBE&&NUBE.user;return !!(u&&!u.admin&&Array.isArray(u.fincas))};
+/* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
+function fincasVis(){const fs=st.cfg.fincas||[],u=window.NUBE&&NUBE.user;if(!u||u.admin)return fs;let r=Array.isArray(u.fincas)?fs.filter(f=>u.fincas.includes(f.id)):fs;
+  if(Array.isArray(u.cabs)&&u.cabs.length){const z=u.cabs;r=r.map(f=>{const c=f.cabezales.filter(x=>z.includes(x));return c.length&&c.length<f.cabezales.length?{...f,cabezales:c}:f})}return r}
+const restringido=()=>{const u=window.NUBE&&NUBE.user;return !!(u&&!u.admin&&(Array.isArray(u.fincas)||Array.isArray(u.cabs)))};
+const cabOk=id=>!id||!restringido()||cabsVis().some(c=>c.id===id);
 function cabsVis(){if(!restringido())return st.cfg.cabezales;const ids=new Set(fincasVis().flatMap(f=>f.cabezales));return st.cfg.cabezales.filter(c=>ids.has(c.id))}
 const fincaAct=()=>fincasVis().find(f=>f.id===st.finca)||null;
 function cabsFinca(){const f=fincaAct();return f&&f.cabezales.length?f.cabezales.map(id=>st.cfg.cabezales.find(c=>c.id===id)).filter(Boolean):cabsVis()}
@@ -1255,7 +1258,7 @@ let tLoading=false;
 async function loadTareas(){if(tLoading)return;tLoading=true;try{st.tareas=await Store.listCol('tareas',1000)}catch(e){st.tareas=st.tareas||[]}tLoading=false;renderGrupos();avisosTareas();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='tareas')renderMain()}
 const yoNombre=()=>autorActual()||'Yo';
 function personas(){const yo=miEmail();return yo?[{email:yo,nombre:yoNombre()+' (yo)'},...equipo()]:[]}
-const tVisible=t=>!restringido()||(t.para&&t.para===miEmail())||fincasVis().some(f=>f.id===t.finca);
+const tVisible=t=>!restringido()||(t.para&&t.para===miEmail())||t.creadaEmail===miEmail()||(fincasVis().some(f=>f.id===t.finca)&&cabOk(t.cab));
 const tMia=t=>!!(miEmail()&&t.para===miEmail());
 const tEstado=t=>t.hecha?'hecha':t.fecha<hoy()?'atrasada':t.fecha===hoy()?'hoy':'prox';
 function tareasMias(){return (st.tareas||[]).filter(t=>tMia(t)&&!t.hecha&&t.fecha<=hoy())}
@@ -1299,7 +1302,7 @@ function vTareas(){if(st.tareas===null){loadTareas();return '<div class="card"><
 async function crearTarea(){const g=st.tf,titulo=g.titulo.trim();if(!titulo){toast('Escribe qué hay que hacer');return}const fs=fincasVis(),f=fs.find(x=>x.id===g.finca)||fincaAct()||fs.find(x=>x.cabezales.length);
   const dest=personas().find(u=>u.email===g.para);
   const t={ts:new Date().toISOString(),titulo,finca:f?f.id:'',cab:g.cab||'',nave:g.cab&&g.nave?+g.nave:null,maq:g.maq||'',of:g.of||'',np:Math.max(1,Math.min(20,Math.round(num(g.np)||1))),para:dest?dest.email:'',paraNombre:dest?dest.nombre.replace(/ \(yo\)$/,''):'',fecha:g.fecha||hoy(),urg:!!g.urg,rep:g.rep||'',det:g.det.trim(),adjuntos:g.adj.filter(a=>!a.tmp),hecha:false,creadaPor:yoNombre(),creadaEmail:miEmail()};
-  try{const id=await Store.addCol('tareas',t);st.tareas.unshift({...t,id});pushEnviar(t.para?[t.para]:quienVeFinca(t.finca),(t.urg?'Tarea URGENTE: ':'Tarea nueva: ')+t.titulo,`${fFecha(t.fecha)}${t.para?'':' · para el equipo'} · de ${t.creadaPor||''}`,'tarea-'+id,'tareas');st.tf={open:false,titulo:'',finca:t.finca,cab:'',nave:'',maq:'',para:'',fecha:hoy(),urg:false,rep:'',det:'',adj:[]};renderMain();toast(dest?'Tarea asignada a '+t.paraNombre:'Tarea creada')}catch(e){toast(errMsg(e))}}
+  try{const id=await Store.addCol('tareas',t);st.tareas.unshift({...t,id});pushEnviar(t.para?[t.para]:t.cab?quienVeCab(t.cab):quienVeFinca(t.finca),(t.urg?'Tarea URGENTE: ':'Tarea nueva: ')+t.titulo,`${fFecha(t.fecha)}${t.para?'':' · para el equipo'} · de ${t.creadaPor||''}`,'tarea-'+id,'tareas');st.tf={open:false,titulo:'',finca:t.finca,cab:'',nave:'',maq:'',para:'',fecha:hoy(),urg:false,rep:'',det:'',adj:[]};renderMain();toast(dest?'Tarea asignada a '+t.paraNombre:'Tarea creada')}catch(e){toast(errMsg(e))}}
 async function tareaHecha(id){const t=st.tareas.find(x=>x.id===id);if(!t)return;const p={hecha:true,hechaTs:new Date().toISOString(),hechaPor:yoNombre(),nota:st.td.nota.trim(),adjHecha:st.td.adj.filter(a=>!a.tmp)};
   try{await Store.updCol('tareas',id,p);Object.assign(t,p);st.td={id:null,nota:'',adj:[]};if(t.creadaEmail)pushEnviar([t.creadaEmail],'Tarea hecha: '+t.titulo,'Por '+p.hechaPor+(p.nota?' · '+p.nota:''),'tareahecha-'+id,'tareas',{urgente:false});
     if(t.rep){const n={...t,ts:new Date().toISOString(),fecha:sumaFecha(t.fecha<hoy()?hoy():t.fecha,t.rep),hecha:false,nota:'',adjHecha:[],hechaTs:null,hechaPor:null};delete n.id;const nid=await Store.addCol('tareas',n);st.tareas.unshift({...n,id:nid});toast('Hecha. La próxima queda para el '+fFecha(n.fecha))}else toast('Tarea hecha');renderMain()}catch(e){toast(errMsg(e))}}
@@ -1328,7 +1331,7 @@ const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
 function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
-const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||fincasVis().some(f=>f.id===m.finca);
+const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||(fincasVis().some(f=>f.id===m.finca)&&cabOk(m.cab));
 const mMio=m=>!!(miEmail()&&m.pideEmail===miEmail());
 const mAmi=m=>!!(miEmail()&&m.para===miEmail());
 /* A quién se le puede enviar un pedido: quien ve riego; primero administración y encargados */
@@ -1609,7 +1612,8 @@ function veCampoArea(){const u=window.NUBE&&NUBE.user;if(!window.NUBE||!u)return
 /* Los avisos que se envían hoy son todos de riego: solo a quien ve riego */
 const veFinca=(e,fid)=>{const i=accInfo(e);return veRiegoE(e)&&(!fid||!!i.admin||!Array.isArray(i.fincas)||i.fincas.includes(fid))};
 const fincaDeCab=c=>(c&&((st.cfg.fincas||[]).find(f=>f.cabezales.includes(c))||{}).id)||'';
-const quienVeCab=c=>todosEmails().filter(e=>veFinca(e,fincaDeCab(c)));
+const veZona=(e,c)=>{const i=accInfo(e);if(!c||i.admin||!Array.isArray(i.cabs)||!i.cabs.length)return true;const f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(c));return !f||!f.cabezales.some(x=>i.cabs.includes(x))||i.cabs.includes(c)};
+const quienVeCab=c=>todosEmails().filter(e=>veFinca(e,fincaDeCab(c))&&veZona(e,c));
 const quienVeFinca=f=>todosEmails().filter(e=>veFinca(e,f));
 const adminsEmails=()=>todosEmails().filter(e=>accInfo(e).admin);
 function pushEnviar(para,titulo,cuerpo,tag,tab,extra){if(!pushListo())return;para=[...new Set(para||[])].filter(e=>e&&e!==miEmail());if(!para.length)return;
@@ -2211,7 +2215,7 @@ async function enviarPartes(f,reg){if(Store.mode!=='fb'||!window.NUBE||!NUBE.use
 st.partes=null;st.ptFil='pend';st.ptAbierto=null;st.ptRev=null;
 let ptLoading=false;
 async function loadPartes(){if(!puedePartes()||ptLoading)return;ptLoading=true;try{st.partes=await Store.listCol('partes',300)}catch(e){console.warn(e);st.partesErr=e&&e.code;st.partes=st.partes||[]}ptLoading=false;try{renderGrupos()}catch(e){}if(st.tab==='partes')renderMain()}
-const ptVisible=p=>{const u=NUBE.user;return u.admin||!Array.isArray(u.fincas)||u.fincas.includes(p.finca)};
+const ptVisible=p=>{const u=NUBE.user;return u.admin||!restringido()||(fincasVis().some(f=>f.id===p.finca)&&cabOk(p.cab))};
 const ptCambiado=p=>p.revisado&&p.revisadoTs&&p.ts>p.revisadoTs;
 const ptPend=()=>(st.partes||[]).filter(ptVisible).filter(p=>!p.revisado||ptCambiado(p));
 function ptDatos(p){return{...p.d,guardadoTxt:horaTxt(p.ts)+' por '+(p.por||''),revisadoPor:p.revisado?p.revisadoPor:'',revisadoTxt:p.revisadoTs?horaTxt(p.revisadoTs):'',nota:p.nota||''}}
