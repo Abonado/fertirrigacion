@@ -860,8 +860,7 @@ function afPend(bj){const a=afDe(bj.id)||{},c=afCalc(a);return c.fuera.filter(i=
 function afSumHTML(c){const bs=c.sectores.flatMap(s=>s.bandejas),hechas=bs.filter(bj=>afCalc(afDe(bj.id)).aforo!=null).length,cam=bs.reduce((n,bj)=>n+afPend(bj),0);
   return `<span class="pill ${hechas===bs.length?'ok':'nd'}">${hechas} de ${bs.length} bandejas aforadas</span>${cam?`<span class="pill bad">${cam} ${cam===1?'piqueta':'piquetas'} por cambiar</span>`:''}`}
 function vAforo(){const c=cabById(st.cab);if(!c)return '';if(st.hist===null)loadHist();
-  let h=`<section class="card"><div><h3>Cálculo del aforo · ${esc(c.nombre)}</h3><div class="sub">${AF.n} piquetas por bandeja · riego de ${AF.min} minutos · lo normal es ${AF.lo}–${AF.hi} ml por piqueta</div></div>
-    <div class="note">Aforo = suma de las ${AF.n} piquetas ÷ ${AF.min}. La piqueta que se salga de ${AF.lo}–${AF.hi} ml sale en rojo: cámbiala y márcala como cambiada. Se guarda con el día.</div>
+  let h=`<section class="card"><div><h3>Cálculo del aforo · ${esc(c.nombre)}</h3></div>
     <div class="row afsum" data-out="afsum">${afSumHTML(c)}</div></section>`;
   for(const s of c.sectores){h+=`<section class="card"><div><h3>${esc(s.nombre)}</h3></div>`;
     for(const bj of s.bandejas){const a=afDe(bj.id)||{},p=a.piq||[],camb=a.cam||[],u=afUltimo(bj.id);
@@ -4072,7 +4071,7 @@ $('#main').addEventListener('change',e=>{const k=e.target.dataset&&e.target.data
 const PTIPO={grande:{titulo:'Control de riegos',corto:'Parte grande',js:'parte-tpl.js',g:'PARTE_TPL',hoja:'hoja',cab:'D1',cabPre:'PROCEDIMIENTO                         ',prod:'A7',fecha:'L7',prodHasta:11,hsz:9.5,hy:2},
   pequeno:{titulo:'Control de aportes',corto:'Parte pequeño',js:'parte-tpl-p.js',g:'PARTE_TPL_P',hoja:'hojaP',cab:'E2',cabPre:'PROCEDIMIENTO                                                 ',prod:'A8',fecha:'N8',prodHasta:9,hsz:8,hy:1.3}};
 async function parteTpl(tipo){const T=PTIPO[tipo||'grande'];if(window[T.g])return window[T.g];await loadScript(T.js);return window[T.g]}
-const ptCover=(tipo,V)=>tipo==='pequeno'?((V._cover||{}).v||[]):PT_COVER;
+const ptCover=(tipo,V)=>tipo==='pequeno'?((V._cover||{}).v||[]):[...PT_COVER,...((V._cover||{}).v||[])];
 const b64u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 const sinAcento=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
 /* Filas de «Nutrientes x 100 m³» */
@@ -4112,6 +4111,13 @@ function parteHoja(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V=
   for(const{s,bj,row}of ptMini(c)){const min=r.min[s.id],rie=(r.rie||{})[s.id];
     put('E'+row,r.ceD[bj.id]!=null?String(uS(r.ceD[bj.id])):null);   /* 4400, sin punto de miles: así lo leen */put('F'+row,ptNum(r.phD[bj.id],2));put('G'+row,ptNum(min!=null&&bj.caudal?min*bj.caudal/1000:null,2));/* volumen total en litros */put('H'+row,ptNum(r.dren[bj.id],0));
     put('I'+row,ptNum(drenPct(s,bj),1));put('J'+row,ptNum(rie,0));put('K'+row,ptNum(min,0))}
+  // fila de abajo de cada sector (X-5): media de sus bandejas, en verde y negrita
+  {const mini=ptMini(c),cov=[],med=a=>{const v=a.filter(x=>x!=null&&isFinite(x));return v.length?v.reduce((t,x)=>t+x,0)/v.length:null};
+    for(const{s,row:r0}of ptFilas(c)){const rb=r0+4;if(mini.some(x=>x.row===rb))continue;const bs=mini.filter(x=>x.s===s).map(x=>x.bj);if(!bs.length)continue;const min=r.min[s.id];
+      const ce=med(bs.map(bj=>r.ceD[bj.id])),ph=med(bs.map(bj=>r.phD[bj.id])),vol=med(bs.map(bj=>min!=null&&bj.caudal?min*bj.caudal/1000:null)),dr=med(bs.map(bj=>r.dren[bj.id])),pc=med(bs.map(bj=>drenPct(s,bj)));
+      if([ce,ph,dr,pc].every(v=>v==null))continue;const o={b:1,verde:1};cov.push('A'+rb);
+      put('A'+rb,'MEDIA',o);put('E'+rb,ce!=null?String(uS(ce)):null,o);put('F'+rb,ptNum(ph,2),o);put('G'+rb,ptNum(vol,2),o);put('H'+rb,ptNum(dr,0),o);put('I'+rb,ptNum(pc,1),o)}
+    if(cov.length)V._cover={v:cov}}
   const sa=salidaDe(cabId),m3=r.m3[cabId],m3R=(r.m3R||{})[cabId];
   [['O10',sa.ceB,2],['O11',(r.phB||{})[cabId],2],['O13',sa.ent,2],['O14',sa.inc,2],['O15',sa.tot,2],['O16',sa.phS,2],['O18',m3,1],
     ['O20',P.sup&&m3!=null?m3*1000/P.sup:null,2],['O21',(u=>u.real??u.des)(unidades(cabId)),1],['O22',(r.rad||{})[cabId]??radAuto(cabId,st.fecha),0]].forEach(([k,v,d])=>put(k,ptNum(v,d)));
@@ -4129,7 +4135,7 @@ const ptRef=ref=>{const m=/^([A-U])(\d+)$/.exec(ref);return{c:'ABCDEFGHIJKLMNOPQ
 async function parteHojaPdf(lista,nombre,tipo){tipo=tipo||'grande';const K=PTIPO[tipo];let L,T;try{L=await pdfLib();T=await parteTpl(tipo)}catch(e){toast('Hace falta conexión a internet para crear el parte');return}
   const{PDFDocument,StandardFonts,rgb}=L,doc=await PDFDocument.create(),[fondo]=await doc.embedPdf(b64u8(T.pdf)),f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
   doc.setTitle(pdfTxt(nombre));doc.setAuthor(pdfTxt(yoNombre()));doc.setCreator('Abonado-Fertirrigacion');
-  const ink=rgb(0,0,0),wh=rgb(1,1,1),ry=k=>T.ry[k]!=null?T.ry[k]:T.ry[k+1];
+  const ink=rgb(0,0,0),verde=rgb(0.08,0.47,0.24),wh=rgb(1,1,1),ry=k=>T.ry[k]!=null?T.ry[k]:T.ry[k+1];
   const caja=(ref,rng)=>{const a=ptRef(rng?rng.split(':')[0]:ref),b=ptRef(rng?rng.split(':')[1]:ref);const x0=T.cx[a.c],x1=T.cx[b.c+1],y0=ry(a.r),y1=ry(b.r+1);return{x:x0,w:x1-x0,top:T.H-y0,h:y1-y0}};
   for(const d of lista){const V=d[K.hoja]||{},page=doc.addPage([T.W,T.H]);page.drawPage(fondo,{x:0,y:0,width:T.W,height:T.H});
         for(const k of ptCover(tipo,V)){const[a,b2]=k.split(':');const q=caja(a,b2?k:null);page.drawRectangle({x:q.x+1,y:q.top-q.h+1,width:q.w-2,height:q.h-2,color:wh})}
@@ -4139,7 +4145,7 @@ async function parteHojaPdf(lista,nombre,tipo){tipo=tipo||'grande';const K=PTIPO
         while(size>5&&(lineas.length*size*1.15>q.h-2||lineas.some(x=>fo.widthOfTextAtSize(x,size)>q.w-4)))size-=.5}
       else size=fit(s,q.w-4,size,fo);
       const lh=size*1.15,alto=(lineas.length-1)*lh;let y=q.top-q.h/2+alto/2-size*.34;
-      for(const ln of lineas){const w=fo.widthOfTextAtSize(ln,size),x=o.al==='l'?q.x+2.5:o.al==='r'?q.x+q.w-2.5-w:q.x+(q.w-w)/2;page.drawText(ln,{x,y,size,font:fo,color:ink});y-=lh}};
+      for(const ln of lineas){const w=fo.widthOfTextAtSize(ln,size),x=o.al==='l'?q.x+2.5:o.al==='r'?q.x+q.w-2.5-w:q.x+(q.w-w)/2;page.drawText(ln,{x,y,size,font:fo,color:o.verde?verde:ink});y-=lh}};
     // Cabecera: nombre del cabezal en lugar de «PLANOS»
     const hc=T.hdr.cab;page.drawRectangle({x:hc[0]-2,y:T.H-hc[3]-1,width:Math.max(hc[2]-hc[0],120)+4,height:hc[3]-hc[1]+2,color:wh});
     if(V[K.cab])page.drawText(pdfTxt(V[K.cab].v),{x:hc[0],y:T.H-hc[3]+2.6,size:fit(V[K.cab].v,200,13,fb),font:fb,color:ink});
@@ -4150,13 +4156,22 @@ async function parteHojaPdf(lista,nombre,tipo){tipo=tipo||'grande';const K=PTIPO
   const bytes=await doc.save();await saveBlob(new Blob([bytes],{type:'application/pdf'}),nombre+'.pdf')}
 
 /* ---------- Excel: la plantilla original rellenada (mismo formato, mismo logo) ---------- */
+/* Estilos del Excel: añade una letra verde y en negrita y, para cada estilo de casilla que la necesite, una copia con esa letra */
+function xlsxVerde(files){const f=files.find(z=>z.name==='xl/styles.xml');if(!f)return null;let t=new TextDecoder().decode(f.data);
+  const m=/<fonts\b[^>]*>[\s\S]*?<\/fonts>/.exec(t),cx=/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/.exec(t);if(!m||!cx)return null;
+  const nf=(m[0].match(/<font\b[^>]*?(?:\/>|>[\s\S]*?<\/font>)/g)||[]).length,xfs=cx[0].match(/<xf\b[^>]*?(?:\/>|>[\s\S]*?<\/xf>)/g)||[],nuevos=[],mapa={};
+  const est=k=>{if(mapa[k]!=null)return mapa[k];const base=xfs[k]||xfs[0];let n=/fontId="\d+"/.test(base)?base.replace(/fontId="\d+"/,`fontId="${nf}"`):base.replace(/^<xf\b/,`<xf fontId="${nf}"`);
+    n=/applyFont="\d"/.test(n)?n.replace(/applyFont="\d"/,'applyFont="1"'):n.replace(/^<xf\b/,'<xf applyFont="1"');nuevos.push(n);return mapa[k]=xfs.length+nuevos.length-1};
+  est.fin=()=>{if(!nuevos.length)return;t=t.replace(m[0],m[0].replace(/<\/fonts>$/,'<font><b/><sz val="10"/><color rgb="FF14783D"/><name val="Tahoma"/><family val="2"/></font></fonts>').replace(/count="\d+"/,`count="${nf+1}"`));
+    t=t.replace(cx[0],cx[0].replace(/<\/cellXfs>$/,nuevos.join('')+'</cellXfs>').replace(/count="\d+"/,`count="${xfs.length+nuevos.length}"`));f.data=new TextEncoder().encode(t)};
+  return est}
 async function parteHojaXlsx(d,nombre,tipo){tipo=tipo||'grande';const K=PTIPO[tipo];let T;try{T=await parteTpl(tipo)}catch(e){toast('Hace falta conexión a internet para crear el Excel');return}
-  let x=T.xlsx.sheet;const V=d[K.hoja]||{};
-  const setC=(ref,val)=>{const re=new RegExp(`<c r="${ref}"([^>]*?)(?:/>|>[\\s\\S]*?</c>)`);x=x.replace(re,(m,at)=>{const s=(/ s="\d+"/.exec(at)||[''])[0];
+  let x=T.xlsx.sheet;const V=d[K.hoja]||{};const files=T.xlsx.files.map(([n,b])=>({name:n,data:b64u8(b)})),est=xlsxVerde(files);
+  const setC=(ref,val,verde)=>{const re=new RegExp(`<c r="${ref}"([^>]*?)(?:/>|>[\\s\\S]*?</c>)`);x=x.replace(re,(m,at)=>{let s=(/ s="\d+"/.exec(at)||[''])[0];if(verde&&est){const k=+((/\d+/.exec(s)||['0'])[0]);s=` s="${est(k)}"`};
     if(val==null||val==='')return `<c r="${ref}"${s}/>`;return typeof val==='number'?`<c r="${ref}"${s}><v>${val}</v></c>`:`<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${xe(val)}</t></is></c>`})};
   for(const k of ptCover(tipo,V))setC(k.split(':')[0],null);
-  for(const[k,o]of Object.entries(V))if(k[0]!=='_')setC(k,k===K.cab?K.cabPre+o.v:o.v);
-  const files=T.xlsx.files.map(([n,b])=>({name:n,data:b64u8(b)})),i=files.findIndex(z=>z.name==='xl/workbook.xml');files.splice(i+1,0,{name:'xl/worksheets/sheet1.xml',data:x});
+  for(const[k,o]of Object.entries(V))if(k[0]!=='_')setC(k,k===K.cab?K.cabPre+o.v:o.v,o.verde);if(est)est.fin();
+  const i=files.findIndex(z=>z.name==='xl/workbook.xml');files.splice(i+1,0,{name:'xl/worksheets/sheet1.xml',data:x});
   await guardarParte(zipStore(files),nombre+'.xlsx',tipo,d)}
 const parteNombre=(d,tipo)=>`${PTIPO[tipo||'grande'].titulo} ${d.cab} ${fD(diaRiego(d.fecha)).replace(/\//g,'-')}`;
 
