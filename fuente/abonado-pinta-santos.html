@@ -4159,10 +4159,12 @@ async function parteHojaPdf(lista,nombre,tipo){tipo=tipo||'grande';const K=PTIPO
 /* Estilos del Excel: añade una letra verde y en negrita y, para cada estilo de casilla que la necesite, una copia con esa letra */
 function xlsxVerde(files){const f=files.find(z=>z.name==='xl/styles.xml');if(!f)return null;let t=new TextDecoder().decode(f.data);
   const m=/<fonts\b[^>]*>[\s\S]*?<\/fonts>/.exec(t),cx=/<cellXfs\b[^>]*>[\s\S]*?<\/cellXfs>/.exec(t);if(!m||!cx)return null;
-  const nf=(m[0].match(/<font\b[^>]*?(?:\/>|>[\s\S]*?<\/font>)/g)||[]).length,xfs=cx[0].match(/<xf\b[^>]*?(?:\/>|>[\s\S]*?<\/xf>)/g)||[],nuevos=[],mapa={};
-  const est=k=>{if(mapa[k]!=null)return mapa[k];const base=xfs[k]||xfs[0];let n=/fontId="\d+"/.test(base)?base.replace(/fontId="\d+"/,`fontId="${nf}"`):base.replace(/^<xf\b/,`<xf fontId="${nf}"`);
+  const fonts=m[0].match(/<font\b[^>]*?(?:\/>|>[\s\S]*?<\/font>)/g)||[],nf=fonts.length,xfs=cx[0].match(/<xf\b[^>]*?(?:\/>|>[\s\S]*?<\/xf>)/g)||[],nuevos=[],mapa={},nfu=[],fmapa={};
+  const fuente=id=>{if(fmapa[id]!=null)return fmapa[id];let f=fonts[id]||'<font><sz val="10"/><name val="Tahoma"/></font>';if(/\/>$/.test(f)&&!/<\/font>$/.test(f))f=f.replace(/\/>$/,'></font>');
+    f=f.replace(/<b(?:\s[^>]*)?\/>/g,'').replace(/<color\b[^>]*\/>/g,'').replace(/^(<font\b[^>]*>)/,'$1<b/>').replace(/<\/font>$/,'<color rgb="FF14783D"/></font>');nfu.push(f);return fmapa[id]=nf+nfu.length-1};
+  const est=k=>{if(mapa[k]!=null)return mapa[k];const base=xfs[k]||xfs[0],fid=fuente(+((/fontId="(\d+)"/.exec(base)||[0,0])[1]));let n=/fontId="\d+"/.test(base)?base.replace(/fontId="\d+"/,`fontId="${fid}"`):base.replace(/^<xf\b/,`<xf fontId="${fid}"`);
     n=/applyFont="\d"/.test(n)?n.replace(/applyFont="\d"/,'applyFont="1"'):n.replace(/^<xf\b/,'<xf applyFont="1"');nuevos.push(n);return mapa[k]=xfs.length+nuevos.length-1};
-  est.fin=()=>{if(!nuevos.length)return;t=t.replace(m[0],m[0].replace(/<\/fonts>$/,'<font><b/><sz val="10"/><color rgb="FF14783D"/><name val="Tahoma"/><family val="2"/></font></fonts>').replace(/count="\d+"/,`count="${nf+1}"`));
+  est.fin=()=>{if(!nuevos.length)return;t=t.replace(m[0],m[0].replace(/<\/fonts>$/,nfu.join('')+'</fonts>').replace(/count="\d+"/,`count="${nf+nfu.length}"`));
     t=t.replace(cx[0],cx[0].replace(/<\/cellXfs>$/,nuevos.join('')+'</cellXfs>').replace(/count="\d+"/,`count="${xfs.length+nuevos.length}"`));f.data=new TextEncoder().encode(t)};
   return est}
 async function parteHojaXlsx(d,nombre,tipo){tipo=tipo||'grande';const K=PTIPO[tipo];let T;try{T=await parteTpl(tipo)}catch(e){toast('Hace falta conexión a internet para crear el Excel');return}
@@ -4216,6 +4218,12 @@ function parteHojaP(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V
   for(const{s,row}of filas){const B=PP_SECT[ptBloque(row)-1],i=infoSector(s.id,cabId,row);put('N'+B.r0,i.traz,{rng:`N${B.r0}:N${B.r0+B.n-1}`,b:1,sz:9,wrap:1})}
   for(const{s,bj,row}of ptMini(c)){const b=ptBloque(row);if(b>4)continue;const B=PP_SECT[b-1],k=(row-10)%5;if(k>=B.n)continue;const rr=B.r0+k;
     put('O'+rr,r.ceD[bj.id]!=null?String(uS(r.ceD[bj.id])):null,{rng:`O${rr}:P${rr}`});put('Q'+rr,ptNum(r.phD[bj.id],2),{rng:`Q${rr}:R${rr}`});put('S'+rr,ptNum(drenPct(s,bj),1))}
+  // fila de abajo de cada sector: media de sus bandejas (EC, pH y %), en verde y negrita
+  {const mini=ptMini(c),med=a=>{const v=a.filter(x=>x!=null&&isFinite(x));return v.length?v.reduce((t,x)=>t+x,0)/v.length:null};
+    for(const{s,row}of filas){const B=PP_SECT[ptBloque(row)-1],rb=B.r0+B.n-1,mis=mini.filter(x=>x.s===s&&(x.row-10)%5<B.n);
+      if(!mis.length||mis.some(x=>B.r0+(x.row-10)%5===rb))continue;
+      const ce=med(mis.map(x=>r.ceD[x.bj.id])),ph=med(mis.map(x=>r.phD[x.bj.id])),pc=med(mis.map(x=>drenPct(s,x.bj)));if([ce,ph,pc].every(v=>v==null))continue;
+      put('O'+rb,ce!=null?String(uS(ce)):null,{rng:`O${rb}:P${rb}`,b:1,verde:1});put('Q'+rb,ptNum(ph,2),{rng:`Q${rb}:R${rb}`,b:1,verde:1});put('S'+rb,ptNum(pc,1),{b:1,verde:1})}}
   // Depósitos: kg (o L) por depósito lleno y los litros gastados hoy (cm × L/cm)
   for(const[col,rows]of Object.entries(PP_VAL))for(const rr of rows)cover.push(col+rr);
   const usados=new Set();

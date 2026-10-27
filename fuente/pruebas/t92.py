@@ -34,5 +34,19 @@ async def main():
         assert ws[f'E{r0}'].value == '4200' and ws[f'E{r0+1}'].value == '4500'
         async with pg.expect_download() as dl: await pg.click('[data-act="parte-pdf"][data-tipo="grande"]')
         pdf = 'pruebas/salida/t92-parte.pdf'; await (await dl.value).save_as(pdf); print('pdf:', pdf)
+        # parte pequeño: media de EC, pH y % en la fila de abajo de cada sector (bloque S3: filas 21-24 → la 24)
+        VP = await pg.evaluate("parteHojaP('gas')")
+        fp = {k: VP[k]['v'] for k in ['O24', 'Q24', 'S24'] if k in VP}; print('pequeño fila 24:', fp, '| bandejas:', VP['O21']['v'], VP['O22']['v'])
+        assert fp == {'O24': '4350', 'Q24': 6.25, 'S24': round(pc, 1)} and all(VP[k].get('verde') for k in fp)
+        assert 'O29' not in VP and 'O23' not in VP, 'sin datos no hay media y no se mezcla con las bandejas'
+        async with pg.expect_download() as dl: await pg.click('[data-act="parte-xlsx"][data-tipo="pequeno"]')
+        rp = 'pruebas/salida/t92-pequeno.xlsx'; await (await dl.value).save_as(rp); wp = openpyxl.load_workbook(rp).active
+        for ref in ['O24', 'Q24', 'S24']:
+            c = wp[ref]; print(ref, repr(c.value), c.font.b, c.font.sz, c.font.color.rgb if c.font.color else None)
+            assert c.font.b and c.font.color is not None and c.font.color.rgb == 'FF14783D', ref
+        assert wp['O21'].value == '4200' and not (wp['O21'].font.color and wp['O21'].font.color.rgb == 'FF14783D')
+        assert wp['O24'].font.sz == wp['O21'].font.sz, 'misma letra que el resto, solo en verde y negrita'
+        async with pg.expect_download() as dl: await pg.click('[data-act="parte-pdf"][data-tipo="pequeno"]')
+        await (await dl.value).save_as('pruebas/salida/t92-pequeno.pdf')
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())
