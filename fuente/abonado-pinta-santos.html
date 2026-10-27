@@ -409,7 +409,7 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
 .splash .saludo{display:grid;gap:4px;text-align:center}
 .resumen{display:grid;gap:6px}
 .ritem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;font:600 14px var(--f-body);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
-.ritem span{flex:1;min-width:0}
+.ritem>span{flex:1;min-width:0}.ritem .dot,.av .dot{align-self:flex-start;margin-top:5px}.adet{display:grid;gap:6px;margin-top:6px;font-weight:500}.ag{display:block}.agl{display:block;font-size:10.5px;font-weight:700;letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin:2px 0 3px}.agc{display:flex;flex-wrap:wrap;gap:4px}.ach{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;padding:3px 8px;border-radius:999px;border:1px solid var(--line);background:var(--surface);line-height:1.3}.ach em{font-style:normal;font-weight:800}.ach.warn em{color:#8a6100}.ach.bad em{color:#b03a2e}.av>span{flex:1;min-width:0}
 .ritem b{color:var(--muted);font-size:20px;line-height:1}
 .dot{width:10px;height:10px;border-radius:50%;flex:none}
 .dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
@@ -713,13 +713,19 @@ function paisaje(f,i){const tonos=[['#f6c88a','#9ec6e8','#6f8f5a','#4f6b40'],['#
     <g transform="translate(6 20)">${inv}</g><path d="M0 182 H380 V214 H0z" fill="${tonos[3]}"/></svg>`}
 function avisosCampoF(f){if(!campoEnFinca(f)||st.collas===null)return [];const cs=(st.collas||[]).filter(c=>c.activa!==false&&(!c.finca||c.finca===f.id)&&(esGestor()||c.jefeEmail===miEmail()));if(!cs.length)return [];
   const sin=cs.filter(c=>st.jorDias&&!st.jor[jorKey(c.id,hoy())]);return sin.length?[[new Date().getHours()>=13?'bad':'warn',sin.length===1?'Parte de colla de hoy sin guardar':sin.length+' partes de colla de hoy sin guardar']]:st.jorDias?[['ok','Partes de colla de hoy guardados']]:[]}
+/* Detalle de los avisos, agrupado: depósitos por cabezal con lo que les queda, y productos bajo mínimo por almacén */
+function depsDet(deps){const g={};for(const b of deps){const k=b.cabezales.map(cabNombre).join(' + ');(g[k]=g[k]||[]).push(b)}
+  return `<span class="adet">${Object.entries(g).map(([k,bs])=>`<span class="ag"><span class="agl">${esc(k)}</span><span class="agc">${bs.map(b=>{const n=nivel(b),pc=n&&n.max?Math.max(0,n.rest)*100/n.max:null;
+    return `<span class="ach ${pc!=null&&pc<10?'bad':'warn'}">${esc(b.nombre.replace(/^Depósito /,'').replace(/^./,x=>x.toUpperCase()))}${pc!=null?` <em>${fmt(pc,0)} %</em>`:''}</span>`}).join('')}</span></span>`).join('')}</span>`}
+function stockDet(bajos){const g={};for(const x of bajos){const[p,a]=x.split('@');(g[a]=g[a]||[]).push(p)}
+  return `<span class="adet">${Object.entries(g).map(([a,ps])=>`<span class="ag"><span class="agl">${esc((almById(a)||{}).nombre||'Almacén')}</span><span class="agc">${ps.map(p=>`<span class="ach bad">${esc(pn(p))} <em>${fmt(Math.max(0,stockDe(p,a)),0)} / ${fmt(minStock(p,a),0)} kg</em></span>`).join('')}</span></span>`).join('')}</span>`}
 function avisosFinca(f){const r=veRiego()?[...fincaAvisos(f),...satAvisosF(f)]:[],c=avisosCampoF(f);if(!r.length&&!c.length)return [['nd',veRiego()?'Todo en orden':'Sin collas tuyas en esta finca']];return [...r.filter(x=>!(c.length&&x[1]==='Todo en orden')),...c]}
 function fincaAvisos(f){const out=[],cabs=f.cabezales||[];if(!cabs.length)return [['nd','Todavía sin cabezales ni datos']];
   if(st.hist===null||st.llen===null)return [['nd','Cargando avisos…']];
   const d=new Date();d.setDate(d.getDate()-1);const ayer=isoD(d),ra=(st.hist||[]).find(r=>r.fecha===ayer);
   if(!ra||!cabs.some(c=>ra.m3&&ra.m3[c]!=null))out.push(['bad','Faltan las cuentas de ayer']);
   const deps=st.cfg.bidones.filter(b=>b.cabezales.some(c=>cabs.includes(c))&&bajoUmbral(nivel(b)));
-  if(deps.length)out.push(['warn','Rellenar: '+deps.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')]);
+  if(deps.length)out.push(['warn',deps.length===1?'1 depósito para rellenar':deps.length+' depósitos para rellenar',depsDet(deps)]);
   const mpf=(st.mat||[]).filter(m=>m.finca===f.id&&m.estado==='pedido').length;if(mpf)out.push(['warn',mpf===1?'1 pedido de material pendiente':mpf+' pedidos de material pendientes']);
   const ta=(st.tareas||[]).filter(t=>t.finca===f.id&&!t.hecha&&t.fecha<hoy()).length;if(ta)out.push(['bad',ta===1?'1 tarea atrasada':ta+' tareas atrasadas']);
   const pmi=pendParaMi().filter(m=>cabs.includes(m.cab)).length;if(pmi)out.push(['bad',pmi===1?'1 mensaje para ti':pmi+' mensajes para ti']);
@@ -745,7 +751,7 @@ function renderFincas(){const fs=fincasVis(),admin=!window.NUBE||(NUBE.user&&NUB
       ${admin?(st.fUbic===f.id?`<div class="fubic"><div class="field"><label for="fu_${f.id}">Coordenadas o enlace largo de Google Maps</label><div class="inp"><input id="fu_${f.id}" placeholder="37.4334, -1.6304" style="width:100%;text-align:left;text-transform:none" autocomplete="off"></div></div>
         <div class="row"><button class="btn pri" data-act="fu-save" data-id="${f.id}">Guardar</button><button class="btn" data-act="fu-gps" data-id="${f.id}">Estoy en la finca: usar mi ubicación</button><button class="btn" data-act="fu-no">Cancelar</button></div></div>`
         :`<button class="lnk fu" data-act="fu-open" data-id="${f.id}">${f.ubic?`Ubicación: ${f.ubic.lat.toFixed(4)}, ${f.ubic.lon.toFixed(4)} · cambiar`:'Fijar ubicación de la finca'}</button>`):''}
-      <div class="avs"><h4>Avisos</h4>${av.slice(0,mx).map(([k,t])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span>${esc(t)}</span></div>`).join('')}${av.length>mx?`<div class="av note">y ${av.length-mx} más</div>`:''}</div>
+      <div class="avs"><h4>Avisos</h4>${av.slice(0,mx).map(([k,t,det])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span><span class="at">${esc(t)}</span>${det||''}</span></div>`).join('')}${av.length>mx?`<div class="av note">y ${av.length-mx} más</div>`:''}</div>
       <button class="btn pri go" data-act="finca-go" data-id="${f.id}" ${off?'disabled':''}>${off?(veRiego()?'Sin datos todavía':'Sin collas tuyas aquí'):'Entrar en '+esc(f.nombre)}</button></div></article>`}).join('')}</div></div>`;
   hydrate()}
 function abrirFincas(){if(veRiego()){if(st.tareas===null)loadTareas();if(st.mat===null)loadMat()}renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(veRiego()){if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs();if(st.sat===null&&Store.mode==='fb')loadSat()}if(st.collas===null)loadCollas();else if(st.collas.length&&!st.jorDias)loadJor(esGestor()?0:2)}
@@ -2555,18 +2561,18 @@ function resumenHTML(){if(!veRiego()){const it=resumenCampo();return `<div><h3>T
   items.push(st.hist.some(r=>r.fecha===ayer)?['ok','Cuentas de ayer guardadas','cuentas-ayer']:['bad','Falta guardar las cuentas de ayer','cuentas-ayer']);
   if(st.hist.some(r=>r.fecha===hoyS))items.push(['ok','Cuentas de hoy guardadas','cuentas-hoy']);
   const dep=depsBajos();
-  if(dep.length)items.push(['warn',`${dep.length===1?'1 depósito':dep.length+' depósitos'} para rellenar: ${dep.map(b=>b.nombre.replace(/^Depósito /,'')+' ('+b.cabezales.map(cabNombre).join(' y ')+')').join(', ')}`,'rellenar:'+dep[0].cabezales[0]]);
+  if(dep.length)items.push(['warn',`${dep.length===1?'1 depósito':dep.length+' depósitos'} para rellenar`,'rellenar:'+dep[0].cabezales[0],depsDet(dep)]);
   if(st.mat===null)loadMat();if(miEmail()){const mp=matPend().filter(esGestor()?mVisible:mAmi).length;if(mp)items.push(['warn',mp===1?'1 pedido de material por gestionar':mp+' pedidos de material por gestionar','material'])}
   if(st.tareas===null)loadTareas();const tm=tareasMias();if(tm.length)items.push([tm.some(t=>t.fecha<hoy()||t.urg)?'bad':'warn',tm.length===1?'1 tarea para ti hoy':tm.length+' tareas para ti hoy','tareas']);
   const pv=privSinLeer().length;if(pv)items.push(['bad',pv===1?'1 mensaje privado para ti':pv+' mensajes privados para ti','mensajes-priv']);
   const pm=pendParaMi().length;if(pm)items.push(['bad',pm===1?'1 mensaje para ti':pm+' mensajes para ti','mensajes-mios']);
   const pend=(st.msgs||[]).filter(m=>!m.resuelto).length;if(pend)items.push(['warn',pend===1?'1 mensaje pendiente':pend+' mensajes pendientes','mensajes']);
   const bajos=[];for(const a of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,a.id);if(m!=null&&stockDe(p,a.id)<=m)bajos.push(p+'@'+a.id)}
-  if(bajos.length)items.push(['bad','Bajo mínimo: '+bajos.map(x=>{const[p,a]=x.split('@');return pn(p)+' ('+(almById(a)||{}).nombre+')'}).join(', '),'almacen']);
+  if(bajos.length)items.push(['bad',bajos.length===1?'1 producto bajo mínimo en el almacén':bajos.length+' productos bajo mínimo en el almacén','almacen',stockDet(bajos)]);
   {const nt=ntTocan().length;if(nt)items.push(['warn',nt===1?'1 recordatorio tuyo para ahora':nt+' recordatorios tuyos para ahora',veRiego()?'notas':'cnotas'])}
   if(veCampo())for(const x of resumenCampo())if(x[0]!=='nd'&&!(x[0]==='ok'&&!misCollas().length))items.push(x);
   if(items.every(i=>i[0]==='ok'))items.push(['ok','Todo al día','cuentas-hoy']);
-  return `<div><h3>Tu día</h3><div class="sub">Toca para ir directo</div></div><div class="resumen">${items.map(([k,t,go])=>`<button class="ritem" data-go="${go}"><i class="dot ${k}"></i><span>${esc(t)}</span><b aria-hidden="true">›</b></button>`).join('')}</div>`}
+  return `<div><h3>Tu día</h3><div class="sub">Toca para ir directo</div></div><div class="resumen">${items.map(([k,t,go,det])=>`<button class="ritem" data-go="${go}"><i class="dot ${k}"></i><span><span class="rt">${esc(t)}</span>${det||''}</span><b aria-hidden="true">›</b></button>`).join('')}</div>`}
 function spRes(){const el=$('#sp_res');if(el&&!$('#splash').hidden)el.innerHTML=resumenHTML()}
 function cerrarSplash(){$('#splash').hidden=true;document.documentElement.style.overflow='';window.scrollTo(0,0)}
 function renderSplash(){const hoyTxt=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
