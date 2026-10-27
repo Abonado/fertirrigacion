@@ -1928,10 +1928,21 @@ function onCvInput(e){const t=e.target;if(t.dataset.cv==='dia'){const{ini}=cvRan
   if(t.dataset.cu&&st.cfgCul)st.cfgCul[t.dataset.cu]=t.value}
 $('#main').addEventListener('input',onCvInput);$('#main').addEventListener('change',e=>{if(e.target.dataset.cf==='file')onCvInput(e)});
 /* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */
+/* Gasolinera tenía las naves numeradas al revés en el plano (la 1 abajo). Lo apuntado tocando el plano guardó ese número:
+   se pasa a la numeración buena (nave n → 7 − n) una sola vez, cuando entra un administrador. Cada incidencia queda marcada
+   (navMig) para no cambiarla dos veces aunque se corte a medias. Las tareas no se tocan: su nave se elegía de una lista. */
+async function migNavesGas(){try{if(!esAdminU()||!cabById('gas')||(st.cfg.mig||{}).gasNaves||st.dirtyCfg)return;
+  const l=await Store.listCol('incidencias',0),hechos={};for(const i of l)if(i.cab==='gas'&&!i.navMig&&i.nave>=1&&i.nave<=6){await Store.updCol('incidencias',i.id,{nave:7-i.nave,navMig:1});hechos[i.id]=7-i.nave}
+  const enMem=()=>{for(const x of st.inc||[])if(hechos[x.id]!=null&&!x.navMig){x.nave=hechos[x.id];x.navMig=1}};enMem();setTimeout(enMem,4000);
+  const f=c=>{const g=(c.inst||{}).gas;if(g){g.naves=Object.fromEntries(Object.entries(g.naves||{}).map(([n,v])=>[String(7-n),v]));
+      g.pas=Object.fromEntries(Object.entries(g.pas||{}).map(([k,v])=>{const[n,q]=k.split(':');return[(7-n)+':'+q,v]}));for(const e of g.el||[])if(e.nave!=null)e.nave=7-e.nave}
+    c.mig={...(c.mig||{}),gasNaves:1}};
+  if(st.dirtyCfg)return;f(st.cfg);f(st.savedCfg);await Store.setConfig(clone(st.savedCfg));if(['mapa','instal'].includes(st.tab))renderMain()}
+  catch(e){console.warn('naves de Gasolinera',e)}}
 /* Gasolinera: 6 naves numeradas de abajo (1) arriba (6), trazadas sobre la foto aérea */
 const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633],[275,775],[213,905]],Q=[[826,152],[757,290],[690,438],[622,582],[556,727],[432,852],[335,948]];
-  const naves=[];for(let i=0;i<6;i++){const k=5-i;naves.push({n:i+1,p:[P[k+1],Q[k+1],Q[k],P[k]]})}
-  return{titulo:'Gasolinera',finca:'Pinta Santos',vb:[150,20,930,985],naves,ang:24,nota:'6 naves · numeradas de sur a norte',fondo(){let s='';
+  const naves=[];for(let i=0;i<6;i++){const k=5-i;naves.push({n:6-i,p:[P[k+1],Q[k+1],Q[k],P[k]]})}naves.sort((a,b)=>a.n-b.n);   // la 6 abajo y la 1 arriba
+  return{titulo:'Gasolinera',finca:'Pinta Santos',vb:[150,20,930,985],naves,ang:24,nota:'6 naves · la 1 arriba y la 6 abajo',fondo(){let s='';
   // parcelas vecinas (solo contorno)
   s+=`<g fill="none" stroke="#cbbf9f" stroke-width="1.5" stroke-dasharray="6 5"><path d="M160 470L330 330L450 400L320 540Z"/><path d="M160 640L300 560L320 690L170 800Z"/><path d="M160 880L240 800L250 900L160 980Z"/></g>`;
   // carretera RM-11 y RM-332
@@ -4924,7 +4935,7 @@ document.addEventListener('keydown',e=>{if(st.tab==='chatia'&&e.target.id==='ch_
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c);splashLogo()}}catch(e){}
-  st.ready=true;loadFich();if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
+  st.ready=true;loadFich();migNavesGas();if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}})();
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.abrir!=null&&st.ready)irA(d.abrir||'cuentas-hoy')});
