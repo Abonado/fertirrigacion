@@ -49,6 +49,10 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .scroller.drag{cursor:grabbing;user-select:none}
 @media (hover:hover) and (pointer:fine){.scroller{flex-wrap:wrap;overflow:visible;row-gap:2px}}
 .chip{flex:none;font:600 14px var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 13px;cursor:pointer}
+.mfsel{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:2px}
+.mfb{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:700 13px var(--f-body);letter-spacing:.02em;border:0;border-radius:10px;padding:9px 8px;background:none;color:var(--muted);cursor:pointer;text-align:center;line-height:1.2}
+.mfb[aria-selected="true"]{background:var(--navy);color:var(--bg)}.mfb i{font-style:normal;font-size:11px;min-width:18px;padding:1px 5px;border-radius:999px;background:#c0392b;color:#fff}
+@media (max-width:560px){.mfb{font-size:12px;padding:8px 4px}}
 .chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--bg)}
 .tabs .tab{flex:none;font:600 15px var(--f-display);letter-spacing:.04em;text-transform:uppercase;background:none;border:0;color:var(--muted);padding:8px 10px 10px;border-bottom:3px solid transparent;cursor:pointer}
 .tabs .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -704,7 +708,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Instalación y sensores'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -811,8 +815,8 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.
 function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
-const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
-  {id:'equipo',n:'Equipo',tabs:['mapa','vivo','tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
+const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+  {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
@@ -826,14 +830,19 @@ const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctarea
 const CAMPO=new Set(GRUPOS_CAMPO.flatMap(g=>g.tabs));
 const areaDe=t=>CAMPO.has(t)?'campo':'riego';
 function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO;const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
+/* Mapa de la finca: incidencias, en vivo e instalación en una sola pantalla */
+const MF_VISTAS=['mapa','vivo','instal'];
+function mfHead(){const n=(()=>{try{return incAbiertas().filter(i=>i.cab===st.cab).length}catch(e){return 0}})(),a=(()=>{try{return inAlertas(st.cab)}catch(e){return 0}})();
+  return `<div class="mfsel" role="tablist" aria-label="Mapa de la finca">${[['mapa','Incidencias',n],['vivo','En vivo',0],['instal','Instalación',a]].filter(([k])=>tabPermitida(k)).map(([k,t,c])=>`<button class="mfb" role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${t}${c?`<i>${c}</i>`:''}</button>`).join('')}</div>`}
 const grupoDe=tab=>{const G=gruposAct();return G.find(g=>g.tabs.includes(tab))||G[0]};
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(ptRevisa()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
-  try{n.equipo=(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)+(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}
+  try{n.riego=(n.riego||0)+(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)}catch(e){}try{n.equipo=(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}
   try{let a=0;if(st.mat&&miEmail())a+=matPend().filter(esGestor()?mVisible:mAmi).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
 function renderGrupos(){const g=grupoDe(st.tab),ins=insignias();$('#grupos').style.gridTemplateColumns=`repeat(${gruposAct().length},minmax(0,1fr))`;$('#grupos').classList.toggle('seis',gruposAct().length>5);$('#grupos').innerHTML=gruposAct().map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('')}
-function renderTabs(){renderGrupos();const g=grupoDe(st.tab);st.ultTab[g.id]=st.tab;$('#tabs').hidden=g.tabs.length<2;$('#tabs').innerHTML=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k)).map(([k,t])=>`<button class="tab" role="tab" data-tab="${k}" aria-selected="${k===st.tab}">${t}</button>`).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
+function renderTabs(){renderGrupos();const g=grupoDe(st.tab);st.ultTab[g.id]=st.tab;$('#tabs').hidden=g.tabs.length<2;if(MF_VISTAS.includes(st.tab))st.mfUlt=st.tab;$('#tabs').innerHTML=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k)&&(k==='instal'||!MF_VISTAS.includes(k))).map(([k,t])=>{const mf=k==='instal',d=mf?(st.mfUlt&&tabPermitida(st.mfUlt)?st.mfUlt:'mapa'):k;
+    return `<button class="tab" role="tab" data-tab="${d}" aria-selected="${mf?MF_VISTAS.includes(st.tab):k===st.tab}">${t}</button>`}).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
 /* Menús desplazables con ratón: rueda y arrastrar */
 function scrollRaton(el){if(!el)return;
   el.addEventListener('wheel',e=>{if(el.scrollWidth<=el.clientWidth)return;if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){el.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});
@@ -2087,10 +2096,10 @@ function planoSVG(cab,incs){const M=MAPAS[cab],[vx,vy,vw,vh]=M.vb;let s=`<svg vi
     <text x="12" y="24" font-size="17" font-weight="800" fill="#1b2f4a" letter-spacing=".5">${esc(M.finca.toUpperCase())} · ${esc(M.titulo.toUpperCase())}</text><text x="12" y="58" font-size="14" fill="#1b2f4a">Plano de naves</text><text x="12" y="78" font-size="12" fill="#5d6d7e">${esc(M.nota||M.naves.length+' naves')}</text><text x="280" y="58" text-anchor="middle" font-size="12" fill="#5d6d7e">ESCALA</text><text x="280" y="78" text-anchor="middle" font-size="14" font-weight="700" fill="#1b2f4a">S/E</text></g>`;
   return s+`</svg>`}
 function vMapa(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
-  if(!M)return `<section class="card"><div><h3>Mapa de naves · ${esc(c.nombre)}</h3><div class="sub">Este cabezal todavía no tiene plano</div></div><div class="note">Manda una foto aérea de sus naves (Google Maps en vista satélite) y se dibuja el plano igual que el de Gasolinera.</div><div class="row">${Object.keys(MAPAS).filter(k=>cabsVis().some(x=>x.id===k)).map(k=>`<button class="btn" data-cab="${k}">Ver ${esc(cabNombre(k))}</button>`).join('')}</div></section>`;
+  if(!M)return `<section class="card"><div><h3>Incidencias · ${esc(c.nombre)}</h3><div class="sub">Este cabezal todavía no tiene plano</div></div><div class="note">Manda una foto aérea de sus naves (Google Maps en vista satélite) y se dibuja el plano igual que el de Gasolinera.</div><div class="row">${Object.keys(MAPAS).filter(k=>cabsVis().some(x=>x.id===k)).map(k=>`<button class="btn" data-cab="${k}">Ver ${esc(cabNombre(k))}</button>`).join('')}</div></section>`;
   if(st.inc===null){loadInc();return '<section class="card"><div class="note">Cargando el mapa…</div></section>'}
   const incs=(st.inc||[]).filter(i=>i.cab===cab),ab=incs.filter(i=>i.estado!=='resuelta'),sel=incs.find(i=>i.id===st.mSel),N=st.mNueva;
-  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Mapa de naves · ${esc(M.titulo)}</h3><div class="sub">${ab.length?`${ab.length} ${ab.length===1?'incidencia abierta':'incidencias abiertas'}`:'Sin incidencias abiertas'} · toca una nave para apuntar una incidencia</div></div>
+  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Incidencias · ${esc(M.titulo)}</h3><div class="sub">${ab.length?`${ab.length} ${ab.length===1?'incidencia abierta':'incidencias abiertas'}`:'Sin incidencias abiertas'} · toca una nave para apuntar una incidencia</div></div>
     <div class="row" style="gap:6px"><button class="btn sm" data-act="mz" data-z="-1" aria-label="Alejar">−</button><button class="btn sm" data-act="mz" data-z="1" aria-label="Acercar">+</button></div></div>
     <div class="mapwrap" id="mapwrap"><div class="mapin" style="width:${st.mz*100}%">${planoSVG(cab,incs)}</div></div>
     <div class="mley">${Object.entries(ITIPOS).map(([k,t])=>`<span><i style="background:${t[1]}">${t[2]}</i>${t[0]}</span>`).join('')}</div>
@@ -2966,7 +2975,7 @@ function vvResumen(items,F){const gente=items.reduce((a,i)=>a+(i.tipo==='tarea'&
 function vvFincaHTML(d){if(st.vv.cabG!=='finca:'+d.nombre){st.vv.cabG='finca:'+d.nombre;st.vv.rot=vvGiroFinca(d);st.vv.sel=null}
   if(!st.vv.listo){vvCargar();return '<section class="card"><div class="note">Preparando el dibujo de la finca…</div></section>'}
   const F=vvDia(),items=vvTodoItems(d,F);
-  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Finca en vivo · ${esc(d.nombre)}</h3><div class="sub">${vvResumen(items,F)} · toca un cabezal para verlo de cerca</div></div>${vvBotones()}</div>
+  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>En vivo · ${esc(d.nombre)}</h3><div class="sub">${vvResumen(items,F)} · toca un cabezal para verlo de cerca</div></div>${vvBotones()}</div>
     <div class="pick">${vvChips(d,'todo')}</div>
     <div class="mapwrap vvwrap" id="vvwrap"><div class="mapin" style="width:${st.vv.z*100}%">${vvFincaSVG(d,F,items)}</div></div>
     <div class="note">Dibujo orientativo sacado de la foto aérea: no es un plano a escala.</div>
@@ -2975,12 +2984,12 @@ function vvFincaHTML(d){if(st.vv.cabG!=='finca:'+d.nombre){st.vv.cabG='finca:'+d
   const si=items.find(i=>i.k===st.vv.sel);h+=vvDetalle(si?si.cab:'_finca',F,items);
   return h+vvMaqPanel()}
 function vVivo(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
-  if(!M)return `<section class="card"><div><h3>Finca en vivo · ${esc(c?c.nombre:'')}</h3><div class="sub">Este cabezal todavía no tiene las naves dibujadas</div></div><div class="row">${Object.keys(MAPAS).filter(k=>cabsVis().some(x=>x.id===k)).map(k=>`<button class="btn" data-cab="${k}">Ver ${esc(cabNombre(k))}</button>`).join('')}</div></section>`;
+  if(!M)return `<section class="card"><div><h3>En vivo · ${esc(c?c.nombre:'')}</h3><div class="sub">Este cabezal todavía no tiene las naves dibujadas</div></div><div class="row">${Object.keys(MAPAS).filter(k=>cabsVis().some(x=>x.id===k)).map(k=>`<button class="btn" data-cab="${k}">Ver ${esc(cabNombre(k))}</button>`).join('')}</div></section>`;
   {const d=vvFincaDe(cab);if(d&&st.vv.todo!==false)return vvFincaHTML(d)}
   if(st.vv.cabG!==cab){st.vv.cabG=cab;st.vv.rot=vvGiroInicial(cab);st.vv.sel=null}
   if(!st.vv.listo){vvCargar();return '<section class="card"><div class="note">Preparando el dibujo de la finca…</div></section>'}
   const F=vvDia(),items=vvItems(cab,F),otros=Object.keys(MAPAS).filter(k=>k!==cab&&cabsVis().some(x=>x.id===k)),gente=items.reduce((a,i)=>a+(i.tipo==='tarea'&&i.maq&&maqDe(i.maq)?0:vvGente(i)),0),nm=items.filter(i=>i.maq&&maqDe(i.maq)&&!i.hecha).length;
-  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Finca en vivo · ${esc(M.titulo)}</h3><div class="sub">${items.length?`${gente} ${gente===1?'persona':'personas'} en ${new Set(items.map(i=>i.nave)).size} ${new Set(items.map(i=>i.nave)).size===1?'nave':'naves'}${nm?` · ${nm} ${nm===1?'máquina':'máquinas'} en marcha`:''}`:`Sin trabajos con nave ${F===hoy()?'para hoy':'para mañana'}`} · toca cualquier cosa para ver qué hace</div></div>
+  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>En vivo · ${esc(M.titulo)}</h3><div class="sub">${items.length?`${gente} ${gente===1?'persona':'personas'} en ${new Set(items.map(i=>i.nave)).size} ${new Set(items.map(i=>i.nave)).size===1?'nave':'naves'}${nm?` · ${nm} ${nm===1?'máquina':'máquinas'} en marcha`:''}`:`Sin trabajos con nave ${F===hoy()?'para hoy':'para mañana'}`} · toca cualquier cosa para ver qué hace</div></div>
     <div class="row" style="gap:6px"><button class="btn sm" data-act="vv-rot" data-d="-1" aria-label="Girar a la izquierda">⟲</button><button class="btn sm" data-act="vv-rot" data-d="1" aria-label="Girar a la derecha">⟳</button><button class="btn sm" data-act="vv-z" data-z="-1" aria-label="Alejar">−</button><button class="btn sm" data-act="vv-z" data-z="1" aria-label="Acercar">+</button></div></div>
     <div class="pick">${vvChips(vvFincaDe(cab),cab)}</div>
     <div class="mapwrap vvwrap" id="vvwrap"><div class="mapin" style="width:${st.vv.z*100}%">${vvSVG(cab,F)}</div></div>
@@ -3077,6 +3086,7 @@ document.addEventListener('input',e=>{if(st.tab!=='montaje')return;const t=e.tar
 document.addEventListener('change',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(!k)return;
   if(k==='diam')st.tb.diam=t.value;else if(k==='marc'){st.tb.marc[+t.dataset.i]=t.checked}else if(k==='foto'&&t.files&&t.files.length){const fs=[...t.files];t.value='';tbAddFotos(fs)}});
 const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje};
+for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);
 const vistaTab=()=>{const fn=VIEWS[st.tab];return st.reg&&st.reg.receta&&st.fecha<hoy()&&RECETA_DIA.has(st.tab)?conReceta(st.reg,fn):fn()};
@@ -4993,7 +5003,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v131';
+window.APP_V='abonado-v132';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;

@@ -1,4 +1,4 @@
-"""Riego → Instalación y sensores: primero el mapa de toda la finca y al tocar un cabezal se abre su zona; sectores por pasillo
+"""Riego → Mapa de la finca → Instalación: primero el mapa de toda la finca y al tocar un cabezal se abre su zona; sectores por pasillo
 (una nave con pasillos de dos sectores), elementos en su pasillo (electroválvula, bandeja de drenaje enlazada…), presiones del cabezal
 (PC, bomba de abono, by-pass, pared, entrada y salida) por sector con su rango y pérdida en filtros, incidencia apuntada desde un
 elemento, y que todo se guarda. Esquema por sectores si el cabezal no tiene plano."""
@@ -16,9 +16,9 @@ async def main():
         await pg.reload(); await pg.wait_for_timeout(600)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash();st.finca='pinta';st.cab='gas';st.tab='cuentas';renderAll()"); await pg.wait_for_timeout(400)
-        tabs = await pg.evaluate("[...document.querySelectorAll('#tabs [data-tab]')].map(b=>b.dataset.tab)"); print('pestañas:', tabs)
-        assert tabs.index('aforo') == tabs.index('receta') + 1 and tabs.index('instal') == tabs.index('aforo') + 1, 'aforo e instalación van después de receta'
-        await pg.click('#tabs [data-tab="instal"]'); await pg.wait_for_timeout(500)
+        tabs = await pg.evaluate("[...document.querySelectorAll('#tabs .tab')].map(b=>b.textContent)"); print('pestañas:', tabs)
+        assert tabs.index('Cálculo del aforo') == tabs.index('Receta') + 1 and tabs.index('Mapa de la finca') == tabs.index('Cálculo del aforo') + 1, 'aforo y mapa de la finca van después de receta'
+        await pg.click('#tabs .tab:has-text("Mapa de la finca")'); await pg.wait_for_timeout(500); await pg.click('.mfsel [data-tab="instal"]'); await pg.wait_for_timeout(500)
         # 1. primero, toda la finca; al tocar un cabezal se abre su zona
         assert await pg.locator('#infsvg').count() == 1 and await pg.locator('#infsvg [data-incab]').count() == 3
         await pg.screenshot(path='pruebas/salida/t93-finca.png')
