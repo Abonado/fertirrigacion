@@ -11,6 +11,6 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - run: pip install playwright pillow && python -m playwright install --with-deps chromium
+      - run: pip install playwright pillow openpyxl && python -m playwright install --with-deps chromium
       - name: Pasar todas las pruebas
         run: cd fuente && python pruebas/todas.py
