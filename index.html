@@ -198,6 +198,7 @@ td.u{color:var(--muted);font-size:12px}
 .savebar .msg{font-size:14px}
 .afb{padding:12px 0;border-top:1px solid var(--line)}.afb:first-of-type{border-top:0}.afh small{display:block;color:var(--muted);font-size:12px;margin-top:2px}.afp{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:8px}.afq label{font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--muted)}.afq .inp input{width:100%;min-width:0}.afq.fuera .inp{border-color:#c0392b;background:#fbeceb}.afq.fuera .inp input{color:#b03a2e;font-weight:700}.afq .afc{display:none;font-size:12px;margin-top:4px;color:var(--ink)}.afq.fuera .afc{display:flex}.afr{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center}.afcam{width:100%;font-weight:700;font-size:13px}.afcam.bad{color:#b03a2e}.afcam.ok{color:#1e7a4c}.afap{width:100%}.afsum{gap:6px;flex-wrap:wrap}@media (max-width:640px){.afp{grid-template-columns:repeat(3,minmax(0,1fr))}}
 .insvg{cursor:pointer}.insvg.inpon{cursor:crosshair}.insvg .inel.sel circle{filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}.indot{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 4px;border-radius:13px;color:#fff;font-size:11px;font-weight:800;margin-right:8px;vertical-align:middle;letter-spacing:0}.indot.sm{min-width:20px;height:20px;font-size:9.5px;margin-right:5px}.insw{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:6px;vertical-align:-2px}.inley{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--muted)}.inley span{display:inline-flex;align-items:center}.inley i{width:14px;height:14px;border-radius:4px;display:inline-block;margin-right:5px}.inpt{display:grid;grid-template-columns:minmax(120px,1.2fr) minmax(220px,2fr) minmax(170px,1.2fr);gap:8px 12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}.inrow{gap:8px;flex-wrap:wrap;align-items:center}.inrow .inp{width:110px}.ult{font-size:12px;color:var(--muted)}.inrg{display:flex;gap:6px;align-items:center}.inrg .inp{width:76px}.inpn .inp input{width:100%}.insec{margin-top:10px}.insech{display:flex;align-items:center;font-size:15px;margin-bottom:4px}.lnk{background:none;border:0;padding:4px 0;display:inline-flex;align-items:center;font:inherit;font-weight:700;color:var(--ink);cursor:pointer;text-align:left}@media (max-width:640px){.inpt{grid-template-columns:1fr}.inrg .inp{width:90px}}
+.infwrap #infsvg{max-height:74vh}.infwrap .mapin{text-align:center}.inback{font-size:13px;color:var(--muted);margin-bottom:4px}.infbtns{flex-wrap:wrap;gap:8px;margin-top:10px}#infsvg .infcab{cursor:pointer}#infsvg .infcab:hover polygon{fill-opacity:.8}.ininc{margin-top:12px;border-top:1px solid var(--line);padding-top:8px}.ininc .lnk{display:flex;gap:6px;font-weight:500;text-transform:none}.inbd{flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}.insec .insech h3{margin:0}.insec .lbl{margin-top:12px}.inpn small{display:block;color:var(--muted);font-size:11.5px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:14px;z-index:7;max-width:calc(100% - 32px)}
 .foot{padding-block:0 24px;font-size:12px;color:var(--muted)}
 .card>*{min-width:0}
@@ -860,113 +861,180 @@ function tankDose(b,c){const shared=b.cabezales.length>1,cm=cmCab(b,c.id),L=litr
   return h+`</tbody></table></div>`}
 
 /* ---------- Instalación y sensores ----------
-   Mapa de cada cabezal dividido en sectores (las naves de cada sector, o un esquema si no hay plano) con lo que hay en el riego:
-   electroválvulas, manómetros, sensores, filtros, contadores y llaves, cada uno en su sitio. Presiones del cabezal (PC, bomba de abono,
-   by-pass, pared, entrada y salida) y del campo, apuntadas por día en el registro (reg.pre). Aquí se conectarán los sensores LoRa.
-   Qué hay y dónde (st.cfg.inst) lo monta el encargado; las presiones las apunta cualquiera de riego. */
+   Primero el mapa de toda la finca; al tocar un cabezal se abre su zona. En cada cabezal: los sectores por pasillo (una nave puede
+   tener pasillos de varios sectores), y lo que hay en el riego en su sitio: electroválvulas, manómetros, bandejas de drenaje, sensores,
+   filtros, contadores, llaves, ventosas, reguladores… Las presiones del cabezal (PC, bomba de abono, by-pass, pared, entrada y salida)
+   se apuntan por sector y día (reg.pre), igual que las del campo. Desde cada elemento se apunta una incidencia en ese sitio.
+   Qué hay y dónde (st.cfg.inst) lo monta el encargado; las presiones las apunta cualquiera de riego. Aquí se conectarán los sensores. */
 const IN_PTS=[['pc','PC'],['bomba','Bomba de abono'],['bypass','By-pass'],['pared','Pared'],['ent','Entrada'],['sal','Salida']];
-const IN_T={ev:{n:'Electroválvula',c:'#1f78c1',l:'EV'},man:{n:'Manómetro',c:'#8e44ad',l:'P'},sen:{n:'Sensor',c:'#16a085',l:'S'},fil:{n:'Filtro',c:'#7f8c8d',l:'F'},con:{n:'Contador',c:'#d35400',l:'C'},lla:{n:'Llave',c:'#2c3e50',l:'V'},otro:{n:'Otro',c:'#566573',l:'·'}};
+const IN_T={ev:{n:'Electroválvula',c:'#1f78c1',l:'EV'},man:{n:'Manómetro',c:'#8e44ad',l:'P'},bdj:{n:'Bandeja de drenaje',c:'#0e8f8f',l:'BD'},sen:{n:'Sensor',c:'#16a085',l:'S'},
+  fil:{n:'Filtro',c:'#7f8c8d',l:'F'},con:{n:'Contador',c:'#d35400',l:'C'},lla:{n:'Llave',c:'#2c3e50',l:'V'},ven:{n:'Ventosa',c:'#5d9cec',l:'VE'},reg:{n:'Regulador de presión',c:'#a0522d',l:'RP'},
+  bom:{n:'Bomba',c:'#c0392b',l:'B'},pro:{n:'Programador',c:'#34495e',l:'PR'},dep:{n:'Depósito / balsa',c:'#2471a3',l:'D'},ant:{n:'Antirretorno',c:'#6c3483',l:'AR'},fin:{n:'Final de ramal',c:'#7d6608',l:'FR'},otro:{n:'Otro',c:'#566573',l:'·'}};
 const IN_SK={hum:'Humedad de suelo',niv:'Nivel de depósito',ce:'CE / pH',tem:'Temperatura y humedad del aire',pre:'Presión',cau:'Caudal'};
+const IN_ITIPO={ev:'riego',man:'riego',bdj:'riego',fil:'riego',con:'riego',lla:'riego',ven:'riego',reg:'riego',bom:'riego',pro:'riego',dep:'riego',ant:'riego',fin:'riego',sen:'otro',otro:'otro'};
 const SEC_COL=['#4e79a7','#59a14f','#e15759','#f28e2b','#76b7b2','#b8860b','#b07aa1','#ff9da7','#9c755f','#6b6b6b'];
-st.in={modo:'ver',tipo:'ev',sel:null,secSel:null,mover:null,borrar:null,z:1};
-function inCfg(cab){const x=(st.cfg.inst||{})[cab]||{};return{pts:x.pts||IN_PTS.map(([id,n])=>({id:cab+'_p_'+id,n,min:null,max:null})),naves:x.naves||{},el:x.el||[],cab:x.cab||null}}
+st.in={vista:null,modo:'ver',tipo:'ev',sel:null,secSel:null,secPor:'pas',mover:null,borrar:null,z:1};
+function inCfg(cab){const x=(st.cfg.inst||{})[cab]||{};return{pts:x.pts||IN_PTS.map(([id,n])=>({id:cab+'_p_'+id,n,min:null,max:null})),naves:x.naves||{},pas:x.pas||{},el:x.el||[],cab:x.cab||null}}
 function inEdit(cab,f){if(!esGestor())return;const x=clone(inCfg(cab));f(x);st.cfg.inst={...(st.cfg.inst||{}),[cab]:x};st.dirtyCfg=true;renderSave()}
 const inLee=x=>x.t==='man'||(x.t==='sen'&&x.sk==='pre');
+const inPid=(p,sid)=>p.id+'@'+sid;   // presión de un punto del cabezal para un sector
 function inUltimo(id){const l=(st.hist||[]).filter(r=>r.fecha<st.fecha&&r.pre&&r.pre[id]!=null).sort((a,b)=>a.fecha<b.fecha?1:-1);return l.length?{v:l[0].pre[id],fecha:l[0].fecha}:null}
 const inEst=(v,min,max)=>v==null?'nd':(min!=null&&v<min)||(max!=null&&v>max)?'bad':(min!=null||max!=null)?'ok':'nd';
 const inBar=v=>v==null?'—':(+v).toLocaleString('es-ES',{maximumFractionDigits:2})+' bar';
 const inSecNom=(cab,sid)=>((cabById(cab)||{sectores:[]}).sectores.find(s=>s.id===sid)||{}).nombre||'';
 const inSecCol=(cab,sid)=>{const i=(cabById(cab)||{sectores:[]}).sectores.findIndex(s=>s.id===sid);return i<0?null:SEC_COL[i%SEC_COL.length]};
-/* Zonas que se pueden tocar: las naves del plano (con su sector) o, sin plano, un rectángulo por sector */
+const inSid=(I,nave,pas)=>{if(nave==null)return null;const k=nave+':'+pas;if(pas!=null&&Object.prototype.hasOwnProperty.call(I.pas,k))return I.pas[k]||null;return I.naves[nave]||null};
+const inBj=(cab,id)=>{for(const s of (cabById(cab)||{sectores:[]}).sectores)for(const bj of s.bandejas)if(bj.id===id)return{s,bj};return null};
+/* Franjas de cada pasillo de una nave (para pintarlas del color de su sector) */
+function inFranjas(cab,nv){const[a,b,c,d]=nv.q||nv.p,{n,inv}=pasCfg(cab,nv),L=[];
+  for(let k=1;k<=n;k++){const t0=k===1?0:(k-.5)/(n+1),t1=k===n?1:(k+.5)/(n+1);L.push({num:inv?n+1-k:k,p:[lerp(d,a,t0),lerp(c,b,t0),lerp(c,b,t1),lerp(d,a,t1)]})}return L}
+/* Zonas que se pueden tocar: las naves del plano o, sin plano, un rectángulo por sector */
 function inZonas(cab){const c=cabById(cab),M=MAPAS[cab],I=inCfg(cab);
-  if(M)return{vb:M.vb,M,zonas:M.naves.map(nv=>({nave:nv.n,p:nv.p,c:nv.c||centro(nv.p),sid:I.naves[nv.n]||null,lab:'NAVE '+nv.n}))};
+  if(M)return{vb:M.vb,M,zonas:M.naves.map(nv=>({nave:nv.n,nv,p:nv.p,c:nv.c||centro(nv.p),lab:'NAVE '+nv.n}))};
   const ss=c.sectores,n=Math.max(1,ss.length),cols=Math.ceil(Math.sqrt(n)),rows=Math.ceil(n/cols),W=1000,H=640,x0=250,y0=40,cw=(W-x0-30)/cols,ch=(H-y0-30)/rows;
   return{vb:[0,0,W,H],M:null,zonas:ss.map((s,i)=>{const cx=x0+(i%cols)*cw,cy=y0+Math.floor(i/cols)*ch,p=[[cx+8,cy+8],[cx+cw-8,cy+8],[cx+cw-8,cy+ch-8],[cx+8,cy+ch-8]];return{p,c:centro(p),sid:s.id,lab:s.nombre.toUpperCase()}})}}
-function inCabPos(cab,Z){const I=inCfg(cab);if(I.cab)return I.cab;const[vx,vy,,vh]=Z.vb;return Z.M?[vx+100,vy+50]:[125,320]}
+/* Dónde cae un punto del plano: nave, pasillo y sector */
+function inDonde(cab,pt){const Z=inZonas(cab),I=inCfg(cab),z=Z.zonas.find(q=>dentro(pt,q.p));if(!z)return{};if(!Z.M)return{sid:z.sid};const pas=pasDe(cab,z.nv,pt);return{nave:z.nave,pas,sid:inSid(I,z.nave,pas)}}
+function inCabPos(cab,Z){const I=inCfg(cab);if(I.cab)return I.cab;const[vx,vy]=Z.vb;return Z.M?[vx+100,vy+50]:[125,320]}
+const inPP=p=>p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ');
+function inIncs(cab,x){return (st.inc||[]).filter(i=>i.cab===cab&&i.estado!=='resuelta'&&(i.el===x.id))}
+function inAlertas(cab){const I=inCfg(cab),R=st.reg.pre||{},c=cabById(cab);let n=0;
+  for(const s of c.sectores)for(const p of I.pts)if(inEst(R[inPid(p,s.id)]??null,p.min,p.max)==='bad')n++;
+  for(const x of I.el)if(inLee(x)&&inEst(R[x.id]??null,x.min,x.max)==='bad')n++;return n}
 function inSVG(cab){const Z=inZonas(cab),I=inCfg(cab),c=cabById(cab),[vx,vy,vw,vh]=Z.vb,E=st.in,R=st.reg.pre||{},k=Math.max(vw,vh)/1000;
   let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg insvg${E.modo!=='ver'||E.mover?' inpon':''}" id="insvg" role="img" aria-label="Mapa de la instalación de ${esc(c.nombre)}"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f7f3e8"/>`;
   if(Z.M&&Z.M.fondo)s+=Z.M.fondo();
-  for(const z of Z.zonas){const col=inSecCol(cab,z.sid),sn=z.sid?inSecNom(cab,z.sid):'';
-    s+=`<g class="inz"><polygon points="${z.p.map(q=>q[0].toFixed(1)+','+q[1].toFixed(1)).join(' ')}" fill="${col||'#e3ecf4'}" fill-opacity="${col?.32:1}" stroke="${col||'#1b2f4a'}" stroke-width="${col?4:3}" stroke-linejoin="round"/>
-      <g transform="translate(${z.c[0].toFixed(1)} ${z.c[1].toFixed(1)})${Z.M?` rotate(${Z.M.ang||0})`:''}"><text y="${Z.M&&sn?-6:6}" text-anchor="middle" font-size="${20*k}" font-weight="800" fill="#1b2f4a">${esc(z.lab)}</text>${Z.M&&sn?`<text y="${18*k}" text-anchor="middle" font-size="${16*k}" font-weight="800" fill="${col}">${esc(sn.toUpperCase())}</text>`:''}</g></g>`}
-  // tuberías: del cabezal a cada electroválvula
-  const cp=inCabPos(cab,Z);for(const x of I.el.filter(x=>x.t==='ev'))s+=`<line x1="${cp[0]}" y1="${cp[1]}" x2="${x.x}" y2="${x.y}" stroke="#1f78c1" stroke-width="${3*k}" stroke-dasharray="${10*k} ${7*k}" opacity=".55"/>`;
-  const pc=I.pts.filter(p=>inEst(R[p.id],p.min,p.max)==='bad').length;
-  s+=`<g class="incab" transform="translate(${cp[0]} ${cp[1]})"><rect x="${-70*k}" y="${-26*k}" width="${140*k}" height="${52*k}" rx="${8*k}" fill="#1b2f4a" stroke="${pc?'#c0392b':'#fff'}" stroke-width="${3*k}"/><text y="${7*k}" text-anchor="middle" font-size="${17*k}" font-weight="800" fill="#fff" letter-spacing="1">CABEZAL</text>${pc?`<circle cx="${68*k}" cy="${-24*k}" r="${13*k}" fill="#c0392b"/><text x="${68*k}" y="${-19*k}" text-anchor="middle" font-size="${15*k}" font-weight="800" fill="#fff">${pc}</text>`:''}</g>`;
-  for(const x of I.el){const t=IN_T[x.t]||IN_T.otro,sel=E.sel===x.id,v=R[x.id]??(inLee(x)?(inUltimo(x.id)||{}).v:null),es=inLee(x)?inEst(R[x.id]??null,x.min,x.max):'nd',r=(sel?22:17)*k;
+  for(const z of Z.zonas){
+    if(!Z.M){const col=inSecCol(cab,z.sid);s+=`<polygon points="${inPP(z.p)}" fill="${col}" fill-opacity=".3" stroke="${col}" stroke-width="4"/><text x="${z.c[0]}" y="${z.c[1]}" text-anchor="middle" font-size="22" font-weight="800" fill="#1b2f4a">${esc(z.lab)}</text>`;continue}
+    const fr=inFranjas(cab,z.nv),sids=new Set();s+=`<clipPath id="inclip${z.nave}"><polygon points="${inPP(z.p)}"/></clipPath><polygon points="${inPP(z.p)}" fill="#eef2f6"/>`;
+    for(const f of fr){const sid=inSid(I,z.nave,f.num),col=inSecCol(cab,sid);if(sid)sids.add(sid);if(col)s+=`<polygon points="${inPP(f.p)}" fill="${col}" fill-opacity=".38" clip-path="url(#inclip${z.nave})"/>`}
+    for(const l of pasLineas(cab,z.nv)){const segs=z.nv.q?clipLinea(l.p1,l.p2,z.nv.p):[[l.p1,l.p2]];if(!segs.length)continue;
+      for(const[q1,q2]of segs)s+=`<line x1="${q1[0].toFixed(1)}" y1="${q1[1].toFixed(1)}" x2="${q2[0].toFixed(1)}" y2="${q2[1].toFixed(1)}" stroke="#8fa6bd" stroke-width="${1.4*k}"/>`;
+      const e1=segs[0][0],e2=segs[segs.length-1][1],q=lerp(e1,e2,.06);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)})"><circle r="${8*k}" fill="#fff" stroke="#7f98b2" stroke-width="1"/><text y="${3.6*k}" text-anchor="middle" font-size="${9.5*k}" font-weight="800" fill="#1b2f4a">${l.num}</text></g>`}
+    s+=`<polygon points="${inPP(z.p)}" fill="none" stroke="#1b2f4a" stroke-width="${3*k}" stroke-linejoin="round"/>`;
+    const sn=[...sids].map(x=>inSecNom(cab,x).replace(/^Sector\s*/i,'S')).join(' · ');
+    s+=`<g transform="translate(${z.c[0].toFixed(1)} ${z.c[1].toFixed(1)}) rotate(${Z.M.ang||0})"><rect x="${-44*k}" y="${-15*k}" width="${88*k}" height="${30*k}" rx="${15*k}" fill="#1b2f4a" opacity=".85"/><text y="${6*k}" text-anchor="middle" font-size="${16*k}" font-weight="800" fill="#fff">${esc(z.lab)}</text>${sn?`<text y="${32*k}" text-anchor="middle" font-size="${14*k}" font-weight="800" fill="#1b2f4a" stroke="#fff" stroke-width="${4*k}" paint-order="stroke">${esc(sn)}</text>`:''}</g>`}
+  const cp=inCabPos(cab,Z);for(const x of I.el.filter(x=>x.t==='ev'))s+=`<line x1="${cp[0]}" y1="${cp[1]}" x2="${x.x}" y2="${x.y}" stroke="#1f78c1" stroke-width="${3*k}" stroke-dasharray="${10*k} ${7*k}" opacity=".5"/>`;
+  const al=inAlertas(cab);
+  s+=`<g class="incab" transform="translate(${cp[0]} ${cp[1]})"><rect x="${-70*k}" y="${-26*k}" width="${140*k}" height="${52*k}" rx="${8*k}" fill="#1b2f4a" stroke="${al?'#c0392b':'#fff'}" stroke-width="${3*k}"/><text y="${7*k}" text-anchor="middle" font-size="${17*k}" font-weight="800" fill="#fff" letter-spacing="1">CABEZAL</text>${al?`<circle cx="${68*k}" cy="${-24*k}" r="${13*k}" fill="#c0392b"/><text x="${68*k}" y="${-19*k}" text-anchor="middle" font-size="${15*k}" font-weight="800" fill="#fff">${al}</text>`:''}</g>`;
+  for(const x of I.el){const t=IN_T[x.t]||IN_T.otro,sel=E.sel===x.id,es=inLee(x)?inEst(R[x.id]??null,x.min,x.max):'nd',r=(sel?22:17)*k,ni=inIncs(cab,x).length;
     s+=`<g class="inel${sel?' sel':''}" data-inel="${x.id}" transform="translate(${x.x} ${x.y})"><circle r="${r+8*k}" fill="transparent"/><circle r="${r}" fill="${t.c}" stroke="${es==='bad'?'#c0392b':'#fff'}" stroke-width="${(es==='bad'?5:3)*k}"/><text y="${5*k}" text-anchor="middle" font-size="${(t.l.length>1?12:15)*k}" font-weight="800" fill="#fff">${t.l}</text>`;
-    if(inLee(x)&&v!=null){const tx=inBar(v),w=(tx.length*8.5+14)*k;s+=`<g transform="translate(${r+4*k} ${-12*k})"><rect width="${w}" height="${24*k}" rx="${6*k}" fill="${es==='bad'?'#c0392b':'#fff'}" stroke="${t.c}" stroke-width="${1.5*k}" opacity="${R[x.id]!=null?1:.65}"/><text x="${w/2}" y="${17*k}" text-anchor="middle" font-size="${14*k}" font-weight="800" fill="${es==='bad'?'#fff':'#1b2f4a'}">${tx}</text></g>`}
+    if(ni)s+=`<circle cx="${-r}" cy="${-r}" r="${10*k}" fill="#e2a32a" stroke="#fff" stroke-width="${2*k}"/><text x="${-r}" y="${-r+4.5*k}" text-anchor="middle" font-size="${12*k}" font-weight="800" fill="#fff">!</text>`;
+    let tag=null,mal=false,hoy=true;
+    if(inLee(x)){const v=R[x.id]??(inUltimo(x.id)||{}).v;if(v!=null){tag=inBar(v);mal=es==='bad';hoy=R[x.id]!=null}}
+    else if(x.t==='bdj'&&x.bj){const b=inBj(cab,x.bj);if(b){const pc=drenPct(b.s,b.bj);if(pc!=null)tag=fmt(pc,1)+' %';else if(st.reg.dren[x.bj]!=null)tag=fmt(st.reg.dren[x.bj],0)+' ml'}}
+    if(tag){const w=(tag.length*8.5+14)*k;s+=`<g transform="translate(${r+4*k} ${-12*k})"><rect width="${w}" height="${24*k}" rx="${6*k}" fill="${mal?'#c0392b':'#fff'}" stroke="${t.c}" stroke-width="${1.5*k}" opacity="${hoy?1:.65}"/><text x="${w/2}" y="${17*k}" text-anchor="middle" font-size="${14*k}" font-weight="800" fill="${mal?'#fff':'#1b2f4a'}">${tag}</text></g>`}
     s+=`</g>`}
   return s+`</svg>`}
-function inPunto(e){const svg=$('#insvg');if(!svg)return null;const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=svg.getScreenCTM();if(!m)return null;const q=p.matrixTransform(m.inverse());return[q.x,q.y]}
+/* Mapa de toda la finca (vista de arriba): se toca un cabezal para abrir su zona */
+function inFincaSVG(d){const[vx,vy,vw,vh]=d.vb,naves=vvFincaGeo(d),cols={gas:'#2f8fd6',pla:'#59a14f',fra:'#e15759'};
+  let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg insvg" id="infsvg" role="img" aria-label="Mapa de toda la finca ${esc(d.nombre)}"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f2efe4"/>`;
+  for(const r of d.ctras)s+=`<polyline points="${inPP(r.p)}" fill="none" stroke="#d6cfbd" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>${r.n?`<text x="${r.e[0]}" y="${r.e[1]}" font-size="20" font-weight="800" fill="#9c8f73">${esc(r.n)}</text>`:''}`;
+  for(const z of d.zonas)s+=`<polygon points="${inPP(z.p)}" fill="${z.c}" fill-opacity=".14" stroke="${z.c}" stroke-width="4" stroke-dasharray="12 8"/>`;
+  for(const b of d.balsas||[])s+=`<polygon points="${inPP(b)}" fill="#7fb3d5" stroke="#2471a3" stroke-width="2"/>`;
+  for(const cab of d.cabs){if(!cabById(cab))continue;const ns=naves.filter(n=>n.cab===cab);if(!ns.length)continue;const al=inAlertas(cab),ne=inCfg(cab).el.length,col=cols[cab]||'#4e79a7';
+    const cx=ns.reduce((t,n)=>t+n.c[0],0)/ns.length,cy=ns.reduce((t,n)=>t+n.c[1],0)/ns.length;
+    s+=`<g class="infcab" data-incab="${cab}" role="button" aria-label="Abrir ${esc(cabNombre(cab))}">${ns.map(n=>`<polygon points="${inPP(n.p)}" fill="${col}" fill-opacity=".55" stroke="#1b2f4a" stroke-width="2"/>`).join('')}
+      <g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)})"><rect x="-80" y="-24" width="160" height="${ne?62:48}" rx="12" fill="#1b2f4a" stroke="${al?'#c0392b':'#fff'}" stroke-width="3"/><text y="7" text-anchor="middle" font-size="22" font-weight="800" fill="#fff">${esc(cabNombre(cab).toUpperCase())}</text>${ne?`<text y="30" text-anchor="middle" font-size="14" fill="#cfe0f0">${ne} ${ne===1?'elemento':'elementos'}</text>`:''}${al?`<circle cx="78" cy="-22" r="14" fill="#c0392b"/><text x="78" y="-17" text-anchor="middle" font-size="16" font-weight="800" fill="#fff">${al}</text>`:''}</g></g>`}
+  for(const z of d.zonas){const c=[centro(z.p)[0],Math.min(...z.p.map(q=>q[1]))+30];s+=`<text x="${c[0].toFixed(0)}" y="${c[1].toFixed(0)}" text-anchor="middle" font-size="22" font-weight="800" fill="${z.c}" stroke="#f2efe4" stroke-width="5" paint-order="stroke">${esc(z.n.toUpperCase())}</text>`}
+  return s+`</svg>`}
+function inPunto(e,id){const svg=$('#'+(id||'insvg'));if(!svg)return null;const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=svg.getScreenCTM();if(!m)return null;const q=p.matrixTransform(m.inverse());return[q.x,q.y]}
 function inLecturaHTML(id,min,max){const v=(st.reg.pre||{})[id],u=inUltimo(id),es=inEst(v??null,min,max);
-  return `<div class="inp sm"><input id="inp_${id}" data-inp="${id}" inputmode="decimal" autocomplete="off" aria-label="Presión de hoy" value="${inVal(v)}"><span class="u">bar</span></div>
+  return `<div class="inp sm"><input id="inp_${id.replace(/@/g,'_')}" data-inp="${id}" inputmode="decimal" autocomplete="off" aria-label="Presión" value="${inVal(v)}"><span class="u">bar</span></div>
     <span class="ult" data-out="inu_${id}">${es==='bad'?'<span class="pill bad">Fuera de lo normal</span> ':es==='ok'?'<span class="pill ok">Bien</span> ':''}${u?`Última: ${inBar(u.v)} (${fCorta(u.fecha)})`:''}</span>`}
-function inElHTML(cab,x){const G=esGestor(),c=cabById(cab),t=IN_T[x.t]||IN_T.otro,E=st.in;
-  let h=`<section class="card inel"><div class="tank-h"><div><h3><span class="indot" style="background:${t.c}">${t.l}</span>${esc(x.n||t.n)}</h3><div class="sub">${t.n}${x.t==='sen'&&x.sk?' · '+esc(IN_SK[x.sk]||''):''}${x.sid?' · '+esc(inSecNom(cab,x.sid)):' · sin sector'}</div></div><button class="btn sm" type="button" data-inact="cerrar">Cerrar</button></div>`;
+function inElHTML(cab,x){const G=esGestor(),c=cabById(cab),t=IN_T[x.t]||IN_T.otro,E=st.in,inc=inIncs(cab,x),M=MAPAS[cab],b=x.t==='bdj'&&x.bj?inBj(cab,x.bj):null;
+  const donde=[x.nave!=null?'Nave '+x.nave:'',x.pas!=null?'pasillo '+x.pas:'',x.sid?inSecNom(cab,x.sid):'sin sector'].filter(Boolean).join(' · ');
+  let h=`<section class="card inel"><div class="tank-h"><div><h3><span class="indot" style="background:${t.c}">${t.l}</span>${esc(x.n||t.n)}</h3><div class="sub">${t.n}${x.t==='sen'&&x.sk?' · '+esc(IN_SK[x.sk]||''):''} · ${esc(donde)}</div></div><button class="btn sm" type="button" data-inact="cerrar">Cerrar</button></div>`;
   if(G)h+=`<div class="frm"><div class="field"><label for="ie_n">Nombre</label><div class="inp"><input class="wide" id="ie_n" data-inc="n" data-id="${x.id}" value="${esc(x.n||'')}" style="text-transform:none"></div></div>
       <div class="field"><label for="ie_t">Qué es</label><div class="inp"><select id="ie_t" data-inc="t" data-id="${x.id}">${Object.entries(IN_T).map(([k,v])=>`<option value="${k}" ${x.t===k?'selected':''}>${v.n}</option>`).join('')}</select></div></div>
       <div class="field"><label for="ie_s">Sector</label><div class="inp"><select id="ie_s" data-inc="sid" data-id="${x.id}"><option value="">Sin sector / general</option>${c.sectores.map(s=>`<option value="${s.id}" ${x.sid===s.id?'selected':''}>${esc(s.nombre)}</option>`).join('')}</select></div></div>
+      ${x.t==='bdj'?`<div class="field"><label for="ie_b">Bandeja de la app</label><div class="inp"><select id="ie_b" data-inc="bj" data-id="${x.id}"><option value="">Sin enlazar</option>${c.sectores.map(s=>s.bandejas.map(bj=>`<option value="${bj.id}" ${x.bj===bj.id?'selected':''}>${esc(bj.nombre)} · ${esc(s.nombre)}</option>`).join('')).join('')}</select></div></div>`:''}
       ${x.t==='sen'?`<div class="field"><label for="ie_k">Qué mide</label><div class="inp"><select id="ie_k" data-inc="sk" data-id="${x.id}">${Object.entries(IN_SK).map(([k,v])=>`<option value="${k}" ${x.sk===k?'selected':''}>${v}</option>`).join('')}</select></div></div>`:''}
       ${inLee(x)?`<div class="field"><label for="ie_mi">Presión normal: mínima</label><div class="inp sm"><input id="ie_mi" data-inc="min" data-id="${x.id}" inputmode="decimal" value="${inVal(x.min)}"><span class="u">bar</span></div></div>
         <div class="field"><label for="ie_ma">Máxima</label><div class="inp sm"><input id="ie_ma" data-inc="max" data-id="${x.id}" inputmode="decimal" value="${inVal(x.max)}"><span class="u">bar</span></div></div>`:''}</div>
     <div class="field"><label for="ie_no">Notas (marca, diámetro, a qué riega…)</label><textarea id="ie_no" data-inc="nota" data-id="${x.id}" rows="2" style="text-transform:none">${esc(x.nota||'')}</textarea></div>`;
   else if(x.nota)h+=`<p class="note" style="text-transform:none">${esc(x.nota)}</p>`;
-  if(inLee(x))h+=`<div class="field"><label for="inp_${x.id}">Presión de ${fFecha(st.fecha)}</label><div class="row inrow">${inLecturaHTML(x.id,x.min,x.max)}</div></div>`;
+  if(inLee(x))h+=`<div class="field"><label>Presión de ${fFecha(st.fecha)}</label><div class="row inrow">${inLecturaHTML(x.id,x.min,x.max)}</div></div>`;
+  if(b){const pc=drenPct(b.s,b.bj),ml=st.reg.dren[b.bj.id],ce=st.reg.ceD[b.bj.id],ph=st.reg.phD[b.bj.id];
+    h+=`<div class="row inbd"><span>${esc(b.bj.nombre)} · ${fFecha(st.fecha)}:</span><b>${ml!=null?fmt(ml,0)+' ml':'sin drenaje apuntado'}</b>${pc!=null?`<span class="pill nd">${fmt(pc,1)} % drenaje</span>`:''}${ce!=null?`<span class="pill nd">CE ${uS(ce)}</span>`:''}${ph!=null?`<span class="pill nd">pH ${fmt(ph,1)}</span>`:''}<button class="btn sm" type="button" data-inact="drenaje">Abrir drenaje</button></div>`}
+  else if(x.t==='bdj')h+=`<div class="note">Enlázala con su bandeja de la app para ver aquí su drenaje del día.</div>`;
   if(x.t==='sen')h+=`<div class="note">Sensor todavía sin conectar: cuando esté el LoRa, aquí saldrá su lectura en directo.</div>`;
+  // incidencias de este elemento
+  h+=`<div class="ininc"><div class="lbl">Incidencias${inc.length?` abiertas: ${inc.length}`:''}</div>${inc.map(i=>{const ti=ITIPOS[i.tipo]||ITIPOS.otro;return `<button class="lnk" type="button" data-inact="verinc" data-id="${i.id}"><span class="pill ${(IPRIO[i.prio]||IPRIO.media)[1]}">${esc(ti[0])}</span> ${esc((i.txt||'Sin descripción').slice(0,70))} · ${esc(fCorta(i.fecha))}</button>`}).join('')}
+    ${M&&x.nave!=null?`<div class="row"><button class="btn" type="button" data-inact="incid">Apuntar incidencia aquí</button></div>`:'<div class="note">Para apuntar incidencias en el plano, el cabezal tiene que tener plano de naves.</div>'}</div>`;
   if(G)h+=`<div class="row">${E.mover===x.id?'<span class="note">Toca en el mapa el sitio nuevo</span>':`<button class="btn" type="button" data-inact="mover">Mover</button>`}${E.borrar===x.id?`<span class="note">¿Quitar del mapa?</span><button class="btn danger" type="button" data-inact="borrar-si">Sí, quitar</button><button class="btn" type="button" data-inact="borrar-no">No</button>`:`<button class="btn" type="button" data-inact="borrar">Quitar del mapa</button>`}</div>`;
   return h+`</section>`}
-function vInstal(){const cab=st.cab,c=cabById(cab);if(!c)return '';if(st.hist===null)loadHist();const I=inCfg(cab),G=esGestor(),E=st.in,M=MAPAS[cab];
-  if(E.modo==='naves'&&!M)E.modo='ver';if(E.sel&&!I.el.some(x=>x.id===E.sel))E.sel=null;if(!E.secSel||!c.sectores.some(s=>s.id===E.secSel))E.secSel=(c.sectores[0]||{}).id||null;
+function vInstal(){const cab=st.cab,c=cabById(cab);if(!c)return '';if(st.hist===null)loadHist();if(st.inc===null)loadInc();const E=st.in,d=vvFincaDe(cab);
+  if(E.vista==null)E.vista=d?'finca':'cab';if(!d)E.vista='cab';
+  if(E.vista==='finca'){const otros=cabsFinca().filter(x=>!d.cabs.includes(x.id)||!MAPAS[x.id]);
+    return `<section class="card"><div class="tank-h"><div><h3>Instalación · ${esc(d.nombre)}</h3><div class="sub">Toca un cabezal para abrir su zona</div></div><div class="row" style="gap:6px"><button class="btn sm" type="button" data-inact="z" data-z="-1" aria-label="Alejar">−</button><button class="btn sm" type="button" data-inact="z" data-z="1" aria-label="Acercar">+</button></div></div>
+      <div class="mapwrap infwrap"><div class="mapin" style="width:${E.z*100}%">${inFincaSVG(d)}</div></div>
+      <div class="row infbtns">${cabsFinca().map(x=>`<button class="btn" type="button" data-inact="abrir" data-cab="${x.id}">${esc(x.nombre)}${inAlertas(x.id)?` <span class="pill bad">${inAlertas(x.id)}</span>`:''}</button>`).join('')}</div>
+      ${otros.length?`<div class="note">${otros.map(x=>esc(x.nombre)).join(', ')}: todavía sin plano de naves (se abre un esquema por sectores).</div>`:''}</section>`}
+  const I=inCfg(cab),G=esGestor(),M=MAPAS[cab];
+  if(E.modo==='sect'&&!M)E.modo='ver';if(E.sel&&!I.el.some(x=>x.id===E.sel))E.sel=null;if(!E.secSel||!c.sectores.some(s=>s.id===E.secSel))E.secSel=(c.sectores[0]||{}).id||null;
   const cuenta=Object.keys(IN_T).map(k=>[k,I.el.filter(x=>x.t===k).length]).filter(([,n])=>n);
-  let h=`<section class="card"><div class="tank-h"><div><h3>Instalación · ${esc(c.nombre)}</h3><div class="sub">${cuenta.length?cuenta.map(([k,n])=>`${n} ${IN_T[k].n.toLowerCase()}${n>1?(IN_T[k].n.endsWith('r')?'es':'s'):''}`).join(' · '):'Todavía no hay nada puesto en el mapa'}</div></div>
+  let h=`<section class="card"><div class="tank-h"><div>${d?'<button class="lnk inback" type="button" data-inact="finca">← Mapa de la finca</button>':''}<h3>Instalación · ${esc(c.nombre)}</h3><div class="sub">${cuenta.length?cuenta.map(([k,n])=>`${n} × ${IN_T[k].n.toLowerCase()}`).join(' · '):'Todavía no hay nada puesto en el mapa'}</div></div>
     <div class="row" style="gap:6px"><button class="btn sm" type="button" data-inact="z" data-z="-1" aria-label="Alejar">−</button><button class="btn sm" type="button" data-inact="z" data-z="1" aria-label="Acercar">+</button></div></div>`;
-  if(G){h+=`<div class="pick">${[['ver','Ver'],['poner','Poner elementos'],...(M?[['naves','Naves de cada sector']]:[]),['cab','Situar el cabezal']].map(([k,t])=>`<button class="chip" type="button" data-inact="modo" data-v="${k}" aria-pressed="${E.modo===k}">${t}</button>`).join('')}</div>`;
-    if(E.modo==='poner')h+=`<div class="pick">${Object.entries(IN_T).map(([k,t])=>`<button class="chip" type="button" data-inact="tipo" data-v="${k}" aria-pressed="${E.tipo===k}"><span class="indot sm" style="background:${t.c}">${t.l}</span>${t.n}</button>`).join('')}</div><div class="note">Elige qué es y toca en el mapa donde está.</div>`;
-    if(E.modo==='naves')h+=`<div class="pick">${c.sectores.map(s=>`<button class="chip" type="button" data-inact="sec" data-v="${s.id}" aria-pressed="${E.secSel===s.id}"><i class="insw" style="background:${inSecCol(cab,s.id)}"></i>${esc(s.nombre)}</button>`).join('')}</div><div class="note">Elige un sector y toca sus naves (otra vez para quitarla).</div>`;
+  if(G){h+=`<div class="pick">${[['ver','Ver'],['poner','Poner elementos'],...(M?[['sect','Sectores por pasillo']]:[]),['cab','Situar el cabezal']].map(([k,t])=>`<button class="chip" type="button" data-inact="modo" data-v="${k}" aria-pressed="${E.modo===k}">${t}</button>`).join('')}</div>`;
+    if(E.modo==='poner')h+=`<div class="pick">${Object.entries(IN_T).map(([k,t])=>`<button class="chip" type="button" data-inact="tipo" data-v="${k}" aria-pressed="${E.tipo===k}"><span class="indot sm" style="background:${t.c}">${t.l}</span>${t.n}</button>`).join('')}</div><div class="note">Elige qué es y toca en el mapa donde está (en su pasillo).</div>`;
+    if(E.modo==='sect')h+=`<div class="pick">${c.sectores.map(s=>`<button class="chip" type="button" data-inact="sec" data-v="${s.id}" aria-pressed="${E.secSel===s.id}"><i class="insw" style="background:${inSecCol(cab,s.id)}"></i>${esc(s.nombre)}</button>`).join('')}</div>
+      <div class="pick">${[['pas','Toco un pasillo'],['nave','Toco la nave entera']].map(([k,t])=>`<button class="chip" type="button" data-inact="secpor" data-v="${k}" aria-pressed="${E.secPor===k}">${t}</button>`).join('')}</div><div class="note">Elige el sector y toca sus pasillos (o la nave entera). Tocar otra vez lo quita.</div>`;
     if(E.modo==='cab')h+=`<div class="note">Toca en el mapa dónde está el cabezal.</div>`}
   h+=`<div class="mapwrap"><div class="mapin" style="width:${E.z*100}%" data-out="inmapa">${inSVG(cab)}</div></div>
     <div class="inley">${c.sectores.map(s=>`<span><i style="background:${inSecCol(cab,s.id)}"></i>${esc(s.nombre)}</span>`).join('')}${Object.values(IN_T).filter(t=>t.l!=='·').map(t=>`<span><b class="indot sm" style="background:${t.c}">${t.l}</b>${t.n}</span>`).join('')}</div>
     ${!M?'<div class="note">Este cabezal no tiene plano de naves: sale un esquema con un recuadro por sector.</div>':''}</section>`;
   const sx=I.el.find(x=>x.id===E.sel);if(sx)h+=inElHTML(cab,sx);
-  // presiones del cabezal
-  const R=st.reg.pre||{},v=id=>R[id]??null,ent=I.pts.find(p=>/_p_ent$/.test(p.id)),sal=I.pts.find(p=>/_p_sal$/.test(p.id)),dif=ent&&sal&&v(ent.id)!=null&&v(sal.id)!=null?v(ent.id)-v(sal.id):null;
-  h+=`<section class="card"><div><h3>Presiones del cabezal</h3><div class="sub">En bar · ${fFecha(st.fecha)}${G?' · el rango normal lo pone el encargado':''}</div></div>
-    <div class="inptl">${I.pts.map(p=>`<div class="inpt"><div class="inpn">${G?`<div class="inp"><input class="wide" data-incp="n" data-id="${p.id}" aria-label="Nombre del punto" value="${esc(p.n)}"></div>`:`<b>${esc(p.n)}</b>`}</div>
-      <div class="row inrow">${inLecturaHTML(p.id,p.min,p.max)}</div>
-      <div class="inrg">${G?`<div class="inp sm"><input data-incp="min" data-id="${p.id}" inputmode="decimal" aria-label="Mínima normal" placeholder="mín." value="${inVal(p.min)}"></div><span>–</span><div class="inp sm"><input data-incp="max" data-id="${p.id}" inputmode="decimal" aria-label="Máxima normal" placeholder="máx." value="${inVal(p.max)}"></div><button class="btn sm" type="button" data-inact="pdel" data-id="${p.id}" aria-label="Quitar ${esc(p.n)}">×</button>`:(p.min!=null||p.max!=null?`<small>Normal: ${p.min!=null?inBar(p.min):'…'} – ${p.max!=null?inBar(p.max):'…'}</small>`:'')}</div></div>`).join('')}</div>
-    <div data-out="indif">${dif!=null?`<div class="row"><span>Pérdida en filtros (entrada − salida): <b>${inBar(+dif.toFixed(2))}</b></span>${dif>0.5?'<span class="pill warn">Alta: mira si hay que limpiar los filtros</span>':'<span class="pill ok">Normal</span>'}</div>`:''}</div>
-    ${G?'<div class="row"><button class="btn" type="button" data-inact="padd">Añadir punto de presión</button></div>':''}</section>`;
-  // presiones y elementos del campo, por sector
-  h+=`<section class="card"><div><h3>En el campo</h3><div class="sub">Por sector · presiones en bar del ${fFecha(st.fecha)}</div></div>`;
-  for(const s of [...c.sectores,{id:'',nombre:'Sin sector'}]){const els=I.el.filter(x=>(x.sid||'')===s.id);if(!els.length&&!s.id)continue;
-    h+=`<div class="insec"><div class="insech"><i class="insw" style="background:${inSecCol(cab,s.id)||'#999'}"></i><b>${esc(s.nombre)}</b></div>`;
+  // un apartado por sector: presiones del cabezal para ese sector y lo que hay en el campo
+  const R=st.reg.pre||{};
+  for(const s of [...c.sectores,{id:'',nombre:'Sin sector'}]){const els=I.el.filter(x=>(x.sid||'')===s.id);if(!s.id&&!els.length)continue;
+    h+=`<section class="card insec"><div class="insech"><i class="insw" style="background:${inSecCol(cab,s.id)||'#999'}"></i><h3>${esc(s.nombre)}</h3></div>`;
+    if(s.id){const v=p=>R[inPid(p,s.id)]??null,ent=I.pts.find(p=>/_p_ent$/.test(p.id)),sal=I.pts.find(p=>/_p_sal$/.test(p.id)),dif=ent&&sal&&v(ent)!=null&&v(sal)!=null?v(ent)-v(sal):null;
+      h+=`<div class="lbl">Presiones del cabezal · ${fFecha(st.fecha)}</div><div class="inptl">${I.pts.map(p=>`<div class="inpt"><div class="inpn"><b>${esc(p.n)}</b>${p.min!=null||p.max!=null?`<small>Normal: ${p.min!=null?inBar(p.min):'…'} – ${p.max!=null?inBar(p.max):'…'}</small>`:''}</div><div class="row inrow">${inLecturaHTML(inPid(p,s.id),p.min,p.max)}</div></div>`).join('')}</div>
+        <div data-out="indif_${s.id}">${dif!=null?`<div class="row"><span>Pérdida en filtros (entrada − salida): <b>${inBar(+dif.toFixed(2))}</b></span>${dif>0.5?'<span class="pill warn">Alta: mira si hay que limpiar los filtros</span>':'<span class="pill ok">Normal</span>'}</div>`:''}</div>`}
+    h+=`<div class="lbl">En el campo</div>`;
     if(!els.length)h+=`<div class="note">Nada puesto todavía${G?': ponlo en el mapa con «Poner elementos»':''}.</div>`;
-    for(const x of els){const t=IN_T[x.t]||IN_T.otro;h+=`<div class="inpt"><div class="inpn"><button class="lnk" type="button" data-inact="ver" data-id="${x.id}"><span class="indot sm" style="background:${t.c}">${t.l}</span>${esc(x.n||t.n)}</button></div>
-      ${inLee(x)?`<div class="row inrow">${inLecturaHTML(x.id,x.min,x.max)}</div><div class="inrg">${x.min!=null||x.max!=null?`<small>Normal: ${x.min!=null?inBar(x.min):'…'} – ${x.max!=null?inBar(x.max):'…'}</small>`:''}</div>`:`<div class="note">${x.t==='sen'?'Sin conectar todavía':esc(t.n)}</div>`}</div>`}
-    h+=`</div>`}
-  return h+`</section>`}
+    for(const x of els){const t=IN_T[x.t]||IN_T.otro,b=x.t==='bdj'&&x.bj?inBj(cab,x.bj):null,ni=inIncs(cab,x).length;
+      h+=`<div class="inpt"><div class="inpn"><button class="lnk" type="button" data-inact="ver" data-id="${x.id}"><span class="indot sm" style="background:${t.c}">${t.l}</span>${esc(x.n||t.n)}${ni?` <span class="pill warn">${ni} ${ni===1?'incidencia':'incidencias'}</span>`:''}</button><small>${x.pas!=null?'Nave '+x.nave+' · pasillo '+x.pas:''}</small></div>
+        ${inLee(x)?`<div class="row inrow">${inLecturaHTML(x.id,x.min,x.max)}</div>`:b?`<div class="note">${(()=>{const pc=drenPct(b.s,b.bj),ml=st.reg.dren[b.bj.id];return ml!=null?`${fmt(ml,0)} ml${pc!=null?' · '+fmt(pc,1)+' %':''}`:'Sin drenaje apuntado hoy'})()}</div>`:`<div class="note">${x.t==='sen'?'Sin conectar todavía':esc(t.n)}</div>`}</div>`}
+    h+=`</section>`}
+  if(G)h+=`<section class="card"><div><h3>Puntos de presión del cabezal</h3><div class="sub">Los mismos para todos los sectores · rango normal en bar</div></div>
+    <div class="inptl">${I.pts.map(p=>`<div class="inpt"><div class="inpn"><div class="inp"><input class="wide" data-incp="n" data-id="${p.id}" aria-label="Nombre del punto" value="${esc(p.n)}"></div></div>
+      <div class="inrg"><div class="inp sm"><input data-incp="min" data-id="${p.id}" inputmode="decimal" aria-label="Mínima normal de ${esc(p.n)}" placeholder="mín." value="${inVal(p.min)}"></div><span>–</span><div class="inp sm"><input data-incp="max" data-id="${p.id}" inputmode="decimal" aria-label="Máxima normal de ${esc(p.n)}" placeholder="máx." value="${inVal(p.max)}"></div><button class="btn sm" type="button" data-inact="pdel" data-id="${p.id}" aria-label="Quitar ${esc(p.n)}">×</button></div></div>`).join('')}</div>
+    <div class="row"><button class="btn" type="button" data-inact="padd">Añadir punto de presión</button></div></section>`;
+  return h}
 $('#main').addEventListener('input',e=>{const t=e.target;if(!t.dataset||t.dataset.inp==null)return;const id=t.dataset.inp;if(!st.reg.pre)st.reg.pre={};st.reg.pre[id]=num(t.value);marcaReg('pre.'+id);softUpdate();renderSave()});
 $('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset)return;const k=t.dataset.inc,kp=t.dataset.incp;if(k==null&&kp==null)return;const nu=x=>['min','max'].includes(x);
-  if(k!=null)inEdit(st.cab,x=>{const el=x.el.find(z=>z.id===t.dataset.id);if(el)el[k]=nu(k)?num(t.value):String(t.value).trim()});
+  if(k!=null)inEdit(st.cab,x=>{const el=x.el.find(z=>z.id===t.dataset.id);if(!el)return;el[k]=nu(k)?num(t.value):String(t.value).trim();
+    if(k==='bj'&&el.bj){const b=inBj(st.cab,el.bj);if(b){if(/^Bandeja de drenaje \d+$/.test(el.n||''))el.n=b.bj.nombre;el.sid=el.sid||b.s.id}}});
   else inEdit(st.cab,x=>{const p=x.pts.find(z=>z.id===t.dataset.id);if(p)p[kp]=nu(kp)?num(t.value):(String(t.value).trim()||p.n)});
   if(t.tagName==='SELECT')renderMain();else softUpdate()});
 document.addEventListener('click',e=>{if(st.tab!=='instal')return;const E=st.in,cab=st.cab,b=e.target.closest&&e.target.closest('[data-inact]');
   if(b){const a=b.dataset.inact;
-    if(a==='modo'){E.modo=b.dataset.v;E.mover=null}else if(a==='tipo')E.tipo=b.dataset.v;else if(a==='sec')E.secSel=b.dataset.v;
+    if(a==='modo'){E.modo=b.dataset.v;E.mover=null}else if(a==='tipo')E.tipo=b.dataset.v;else if(a==='sec')E.secSel=b.dataset.v;else if(a==='secpor')E.secPor=b.dataset.v;
     else if(a==='z')E.z=Math.max(1,Math.min(3,E.z+(+b.dataset.z)*.5));else if(a==='cerrar'){E.sel=null;E.borrar=null;E.mover=null}
+    else if(a==='finca'){E.vista='finca';E.sel=null;E.mover=null;E.modo='ver';E.z=1}
+    else if(a==='abrir'){E.vista='cab';E.sel=null;E.z=1;if(b.dataset.cab!==st.cab){st.cab=b.dataset.cab;renderCabs()}}
     else if(a==='mover'){E.mover=E.sel;E.borrar=null}else if(a==='borrar')E.borrar=E.sel;else if(a==='borrar-no')E.borrar=null;
     else if(a==='borrar-si'){const id=E.sel;inEdit(cab,x=>{x.el=x.el.filter(z=>z.id!==id)});E.sel=null;E.borrar=null}
     else if(a==='padd')inEdit(cab,x=>{x.pts.push({id:cab+'_p_'+Date.now().toString(36),n:'Punto '+(x.pts.length+1),min:null,max:null})});
     else if(a==='pdel')inEdit(cab,x=>{x.pts=x.pts.filter(z=>z.id!==b.dataset.id)});
+    else if(a==='drenaje'){st.tab='drenaje';renderCabs();renderTabs();renderMain();window.scrollTo(0,0);return}
+    else if(a==='verinc'){st.mSel=b.dataset.id;st.mNueva=null;st.tab='mapa';renderCabs();renderTabs();renderMain();return}
+    else if(a==='incid'){const x=inCfg(cab).el.find(z=>z.id===E.sel);if(!x)return;st.mNueva={tipo:IN_ITIPO[x.t]||'otro',prio:'media',txt:(x.n||'')+': ',adj:[],nave:x.nave,pasillo:x.pas??null,x:+x.x,y:+x.y,el:x.id};st.mSel=null;
+      st.tab='mapa';renderCabs();renderTabs();renderMain();const fm=$('#mform');if(fm)try{fm.scrollIntoView({behavior:'smooth',block:'nearest'})}catch(_){}return}
     else if(a==='ver'){E.sel=b.dataset.id;E.borrar=null;renderMain();const p=$('#main .inel');if(p)try{p.scrollIntoView({block:'start',behavior:'smooth'})}catch(_){}return}
     renderMain();return}
+  const fc=e.target.closest&&e.target.closest('#infsvg [data-incab]');if(fc){E.vista='cab';E.sel=null;E.z=1;if(fc.dataset.incab!==st.cab){st.cab=fc.dataset.incab;renderCabs()}renderMain();window.scrollTo(0,0);return}
   const svg=e.target.closest&&e.target.closest('#insvg');if(!svg)return;const g=e.target.closest('[data-inel]');
   if(g&&E.modo==='ver'&&!E.mover){E.sel=g.dataset.inel;E.borrar=null;renderMain();const p=$('#main .inel');if(p)try{p.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(_){}return}
-  if(!esGestor())return;const pt=inPunto(e);if(!pt)return;const Z=inZonas(cab),z=Z.zonas.find(q=>dentro(pt,q.p)),P=[+pt[0].toFixed(1),+pt[1].toFixed(1)];
-  if(E.mover){const id=E.mover;inEdit(cab,x=>{const el=x.el.find(q=>q.id===id);if(el){el.x=P[0];el.y=P[1];if(z&&z.sid)el.sid=z.sid}});E.mover=null;renderMain();return}
-  if(E.modo==='poner'){const id='el'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),tp=E.tipo;inEdit(cab,x=>{const k=x.el.filter(q=>q.t===tp).length+1;x.el.push({id,t:tp,n:IN_T[tp].n+' '+k,sid:(z&&z.sid)||'',x:P[0],y:P[1],min:null,max:null,nota:'',sk:tp==='sen'?'hum':''})});E.sel=id;renderMain()}
-  else if(E.modo==='naves'){if(!z||z.nave==null)return;const sid=E.secSel;inEdit(cab,x=>{if(x.naves[z.nave]===sid)delete x.naves[z.nave];else x.naves[z.nave]=sid});renderMain()}
+  if(!esGestor())return;const pt=inPunto(e);if(!pt)return;const P=[+pt[0].toFixed(1),+pt[1].toFixed(1)],w=inDonde(cab,pt);
+  if(E.mover){const id=E.mover;inEdit(cab,x=>{const el=x.el.find(q=>q.id===id);if(el){el.x=P[0];el.y=P[1];el.nave=w.nave??null;el.pas=w.pas??null;if(w.sid)el.sid=w.sid}});E.mover=null;renderMain();return}
+  if(E.modo==='poner'){const id='el'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),tp=E.tipo;inEdit(cab,x=>{const k=x.el.filter(q=>q.t===tp).length+1;x.el.push({id,t:tp,n:IN_T[tp].n+' '+k,sid:w.sid||'',nave:w.nave??null,pas:w.pas??null,x:P[0],y:P[1],min:null,max:null,nota:'',sk:tp==='sen'?'hum':'',bj:''})});E.sel=id;renderMain()}
+  else if(E.modo==='sect'){if(w.nave==null)return;const sid=E.secSel,z=inZonas(cab).zonas.find(q=>q.nave===w.nave);
+    inEdit(cab,x=>{if(E.secPor==='nave'){const todos=pasLineas(cab,z.nv).map(l=>l.num),ya=todos.every(n=>inSid(x,w.nave,n)===sid);for(const n of todos)delete x.pas[w.nave+':'+n];if(ya)delete x.naves[w.nave];else x.naves[w.nave]=sid}
+      else{const k=w.nave+':'+w.pas;if(inSid(x,w.nave,w.pas)===sid){if(x.naves[w.nave]===sid)x.pas[k]=null;else delete x.pas[k]}else x.pas[k]=sid}
+      for(const el of x.el)if(el.nave===w.nave&&(E.secPor==='nave'||el.pas===w.pas))el.sid=inSid(x,el.nave,el.pas)||el.sid});renderMain()}
   else if(E.modo==='cab'){inEdit(cab,x=>{x.cab=P});E.modo='ver';renderMain()}});
 
 /* ---------- Cálculo del aforo ----------
@@ -2033,7 +2101,7 @@ document.addEventListener('click',e=>{if(st.tab!=='mapa')return;
 document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.mi;if(!k||!st.mNueva)return;if(k==='txt')st.mNueva.txt=e.target.value});
 document.addEventListener('change',e=>{const k=e.target.dataset&&e.target.dataset.mi;if(k==='file'&&st.mNueva&&e.target.files.length){const fs=[...e.target.files];e.target.value='';addFiles(fs,st.mNueva.adj)}});
 async function miGuardar(){const N=st.mNueva;if(!N||N.x==null)return;const now=new Date().toISOString();
-  const i={ts:now,fecha:hoy(),cab:st.cab,finca:fincaDeCab(st.cab),nave:N.nave,pasillo:N.pasillo||null,x:+N.x.toFixed(1),y:+N.y.toFixed(1),tipo:N.tipo,prio:N.prio,txt:(N.txt||'').trim(),fotos:N.adj.filter(a=>!a.tmp),estado:'abierta',por:yoNombre(),porEmail:miEmail()};
+  const i={ts:now,fecha:hoy(),cab:st.cab,finca:fincaDeCab(st.cab),nave:N.nave,pasillo:N.pasillo||null,x:+N.x.toFixed(1),y:+N.y.toFixed(1),tipo:N.tipo,prio:N.prio,txt:(N.txt||'').trim(),fotos:N.adj.filter(a=>!a.tmp),estado:'abierta',por:yoNombre(),porEmail:miEmail(),...(N.el?{el:N.el}:{})};
   try{const id=await Store.addCol('incidencias',i);st.inc.unshift({...i,id});st.mNueva=null;st.mSel=id;renderMain();renderGrupos();toast('Incidencia guardada: '+lugar(i).toLowerCase());
     let para=[...new Set([...encargadosDe(i.finca),...adminsEmails()])];const t=ITIPOS[i.tipo]||ITIPOS.otro;
     pushEnviar(para,`${i.prio==='alta'?'URGENTE · ':''}${t[0]} · ${lugar(i).toLowerCase()} · ${cabNombre(i.cab)}`,(i.txt||'Sin descripción')+' · '+yoNombre(),'inc-'+id,'mapa')}catch(e){toast(errMsg(e))}}
@@ -4904,7 +4972,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v127';
+window.APP_V='abonado-v128';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
