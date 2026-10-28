@@ -33,8 +33,8 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .scroller.drag{cursor:grabbing;user-select:none}
 @media (hover:hover) and (pointer:fine){.scroller{flex-wrap:wrap;overflow:visible;row-gap:2px}}
 .chip{flex:none;font:600 14px var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 13px;cursor:pointer}
-.mfsel{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:2px}
-.mfb{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:700 13px var(--f-body);letter-spacing:.02em;border:0;border-radius:10px;padding:9px 8px;background:none;color:var(--muted);cursor:pointer;text-align:center;line-height:1.2}
+.mfsel{display:flex;flex-wrap:wrap;gap:4px;padding:4px;border:1px solid var(--line);border-radius:14px;background:var(--surface);margin-bottom:2px}
+.mfb{flex:1 1 auto;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:700 13px var(--f-body);letter-spacing:.02em;border:0;border-radius:10px;padding:9px 8px;background:none;color:var(--muted);cursor:pointer;text-align:center;line-height:1.2}
 .mfb[aria-selected="true"]{background:var(--navy);color:var(--bg)}.mfb i{font-style:normal;font-size:11px;min-width:18px;padding:1px 5px;border-radius:999px;background:#c0392b;color:#fff}
 @media (max-width:560px){.mfb{font-size:12px;padding:8px 4px}}
 .esley{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;font-weight:600;color:var(--muted)}.esley span{display:inline-flex;align-items:center;gap:5px}.esley i{width:12px;height:12px;border-radius:3px}
@@ -44,6 +44,9 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .esvs{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.esv{border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:grid;gap:2px}.esv span{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em}.esv b{font-size:18px}.esv small{font-size:11px;color:var(--muted)}
 .esmot{list-style:none;margin:0;padding:0;display:grid;gap:6px}.esmot li{border-left:4px solid var(--c);padding:6px 10px;background:var(--surface);border-radius:6px;display:grid;gap:2px}.esmot span{font-size:13px;color:var(--muted)}
 .escausa{display:grid;gap:6px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line)}.escausa .btn{justify-self:start}
+.plr{list-style:none;margin:0;padding:0;display:grid;gap:8px}.plr li{border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:10px 12px;display:grid;gap:4px}
+.plh{display:flex;align-items:center;gap:8px}.plh i{width:12px;height:12px;border-radius:50%;background:var(--c)}.plh b{flex:1;font-size:15px}.plh em{font-style:normal;font-size:11px;font-weight:800;color:var(--c);letter-spacing:.05em}
+.plr span{font-size:13px}.plr .plp{font-weight:700;color:var(--ink)}.plr small{font-size:12.5px;color:var(--muted);line-height:1.4}
 .esajb{all:unset;cursor:pointer;display:grid;gap:2px;width:100%}.esajb h3::after{content:' ▾';font-size:.8em}.esajb[aria-expanded="true"] h3::after{content:' ▴'}
 .ajg{border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
 .ajh{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer}.ajh:focus-visible{outline:2px solid var(--navy);outline-offset:-2px}
@@ -647,13 +650,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{tipo:'planta',cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},sug:null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},trampa:{},sug:null}}
 /* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
 const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
 const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
 st.regMod=new Set();
 const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
-function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -701,7 +704,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -808,7 +811,7 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.
 function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
-const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
@@ -824,9 +827,9 @@ const CAMPO=new Set(GRUPOS_CAMPO.flatMap(g=>g.tabs));
 const areaDe=t=>CAMPO.has(t)?'campo':'riego';
 function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO;const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
 /* Mapa de la finca: incidencias, en vivo e instalación en una sola pantalla */
-const MF_VISTAS=['mapa','vivo','instal','estres'];
+const MF_VISTAS=['mapa','vivo','instal','estres','plagas'];
 function mfHead(){const n=(()=>{try{return incAbiertas().filter(i=>i.cab===st.cab).length}catch(e){return 0}})(),a=(()=>{try{return inAlertas(st.cab)}catch(e){return 0}})();
-  return `<div data-out="mfsel"><div class="mfsel" role="tablist" aria-label="Mapa de la finca">${[['mapa','Incidencias',n],['vivo','En vivo',0],['instal','Instalación',a],['estres','Clima y estrés',(()=>{try{return esZonas(st.cab).zs.filter(z=>{const R=esCalc(esDato(st.cab,z.k),esU());return R&&R.niv===2}).length}catch(e){return 0}})()]].filter(([k])=>tabPermitida(k)).map(([k,t,c])=>`<button class="mfb" role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${t}${c?`<i>${c}</i>`:''}</button>`).join('')}</div></div>`}
+  return `<div data-out="mfsel"><div class="mfsel" role="tablist" aria-label="Mapa de la finca">${[['mapa','Incidencias',n],['vivo','En vivo',0],['instal','Instalación',a],['estres','Clima y estrés',(()=>{try{return esZonas(st.cab).zs.filter(z=>{const R=esCalc(esDato(st.cab,z.k),esU());return R&&R.niv===2}).length}catch(e){return 0}})()],['plagas','Plagas',(()=>{try{return esZonas(st.cab).zs.filter(z=>plMax(st.cab,z)===2).length}catch(e){return 0}})()]].filter(([k])=>tabPermitida(k)).map(([k,t,c])=>`<button class="mfb" role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${t}${c?`<i>${c}</i>`:''}</button>`).join('')}</div></div>`}
 const grupoDe=tab=>{const G=gruposAct();return G.find(g=>g.tabs.includes(tab))||G[0]};
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(ptRevisa()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
@@ -1984,7 +1987,7 @@ function esCalc(d,U){if(!d||d.ta==null||d.hr==null)return null;const ta=d.ta,hr=
   dpvH=th!=null?pvs(th)-pa*hr/100:null,dt=th!=null?th-ta:null,td=esRocio(ta,hr),mg=Math.min(ta,th??ta)-td,tmax=Math.max(d.tmax??ta,ta),h32=d.h32;
   const mot=[];let niv=0;const pon=(n,t,q)=>{niv=Math.max(niv,n);mot.push([n,t,q])};
   if(dt!=null&&dt>U.dtRojo)pon(2,`Hoja ${fmt(dt,1)} °C más caliente que el aire`,'Estrés hídrico: la planta no transpira');
-  else if(dt!=null&&dt>U.dtAm)pon(1,`Hoja casi a la temperatura del aire (${dt>0?'+':''}${fmt(dt,1)} °C)`,'Empieza a cerrar estomas');
+  else if(dt!=null&&dt>U.dtAm&&dpv>=U.dpvLo)pon(1,`Hoja casi a la temperatura del aire (${dt>0?'+':''}${fmt(dt,1)} °C)`,'Empieza a cerrar estomas');
   if(dpv>U.dpvMax+.5)pon(2,`Aire muy seco: DPV ${fmt(dpv,2)} kPa`,'Nebulizar o mojar pasillos, sombrear y bajar algo la CE');
   else if(dpv>U.dpvMax)pon(1,`Aire seco: DPV ${fmt(dpv,2)} kPa`,'Si dura más de 2 h es estrés: nebulizar o sombrear');
   else if(dpv>U.dpvHi)pon(1,`Algo seco: DPV ${fmt(dpv,2)} kPa`,'Vigilar a mediodía');
@@ -2021,9 +2024,9 @@ function esResHTML(cab,x){const U=esU(),d=esDato(cab,x.k),R=esCalc(d,U);if(!R)re
     ${esCausa(cab,x.z,R,U)}
     ${esGestor()&&R.dt!=null?`<div class="row"><button class="btn" type="button" data-esact="cal">Plantas bien regadas: usar para calibrar</button></div>`:''}`)}
 function esFormHTML(cab,x){const d=esDato(cab,x.k)||{},f=(id,l,u,v,i)=>`<div class="field"><label for="es_${id}">${l}</label><div class="inp sm"><input id="es_${id}" data-es="${id}"${i!=null?` data-i="${i}"`:''} inputmode="decimal" autocomplete="off" value="${inVal(v)}"><span class="u">${u}</span></div></div>`;
-  return `<div class="esform"><div class="frm">${f('ta','Aire (a la sombra)','°C',d.ta)}${f('hr','Humedad','%',d.hr)}${f('tmax','Máxima del día','°C',d.tmax)}${f('h32','Horas de calor','h',d.h32)}</div>
+  return `<div class="esform"><div class="frm">${f('ta','Aire (a la sombra)','°C',d.ta)}${f('hr','Humedad','%',d.hr)}${f('tmax','Máxima del día','°C',d.tmax)}${f('tmin','Mínima del día','°C',d.tmin)}${f('h32','Horas de calor','h',d.h32)}${f('h90','Horas con humedad > 90 %','h',d.h90)}</div>
     <div class="field"><label>Hojas al sol (pistola infrarroja, 4 o 5 hojas)</label><div class="eshojas">${[0,1,2,3,4].map(i=>`<div class="inp sm"><input data-es="h" data-i="${i}" inputmode="decimal" autocomplete="off" aria-label="Hoja ${i+1}" value="${inVal((d.h||[])[i])}"><span class="u">°C</span></div>`).join('')}</div></div>
-    <div class="note">Termohigrómetro a la altura de la planta y a la sombra. Hojas de arriba ya desarrolladas, al sol, a unos 20 cm. Mejor entre las 13:00 y las 15:00 solares. «Horas de calor»: las que marque el registro por encima de ${esU().tCal} °C.</div></div>`}
+    <div class="note">Termohigrómetro a la altura de la planta y a la sombra. Hojas de arriba ya desarrolladas, al sol, a unos 20 cm. Mejor entre las 13:00 y las 15:00 solares. «Horas de calor» y «horas con humedad > 90 %»: las que marque el registro. Con la máxima y la mínima se calculan los grados-día de las plagas.</div></div>`}
 function esAjHTML(){if(!esGestor())return '';const U=esU(),C=esCal();
   return `<section class="card"><button class="esajb" type="button" data-esact="aj" aria-expanded="${!!st.es.aj}"><h3>Umbrales del semáforo</h3><span class="sub">Orientativos para tomate · ${C.n} medidas de planta sana${C.a!=null?' · calibrado':''}</span></button>
     ${st.es.aj?`<div class="frm">${ES_CAMPOS.map(([k,l,u])=>`<div class="field"><label for="esu_${k}">${l}</label><div class="inp sm"><input id="esu_${k}" data-esu="${k}" inputmode="decimal" value="${inVal(U[k])}"><span class="u">${u}</span></div></div>`).join('')}</div>
@@ -2047,6 +2050,106 @@ document.addEventListener('click',e=>{if(st.tab!=='estres')return;const g=e.targ
     st.cfg.estres={...(st.cfg.estres||{}),cal};st.dirtyCfg=true;renderSave();renderMain();toast(`Medida de planta sana guardada (${cal.length}${cal.length<6?' de 6':''}). Pulsa «Guardar receta y ajustes».`)}
   else if(a==='calborra'&&esGestor()){st.cfg.estres={...(st.cfg.estres||{})};delete st.cfg.estres.cal;st.dirtyCfg=true;renderSave();renderMain()}
   else if(a==='incid'&&x){const z=x.z;st.mNueva={tipo:'riego',prio:'media',txt:'Estrés: hoja caliente con drenaje y CE normales. ',adj:[],nave:z.nave??null,pasillo:null,x:z.c[0],y:z.c[1]};st.mSel=null;st.tab='mapa';renderCabs();renderTabs();renderMain()}});
+
+/* ---------- Plagas y enfermedades: riesgo por nave con el clima medido, los grados-día y los conteos de trampas ----------
+   Tuta (grados-día desde la primera captura), araña roja (grados-día + aire seco), Botrytis (horas de humedad alta y rocío),
+   cambio de color del fruto (calor, mosca blanca, CE) y virosis (vectores: mosca blanca y trips; ToBRFV por contacto).
+   Es un aviso para vigilar y prevenir dentro de la Gestión Integrada de Plagas: el tratamiento lo decide el técnico. */
+const PL_DEF={tutaAm:1,tutaRojo:30,mbAm:20,mbRojo:60,triAm:15,triRojo:40,colRojo:10,h90Am:4,h90Rojo:8};
+const PL_CAMPOS=[['tutaAm','Tuta: ojo desde','capturas'],['tutaRojo','Tuta: alto desde','capturas'],['mbAm','Mosca blanca: ojo desde','por placa'],['mbRojo','Mosca blanca: alto desde','por placa'],
+  ['triAm','Trips: ojo desde','por placa'],['triRojo','Trips: alto desde','por placa'],['colRojo','Frutos con mal color: alto desde','%'],['h90Am','Botrytis: ojo desde','h > 90 %'],['h90Rojo','Botrytis: alto desde','h > 90 %']];
+/* Grados-día: umbral inferior y grados-día por generación (bibliografía) */
+const PL_BIO={tuta:{base:7.8,gen:478},ara:{base:13.8,gen:136}};
+const PL_ARA=['Ninguna','Focos','Extendida'];
+st.pl=st.pl||{aj:false};
+const plU=()=>({...PL_DEF,...((st.cfg&&st.cfg.plagas)||{})});
+const plAdd=(f,n)=>{const d=new Date(f+'T12:00:00');d.setDate(d.getDate()+n);return isoD(d)};
+const plSem=f=>{const d=new Date(f+'T12:00:00');d.setDate(d.getDate()+3-((d.getDay()+6)%7));const w1=new Date(d.getFullYear(),0,4);return 1+Math.round(((d-w1)/864e5-3+((w1.getDay()+6)%7))/7)};
+const plFC=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'});
+function plDias(){const m={};for(const r of(st.hist||[]))if(r&&r.fecha)m[r.fecha]=r;if(st.reg)m[st.fecha]=st.reg;return m}
+const plTr=(r,cab,k)=>((r&&r.trampa)||{})[cab+':'+k]||null;
+/* Máxima y mínima de un día en una nave; si esa nave no se midió, la media de las otras naves del cabezal */
+function plT(r,cab,k){const C=(r&&r.clima)||{},ok=d=>d&&d.tmax!=null&&d.tmin!=null,own=C[cab+':'+k];if(ok(own))return{mx:own.tmax,mn:own.tmin};
+  const o=Object.entries(C).filter(([x,d])=>x.startsWith(cab+':')&&ok(d)).map(([,d])=>d);return o.length?{mx:esMedia(o.map(d=>d.tmax)),mn:esMedia(o.map(d=>d.tmin)),cab:1}:null}
+const plDD=(t,base)=>t?Math.max(0,(t.mx+t.mn)/2-base):null;
+/* Ritmo de grados-día por día: media de los días medidos en las 2 últimas semanas */
+function plRitmo(D,cab,k,base){const v=[];for(let i=0;i<14;i++){const t=plT(D[plAdd(st.fecha,-i)],cab,k);if(t)v.push(plDD(t,base))}return v.length?{r:esMedia(v),n:v.length}:null}
+/* Grados-día desde una fecha hasta el día de hoy (los días sin medir se estiman con el ritmo) */
+function plAcum(D,cab,k,desde,base){const R=plRitmo(D,cab,k,base);let s=0,med=0,tot=0;for(let f=desde;f<=st.fecha;f=plAdd(f,1)){tot++;const t=plT(D[f],cab,k);if(t){s+=plDD(t,base);med++}else if(R)s+=R.r}return{s,med,tot,R}}
+/* Primera captura (o primer foco) de los últimos 120 días */
+function plBiofix(D,cab,k,campo){const f0=plAdd(st.fecha,-120);return Object.keys(D).filter(f=>f>=f0&&f<=st.fecha).sort().find(f=>{const t=plTr(D[f],cab,k);return t&&t[campo]>0})||null}
+/* Últimos conteos de un campo: [más reciente, anterior] */
+function plCuentas(D,cab,k,campo){return Object.keys(D).filter(f=>f<=st.fecha&&f>=plAdd(st.fecha,-60)).sort().reverse().map(f=>[f,(plTr(D[f],cab,k)||{})[campo]]).filter(x=>x[1]!=null).slice(0,2)}
+const plSube=c=>c.length>1&&c[0][1]>c[1][1]*1.5&&c[0][1]>c[1][1]+2;
+/* Días recientes con un dato de clima */
+function plClima(D,cab,k,n){const o=[];for(let i=0;i<n;i++){const f=plAdd(st.fecha,-i),d=((D[f]||{}).clima||{})[cab+':'+k];if(d)o.push([f,d])}return o}
+function plPrev(D,cab,k,bio,campo,nom){const B=PL_BIO[bio],f0=plBiofix(D,cab,k,campo);if(!f0)return null;const A=plAcum(D,cab,k,f0,B.base);if(!A.R)return{txt:`Primera ${campo==='tuta'?'captura':'observación'} el ${plFC(f0)}: apunta máximas y mínimas para fechar la siguiente generación`};
+  const g=Math.floor(A.s/B.gen)+1,falta=B.gen-A.s%B.gen,dias=A.R.r>0?Math.round(falta/A.R.r):null,f=dias!=null?plAdd(st.fecha,dias):null;
+  return{dias,f,txt:`Desde la primera ${campo==='tuta'?'captura':'observación'} (${plFC(f0)}): ${fmt(A.s,0)} grados-día, generación ${g}. ${dias!=null?`Siguiente generación de ${nom} hacia el ${plFC(f)} (semana ${plSem(f)})`:'Hace demasiado frío para avanzar'}${A.med<A.tot?` · ${A.med} de ${A.tot} días medidos`:''}`}}
+/* Riesgo de cada problema en una nave: [nivel 0-2, motivo, previsión, qué hacer] */
+function plRiesgos(cab,z){const D=plDias(),k=z.k,U=plU(),EU=esU(),hoyT=plTr(D[st.fecha],cab,k)||{},out=[];
+  // Tuta absoluta
+  {const c=plCuentas(D,cab,k,'tuta'),P=plPrev(D,cab,k,'tuta','tuta','adultos');let n=0,m;
+    if(!c.length)m='Sin conteos: pon una trampa de feromona y apunta las capturas cada semana';
+    else{const v=c[0][1];n=v>=U.tutaRojo?2:(v>=U.tutaAm||plSube(c))?1:0;m=`${v} capturas el ${plFC(c[0][0])}${c.length>1?` (antes ${c[1][1]})`:''}${plSube(c)?' · subiendo':''}`}
+    if(P&&P.dias!=null&&P.dias<=7&&n<2)n=Math.max(n,1);
+    out.push({id:'tuta',t:'Tuta absoluta',n,m,p:P&&P.txt,q:'Revisa galerías en hojas nuevas y frutos. Mantén trampas y auxiliares (Nesidiocoris). Si se confirman daños, tratamiento autorizado para tomate: consulta a tu técnico.'})}
+  // Araña roja
+  {const cl=plClima(D,cab,k,7),R=cl.map(([,d])=>esCalc(d,EU)).filter(Boolean),secos=R.filter(r=>r.dpv>EU.dpvMax||(r.dt!=null&&r.dt>EU.dtRojo)).length,
+      tm=esMedia(cl.map(([,d])=>d.tmax!=null&&d.tmin!=null?(d.tmax+d.tmin)/2:null)),obs=plCuentas(D,cab,k,'ara'),o=obs.length?obs[0][1]:null,Rt=plRitmo(D,cab,k,PL_BIO.ara.base),P=plPrev(D,cab,k,'ara','ara','araña');
+    const fav=secos>=3&&(tm==null||tm>=22);let n=o>=2?2:o===1?(fav?2:1):fav?1:0;
+    const m=[o!=null?`Envés: ${PL_ARA[o]}`:'Sin revisar el envés',R.length?`${secos} de ${R.length} días con aire seco o planta con estrés hídrico`:'Sin medidas de clima esta semana'].join(' · ');
+    out.push({id:'ara',t:'Araña roja',n,m,p:P&&P.dias!=null?P.txt:Rt&&Rt.r>0?`A este ritmo, una generación cada ${Math.round(PL_BIO.ara.gen/Rt.r)} días`:'',q:'Sube la humedad (nebulizar, mojar pasillos), revisa el envés de las hojas de abajo y plantéate una suelta de Phytoseiulus o Amblyseius californicus. Evita los piretroides.'})}
+  // Botrytis
+  {const cl=plClima(D,cab,k,5),dias=cl.map(([f,d])=>{const R=esCalc(d,EU);return{f,h:d.h90,mg:R?R.mg:null}}),rojo=dias.filter(x=>x.h!=null&&x.h>=U.h90Rojo),am=dias.filter(x=>(x.h!=null&&x.h>=U.h90Am)||(x.mg!=null&&x.mg<EU.rocio));
+    const n=rojo.length?2:am.length?1:0;
+    const m=cl.length?(n?`${(rojo.length?rojo:am).length} de los últimos ${cl.length} días medidos con humedad alta o condensación${rojo.length?` (hasta ${Math.max(...rojo.map(x=>x.h))} h por encima del 90 %)`:''}`:'Humedad bajo control los últimos días'):'Sin medidas: apunta las horas con humedad por encima del 90 % que marque el registro';
+    out.push({id:'bot',t:'Botrytis',n,m,p:n?'El riesgo sigue mientras haya noches húmedas y condensación al amanecer':'',q:'Ventila al amanecer para que no gotee, no riegues al final de la tarde, retira hojas y restos afectados. Si se esperan varios días húmedos, preventivo autorizado: consulta a tu técnico.'})}
+  // Cambio de color del fruto
+  {const cl=plClima(D,cab,k,14),cal=cl.filter(([,d])=>(d.h32!=null&&d.h32>0)||(d.tmax!=null&&d.tmax>32)).length,mb=plCuentas(D,cab,k,'mb'),col=plCuentas(D,cab,k,'col'),D2=esDren(cab,z.z),ceMax=st.cfg.alertas.ceMax,causas=[];
+    if(cal)causas.push(`${cal} ${cal===1?'día':'días'} con más de 32 °C en 2 semanas (el calor frena el color: hombros amarillos)`);
+    if(mb.length&&mb[0][1]>=U.mbAm)causas.push(`mosca blanca (${mb[0][1]} por placa): provoca maduración irregular`);
+    if(D2.ce!=null&&ceMax!=null&&D2.ce>ceMax)causas.push(`CE de drenaje alta (${uS(D2.ce)} µS/cm)`);
+    const v=col.length?col[0][1]:null,n=v!=null&&v>=U.colRojo?2:(v>0||causas.length)?1:0;
+    out.push({id:'col',t:'Cambio de color del fruto',n,m:(v!=null?`${v} % de frutos con mal color`:'Sin revisar frutos')+(causas.length?' · posibles causas: '+causas.join('; '):''),p:'',
+      q:'Calor: sombreo o blanqueo y ventilar. Mosca blanca: contrólala. Revisa con tu técnico el potasio de la receta. Si ves manchas, mosaico o anillos, puede ser virus: apunta incidencia y manda muestra a analizar.'})}
+  // Virosis
+  {const mb=plCuentas(D,cab,k,'mb'),tri=plCuentas(D,cab,k,'tri'),sos=plCuentas(D,cab,k,'vir'),s=sos.length?sos[0][1]:0,lv=(c,a,r)=>!c.length?0:c[0][1]>=r?2:(c[0][1]>=a||plSube(c))?1:0;
+    const nm=lv(mb,U.mbAm,U.mbRojo),nt=lv(tri,U.triAm,U.triRojo),n=s>0?2:Math.max(nm,nt),m=[mb.length?`Mosca blanca ${mb[0][1]} por placa${plSube(mb)?' (subiendo)':''} → virus de la cuchara (TYLCV)`:'Sin placa amarilla',
+      tri.length?`Trips ${tri[0][1]} por placa${plSube(tri)?' (subiendo)':''} → bronceado (TSWV)`:'Sin placa azul',s?`${s} plantas sospechosas`:''].filter(Boolean).join(' · ');
+    out.push({id:'vir',t:'Virosis',n,m,p:'El rugoso (ToBRFV) no depende del clima: va por manos, herramientas y ropa',q:'Controla los vectores (mallas, placas, auxiliares), quita malas hierbas, desinfecta manos y herramientas al cambiar de nave. Plantas sospechosas: apunta incidencia, arráncalas con cuidado y analiza.'})}
+  return out}
+const plMax=(cab,z)=>{try{return Math.max(...plRiesgos(cab,z).map(r=>r.n))}catch(e){return 0}};
+function plSVG(cab){const{Z,zs}=esZonas(cab),[vx,vy,vw,vh]=Z.vb,k=Math.max(vw,vh)/1000;
+  let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg essvg" id="plsvg" role="img" aria-label="Riesgo de plagas por nave"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f7f3e8"/>`;if(Z.M&&Z.M.fondo)s+=Z.M.fondo();
+  for(const x of zs){const n=plMax(cab,x),sel=st.es.z===x.k,c=x.z.c;
+    s+=`<g data-plz="${x.k}" style="cursor:pointer"><polygon points="${inPP(x.z.p)}" fill="${ES_COL[n]}" fill-opacity=".5" stroke="${sel?'#1b2f4a':'#5d6f84'}" stroke-width="${(sel?6:2.5)*k}" stroke-linejoin="round"/>
+      <g transform="translate(${c[0].toFixed(1)} ${c[1].toFixed(1)}) rotate(${(Z.M&&Z.M.ang)||0})"><rect x="${-50*k}" y="${-17*k}" width="${100*k}" height="${34*k}" rx="${12*k}" fill="#1b2f4a" opacity=".88"/><text y="${6*k}" text-anchor="middle" font-size="${16*k}" font-weight="800" fill="#fff">${esc(x.lab.toUpperCase())}</text></g></g>`}
+  return s+`</svg>`}
+function plFormHTML(cab,x){const d=plTr(st.reg,cab,x.k)||{},f=(id,l,u)=>`<div class="field"><label for="pl_${id}">${l}</label><div class="inp sm"><input id="pl_${id}" data-pl="${id}" inputmode="numeric" autocomplete="off" value="${inVal(d[id])}"><span class="u">${u}</span></div></div>`;
+  return `<div class="esform"><div class="frm">${f('tuta','Tuta: capturas en la trampa de feromona','nº')}${f('mb','Mosca blanca: por placa amarilla','nº')}${f('tri','Trips: por placa azul','nº')}${f('col','Frutos con mal color','%')}${f('vir','Plantas sospechosas de virus','nº')}</div>
+    <div class="field"><label>Araña roja en el envés</label><div class="row" style="gap:6px">${PL_ARA.map((t,i)=>`<button class="chip" type="button" data-plara="${i}" aria-pressed="${d.ara===i}">${t}</button>`).join('')}</div></div>
+    <div class="note">Una vez por semana, el mismo día. Las capturas y las placas, desde el último conteo. Las máximas, mínimas y horas de humedad se apuntan en «Clima y estrés».</div></div>`}
+function plAjHTML(){if(!esGestor())return '';const U=plU();
+  return `<section class="card"><button class="esajb" type="button" data-plact="aj" aria-expanded="${!!st.pl.aj}"><h3>Umbrales de plagas</h3><span class="sub">Orientativos: ajústalos con tu técnico</span></button>
+    ${st.pl.aj?`<div class="frm">${PL_CAMPOS.map(([k,l,u])=>`<div class="field"><label for="plu_${k}">${l}</label><div class="inp sm"><input id="plu_${k}" data-plu="${k}" inputmode="decimal" value="${inVal(U[k])}"><span class="u">${u}</span></div></div>`).join('')}</div>
+    <div class="note">Grados-día por generación: Tuta ${PL_BIO.tuta.gen} por encima de ${fmt(PL_BIO.tuta.base,1)} °C; araña roja ${PL_BIO.ara.gen} por encima de ${fmt(PL_BIO.ara.base,1)} °C. Después pulsa «Guardar receta y ajustes».</div>`:''}</section>`}
+function vPlagas(){const cab=st.cab,c=cabById(cab);if(!c)return '';if(st.hist===null)loadHist();const{zs}=esZonas(cab);if(!zs.find(x=>x.k===st.es.z))st.es.z=(zs[0]||{}).k||null;const x=zs.find(z=>z.k===st.es.z);
+  const niv=zs.map(z=>plMax(cab,z)),cu=n=>niv.filter(v=>v===n).length;
+  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Plagas · ${esc(c.nombre)}</h3><div class="sub">${cu(2)?cu(2)+' con riesgo alto · ':''}${cu(1)?cu(1)+' para vigilar · ':''}toca una nave para ver el detalle</div></div></div>
+    <div data-out="plsvg">${plSVG(cab)}</div><div class="esley">${[0,1,2].map(n=>`<span><i style="background:${ES_COL[n]}"></i>${['Sin riesgo','Vigilar','Riesgo alto'][n]}</span>`).join('')}</div></section>`;
+  if(x)h+=`<section class="card"><div><h3>${esc(x.lab)}</h3><div class="sub">Riesgo de plagas y enfermedades · semana ${plSem(st.fecha)}</div></div>
+    <div data-out="plres">${esUd(`<ul class="plr">${plRiesgos(cab,x).map(r=>`<li style="--c:${ES_COL[r.n]}"><div class="plh"><i></i><b>${esc(r.t)}</b><em>${['Sin riesgo','Vigilar','Riesgo alto'][r.n]}</em></div><span>${esc(r.m)}</span>${r.p?`<span class="plp">${esc(r.p)}</span>`:''}${r.n?`<small>${esc(r.q)}</small>`:''}</li>`).join('')}</ul>`)}</div>
+    <div class="note">Es un aviso para vigilar y prevenir (Gestión Integrada de Plagas). Antes de tratar, confirma en campo; el producto y la dosis, con tu técnico y con productos autorizados para tomate.</div></section>
+    <section class="card"><div><h3>Trampas y revisión · ${esc(x.lab)}</h3><div class="sub">Lo de hoy (${plFC(st.fecha)})</div></div>${plFormHTML(cab,x)}</section>`;
+  return h+plAjHTML()}
+function plPon(cab,k,f){const r=st.reg;if(!r.trampa)r.trampa={};const key=cab+':'+k,d={...(r.trampa[key]||{})};f(d);r.trampa[key]=d;marcaReg('trampa.'+key)}
+$('#main').addEventListener('input',e=>{const t=e.target;if(!t.dataset)return;
+  if(t.dataset.pl!=null){const v=num(t.value),k=t.dataset.pl;plPon(st.cab,st.es.z,d=>{if(v==null)delete d[k];else d[k]=v});softUpdate();renderSave()}
+  else if(t.dataset.plu!=null&&esGestor()){const v=num(t.value);st.cfg.plagas={...(st.cfg.plagas||{})};if(v==null)delete st.cfg.plagas[t.dataset.plu];else st.cfg.plagas[t.dataset.plu]=v;st.dirtyCfg=true;softUpdate();renderSave()}});
+document.addEventListener('click',e=>{if(st.tab!=='plagas')return;const g=e.target.closest&&e.target.closest('[data-plz]');if(g){st.es.z=g.dataset.plz;renderMain();return}
+  const a=e.target.closest&&e.target.closest('[data-plara]');if(a){const i=+a.dataset.plara;plPon(st.cab,st.es.z,d=>{if(d.ara===i)delete d.ara;else d.ara=i});renderMain();renderSave();return}
+  const b=e.target.closest&&e.target.closest('[data-plact]');if(b&&b.dataset.plact==='aj'){st.pl.aj=!st.pl.aj;renderMain()}});
 
 /* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */
 /* Gasolinera tenía las naves numeradas al revés en el plano (la 1 abajo). Lo apuntado tocando el plano guardó ese número:
@@ -3166,7 +3269,7 @@ document.addEventListener('click',e=>{if(st.tab!=='montaje')return;const b=e.tar
 document.addEventListener('input',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(k==='txt')st.tb.txt=t.value});
 document.addEventListener('change',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(!k)return;
   if(k==='diam')st.tb.diam=t.value;else if(k==='marc'){st.tb.marc[+t.dataset.i]=t.checked}else if(k==='foto'&&t.files&&t.files.length){const fs=[...t.files];t.value='';tbAddFotos(fs)}});
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje};
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje};
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);
