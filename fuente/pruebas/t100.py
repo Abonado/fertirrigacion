@@ -1,5 +1,5 @@
 """Mapa de la finca → Plagas: con el clima de los días (máxima y mínima) y las trampas, la app pone el riesgo por nave de Tuta,
-araña roja, Botrytis, cambio de color del fruto y virosis; fecha la siguiente generación con grados-día desde la primera captura,
+araña roja, Botrytis, cambio de color del fruto, rugoso y otros virus; fecha la siguiente generación con grados-día desde la primera captura,
 guarda los conteos en el día y los umbrales se pueden cambiar."""
 import asyncio, sys
 from playwright.async_api import async_playwright
@@ -56,8 +56,10 @@ async def main():
         assert t['gas:n2']['tuta'] == 35 and t['gas:n4']['vir'] == 2
         # umbrales
         await pg.click('[data-plact="aj"]'); await pg.wait_for_timeout(300); await pg.fill('#plu_mbRojo', '100'); await pg.fill('#plu_triRojo', '100'); await pg.wait_for_timeout(300)
-        v = await pg.evaluate("plRiesgos('gas',esZonas('gas').zs.find(z=>z.k==='n4')).find(r=>r.id==='vir').n"); assert v == 2, 'con plantas sospechosas sigue en rojo'
-        await pg.evaluate("st.reg.trampa['gas:n4'].vir=0"); v = await pg.evaluate("plRiesgos('gas',esZonas('gas').zs.find(z=>z.k==='n4')).find(r=>r.id==='vir').n"); assert v == 1
+        r = lambda i: pg.evaluate(f"plRiesgos('gas',esZonas('gas').zs.find(z=>z.k==='n4')).find(r=>r.id==='{i}').n")
+        assert await r('vir') == 1, 'con los umbrales más altos, los vectores bajan a vigilar (siguen subiendo)'
+        assert await r('rug') == 2, 'con plantas con síntomas de rugoso, rojo'
+        await pg.evaluate("st.reg.trampa['gas:n4'].vir=0"); assert await r('rug') == 0
         await pg.evaluate("saveCfg()"); await pg.wait_for_timeout(1500); assert (await pg.evaluate("Store.getConfig().then(c=>c.plagas)"))['mbRojo'] == 100
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

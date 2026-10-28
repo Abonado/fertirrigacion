@@ -44,6 +44,7 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .esvs{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.esv{border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:grid;gap:2px}.esv span{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em}.esv b{font-size:18px}.esv small{font-size:11px;color:var(--muted)}
 .esmot{list-style:none;margin:0;padding:0;display:grid;gap:6px}.esmot li{border-left:4px solid var(--c);padding:6px 10px;background:var(--surface);border-radius:6px;display:grid;gap:2px}.esmot span{font-size:13px;color:var(--muted)}
 .escausa{display:grid;gap:6px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line)}.escausa .btn{justify-self:start}
+.plorden{border:2px solid #c0392b}.plorden ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
 .plr{list-style:none;margin:0;padding:0;display:grid;gap:8px}.plr li{border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:10px 12px;display:grid;gap:4px}
 .plh{display:flex;align-items:center;gap:8px}.plh i{width:12px;height:12px;border-radius:50%;background:var(--c)}.plh b{flex:1;font-size:15px}.plh em{font-style:normal;font-size:11px;font-weight:800;color:var(--c);letter-spacing:.05em}
 .plr span{font-size:13px}.plr .plp{font-weight:700;color:var(--ink)}.plr small{font-size:12.5px;color:var(--muted);line-height:1.4}
@@ -2113,12 +2114,38 @@ function plRiesgos(cab,z){const D=plDias(),k=z.k,U=plU(),EU=esU(),hoyT=plTr(D[st
     const v=col.length?col[0][1]:null,n=v!=null&&v>=U.colRojo?2:(v>0||causas.length)?1:0;
     out.push({id:'col',t:'Cambio de color del fruto',n,m:(v!=null?`${v} % de frutos con mal color`:'Sin revisar frutos')+(causas.length?' · posibles causas: '+causas.join('; '):''),p:'',
       q:'Calor: sombreo o blanqueo y ventilar. Mosca blanca: contrólala. Revisa con tu técnico el potasio de la receta. Si ves manchas, mosaico o anillos, puede ser virus: apunta incidencia y manda muestra a analizar.'})}
-  // Virosis
-  {const mb=plCuentas(D,cab,k,'mb'),tri=plCuentas(D,cab,k,'tri'),sos=plCuentas(D,cab,k,'vir'),s=sos.length?sos[0][1]:0,lv=(c,a,r)=>!c.length?0:c[0][1]>=r?2:(c[0][1]>=a||plSube(c))?1:0;
-    const nm=lv(mb,U.mbAm,U.mbRojo),nt=lv(tri,U.triAm,U.triRojo),n=s>0?2:Math.max(nm,nt),m=[mb.length?`Mosca blanca ${mb[0][1]} por placa${plSube(mb)?' (subiendo)':''} → virus de la cuchara (TYLCV)`:'Sin placa amarilla',
-      tri.length?`Trips ${tri[0][1]} por placa${plSube(tri)?' (subiendo)':''} → bronceado (TSWV)`:'Sin placa azul',s?`${s} plantas sospechosas`:''].filter(Boolean).join(' · ');
-    out.push({id:'vir',t:'Virosis',n,m,p:'El rugoso (ToBRFV) no depende del clima: va por manos, herramientas y ropa',q:'Controla los vectores (mallas, placas, auxiliares), quita malas hierbas, desinfecta manos y herramientas al cambiar de nave. Plantas sospechosas: apunta incidencia, arráncalas con cuidado y analiza.'})}
+  // Rugoso (ToBRFV): por contacto. Nave afectada, o nave donde ha trabajado alguien que venía de una afectada → vigilar en el plazo de síntomas
+  {const C=plRugCtx(),key=cab+':'+k,a=C.af[key],ex=C.ex[key]||[],ult=ex.length?ex[ex.length-1]:null,afs=Object.keys(C.af);let n=0,m,p='';
+    if(a){n=2;m=a.conf?`Confirmado por análisis · plantas con síntomas desde el ${plFC(a.f0)}`:`Plantas con síntomas desde el ${plFC(a.f0)}: manda muestra a analizar`;p='Trabajad esta nave la última del día, con guantes y desinfección al salir'}
+    else if(ult&&st.fecha<=plAdd(ult.f,PL_INC[1])){n=1;m=`${ult.nom} trabajó en ${plLab(ult.de)} (con rugoso) y aquí el ${plFC(ult.f)}${ex.length>1?` · ${ex.length} contactos`:''}`;p=`Vigila síntomas entre el ${plFC(plAdd(ult.f,PL_INC[0]))} y el ${plFC(plAdd(ult.f,PL_INC[1]))} (antes si la variedad no tiene resistencia)`}
+    else m=ult?`Último contacto con una nave con rugoso el ${plFC(ult.f)}: ya pasó el plazo de síntomas`:afs.length?`Sin contactos apuntados con naves con rugoso (${afs.map(plLab).join(', ')})`:'Ninguna nave con rugoso apuntada';
+    out.push({id:'rug',t:'Rugoso (ToBRFV)',n,m,p,q:'Se contagia por contacto: manos, herramientas, ropa, cajas y plantas. Al cambiar de nave, desinfecta manos y herramientas (lejía comercial, 6–10 cc por litro de agua, renovando la mezcla cada 2–3 horas) y usa guantes. Lava la ropa en caliente. Trabaja las naves sanas antes que las afectadas. Arranca las plantas con síntomas y las de al lado. Controla la Tuta: sus heridas también lo extienden.'})}
+  // Otros virus por insectos (vectores)
+  {const mb=plCuentas(D,cab,k,'mb'),tri=plCuentas(D,cab,k,'tri'),lv=(c,a,r)=>!c.length?0:c[0][1]>=r?2:(c[0][1]>=a||plSube(c))?1:0,n=Math.max(lv(mb,U.mbAm,U.mbRojo),lv(tri,U.triAm,U.triRojo));
+    const m=[mb.length?`Mosca blanca ${mb[0][1]} por placa${plSube(mb)?' (subiendo)':''} → virus de la cuchara (TYLCV)`:'Sin placa amarilla',tri.length?`Trips ${tri[0][1]} por placa${plSube(tri)?' (subiendo)':''} → bronceado (TSWV)`:'Sin placa azul'].join(' · ');
+    out.push({id:'vir',t:'Otros virus (por insectos)',n,m,p:'',q:'Controla los vectores (mallas, placas, auxiliares) y quita malas hierbas.'})}
   return out}
+const PL_INC=[12,23];/* días desde el contagio hasta los síntomas del rugoso */
+const plLab=k=>{const[c,z]=k.split(':');return cabNombre(c)+' · nave '+String(z).replace(/^n/,'')};
+/* Naves con rugoso: plantas con síntomas o análisis positivo, sin un análisis negativo después */
+function plRugAf(D){const af={},f0=plAdd(st.fecha,-90);for(const f of Object.keys(D).filter(f=>f>=f0&&f<=st.fecha).sort())for(const[k,t]of Object.entries((D[f]||{}).trampa||{})){if(!t)continue;
+  if(t.rl===0&&!(t.vir>0)){delete af[k];continue}if(t.vir>0||t.rl===1){const a=af[k]||(af[k]={f0:f,conf:false});if(t.rl===1)a.conf=true}}return af}
+/* Quién trabajó dónde un día: partes de las collas, trabajos de colla hechos y tareas hechas con nave */
+function plTrab(f){const o=[],add=(who,nom,cab,nave)=>{if(cab&&nave!=null&&nave!==''&&MAPAS[cab])o.push({who,nom,k:cab+':n'+(+nave)})};
+  try{if(st.jor)for(const j of jornadas())if(j.fecha===f)for(const t of j.trabajos||[])add('c:'+j.colla,j.collaNombre||'La colla',t.cab,t.nave)}catch(e){}
+  for(const t of st.ctar||[])if(t.hecha&&(t.hechaTs||t.fecha||'').slice(0,10)===f)add('c:'+t.colla,t.collaNombre||(collaDe(t.colla)||{}).nombre||'La colla',t.cab,t.nave);
+  for(const t of st.tareas||[])if(t.hecha&&(t.hechaTs||t.fecha||'').slice(0,10)===f)add('p:'+(t.para||vvNomT(t)),vvNomT(t),t.cab,t.nave);return o}
+/* Contactos: alguien trabaja en una nave con rugoso (desde 23 días antes de verse) y ese día o la semana siguiente en otra */
+function plExpo(af){const ex={},dias=[];for(let f=plAdd(st.fecha,-40);f<=st.fecha;f=plAdd(f,1))dias.push([f,plTrab(f)]);
+  for(let i=0;i<dias.length;i++)for(const w of dias[i][1]){const a=af[w.k];if(!a||dias[i][0]<plAdd(a.f0,-PL_INC[1]))continue;
+    for(let j=i;j<dias.length&&j<=i+7;j++)for(const w2 of dias[j][1])if(w2.who===w.who&&w2.k!==w.k&&!af[w2.k]){const l=ex[w2.k]=ex[w2.k]||[];if(!l.some(x=>x.f===dias[j][0]&&x.nom===w.nom))l.push({f:dias[j][0],nom:w.nom,de:w.k})}}
+  for(const l of Object.values(ex))l.sort((a,b)=>a.f<b.f?-1:1);return ex}
+let plCache=null;function plRugCtx(){const firma=[st.fecha,JSON.stringify((st.reg||{}).trampa||{}),(st.hist||[]).length,(st.tareas||[]).length,(st.ctar||[]).length,Object.keys(st.jor||{}).length].join('|');
+  if(plCache&&plCache.firma===firma&&Date.now()-plCache.t<2000)return plCache.v;const af=plRugAf(plDias()),v={af,ex:plExpo(af)};plCache={t:Date.now(),firma,v};return v}
+/* Hoy: quien tiene trabajo en una nave con rugoso y en otras sanas → orden de trabajo */
+function plOrden(){if(st.fecha!==hoy())return[];const{af}=plRugCtx();if(!Object.keys(af).length)return[];const by={};
+  for(const cab of Object.keys(MAPAS))for(const i of vvItems(cab,hoy())){if(i.hecha)continue;const w=i.cid?'c:'+i.cid:'p:'+i.nombre;(by[w]=by[w]||{nom:i.nombre,ks:new Set()}).ks.add(cab+':n'+i.nave)}
+  return Object.values(by).map(x=>({nom:x.nom,af:[...x.ks].filter(k=>af[k]),ok:[...x.ks].filter(k=>!af[k])})).filter(x=>x.af.length&&x.ok.length)}
 const plMax=(cab,z)=>{try{return Math.max(...plRiesgos(cab,z).map(r=>r.n))}catch(e){return 0}};
 function plSVG(cab){const{Z,zs}=esZonas(cab),[vx,vy,vw,vh]=Z.vb,k=Math.max(vw,vh)/1000;
   let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg essvg" id="plsvg" role="img" aria-label="Riesgo de plagas por nave"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f7f3e8"/>`;if(Z.M&&Z.M.fondo)s+=Z.M.fondo();
@@ -2127,19 +2154,21 @@ function plSVG(cab){const{Z,zs}=esZonas(cab),[vx,vy,vw,vh]=Z.vb,k=Math.max(vw,vh
       <g transform="translate(${c[0].toFixed(1)} ${c[1].toFixed(1)}) rotate(${(Z.M&&Z.M.ang)||0})"><rect x="${-50*k}" y="${-17*k}" width="${100*k}" height="${34*k}" rx="${12*k}" fill="#1b2f4a" opacity=".88"/><text y="${6*k}" text-anchor="middle" font-size="${16*k}" font-weight="800" fill="#fff">${esc(x.lab.toUpperCase())}</text></g></g>`}
   return s+`</svg>`}
 function plFormHTML(cab,x){const d=plTr(st.reg,cab,x.k)||{},f=(id,l,u)=>`<div class="field"><label for="pl_${id}">${l}</label><div class="inp sm"><input id="pl_${id}" data-pl="${id}" inputmode="numeric" autocomplete="off" value="${inVal(d[id])}"><span class="u">${u}</span></div></div>`;
-  return `<div class="esform"><div class="frm">${f('tuta','Tuta: capturas en la trampa de feromona','nº')}${f('mb','Mosca blanca: por placa amarilla','nº')}${f('tri','Trips: por placa azul','nº')}${f('col','Frutos con mal color','%')}${f('vir','Plantas sospechosas de virus','nº')}</div>
+  return `<div class="esform"><div class="frm">${f('tuta','Tuta: capturas en la trampa de feromona','nº')}${f('mb','Mosca blanca: por placa amarilla','nº')}${f('tri','Trips: por placa azul','nº')}${f('col','Frutos con mal color','%')}${f('vir','Plantas con síntomas de rugoso','nº')}</div>
+    <div class="field"><label>Análisis de rugoso de esta nave</label><div class="row" style="gap:6px">${[['','Sin análisis'],[0,'Negativo'],[1,'Positivo']].map(([v,t])=>`<button class="chip" type="button" data-plrl="${v}" aria-pressed="${v===''?d.rl==null:d.rl===v}">${t}</button>`).join('')}</div></div>
     <div class="field"><label>Araña roja en el envés</label><div class="row" style="gap:6px">${PL_ARA.map((t,i)=>`<button class="chip" type="button" data-plara="${i}" aria-pressed="${d.ara===i}">${t}</button>`).join('')}</div></div>
     <div class="note">Una vez por semana, el mismo día. Las capturas y las placas, desde el último conteo. Las máximas, mínimas y horas de humedad se apuntan en «Clima y estrés».</div></div>`}
 function plAjHTML(){if(!esGestor())return '';const U=plU();
   return `<section class="card"><button class="esajb" type="button" data-plact="aj" aria-expanded="${!!st.pl.aj}"><h3>Umbrales de plagas</h3><span class="sub">Orientativos: ajústalos con tu técnico</span></button>
     ${st.pl.aj?`<div class="frm">${PL_CAMPOS.map(([k,l,u])=>`<div class="field"><label for="plu_${k}">${l}</label><div class="inp sm"><input id="plu_${k}" data-plu="${k}" inputmode="decimal" value="${inVal(U[k])}"><span class="u">${u}</span></div></div>`).join('')}</div>
     <div class="note">Grados-día por generación: Tuta ${PL_BIO.tuta.gen} por encima de ${fmt(PL_BIO.tuta.base,1)} °C; araña roja ${PL_BIO.ara.gen} por encima de ${fmt(PL_BIO.ara.base,1)} °C. Después pulsa «Guardar receta y ajustes».</div>`:''}</section>`}
-function vPlagas(){const cab=st.cab,c=cabById(cab);if(!c)return '';if(st.hist===null)loadHist();const{zs}=esZonas(cab);if(!zs.find(x=>x.k===st.es.z))st.es.z=(zs[0]||{}).k||null;const x=zs.find(z=>z.k===st.es.z);
+function vPlagas(){const cab=st.cab,c=cabById(cab);if(!c)return '';if(st.hist===null)loadHist();if(st.vv&&!st.vv.carg&&!st.vv.listo)vvCargar().then(()=>{if(st.tab==='plagas')renderMain()});const{zs}=esZonas(cab);if(!zs.find(x=>x.k===st.es.z))st.es.z=(zs[0]||{}).k||null;const x=zs.find(z=>z.k===st.es.z);
   const niv=zs.map(z=>plMax(cab,z)),cu=n=>niv.filter(v=>v===n).length;
-  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Plagas · ${esc(c.nombre)}</h3><div class="sub">${cu(2)?cu(2)+' con riesgo alto · ':''}${cu(1)?cu(1)+' para vigilar · ':''}toca una nave para ver el detalle</div></div></div>
+  const O=plOrden();let h=O.length?`<section class="card plorden"><div><h3>Orden de trabajo hoy · rugoso</h3><div class="sub">Primero las naves sanas; la del rugoso, la última y con desinfección al salir</div></div><ul>${O.map(o=>`<li><b>${esc(o.nom)}</b>: primero ${esc(o.ok.map(plLab).join(', '))}; al final ${esc(o.af.map(plLab).join(', '))}</li>`).join('')}</ul></section>`:'';
+  h+=`<section class="card mapcard"><div class="tank-h"><div><h3>Plagas · ${esc(c.nombre)}</h3><div class="sub">${cu(2)?cu(2)+' con riesgo alto · ':''}${cu(1)?cu(1)+' para vigilar · ':''}toca una nave para ver el detalle</div></div></div>
     <div data-out="plsvg">${plSVG(cab)}</div><div class="esley">${[0,1,2].map(n=>`<span><i style="background:${ES_COL[n]}"></i>${['Sin riesgo','Vigilar','Riesgo alto'][n]}</span>`).join('')}</div></section>`;
   if(x)h+=`<section class="card"><div><h3>${esc(x.lab)}</h3><div class="sub">Riesgo de plagas y enfermedades · semana ${plSem(st.fecha)}</div></div>
-    <div data-out="plres">${esUd(`<ul class="plr">${plRiesgos(cab,x).map(r=>`<li style="--c:${ES_COL[r.n]}"><div class="plh"><i></i><b>${esc(r.t)}</b><em>${['Sin riesgo','Vigilar','Riesgo alto'][r.n]}</em></div><span>${esc(r.m)}</span>${r.p?`<span class="plp">${esc(r.p)}</span>`:''}${r.n?`<small>${esc(r.q)}</small>`:''}</li>`).join('')}</ul>`)}</div>
+    <div data-out="plres">${esUd(`<ul class="plr">${plRiesgos(cab,x).map(r=>`<li style="--c:${ES_COL[r.n]}"><div class="plh"><i></i><b>${esc(r.t)}</b><em>${['Sin riesgo','Vigilar','Riesgo alto'][r.n]}</em></div><span>${esc(r.m)}</span>${r.p?`<span class="plp">${esc(r.p)}</span>`:''}${r.n?`<small>${esc(r.q)}</small>`:''}</li>`).join('')}</ul>`).replace(/ToBRFV/g,'<span class="nt">ToBRFV</span>')}</div>
     <div class="note">Es un aviso para vigilar y prevenir (Gestión Integrada de Plagas). Antes de tratar, confirma en campo; el producto y la dosis, con tu técnico y con productos autorizados para tomate.</div></section>
     <section class="card"><div><h3>Trampas y revisión · ${esc(x.lab)}</h3><div class="sub">Lo de hoy (${plFC(st.fecha)})</div></div>${plFormHTML(cab,x)}</section>`;
   return h+plAjHTML()}
@@ -2149,6 +2178,7 @@ $('#main').addEventListener('input',e=>{const t=e.target;if(!t.dataset)return;
   else if(t.dataset.plu!=null&&esGestor()){const v=num(t.value);st.cfg.plagas={...(st.cfg.plagas||{})};if(v==null)delete st.cfg.plagas[t.dataset.plu];else st.cfg.plagas[t.dataset.plu]=v;st.dirtyCfg=true;softUpdate();renderSave()}});
 document.addEventListener('click',e=>{if(st.tab!=='plagas')return;const g=e.target.closest&&e.target.closest('[data-plz]');if(g){st.es.z=g.dataset.plz;renderMain();return}
   const a=e.target.closest&&e.target.closest('[data-plara]');if(a){const i=+a.dataset.plara;plPon(st.cab,st.es.z,d=>{if(d.ara===i)delete d.ara;else d.ara=i});renderMain();renderSave();return}
+  const l=e.target.closest&&e.target.closest('[data-plrl]');if(l){const v=l.dataset.plrl;plPon(st.cab,st.es.z,d=>{if(v==='')delete d.rl;else d.rl=+v});renderMain();renderSave();return}
   const b=e.target.closest&&e.target.closest('[data-plact]');if(b&&b.dataset.plact==='aj'){st.pl.aj=!st.pl.aj;renderMain()}});
 
 /* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */
