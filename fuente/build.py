@@ -42,7 +42,7 @@ else:
     (out/'nube.js').unlink(missing_ok=True)
 _a, _b, _c = s.rpartition('</script>')   # solo en el script principal (el último), una vez
 s = _a + """
-window.APP_V='abonado-v136';
+window.APP_V='abonado-v137';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
@@ -73,7 +73,7 @@ head = """<!doctype html>
  "background_color":"#eef2ef","theme_color":"#1b2f4a",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
           {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]},ensure_ascii=False,indent=1))
-(out/'sw.js').write_text("""const C='abonado-v136';
+(out/'sw.js').write_text("""const C='abonado-v137';
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./badge-96.png','./pdf-lib.min.js','./parte-tpl.js','./parte-tpl-p.js'"""+(",'./nube.js'" if nube else '')+"""];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(FILES.map(f=>new Request(f,{cache:'reload'})))));self.skipWaiting()});   // siempre de la red, nunca de la caché del navegador
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});

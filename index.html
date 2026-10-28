@@ -61,6 +61,10 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .esmot{list-style:none;margin:0;padding:0;display:grid;gap:6px}.esmot li{border-left:4px solid var(--c);padding:6px 10px;background:var(--surface);border-radius:6px;display:grid;gap:2px}.esmot span{font-size:13px;color:var(--muted)}
 .escausa{display:grid;gap:6px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line)}.escausa .btn{justify-self:start}
 .plorden{border:2px solid #c0392b}.plorden ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.plzban{display:grid;gap:3px;padding:10px 12px;margin-bottom:8px;border-radius:12px;border:2px solid #c0392b;background:color-mix(in srgb,#c0392b 8%,var(--surface));font-size:13px}.plzban b{color:#c0392b;font-size:12px;letter-spacing:.06em}
+.plzp{margin-left:6px}.ucbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:2px 0 8px}.ucbar small{color:var(--muted);font-size:12px}
+.ucres{display:grid;gap:8px;padding:10px 12px;margin-bottom:8px;border:1px dashed var(--line);border-radius:12px}.ucf{display:grid;grid-template-columns:minmax(80px,1fr) auto minmax(120px,auto);gap:8px;align-items:center;font-size:13px}
+@media (max-width:560px){.ucf{grid-template-columns:1fr;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}}.rendt .cotot td{border-top:2px solid var(--line)}
 .plr{list-style:none;margin:0;padding:0;display:grid;gap:8px}.plr li{border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:10px 12px;display:grid;gap:4px}
 .plh{display:flex;align-items:center;gap:8px}.plh i{width:12px;height:12px;border-radius:50%;background:var(--c)}.plh b{flex:1;font-size:15px}.plh em{font-style:normal;font-size:11px;font-weight:800;color:var(--c);letter-spacing:.05em}
 .plr span{font-size:13px}.plr .plp{font-weight:700;color:var(--ink)}.plr small{font-size:12.5px;color:var(--muted);line-height:1.4}
@@ -769,6 +773,7 @@ function fincaAvisos(f){const out=[],cabs=f.cabezales||[];if(!cabs.length)return
   const d=new Date();d.setDate(d.getDate()-1);const ayer=isoD(d),ra=(st.hist||[]).find(r=>r.fecha===ayer);
   if(!ra||!cabs.some(c=>ra.m3&&ra.m3[c]!=null))out.push(['bad','Faltan las cuentas de ayer']);
   const deps=st.cfg.bidones.filter(b=>b.cabezales.some(c=>cabs.includes(c))&&bajoUmbral(nivel(b)));
+  {const T=plzTextos(f.cabezales);if(T.length)out.push(['bad',T.length===1?'Plazo de seguridad: no recolectar':T.length+' plazos de seguridad: no recolectar',plzDet(T)])}
   if(deps.length)out.push(['warn',deps.length===1?'1 depósito para rellenar':deps.length+' depósitos para rellenar',depsDet(deps)]);
   const mpf=(st.mat||[]).filter(m=>m.finca===f.id&&m.estado==='pedido').length;if(mpf)out.push(['warn',mpf===1?'1 pedido de material pendiente':mpf+' pedidos de material pendientes']);
   const ta=(st.tareas||[]).filter(t=>t.finca===f.id&&!t.hecha&&t.fecha<hoy()).length;if(ta)out.push(['bad',ta===1?'1 tarea atrasada':ta+' tareas atrasadas']);
@@ -850,7 +855,7 @@ function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO;const G=GRU
 /* Mapa de la finca: incidencias, en vivo e instalación en una sola pantalla */
 const MF_VISTAS=['mapa','vivo','instal','estres','plagas'];
 function mfHead(){const n=(()=>{try{return incAbiertas().filter(i=>i.cab===st.cab).length}catch(e){return 0}})(),a=(()=>{try{return inAlertas(st.cab)}catch(e){return 0}})();
-  return `<div data-out="mfsel"><div class="mfsel" role="tablist" aria-label="Mapa de la finca">${[['mapa','Incidencias',n],['vivo','En vivo',0],['instal','Instalación',a],['estres','Clima y estrés',(()=>{try{return esZonas(st.cab).zs.filter(z=>{const R=esCalc(esDato(st.cab,z.k),esU());return R&&R.niv===2}).length}catch(e){return 0}})()],['plagas','Plagas',(()=>{try{return esZonas(st.cab).zs.filter(z=>plMax(st.cab,z)===2).length}catch(e){return 0}})()]].filter(([k])=>tabPermitida(k)).map(([k,t,c])=>`<button class="mfb" role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${t}${c?`<i>${c}</i>`:''}</button>`).join('')}</div></div>`}
+  return `<div data-out="mfsel">${plzBanner(((fincaAct()||{}).cabezales||[]).length?fincaAct().cabezales:[st.cab])}<div class="mfsel" role="tablist" aria-label="Mapa de la finca">${[['mapa','Incidencias',n],['vivo','En vivo',0],['instal','Instalación',a],['estres','Clima y estrés',(()=>{try{return esZonas(st.cab).zs.filter(z=>{const R=esCalc(esDato(st.cab,z.k),esU());return R&&R.niv===2}).length}catch(e){return 0}})()],['plagas','Plagas',(()=>{try{return esZonas(st.cab).zs.filter(z=>plMax(st.cab,z)===2).length}catch(e){return 0}})()]].filter(([k])=>tabPermitida(k)).map(([k,t,c])=>`<button class="mfb" role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${t}${c?`<i>${c}</i>`:''}</button>`).join('')}</div></div>`}
 const grupoDe=tab=>{const G=gruposAct();return G.find(g=>g.tabs.includes(tab))||G[0]};
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(ptRevisa()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
@@ -1314,7 +1319,7 @@ async function avisosTareas(){if(!notifOk()||Notification.permission!=='granted'
   try{localStorage.setItem('abono.notift',JSON.stringify(vis.slice(-300)))}catch(e){}}
 function sumaFecha(f,rep){const d=new Date(f+'T12:00:00');if(rep==='sem')d.setDate(d.getDate()+7);else if(rep==='quin')d.setDate(d.getDate()+15);else if(rep==='mes')d.setMonth(d.getMonth()+1);return isoD(d)}
 function tareaHTML(t){const e=tEstado(t),f=(st.cfg.fincas||[]).find(x=>x.id===t.finca),open=st.td.id===t.id,puede=!window.NUBE||(NUBE.user&&(NUBE.user.admin||t.creadaEmail===miEmail()));
-  return `<div class="tarea ${e}${t.urg&&!t.hecha?' urg':''}"><div class="tt"><b>${esc(t.titulo)}</b>${t.urg&&!t.hecha?'<span class="pill bad">Urgente</span>':''}${e==='atrasada'?'<span class="pill bad">Atrasada</span>':e==='hoy'?'<span class="pill warn">Hoy</span>':e==='hecha'?'<span class="pill ok">Hecha</span>':''}</div>
+  return `<div class="tarea ${e}${t.urg&&!t.hecha?' urg':''}"><div class="tt"><b>${esc(t.titulo)}</b>${plzPill(t.cab,t.nave)}${t.urg&&!t.hecha?'<span class="pill bad">Urgente</span>':''}${e==='atrasada'?'<span class="pill bad">Atrasada</span>':e==='hoy'?'<span class="pill warn">Hoy</span>':e==='hecha'?'<span class="pill ok">Hecha</span>':''}</div>
     <div class="tm">${f?`<span class="mini">${esc(f.nombre)}${t.cab?' · '+esc(cabNombre(t.cab)):''}</span>`:''}<span>${t.para?(tMia(t)?'<b>Para ti</b>':'Para '+esc(t.paraNombre||'')):'Para cualquiera'}</span><span>${t.hecha?'Hecha '+fHora(t.hechaTs)+' por '+esc(t.hechaPor||''):fFecha(t.fecha)}</span>${vvDonde(t)}${t.rep?`<span>↻ ${esc(REP[t.rep])}</span>`:''}<span class="de">Creada por ${esc(t.creadaPor||'')}</span></div>
     ${t.det?`<p>${esc(t.det)}</p>`:''}${adjHTML(t.adjuntos,false)}
     ${t.hecha&&(t.nota||(t.adjHecha||[]).length)?`<div class="hecho"><b>Al terminar:</b> ${esc(t.nota||'')}${adjHTML(t.adjHecha,false)}</div>`:''}
@@ -2056,7 +2061,7 @@ function esAjHTML(){if(!esGestor())return '';const U=esU(),C=esCal();
 function vEstres(){const cab=st.cab,c=cabById(cab);if(!c)return '';const{zs}=esZonas(cab);if(!zs.find(x=>x.k===st.es.z))st.es.z=(zs[0]||{}).k||null;const x=zs.find(z=>z.k===st.es.z);
   const U=esU(),R=zs.map(z=>esCalc(esDato(cab,z.k),U)).filter(Boolean),cuenta=n=>R.filter(r=>r.niv===n).length;
   let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Clima y estrés · ${esc(c.nombre)}</h3><div class="sub">${R.length?`${R.length} de ${zs.length} medidas hoy · ${[2,1,0].filter(n=>cuenta(n)).map(n=>cuenta(n)+' '+ES_TXT[n].toLowerCase()).join(' · ')}`:'Sin medidas hoy · toca una nave y apunta'}</div></div></div>
-    <div data-out="essvg">${esSVG(cab)}</div>
+    ${ucHTML(cab)}<div data-out="essvg">${esSVG(cab)}</div>
     <div class="esley">${[0,1,2].map(n=>`<span><i style="background:${ES_COL[n]}"></i>${ES_TXT[n]}</span>`).join('')}<span><i style="background:#cfd8e3"></i>Sin medir</span></div></section>`;
   if(x)h+=`<section class="card"><div><h3>${esc(x.lab)}</h3><div class="sub">Medida de hoy</div></div>${esFormHTML(cab,x)}<div data-out="esres">${esResHTML(cab,x)}</div></section>`;
   return h+esAjHTML()}
@@ -2201,6 +2206,78 @@ document.addEventListener('click',e=>{if(st.tab!=='plagas')return;const g=e.targ
   const a=e.target.closest&&e.target.closest('[data-plara]');if(a){const i=+a.dataset.plara;plPon(st.cab,st.es.z,d=>{if(d.ara===i)delete d.ara;else d.ara=i});renderMain();renderSave();return}
   const l=e.target.closest&&e.target.closest('[data-plrl]');if(l){const v=l.dataset.plrl;plPon(st.cab,st.es.z,d=>{if(v==='')delete d.rl;else d.rl=+v});renderMain();renderSave();return}
   const b=e.target.closest&&e.target.closest('[data-plact]');if(b&&b.dataset.plact==='aj'){st.pl.aj=!st.pl.aj;renderMain()}});
+
+const CQ_BBCH=[['','—'],['1','1 · Desarrollo de hojas'],['2','2 · Brotes laterales'],['5','5 · Aparición de la inflorescencia'],['6','6 · Floración'],['7','7 · Desarrollo del fruto'],['8','8 · Maduración del fruto'],['9','9 · Senescencia']];
+/* ---------- Plazo de seguridad: con los tratamientos del cuaderno, qué naves no se pueden recolectar y desde cuándo se puede ----------
+   Sale solo del cuaderno (fecha + plazo de seguridad de cada tratamiento y las naves de cada parcela): nadie apunta nada más. */
+const plzNaves=p=>{const v=String((p&&p.naves)||'').match(/\d+/g);return v?[...new Set(v.map(Number))]:null};
+const plzF=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'short'});
+function plzActivos(){if(st.cuad===null&&!cqLoading&&(!window.NUBE||NUBE.user))loadCuad().then(()=>{try{renderGrupos();if(!$('#splash').hidden)renderSplash();else if(st.tab!=='cuaderno')renderMain()}catch(e){}});
+  const H=hoy(),out=[];for(const r of st.cuad||[]){if(r.tipo!=='fito'||!r.fecha||!(+r.ps>0))continue;const desde=plAdd(r.fecha,+r.ps);if(desde<=H)continue;
+    for(const pid of r.parcelas||[]){const p=cqParc().find(x=>x.id===pid);if(p&&p.cab)out.push({cab:p.cab,naves:plzNaves(p),desde,prod:r.prod||''})}}
+  return out}
+/* El plazo que afecta a una nave (o al cabezal entero si no se dice nave): el que termina más tarde */
+function plzDe(cab,nave){return plzActivos().filter(x=>x.cab===cab&&(!x.naves||(nave!=null&&nave!==''&&x.naves.includes(+nave)))).sort((a,b)=>a.desde<b.desde?1:-1)[0]||null}
+function plzPill(cab,nave){if(!cab)return '';const x=plzDe(cab,nave);return x?`<span class="pill bad plzp" title="Plazo de seguridad${x.prod?' de '+esc(x.prod):''}">No recolectar hasta el ${esc(plzF(x.desde))}</span>`:''}
+/* Textos agrupados por cabezal, producto y fecha: «Gasolinera · naves 2, 3: recolectar desde el jue 6 nov (Producto)» */
+function plzTextos(cabs){const g={};for(const x of plzActivos().filter(x=>!cabs||cabs.includes(x.cab))){const k=x.cab+'|'+x.desde+'|'+x.prod,G=g[k]=g[k]||{...x,nv:new Set(),todo:false};if(x.naves)x.naves.forEach(n=>G.nv.add(n));else G.todo=true}
+  return Object.values(g).sort((a,b)=>a.desde<b.desde?-1:1).map(x=>`${cabNombre(x.cab)} · ${x.todo||!x.nv.size?'todo el cabezal':(x.nv.size>1?'naves ':'nave ')+[...x.nv].sort((a,b)=>a-b).join(', ')}: recolectar desde el ${plzF(x.desde)}${x.prod?' ('+x.prod+')':''}`)}
+const plzDet=T=>`<span class="adet"><span class="agc">${T.map(t=>`<span class="ach bad">${esc(t)}</span>`).join('')}</span></span>`;
+function plzBanner(cabs){const T=plzTextos(cabs);return T.length?`<div class="plzban"><b>Plazo de seguridad · no recolectar</b>${T.map(t=>`<span>${esc(t)}</span>`).join('')}</div>`:''}
+/* Cuaderno: CSV legible por máquina de los tratamientos (Reglamento de Ejecución (UE) 2023/564) */
+function cqCsv(){const[a,b]=cqRango(),c=cqC(),q=v=>{v=v==null?'':String(v);return /[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const cab=['fecha','hora_inicio','producto','n_registro','materia_activa','dosis','unidad_dosis','caldo_l_ha','superficie_ha','superficie_m2','cultivo','bbch','parcelas','sigpac','invernadero_naves','problema','justificacion','aplicador','aplicador_nif','aplicador_ropo','equipo','equipo_roma','plazo_seguridad_dias','recolectar_desde','eficacia','observaciones'];
+  const filas=cqReg('fito').slice().reverse().map(x=>{const ps=(x.parcelas||[]).map(id=>cqParc().find(p=>p.id===id)).filter(Boolean),ap=c.pers.find(p=>p.id===x.apl)||{},eq=c.equipos.find(p=>p.id===x.eq)||{};
+    return [x.fecha,x.hora||'',x.prod||'',x.reg||'',x.ma||'',x.dosis??'',x.ud||'',x.caldo??'',x.sup??'',x.sup!=null&&x.sup!==''?Math.round(+x.sup*10000):'',[...new Set(ps.map(p=>p.cult).filter(Boolean))].join(' | '),x.bbch||'',ps.map(p=>p.n).join(' | '),ps.map(cqSig).filter(Boolean).join(' | '),
+      ps.map(p=>(p.nom||'')+(plzNaves(p)?' naves '+plzNaves(p).join(','):'')).join(' | '),x.plaga||'',x.just||'',ap.nom||'',ap.nif||'',ap.ropo||'',eq.nom||'',eq.roma||'',x.ps??'',+x.ps>0?plAdd(x.fecha,+x.ps):'',({B:'Buena',R:'Regular',M:'Mala'})[x.ef]||'',x.obs||'']});
+  const txt='﻿'+[cab,...filas].map(r=>r.map(q).join(';')).join('\r\n');saveBlob(new Blob([txt],{type:'text/csv;charset=utf-8'}),`Tratamientos fitosanitarios ${a} a ${b}.csv`)}
+/* Cuaderno: al escribir un producto ya usado, se rellenan solos el registro, la materia activa, la dosis y el plazo (se revisan) */
+$('#main').addEventListener('change',e=>{const t=e.target;if(st.tab!=='cuaderno'||!t.dataset||t.dataset.cq!=='prod')return;const f=st.cq.form;if(!f||f._t!=='fito')return;
+  const v=(t.value||'').trim().toLowerCase();if(!v)return;const prev=(st.cuad||[]).filter(x=>x.tipo==='fito'&&(x.prod||'').trim().toLowerCase()===v&&x.id!==f._id).sort((a,b)=>a.fecha<b.fecha?1:-1)[0];if(!prev)return;
+  let n=0;for(const k of ['reg','ma','dosis','ud','caldo','ps','plaga','apl','eq'])if((f[k]===''||f[k]==null)&&prev[k]!=null&&prev[k]!==''){f[k]=clone(prev[k]);n++}
+  if(n){renderMain();toast(`Rellenado con el último uso de ${prev.prod} (${fD(prev.fecha)}): revisa la dosis`,5000)}});
+
+/* ---------- Coste de mano de obra por nave: horas de los partes de colla × coste de la hora; kilos por hora y euros por kilo ---------- */
+function coNavesHTML(d){const P=(st.cfg.coste||{}).hora,N={};
+  for(const j of d.js)for(const t of j.trabajos||[]){if(!t.cab)continue;const k=t.cab+':'+(t.nave??''),x=N[k]=N[k]||{cab:t.cab,nave:t.nave,h:0,kg:0,cajas:0,lab:{}},hp=horasTrab(j,t)||0;x.h+=hp;x.lab[t.labor]=(x.lab[t.labor]||0)+hp;
+    for(const u of ['kg','cajas']){const v=cantT(t,u);if(v)x[u]+=v}}
+  const L=Object.values(N).filter(x=>x.h>0).sort((a,b)=>b.h-a.h);if(!L.length)return '';
+  const tot=L.reduce((s,x)=>({h:s.h+x.h,kg:s.kg+x.kg}),{h:0,kg:0}),eur=h=>P?fmt(h*P,0)+' €':'—',ekg=(h,kg)=>P&&kg?fmt(h*P/kg,2)+' €':'—',kgh=(kg,h)=>kg&&h?fmt(kg/h,1):'—';
+  return `<section class="card"><div><h3>Coste de mano de obra por nave</h3><div class="sub">Horas de las collas en cada nave por el coste de la hora. Sale solo de los partes: nadie apunta nada más</div></div>
+    <div class="field"><label for="co_precio">Coste de una hora de trabajo (con Seguridad Social)</label><div class="inp sm"><input id="co_precio" data-coprecio="1" inputmode="decimal" value="${inVal(P)}"><span class="u">€/h</span></div></div>
+    <div class="tbl"><table class="rendt"><thead><tr><th>Nave</th><th>Horas</th><th>Coste</th><th>Kg</th><th>Kg/h</th><th>€/kg</th><th>En qué se van las horas</th></tr></thead><tbody>
+    ${L.map(x=>`<tr><td><b>${esc(cabNombre(x.cab))}</b>${x.nave!=null&&x.nave!==''?` · nave ${esc(x.nave)}`:''}</td><td>${fmt(x.h,1)}</td><td>${eur(x.h)}</td><td>${x.kg?fmt(x.kg,0):'—'}</td><td>${kgh(x.kg,x.h)}</td><td><b>${ekg(x.h,x.kg)}</b></td><td><small>${Object.entries(x.lab).sort((a,b)=>b[1]-a[1]).map(([l,h])=>`${esc(LAB[l]||l)} ${Math.round(h*100/x.h)} %`).join(' · ')}</small></td></tr>`).join('')}
+    <tr class="cotot"><td><b>Total</b></td><td><b>${fmt(tot.h,1)}</b></td><td><b>${eur(tot.h)}</b></td><td><b>${tot.kg?fmt(tot.kg,0):'—'}</b></td><td><b>${kgh(tot.kg,tot.h)}</b></td><td><b>${ekg(tot.h,tot.kg)}</b></td><td></td></tr></tbody></table></div>
+    ${P?'':'<div class="note">Pon el coste de la hora para ver los euros.</div>'}
+    <div class="note">El €/kg reparte todas las horas de la nave (también destallar, bajar planta…) entre los kilos recolectados en esas fechas. Para que salga bien, el parte tiene que llevar la nave y, al recolectar, los kilos o las cajas.</div></section>`}
+$('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.coprecio==null||!esGestor())return;const v=num(t.value);st.cfg.coste={...(st.cfg.coste||{})};if(v==null)delete st.cfg.coste.hora;else st.cfg.coste.hora=v;st.dirtyCfg=true;renderSave();renderMain()});
+
+/* ---------- UCROP: leer una captura de su pantalla de clima con la IA y apuntarla en Clima y estrés ---------- */
+const UC_PROMPT=`Esta imagen es una captura de pantalla de UCROP (Novagric), la plataforma de control de clima y riego de un invernadero de tomate.
+Saca SOLO los datos de clima que se lean en la imagen, para cada nave, sector o zona que aparezca. No inventes nada: si un dato no se ve, pon null. Usa punto decimal.
+Devuelve únicamente este JSON, sin texto alrededor:
+{"hora":"HH:MM o null","lecturas":[{"zona":"nombre tal y como aparece","nave":número de nave si se deduce del nombre o null,"ta":temperatura interior en °C,"hr":humedad relativa en %,"tmax":máxima del día en °C,"tmin":mínima del día en °C,"vent":apertura de ventanas en % o null}]}`;
+async function iaFotoJson(prompt,blobs){const modo=iaModo();if(!modo)throw{code:'sin_ia'};if(modo==='claude')return await SM.json(prompt,{modelTier:'default',cache:false,images:blobs});
+  if(modo==='gemini')return jsonSuelto(await NUBE.ia.json(prompt,blobs));return await iaServidor(prompt,blobs)}
+const ucNum=v=>{if(v==null||v==='')return null;const n=typeof v==='number'?v:num(String(v));return n==null||!isFinite(n)?null:n};
+async function ucLeer(file){const zs=esZonas(st.cab).zs;let b=file;try{b=await compressImg(file)}catch(e){}st.es.uc={busy:true};renderMain();
+  try{const r=await iaFotoJson(UC_PROMPT,[b]);const L=(r&&Array.isArray(r.lecturas)?r.lecturas:[]).map(x=>({zona:String(x&&x.zona||''),nave:ucNum(x&&x.nave),ta:ucNum(x&&x.ta),hr:ucNum(x&&x.hr),tmax:ucNum(x&&x.tmax),tmin:ucNum(x&&x.tmin)})).filter(x=>x.ta!=null||x.hr!=null||x.tmax!=null);
+    if(!L.length)throw{code:'nada'};
+    st.es.uc={hora:r.hora||null,res:L.map(x=>{const n=x.nave!=null?x.nave:+((/nave\s*(\d+)/i.exec(x.zona)||[])[1]||NaN);return{...x,k:(zs.find(q=>q.z.nave!=null&&q.z.nave===n)||{}).k||''}})}}
+  catch(e){st.es.uc={err:e&&e.code==='nada'?'No se ven datos de clima en la captura. Prueba con la pantalla de clima de UCROP.':e&&e.code==='sin_ia'?'La IA no está configurada en esta app.':dgErr(e)}}
+  renderMain()}
+function ucHTML(cab){const U=st.es.uc,zs=esZonas(cab).zs;
+  let h=`<div class="ucbar"><label class="btn" for="es_uc">Leer captura de UCROP</label><input type="file" id="es_uc" accept="image/*" hidden><small>Haz una captura de la pantalla de clima de UCROP y la IA rellena las naves</small></div>`;
+  if(!U)return h;if(U.busy)return h+'<div class="note">Leyendo la captura…</div>';if(U.err)return h+`<div class="banner">${esc(U.err)}</div>`;
+  return h+`<div class="ucres"><b>Esto he leído${U.hora?' ('+esc(U.hora)+')':''}. Revisa a qué nave va cada fila:</b>${U.res.map((x,i)=>`<div class="ucf"><span>${esc(x.zona||'—')}</span><span>${[x.ta!=null?fmt(x.ta,1)+' °C':'',x.hr!=null?fmt(x.hr,0)+' %':'',x.tmax!=null?'máx '+fmt(x.tmax,1):'',x.tmin!=null?'mín '+fmt(x.tmin,1):''].filter(Boolean).join(' · ')}</span><div class="inp"><select data-ucz="${i}" aria-label="Nave para ${esc(x.zona||'esta fila')}"><option value="">No apuntar</option>${zs.map(z=>`<option value="${z.k}" ${x.k===z.k?'selected':''}>${esc(z.lab)}</option>`).join('')}</select></div></div>`).join('')}
+    <div class="row"><button class="btn pri" type="button" data-esact="ucok">Apuntar</button><button class="btn" type="button" data-esact="ucno">Descartar</button></div></div>`}
+$('#main').addEventListener('change',e=>{const t=e.target;if(st.tab!=='estres'||!t.id&&!t.dataset)return;
+  if(t.id==='es_uc'&&t.files&&t.files[0]){ucLeer(t.files[0]);t.value=''}
+  else if(t.dataset&&t.dataset.ucz!=null&&st.es.uc&&st.es.uc.res){st.es.uc.res[+t.dataset.ucz].k=t.value}});
+document.addEventListener('click',e=>{if(st.tab!=='estres')return;const b=e.target.closest&&e.target.closest('[data-esact]');if(!b)return;const a=b.dataset.esact;
+  if(a==='ucno'){st.es.uc=null;renderMain()}
+  else if(a==='ucok'&&st.es.uc&&st.es.uc.res){let n=0;for(const x of st.es.uc.res){if(!x.k)continue;esPon(st.cab,x.k,d=>{for(const f of ['ta','hr','tmax','tmin'])if(x[f]!=null)d[f]=x[f];d.src='ucrop'});n++}
+    st.es.uc=null;renderMain();renderSave();toast(n?`Apuntado en ${n} ${n===1?'nave':'naves'}. Guarda el día para que quede.`:'No has elegido ninguna nave',5000)}});
 
 /* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */
 /* Gasolinera tenía las naves numeradas al revés en el plano (la 1 abajo). Lo apuntado tocando el plano guardó ese número:
@@ -2838,6 +2915,7 @@ function resumenHTML(){if(!veRiego()){const it=resumenCampo();return `<div><h3>T
   const pend=(st.msgs||[]).filter(m=>!m.resuelto).length;if(pend)items.push(['warn',pend===1?'1 mensaje pendiente':pend+' mensajes pendientes','mensajes']);
   const bajos=[];for(const a of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,a.id);if(m!=null&&stockDe(p,a.id)<=m)bajos.push(p+'@'+a.id)}
   if(bajos.length)items.push(['bad',bajos.length===1?'1 producto bajo mínimo en el almacén':bajos.length+' productos bajo mínimo en el almacén','almacen',stockDet(bajos)]);
+  {const T=plzTextos(cabsVis().map(c=>c.id));if(T.length)items.unshift(['bad',T.length===1?'Plazo de seguridad: no recolectar':T.length+' plazos de seguridad: no recolectar','mapa',plzDet(T)])}
   {const nt=ntTocan().length;if(nt)items.push(['warn',nt===1?'1 recordatorio tuyo para ahora':nt+' recordatorios tuyos para ahora',veRiego()?'notas':'cnotas'])}
   if(veCampo())for(const x of resumenCampo())if(x[0]!=='nd'&&!(x[0]==='ok'&&!misCollas().length))items.push(x);
   if(items.every(i=>i[0]==='ok'))items.push(['ok','Todo al día','cuentas-hoy']);
@@ -3619,7 +3697,7 @@ function coTrabHTML(j,t,i,edit){const cabs=collaDe(j.colla)&&collaDe(j.colla).fi
   const nv=coNaves(t.cab),nave=nv&&nv.find(x=>x.n===t.nave),pres=presentes(j),dentro=enTrabajo(j,t),hp=horasTrab(j,t),dis=edit?'':'disabled';
   const ud=udsLabor(t.labor),mp=coMatasPas(t.cab,t.nave);
   const fld=(u,lab)=>`<div class="field"><label for="ct_${u}_${i}">${lab}</label><div class="inp sm"><input id="ct_${u}_${i}" data-co-t="${i}" data-c="${u}" inputmode="decimal" value="${t.pp&&t.ud===u?'':inVal(t[u])}" ${t.pp&&t.ud===u?'disabled placeholder="por persona"':dis}><span class="u">${CO_UD[u]}</span></div></div>`;
-  return `<div class="cotr"><div class="cotr-h"><b>${i+1}. ${esc(LAB[t.labor]||'Trabajo')}</b><small id="cot_${i}">${coTrabRes(j,t)}</small>${edit?`<button class="edx" data-act="co-delt" data-i="${i}" aria-label="Quitar trabajo">✕</button>`:''}</div>
+  return `<div class="cotr"><div class="cotr-h"><b>${i+1}. ${esc(LAB[t.labor]||'Trabajo')}</b>${t.labor==='recolectar'?plzPill(t.cab,t.nave):''}<small id="cot_${i}">${coTrabRes(j,t)}</small>${edit?`<button class="edx" data-act="co-delt" data-i="${i}" aria-label="Quitar trabajo">✕</button>`:''}</div>
     <div class="frm"><div class="field"><label for="ct_l_${i}">Labor</label><div class="inp"><select id="ct_l_${i}" data-co-t="${i}" data-c="labor" ${dis}>${LABORES.map(([k,n])=>`<option value="${k}" ${t.labor===k?'selected':''}>${n}</option>`).join('')}</select></div></div>
       <div class="field"><label for="ct_c_${i}">Cabezal</label><div class="inp"><select id="ct_c_${i}" data-co-t="${i}" data-c="cab" ${dis}><option value="">—</option>${cabs.map(c=>`<option value="${c}" ${t.cab===c?'selected':''}>${esc(cabNombre(c))}</option>`).join('')}</select></div></div>
       <div class="field"><label for="ct_n_${i}">Nave</label><div class="inp">${nv?`<select id="ct_n_${i}" data-co-t="${i}" data-c="nave" ${dis}><option value="">—</option>${nv.map(x=>`<option value="${x.n}" ${t.nave===x.n?'selected':''}>Nave ${x.n}</option>`).join('')}</select>`:`<input id="ct_n_${i}" data-co-t="${i}" data-c="nave" inputmode="numeric" value="${inVal(t.nave)}" ${dis}>`}</div></div>
@@ -3662,6 +3740,7 @@ function coRendHTML(){const d=coDatos(),vis=collasVis();
   // por labor
   h+=`<section class="card"><div><h3>Rendimiento por labor</h3><div class="sub">Cantidad hecha entre las horas de todas las personas que estaban en ese trabajo</div></div><div class="tbl"><table class="rendt"><thead><tr><th>Labor</th><th>Horas</th><th>Matas</th><th>Matas/h</th><th>Kg</th><th>Kg/h</th><th>Cajas</th><th>Cajas/h</th></tr></thead><tbody>
     ${d.lab.map(L=>`<tr><td><b>${esc(LAB[L.labor]||L.labor)}</b>${vis.length>1&&!st.co.fil?`<br><small class="nt">${esc(L.colla)}</small>`:''}</td><td>${fmt(L.h,1)}</td><td>${L.matas?fmt(L.matas,0):'—'}</td><td><b>${coRate(L.matas,L.h,'matas')}</b></td><td>${L.kg?fmt(L.kg,0):'—'}</td><td><b>${coRate(L.kg,L.h,'kg')}</b></td><td>${L.cajas?fmt(L.cajas,0):'—'}</td><td><b>${coRate(L.cajas,L.h,'cajas')}</b></td></tr>`).join('')}</tbody></table></div></section>`;
+  if(esGestor())h+=coNavesHTML(d);
   // por persona y labor
   const labs=LABORES.filter(([k])=>d.per.some(x=>x.lab[k]));if(!st.co.lab||!labs.some(([k])=>k===st.co.lab))st.co.lab=(labs.slice().sort((a,b)=>d.per.reduce((s,x)=>s+((x.lab[b[0]]||{}).h||0),0)-d.per.reduce((s,x)=>s+((x.lab[a[0]]||{}).h||0),0))[0]||[null])[0];
   if(st.co.lab){const L=st.co.lab,us=L==='recolectar'?['kg','cajas']:['matas'],filas=d.per.filter(x=>x.lab[L]).map(x=>({x,a:x.lab[L]}));
@@ -3941,7 +4020,7 @@ function vCTareas(){if(st.collas===null){loadCollas();return '<section class="ca
   let l=st.ct.fil==='hechas'?all.filter(t=>t.hecha).sort((a,b)=>a.hechaTs<b.hechaTs?1:-1).slice(0,40):pend.slice().sort((a,b)=>((b.urg?1:0)-(a.urg?1:0))||(a.fecha<b.fecha?-1:a.fecha>b.fecha?1:0));
   return h+`<section class="card"><div class="tareas">${l.map(ctFilaHTML).join('')||'<div class="note">Nada por aquí.</div>'}</div></section>`}
 function ctFilaHTML(t){const e=t.hecha?'hecha':t.fecha<hoy()?'atrasada':t.fecha===hoy()?'hoy':'prox',me=miEmail(),puedeB=esGestor()||t.creadaEmail===me;
-  return `<div class="tarea ${e}${t.urg&&!t.hecha?' urg':''}"><div class="tt"><b>${esc(t.titulo)}</b>${t.urg&&!t.hecha?'<span class="pill bad">Urgente</span>':''}${e==='atrasada'?'<span class="pill bad">Atrasada</span>':e==='hoy'?'<span class="pill warn">Hoy</span>':e==='hecha'?'<span class="pill ok">Hecha</span>':''}</div>
+  return `<div class="tarea ${e}${t.urg&&!t.hecha?' urg':''}"><div class="tt"><b>${esc(t.titulo)}</b>${plzPill(t.cab,t.nave)}${t.urg&&!t.hecha?'<span class="pill bad">Urgente</span>':''}${e==='atrasada'?'<span class="pill bad">Atrasada</span>':e==='hoy'?'<span class="pill warn">Hoy</span>':e==='hecha'?'<span class="pill ok">Hecha</span>':''}</div>
     <div class="tm"><span class="mini">${esc(t.collaNombre||'')}</span>${vvDonde(t)}<span>${t.hecha?'Hecha '+esc(fHora(t.hechaTs))+' por '+esc(t.hechaPor||''):esc(fFecha(t.fecha))}</span><span class="de">De ${esc(t.creadaPor||'')}</span></div>
     ${t.det?`<p>${esc(t.det)}</p>`:''}${adjHTML(t.adjuntos,false)}${t.hecha&&t.nota?`<div class="hecho"><b>Al terminar:</b> ${esc(t.nota)}</div>`:''}
     ${st.ct.done===t.id?`<div class="tdone"><div class="field"><label for="ct_n">Nota (opcional)</label><textarea id="ct_n" data-ct="nota" rows="2">${esc(st.ct.nota)}</textarea></div><div class="row"><button class="btn pri" data-act="ca-tar-ok" data-id="${t.id}">Confirmar hecha</button><button class="btn" data-act="ca-no">Cancelar</button></div></div>`
@@ -4056,14 +4135,14 @@ const cqEqN=id=>{const p=cqC().equipos.find(x=>x.id===id);return p?p.nom:'—'};
 const cqSig=p=>[p.prov,p.muni,p.pol,p.par,p.rec].every(v=>v!=null&&v!=='')?`${p.prov}-${p.muni}-${p.pol}-${p.par}-${p.rec}`:'';
 /* Campos de cada registro: [clave, etiqueta, tipo, obligatorio, opciones] */
 const CQ_F={
-  parcelas:[['n','Nº de orden','text',1],['nom','Nombre (nave, sector…)','text',1],['cab','Cabezal que la riega','sel',1,()=>st.cfg.cabezales.map(c=>[c.id,c.nombre])],['sup','Superficie (ha)','num',1],
+  parcelas:[['n','Nº de orden','text',1],['nom','Nombre (nave, sector…)','text',1],['cab','Cabezal que la riega','sel',1,()=>st.cfg.cabezales.map(c=>[c.id,c.nombre])],['naves','Naves de esta parcela (ej.: 1, 2, 3)','text',0,null,'Vacío = todo el cabezal. Sirve para avisar del plazo de seguridad en esas naves'],['sup','Superficie (ha)','num',1],
     ['prov','SIGPAC · provincia','text',1],['muni','SIGPAC · municipio','text',1],['agr','SIGPAC · agregado','text'],['zona','SIGPAC · zona','text'],['pol','SIGPAC · polígono','text',1],['par','SIGPAC · parcela','text',1],['rec','SIGPAC · recinto','text',1],
     ['cult','Cultivo','text',1],['vari','Variedad','text'],['sist','Sistema','sel',1,()=>[['invernadero','Invernadero'],['malla','Malla'],['aire','Aire libre']]],['riego','Sistema de riego','sel',1,()=>CQ_RIEGO],
     ['siembra','Fecha de plantación','date'],['prec','Cultivo precedente','text'],['rend','Rendimiento esperado (t/ha)','num'],['coefN','Extracción de N (kg N por t de cosecha)','num',0,null,'Tomate: 2,5 – 4 (programa de actuación de Murcia, tabla 5)'],
     ['necN','Plan de abonado · N (kg/ha)','num'],['necP','Plan de abonado · P₂O₅ (kg/ha)','num'],['necK','Plan de abonado · K₂O (kg/ha)','num'],['amb','Datos medioambientales (captaciones de agua, zonas protegidas…)','area']],
   pers:[['nom','Nombre y apellidos o empresa','text',1],['nif','NIF','text',1],['ropo','Nº inscripción ROPO','text'],['carne','Tipo de carné','sel',0,()=>[['','—'],...CQ_CARNE]],['ncarne','Nº de carné','text'],['cad','Caducidad del carné','date']],
   equipos:[['nom','Equipo (tipo y marca)','text',1],['roma','Nº de inscripción ROMA','text'],['insp','Fecha de la última inspección (ITEAF)','date'],['obs','Observaciones','text']],
-  fito:[['fecha','Fecha','date',1],['parcelas','Parcelas tratadas','multi',1,()=>cqParc().map(p=>[p.id,cqParcN(p.id)])],['sup','Superficie tratada (ha)','num',1],['plaga','Problema fitosanitario (plaga, enfermedad, mala hierba)','text',1],['just','Justificación (umbral, síntoma, estación de avisos…)','text'],
+  fito:[['fecha','Fecha','date',1],['hora','Hora de inicio','time'],['parcelas','Parcelas tratadas','multi',1,()=>cqParc().map(p=>[p.id,cqParcN(p.id)])],['sup','Superficie tratada (ha)','num',1],['bbch','Estado del cultivo (BBCH)','sel',0,()=>CQ_BBCH],['plaga','Problema fitosanitario (plaga, enfermedad, mala hierba)','text',1],['just','Justificación (umbral, síntoma, estación de avisos…)','text'],
     ['prod','Producto (nombre comercial)','text',1],['reg','Nº de registro','text',1],['ma','Materia activa','text'],['dosis','Dosis','num',1],['ud','Unidad de la dosis','sel',1,()=>CQ_UD],['caldo','Caldo (L/ha)','num'],
     ['apl','Aplicador','sel',1,()=>[['','—'],...cqC().pers.map(p=>[p.id,p.nom])]],['eq','Equipo','sel',0,()=>[['','—'],...cqC().equipos.map(p=>[p.id,p.nom])]],['ps','Plazo de seguridad (días)','num',1],['ef','Eficacia','sel',0,()=>[['','Sin valorar todavía'],['B','Buena'],['R','Regular'],['M','Mala']]],['obs','Observaciones','area']],
   fert:[['fecha','Fecha','date',1],['parcelas','Parcelas','multi',1,()=>cqParc().map(p=>[p.id,cqParcN(p.id)])],['prod','Producto','text',1],['tfert','Tipo','sel',1,()=>[['mineral','Abono mineral'],['organico','Abono orgánico / estiércol'],['enmienda','Enmienda'],['foliar','Foliar'],['bioest','Bioestimulante']]],
@@ -4116,7 +4195,7 @@ function cqCampo(f,[k,l,ty,req,op,ayuda]){const v=f[k],id='cq_'+k,lab=`<label fo
   if(ty==='sel')return `<div class="field">${lab}<div class="inp"><select id="${id}" data-cq="${k}">${op().map(([a,b])=>`<option value="${esc(a)}" ${String(v)===String(a)?'selected':''}>${esc(b)}</option>`).join('')}</select></div>${ayuda?`<small class="note">${esc(ayuda)}</small>`:''}</div>`;
   if(ty==='multi'){const o=op();return `<div class="field" style="grid-column:1/-1">${lab}${o.length?`<div class="pick">${o.map(([a,b])=>`<button class="chip" data-cqm="${k}" data-v="${esc(a)}" aria-pressed="${(v||[]).includes(a)}">${esc(b)}</button>`).join('')}</div>`:'<div class="note">Primero da de alta las parcelas.</div>'}</div>`}
   if(ty==='file')return `<div class="field" style="grid-column:1/-1">${lab}${adjHTML(v,true)}${Adj.can()?`<label class="btn" for="${id}">Añadir foto o PDF</label><input type="file" id="${id}" data-cq="${k}" accept="image/*,application/pdf" multiple hidden>`:''}</div>`;
-  return `<div class="field">${lab}<div class="inp"><input id="${id}" data-cq="${k}" ${ty==='date'?'type="date"':ty==='num'?'inputmode="decimal"':''} style="text-align:left;text-transform:none" value="${esc(ty==='num'&&v!==''&&v!=null?inVal(v):v||'')}" autocomplete="off"></div>${ayuda?`<small class="note">${esc(ayuda)}</small>`:''}</div>`}
+  return `<div class="field">${lab}<div class="inp"><input id="${id}" data-cq="${k}" ${ty==='date'?'type="date"':ty==='time'?'type="time"':ty==='num'?'inputmode="decimal"':''}${k==='prod'&&f._t==='fito'?' list="cq_prods"':''} style="text-align:left;text-transform:none" value="${esc(ty==='num'&&v!==''&&v!=null?inVal(v):v||'')}" autocomplete="off"></div>${k==='prod'&&f._t==='fito'?`<datalist id="cq_prods">${[...new Set((st.cuad||[]).filter(x=>x.tipo==='fito'&&x.prod).map(x=>x.prod))].map(x=>`<option value="${esc(x)}">`).join('')}</datalist><small class="note">Si eliges un producto ya usado, se rellenan solos el registro, la dosis y el plazo</small>`:''}${ayuda?`<small class="note">${esc(ayuda)}</small>`:''}</div>`}
 function cqFormHTML(){const f=st.cq.form;if(!f)return '';const t=f._t;
   return `<section class="card" id="cq_form"><div><h3>${f._id?'Cambiar':'Nuevo'}: ${esc(CQ_NOM[t].toLowerCase())}</h3><div class="sub">Los campos con * son obligatorios</div></div>
     <div class="frm">${CQ_F[t].map(z=>cqCampo(f,z)).join('')}</div>${t==='fito'&&f.fecha&&f.ps!==''?`<div class="note">No se puede recolectar hasta el ${esc(fD(isoD(new Date(Date.parse(f.fecha)+(+num(f.ps)||0)*864e5))))}.</div>`:''}
@@ -4159,7 +4238,7 @@ function vCuaderno(){if(st.cuad===null){loadCuad();if(st.hist===null)loadHist();
       <div class="note">El programa de actuación de las zonas vulnerables de Murcia pide: registro de fertilización por cultivo, balance de nitrógeno al empezar y al cerrar el ciclo, apuntar las lluvias fuertes (más de 15 mm/h) con el riego y el abono de ese día, declaración responsable del mantenimiento del riego, y análisis de agua al menos cada 2 años. Los cultivos sin suelo con recirculación quedan fuera de las dosis máximas y del balance de N. El programa nuevo (proyecto de orden de 2025) aún estaba pendiente de aprobación definitiva: confirma con tu asesor qué versión está en vigor.</div></section>`;
     h+=cqLista('lluvia',cqReg('lluvia'),['fecha','mm','int','medidas'],'Apunta aquí cada día de lluvia fuerte y qué cambiaste del riego y del abonado.')+cqLista('decl',cqReg('decl'),['fecha','firma','texto'])+cqBalanceHTML()}
   else if(s==='exportar')h+=`<section class="card"><div><h3>Exportar el cuaderno</h3><div class="sub">De ${esc(fD(a))} a ${esc(fD(b))}: explotación, parcelas, aplicadores y equipos, tratamientos, fertilización (receta por quincena y parcela + abonos sueltos), riego, cosecha, análisis y zona vulnerable</div></div>
-    <div class="row"><button class="btn pri" data-act="cq-pdf">PDF</button><button class="btn" data-act="cq-xlsx">Excel</button></div><div class="note">Es el formato de la app (con los apartados del modelo oficial). Si te piden el cuaderno digital (SIEX), los datos son los mismos: se pueden pasar.</div></section>`;
+    <div class="row"><button class="btn pri" data-act="cq-pdf">PDF</button><button class="btn" data-act="cq-xlsx">Excel</button><button class="btn" data-act="cq-csv">CSV (registro electrónico UE)</button></div><div class="note">El CSV es el registro de tratamientos en formato electrónico legible por máquina que pide el Reglamento (UE) 2023/564: fecha y hora, producto y nº de registro, dosis, superficie, cultivo y BBCH, parcela SIGPAC e invernadero (naves).</div><div class="note">Es el formato de la app (con los apartados del modelo oficial). Si te piden el cuaderno digital (SIEX), los datos son los mismos: se pueden pasar.</div></section>`;
   return h}
 function bidonesDeAll(p){return st.cfg.bidones.some(b=>b.productos.some(x=>x.p===p&&x.dosis))}
 function cqBalanceHTML(){const B=cqBalance();return `<section class="card"><div><h3>Balance de nitrógeno por parcela</h3><div class="sub">Estimado (rendimiento esperado) y cerrado (cosecha real) · kg N</div></div>${B.length?`<div class="tbl"><table><thead><tr><th>Parcela</th><th>ha</th><th>N fertilizantes</th><th>N del agua</th><th>Total aportado</th><th>Necesidad estimada</th><th>Extraído (cosecha)</th><th>kg N/ha aportado</th></tr></thead><tbody>${B.map(x=>{const tot=x.N+x.Nagua;return `<tr><td>${esc(cqParcN(x.p.id))}</td><td>${fmt(x.sup,2)}</td><td>${fmt(x.N,0)}</td><td>${fmt(x.Nagua,0)}</td><td><b>${fmt(tot,0)}</b></td><td>${x.estN?fmt(x.estN,0):'—'}</td><td>${x.kgCos?fmt(x.realN,0):'—'}</td><td>${fmt(tot/x.sup,0)}</td></tr>`}).join('')}</tbody></table></div><div class="note">N del agua: nitrato del análisis de agua (en «Solución nutritiva») por los m³ regados. Necesidad: rendimiento esperado × superficie × kg N por t (tomate 2,5–4 según el programa de actuación de Murcia).</div>`:'<div class="note">Da de alta las parcelas con su superficie.</div>'}</section>`}
@@ -4185,7 +4264,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-cqs],[data
   else if(a==='cq-cancelar'){st.cq.form=null;renderMain()}else if(a==='cq-guardar')cqGuardar();
   else if(a==='cq-borrar'){st.cq.conf=id;renderMain()}else if(a==='cq-no'){st.cq.conf=null;renderMain()}else if(a==='cq-borrar-si')cqBorrar(t,id);
   else if(a==='cq-cfg-guardar'){st.savedCfg.cuad={...(st.savedCfg.cuad||{}),exp:clone(cqC().exp),riq:clone(cqC().riq)};Store.setConfig(st.savedCfg).then(()=>toast('Datos de la explotación guardados')).catch(er=>toast(errMsg(er)))}
-  else if(a==='cq-pdf'){b.disabled=true;cqPdf().finally(()=>{b.disabled=false})}else if(a==='cq-xlsx')cqXlsx()});
+  else if(a==='cq-pdf'){b.disabled=true;cqPdf().finally(()=>{b.disabled=false})}else if(a==='cq-xlsx')cqXlsx();else if(a==='cq-csv')cqCsv()});
 $('#main').addEventListener('input',e=>{const t=e.target,d=t.dataset||{};if(st.tab!=='cuaderno')return;
   if(d.cq&&st.cq.form&&t.type!=='file'&&t.tagName!=='SELECT')st.cq.form[d.cq]=t.value;
   else if(d.cqe&&t.type!=='checkbox')cqC().exp[d.cqe]=t.value;
@@ -4202,7 +4281,7 @@ function cqTablas(){const c=cqC(),e=c.exp,[a,b]=cqRango(),T=[];const tb=(hoja,ti
   tb('Aplicadores','3. Personas o empresas que aplican',['Nombre','NIF','Nº ROPO','Carné','Nº carné','Caducidad'],c.pers.map(p=>[p.nom,p.nif||'',p.ropo||'',(CQ_CARNE.find(x=>x[0]===p.carne)||[,''])[1],p.ncarne||'',p.cad?fD(p.cad):'']));
   tb('Equipos','4. Equipos de aplicación',['Equipo','Nº ROMA','Última inspección','Observaciones'],c.equipos.map(q=>[q.nom,q.roma||'',q.insp?fD(q.insp):'',q.obs||'']));
   tb('Fitosanitarios','5. Registro de tratamientos fitosanitarios',['Fecha','Parcelas','Cultivo','Sup. tratada (ha)','Problema','Justificación','Producto','Nº registro','Materia activa','Dosis','Unidad','Caldo (L/ha)','Aplicador','Equipo','Plazo seg. (días)','Eficacia','Observaciones'],
-    cqReg('fito').slice().reverse().map(x=>[fD(x.fecha),(x.parcelas||[]).map(id=>(cqParc().find(p=>p.id===id)||{}).n||'?').join(', '),[...new Set((x.parcelas||[]).map(id=>(cqParc().find(p=>p.id===id)||{}).cult).filter(Boolean))].join(', '),x.sup??'',x.plaga||'',x.just||'',x.prod||'',x.reg||'',x.ma||'',x.dosis??'',x.ud||'',x.caldo??'',cqPersN(x.apl),x.eq?cqEqN(x.eq):'',x.ps??'',({B:'Buena',R:'Regular',M:'Mala'})[x.ef]||'',x.obs||'']));
+    cqReg('fito').slice().reverse().map(x=>[fD(x.fecha)+(x.hora?' '+x.hora:''),(x.parcelas||[]).map(id=>{const p=cqParc().find(p=>p.id===id)||{},nv=plzNaves(p);return (p.n||'?')+(nv?' (naves '+nv.join(',')+')':'')}).join(', '),[...new Set((x.parcelas||[]).map(id=>(cqParc().find(p=>p.id===id)||{}).cult).filter(Boolean))].join(', ')+(x.bbch?' · BBCH '+x.bbch:''),x.sup??'',x.plaga||'',x.just||'',x.prod||'',x.reg||'',x.ma||'',x.dosis??'',x.ud||'',x.caldo??'',cqPersN(x.apl),x.eq?cqEqN(x.eq):'',x.ps??'',({B:'Buena',R:'Regular',M:'Mala'})[x.ef]||'',x.obs||'']));
   const au=cqAuto(),fr=[];for(const x of au){const rp=cqReparto(x.cab);const abon=Object.entries(x.kg).filter(([,v])=>v>0.05).map(([p,v])=>pn(p)+' '+fmt(v,1)+' '+uCant(p)).join('; ');
     if(!rp.length)fr.push([cqQuinTxt(x.q),'(cabezal '+cabNombre(x.cab)+', sin parcela)','',abon,'Fertirrigación',+x.N.toFixed(1),+x.P.toFixed(1),+x.K.toFixed(1),'','','']);
     else for(const{p,f}of rp)fr.push([cqQuinTxt(x.q),p.n+' · '+p.nom,+p.sup||0,abon+(rp.length>1?` (parte proporcional ${fmt(f*100,0)} %)`:''),'Fertirrigación',+(x.N*f).toFixed(1),+(x.P*f).toFixed(1),+(x.K*f).toFixed(1),+(x.N*f/(+p.sup||1)).toFixed(1),+(x.P*f/(+p.sup||1)).toFixed(1),+(x.K*f/(+p.sup||1)).toFixed(1)])}
@@ -5261,7 +5340,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v136';
+window.APP_V='abonado-v137';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
