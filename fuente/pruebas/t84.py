@@ -25,7 +25,7 @@ async def main():
         d1, d2 = await pg.evaluate("[diaRiego(diaRiego(hoy())),diaRiego(hoy())]")
         for k, f in enumerate([d1, d2]):
             await pg.evaluate(f"({DIA})('{f}',{k})"); await pg.wait_for_timeout(1200)
-        await pg.evaluate("st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(800)
+        await pg.evaluate("st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(800)
         async with pg.expect_download() as dl: await pg.click('[data-act="copia-bajar"]')
         d = await dl.value; ruta = 'pruebas/salida/copia-prueba.json'; await d.save_as(ruta); print('copia:', d.suggested_filename)
         c = json.load(open(ruta)); print('días en la copia:', len(c['registros']), '· depósitos:', len(c['config']['bidones']))

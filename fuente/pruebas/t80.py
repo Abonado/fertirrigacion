@@ -24,7 +24,7 @@ async def main():
         await pg.evaluate("st.tab='global';renderAll()"); await pg.wait_for_timeout(500)
         assert '4500' in await pg.evaluate("document.querySelector('#main').textContent")
         # límite en Ajustes: 4000 µS = 4 mS
-        await pg.evaluate("st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(400)
+        await pg.evaluate("st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(400)
         assert await pg.input_value('#al_ceMax') in ('4000', '4.000')
         await pg.fill('#al_ceMax', '5000'); await pg.wait_for_timeout(200); assert await pg.evaluate("st.cfg.alertas.ceMax") == 5
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)

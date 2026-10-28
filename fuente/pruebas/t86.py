@@ -18,7 +18,7 @@ async def main():
         await pg.reload(); await pg.wait_for_timeout(600)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate(FAKE)
-        await pg.evaluate("cerrarSplash();st.finca='pinta';st.cab='pla';st.carp=null;st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(600)
+        await pg.evaluate("cerrarSplash();st.finca='pinta';st.cab='pla';st.carp=null;st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(600)
         assert 'Carpetas de los partes' in await pg.evaluate("document.querySelector('#main').textContent")
         await pg.click('[data-act="carp-elegir"][data-t="grande"]'); await pg.wait_for_timeout(300)
         await pg.click('[data-act="carp-elegir"][data-t="pequeno"]'); await pg.wait_for_timeout(300)
@@ -34,7 +34,7 @@ async def main():
         assert await pg.evaluate("window.__pedido") == 1, 'el permiso se pide una vez'
         print('toast:', await pg.text_content('#toast'))
         # sin carpeta: descarga normal
-        await pg.evaluate("st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(300); await pg.click('[data-act="carp-quitar"][data-t="grande"]'); await pg.wait_for_timeout(300)
+        await pg.evaluate("st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(300); await pg.click('[data-act="carp-quitar"][data-t="grande"]'); await pg.wait_for_timeout(300)
         await pg.evaluate("st.tab='parte';renderAll()"); await pg.wait_for_timeout(300)
         async with pg.expect_download() as dl: await pg.click('[data-act="parte-xlsx"][data-tipo="grande"]')
         print('sin carpeta se descarga:', (await dl.value).suggested_filename)

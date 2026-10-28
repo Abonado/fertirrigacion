@@ -1,4 +1,4 @@
-"""Mapa de la finca: una sola pestaña en Riego (después del aforo) con tres vistas —Incidencias, En vivo e Instalación—;
+"""Mapa de la finca: una sola pestaña en Riego (después del aforo) con cuatro vistas —Incidencias, En vivo, Instalación y Clima y estrés—;
 Equipo ya no tiene Mapa de naves ni Finca en vivo; la pestaña vuelve a la última vista usada; las incidencias urgentes cuentan en Riego."""
 import asyncio, sys
 from playwright.async_api import async_playwright
@@ -25,7 +25,7 @@ async def main():
         await pg.click('#grupos [data-grupo="riego"]'); await pg.wait_for_timeout(300)
         await pg.click('#tabs .tab:has-text("Mapa de la finca")'); await pg.wait_for_timeout(600)
         assert await pg.evaluate("st.tab") == 'mapa'
-        vis = await pg.locator('.mfsel .mfb').all_inner_texts(); print('vistas:', vis); assert len(vis) == 3 and '1' in vis[0]
+        vis = await pg.locator('.mfsel .mfb').all_inner_texts(); print('vistas:', vis); assert len(vis) == 4 and '1' in vis[0]
         assert 'Incidencias · ' in await pg.text_content('#main h3')
         await pg.click('.mfsel [data-tab="vivo"]'); await pg.wait_for_timeout(800)
         assert await pg.evaluate("st.tab") == 'vivo' and 'En vivo · ' in await pg.text_content('#main h3')

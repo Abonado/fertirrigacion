@@ -36,7 +36,7 @@ async def main():
         c = await pg.evaluate("st.ctar[0]"); print('tarea colla:', c['titulo'], c['cab'], c['nave']); assert c['nave'] == 4 and c['cab'] == 'gas'
         # plastiqueros (oficio) a la nave 5, con un regador dado de alta con su oficio
         await pg.evaluate("""(async()=>{const a=NUBE.acc;a.emails=[...new Set([...a.emails,'pepe@demo.es'])];a.info={...a.info,'pepe@demo.es':{nombre:'Pepe'}};await NUBE.db.doc('acceso/usuarios').set(a)})()""")
-        await pg.evaluate("st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(800)
+        await pg.evaluate("st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(800)
         await pg.click('[data-nube="ofi"][data-o="regador"][data-em="pepe@demo.es"]'); await pg.wait_for_timeout(800)
         assert await pg.evaluate("NUBE.acc.info['pepe@demo.es'].oficio") == 'regador'
         await pg.evaluate("st.tab='tareas';renderAll()"); await pg.wait_for_timeout(400)

@@ -37,6 +37,19 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .mfb{flex:1 1 0;min-width:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:700 13px var(--f-body);letter-spacing:.02em;border:0;border-radius:10px;padding:9px 8px;background:none;color:var(--muted);cursor:pointer;text-align:center;line-height:1.2}
 .mfb[aria-selected="true"]{background:var(--navy);color:var(--bg)}.mfb i{font-style:normal;font-size:11px;min-width:18px;padding:1px 5px;border-radius:999px;background:#c0392b;color:#fff}
 @media (max-width:560px){.mfb{font-size:12px;padding:8px 4px}}
+.esley{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;font-weight:600;color:var(--muted)}.esley span{display:inline-flex;align-items:center;gap:5px}.esley i{width:12px;height:12px;border-radius:3px}
+.essvg{width:100%;height:auto;display:block;max-height:70vh;border-radius:12px}
+.esform{display:grid;gap:10px}.eshojas{display:flex;flex-wrap:wrap;gap:6px}.eshojas .inp{flex:1 1 80px;min-width:80px}
+.essem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--c) 14%,var(--surface));border:1px solid var(--c)}.essem i{width:14px;height:14px;border-radius:50%;background:var(--c)}.essem b{font-size:17px}.essem span{color:var(--muted);font-size:13px}
+.esvs{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.esv{border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:grid;gap:2px}.esv span{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em}.esv b{font-size:18px}.esv small{font-size:11px;color:var(--muted)}
+.esmot{list-style:none;margin:0;padding:0;display:grid;gap:6px}.esmot li{border-left:4px solid var(--c);padding:6px 10px;background:var(--surface);border-radius:6px;display:grid;gap:2px}.esmot span{font-size:13px;color:var(--muted)}
+.escausa{display:grid;gap:6px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line)}.escausa .btn{justify-self:start}
+.esajb{all:unset;cursor:pointer;display:grid;gap:2px;width:100%}.esajb h3::after{content:' ▾';font-size:.8em}.esajb[aria-expanded="true"] h3::after{content:' ▴'}
+.ajg{border:1px solid var(--line);border-radius:16px;background:var(--surface);overflow:hidden}
+.ajh{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:12px;padding:16px 18px;cursor:pointer}.ajh:focus-visible{outline:2px solid var(--navy);outline-offset:-2px}
+.ajh span{flex:1;min-width:0;display:grid;gap:4px}.ajh b{font:700 17px var(--f-display);letter-spacing:.02em}.ajh small{font-size:12px;color:var(--muted);line-height:1.35}
+.ajh i{font-style:normal;font-size:24px;line-height:1;color:var(--muted);transition:transform .2s}.ajh[aria-expanded="true"] i{transform:rotate(90deg)}
+.ajb{display:grid;gap:12px;padding:0 10px 12px}.ajb>.card{box-shadow:none}
 .chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--bg)}
 .tabs .tab{flex:none;font:600 15px var(--f-display);letter-spacing:.04em;text-transform:uppercase;background:none;border:0;color:var(--muted);padding:8px 10px 10px;border-bottom:3px solid transparent;cursor:pointer}
 .tabs .tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
@@ -634,13 +647,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{tipo:'planta',cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},sug:null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},sug:null}}
 /* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
 const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
 const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
 st.regMod=new Set();
 const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
-function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -688,7 +701,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -795,7 +808,7 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.
 function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
-const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
@@ -811,9 +824,9 @@ const CAMPO=new Set(GRUPOS_CAMPO.flatMap(g=>g.tabs));
 const areaDe=t=>CAMPO.has(t)?'campo':'riego';
 function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO;const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
 /* Mapa de la finca: incidencias, en vivo e instalación en una sola pantalla */
-const MF_VISTAS=['mapa','vivo','instal'];
+const MF_VISTAS=['mapa','vivo','instal','estres'];
 function mfHead(){const n=(()=>{try{return incAbiertas().filter(i=>i.cab===st.cab).length}catch(e){return 0}})(),a=(()=>{try{return inAlertas(st.cab)}catch(e){return 0}})();
-  return `<div class="mfsel" role="tablist" aria-label="Mapa de la finca">${[['mapa','Incidencias',n],['vivo','En vivo',0],['instal','Instalación',a]].filter(([k])=>tabPermitida(k)).map(([k,t,c])=>`<button class="mfb" role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${t}${c?`<i>${c}</i>`:''}</button>`).join('')}</div>`}
+  return `<div data-out="mfsel"><div class="mfsel" role="tablist" aria-label="Mapa de la finca">${[['mapa','Incidencias',n],['vivo','En vivo',0],['instal','Instalación',a],['estres','Clima y estrés',(()=>{try{return esZonas(st.cab).zs.filter(z=>{const R=esCalc(esDato(st.cab,z.k),esU());return R&&R.niv===2}).length}catch(e){return 0}})()]].filter(([k])=>tabPermitida(k)).map(([k,t,c])=>`<button class="mfb" role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${t}${c?`<i>${c}</i>`:''}</button>`).join('')}</div></div>`}
 const grupoDe=tab=>{const G=gruposAct();return G.find(g=>g.tabs.includes(tab))||G[0]};
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(ptRevisa()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
@@ -1946,6 +1959,95 @@ function onCvInput(e){const t=e.target;if(t.dataset.cv==='dia'){const{ini}=cvRan
   if(t.dataset.cf){const k=t.dataset.cf;if(k==='file'){if(e.type==='change'&&t.files.length){const fs=[...t.files];t.value='';addFiles(fs,st.cf.adj)}return}st.cf[k]=t.value;return}
   if(t.dataset.cu&&st.cfgCul)st.cfgCul[t.dataset.cu]=t.value}
 $('#main').addEventListener('input',onCvInput);$('#main').addEventListener('change',e=>{if(e.target.dataset.cf==='file')onCvInput(e)});
+/* ---------- Clima y estrés: aire, humedad y hoja por nave → DPV, hoja − aire, punto de rocío y semáforo ----------
+   De momento se apunta a mano (termohigrómetro a la sombra y pistola infrarroja); cuando haya sensores, se rellena solo.
+   Umbrales orientativos para tomate, que el encargado puede cambiar. */
+const ES_DEF={dpvLo:.5,dpvHi:1.2,dpvMax:1.5,tCal:32,hCal:3,tFrio:10,dtRojo:1,dtAm:-1,rocio:1,drMin:10,dtSin:4};
+const ES_CAMPOS=[['dpvLo','DPV mínimo','kPa'],['dpvHi','DPV bueno hasta','kPa'],['dpvMax','DPV muy seco desde','kPa'],['tCal','Calor desde','°C'],['hCal','Horas de calor para rojo','h'],['tFrio','Frío por debajo de','°C'],
+  ['dtAm','Hoja − aire: amarillo desde','°C'],['dtRojo','Hoja − aire: rojo desde','°C'],['rocio','Margen al rocío','°C'],['drMin','Drenaje bajo por debajo de','%'],['dtSin','Hoja − aire sin transpirar','°C']];
+const ES_COL=['#2e8b57','#e0a800','#c0392b'],ES_TXT=['Bien','Ojo','Estrés'];
+st.es=st.es||{z:null,aj:false};
+const esU=()=>({...ES_DEF,...((st.cfg&&st.cfg.estres)||{})});
+const pvs=t=>0.6108*Math.exp(17.27*t/(t+237.3));
+const esRocio=(t,hr)=>{const a=Math.log(hr/100)+17.27*t/(t+237.3);return 237.3*a/(17.27-a)};
+const esMedia=a=>{const v=(a||[]).filter(x=>x!=null&&isFinite(x));return v.length?v.reduce((s,x)=>s+x,0)/v.length:null};
+function esZonas(cab){const Z=inZonas(cab);return{Z,zs:Z.zonas.map(z=>({k:z.nave!=null?'n'+z.nave:z.sid,z,lab:z.nave!=null?'Nave '+z.nave:inSecNom(cab,z.sid)}))}}
+const esDato=(cab,k)=>((st.reg&&st.reg.clima)||{})[cab+':'+k]||null;
+/* Sectores de una nave (según Instalación) y su drenaje y CE de hoy */
+function esSids(cab,z){if(z.sid)return[z.sid];const I=inCfg(cab),s=new Set();const a=inSid(I,z.nave,null);if(a)s.add(a);for(const f of inFranjas(cab,z.nv)){const x=inSid(I,z.nave,f.num);if(x)s.add(x)}return[...s]}
+function esDren(cab,z){const c=cabById(cab),sids=esSids(cab,z),ss=c.sectores.filter(s=>!sids.length||sids.includes(s.id)),pc=[],ce=[];
+  for(const s of ss)for(const bj of s.bandejas){pc.push(drenPct(s,bj));ce.push(st.reg.ceD[bj.id])}return{pc:esMedia(pc),ce:esMedia(ce),todo:!sids.length,ss}}
+/* Calibración de la «planta sana»: recta hoja − aire frente a DPV con plantas bien regadas */
+function esCal(){const P=((st.cfg.estres||{}).cal)||[];if(P.length<6)return{n:P.length};const n=P.length,mx=P.reduce((s,p)=>s+p.dpv,0)/n,my=P.reduce((s,p)=>s+p.dt,0)/n;
+  const sxx=P.reduce((s,p)=>s+(p.dpv-mx)**2,0);if(sxx<1e-6)return{n};const b=P.reduce((s,p)=>s+(p.dpv-mx)*(p.dt-my),0)/sxx;return{n,a:my-b*mx,b}}
+function esCalc(d,U){if(!d||d.ta==null||d.hr==null)return null;const ta=d.ta,hr=Math.min(100,Math.max(1,d.hr)),th=esMedia(d.h),pa=pvs(ta),dpv=pa*(1-hr/100),
+  dpvH=th!=null?pvs(th)-pa*hr/100:null,dt=th!=null?th-ta:null,td=esRocio(ta,hr),mg=Math.min(ta,th??ta)-td,tmax=Math.max(d.tmax??ta,ta),h32=d.h32;
+  const mot=[];let niv=0;const pon=(n,t,q)=>{niv=Math.max(niv,n);mot.push([n,t,q])};
+  if(dt!=null&&dt>U.dtRojo)pon(2,`Hoja ${fmt(dt,1)} °C más caliente que el aire`,'Estrés hídrico: la planta no transpira');
+  else if(dt!=null&&dt>U.dtAm)pon(1,`Hoja casi a la temperatura del aire (${dt>0?'+':''}${fmt(dt,1)} °C)`,'Empieza a cerrar estomas');
+  if(dpv>U.dpvMax+.5)pon(2,`Aire muy seco: DPV ${fmt(dpv,2)} kPa`,'Nebulizar o mojar pasillos, sombrear y bajar algo la CE');
+  else if(dpv>U.dpvMax)pon(1,`Aire seco: DPV ${fmt(dpv,2)} kPa`,'Si dura más de 2 h es estrés: nebulizar o sombrear');
+  else if(dpv>U.dpvHi)pon(1,`Algo seco: DPV ${fmt(dpv,2)} kPa`,'Vigilar a mediodía');
+  else if(dpv<U.dpvLo)pon(1,`Muy húmedo: DPV ${fmt(dpv,2)} kPa`,'Riesgo de botritis y mildiu: ventilar, sobre todo al amanecer');
+  if(h32!=null&&h32>U.hCal)pon(2,`${fmt(h32,1)} h por encima de ${U.tCal} °C`,'Ventilar al máximo, malla o blanqueo, riegos más cortos y seguidos');
+  else if(tmax>35)pon(2,`Máxima de ${fmt(tmax,1)} °C`,'Golpe de sol y caída de flor: ventilar, sombrear y nebulizar si la humedad está baja');
+  else if((h32!=null&&h32>0)||tmax>U.tCal)pon(1,`Calor: ${h32?fmt(h32,1)+' h por encima de '+U.tCal+' °C':'máxima de '+fmt(tmax,1)+' °C'}`,'Cuaja peor: ventilar y vigilar el drenaje');
+  if(ta<U.tFrio)pon(1,`Frío: ${fmt(ta,1)} °C`,'Cerrar ventanas pronto por la tarde; no regar tarde ni muy temprano');
+  if(mg<U.rocio)pon(1,`A ${fmt(Math.max(0,mg),1)} °C del punto de rocío`,'Riesgo de condensación: ventilar al amanecer');
+  const C=esCal();let cwsi=null;if(C.a!=null&&dt!=null){const base=C.a+C.b*dpv;if(U.dtSin-base>.3)cwsi=Math.max(0,Math.min(1,(dt-base)/(U.dtSin-base)))}
+  return{ta,hr,th,dpv,dpvH,dt,td,mg,tmax,h32,niv,mot,cwsi}}
+/* La causa probable cuando la hoja está caliente, cruzando con el drenaje y la CE de hoy */
+function esCausa(cab,z,R,U){if(!R||R.dt==null||R.dt<=U.dtAm)return '';const D=esDren(cab,z),ceMax=st.cfg.alertas.ceMax,ds=D.todo?' (de todo el cabezal: asigna sectores en Instalación para afinar)':'';let t,inc=false;
+  if(D.pc==null&&D.ce==null)t='Apunta el drenaje de hoy para saber la causa.';
+  else if(D.pc!=null&&D.pc<U.drMin)t=`Poco drenaje (${fmt(D.pc,1)} %): puede faltar agua. Mete más pulsos o alarga los riegos.`;
+  else if(D.ce!=null&&ceMax!=null&&D.ce>ceMax)t=`CE de drenaje alta (${uS(D.ce)} µS/cm): la raíz no absorbe por salinidad. Baja la CE de la receta o lava.`;
+  else{t=`Drenaje${D.pc!=null?' '+fmt(D.pc,1)+' %':''} y CE${D.ce!=null?' '+uS(D.ce)+' µS/cm':''} normales: mira la raíz y los goteros.`;inc=true}
+  return `<div class="escausa"><b>Causa probable</b><span>${esc(t)}${esc(ds)}</span>${inc&&z.nave!=null?`<button class="btn" type="button" data-esact="incid">Apuntar incidencia en esta nave</button>`:''}</div>`}
+function esSVG(cab){const{Z,zs}=esZonas(cab),[vx,vy,vw,vh]=Z.vb,U=esU(),k=Math.max(vw,vh)/1000;
+  let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg essvg" id="essvg" role="img" aria-label="Estrés por nave"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f7f3e8"/>`;if(Z.M&&Z.M.fondo)s+=Z.M.fondo();
+  for(const x of zs){const R=esCalc(esDato(cab,x.k),U),col=R?ES_COL[R.niv]:'#cfd8e3',sel=st.es.z===x.k,c=x.z.c;
+    s+=`<g data-esz="${x.k}" style="cursor:pointer"><polygon points="${inPP(x.z.p)}" fill="${col}" fill-opacity="${R?.55:.5}" stroke="${sel?'#1b2f4a':'#5d6f84'}" stroke-width="${(sel?6:2.5)*k}" stroke-linejoin="round"/>
+      <g transform="translate(${c[0].toFixed(1)} ${c[1].toFixed(1)}) rotate(${(Z.M&&Z.M.ang)||0})"><rect x="${-60*k}" y="${-17*k}" width="${120*k}" height="${R?52*k:34*k}" rx="${12*k}" fill="#1b2f4a" opacity=".88"/>
+      <text y="${6*k}" text-anchor="middle" font-size="${16*k}" font-weight="800" fill="#fff">${esc(x.lab.toUpperCase())}</text>${R?`<text y="${27*k}" text-anchor="middle" font-size="${13*k}" font-weight="700" fill="#fff" style="text-transform:none">${fmt(R.dpv,2)} kPa${R.dt!=null?' · '+(R.dt>0?'+':'')+fmt(R.dt,1)+'°':''}</text>`:''}</g></g>`}
+  return s+`</svg>`}
+const esUd=h=>h.replace(/ kPa/g,' <span class="nt">kPa</span>').replace(/µS\/cm/g,'<span class="nt">µS/cm</span>');
+function esResHTML(cab,x){const U=esU(),d=esDato(cab,x.k),R=esCalc(d,U);if(!R)return `<div class="note">Apunta al menos la temperatura y la humedad del aire.</div>`;
+  const C=esCal(),fila=(l,v,n)=>`<div class="esv"><span>${l}</span><b>${v}</b>${n?`<small>${n}</small>`:''}</div>`;
+  return esUd(`<div class="essem" style="--c:${ES_COL[R.niv]}"><i></i><b>${ES_TXT[R.niv]}</b><span>${esc(x.lab)}${d.hora?' · '+esc(d.hora):''}</span></div>
+    <div class="esvs">${fila('DPV del aire',fmt(R.dpv,2)+' kPa',`bien entre ${fmt(U.dpvLo,1)} y ${fmt(U.dpvHi,1)}`)}${R.dpvH!=null?fila('DPV de la hoja',fmt(R.dpvH,2)+' kPa'):''}
+      ${R.dt!=null?fila('Hoja − aire',(R.dt>0?'+':'')+fmt(R.dt,1)+' °C','bien entre −1 y −3'):fila('Hoja − aire','—','apunta la hoja')}${fila('Punto de rocío',fmt(R.td,1)+' °C',`margen ${fmt(R.mg,1)} °C`)}
+      ${R.cwsi!=null?fila('Índice de estrés hídrico',fmt(R.cwsi,2),'0 sin estrés · 1 total'):fila('Índice de estrés hídrico','—',C.n<6?`calibrando: ${C.n} de 6 medidas de planta sana`:'')}</div>
+    ${R.mot.length?`<ul class="esmot">${R.mot.map(([n,t,q])=>`<li style="--c:${ES_COL[n]}"><b>${esc(t)}</b><span>${esc(q)}</span></li>`).join('')}</ul>`:'<div class="note">Todo en rango.</div>'}
+    ${esCausa(cab,x.z,R,U)}
+    ${esGestor()&&R.dt!=null?`<div class="row"><button class="btn" type="button" data-esact="cal">Plantas bien regadas: usar para calibrar</button></div>`:''}`)}
+function esFormHTML(cab,x){const d=esDato(cab,x.k)||{},f=(id,l,u,v,i)=>`<div class="field"><label for="es_${id}">${l}</label><div class="inp sm"><input id="es_${id}" data-es="${id}"${i!=null?` data-i="${i}"`:''} inputmode="decimal" autocomplete="off" value="${inVal(v)}"><span class="u">${u}</span></div></div>`;
+  return `<div class="esform"><div class="frm">${f('ta','Aire (a la sombra)','°C',d.ta)}${f('hr','Humedad','%',d.hr)}${f('tmax','Máxima del día','°C',d.tmax)}${f('h32','Horas de calor','h',d.h32)}</div>
+    <div class="field"><label>Hojas al sol (pistola infrarroja, 4 o 5 hojas)</label><div class="eshojas">${[0,1,2,3,4].map(i=>`<div class="inp sm"><input data-es="h" data-i="${i}" inputmode="decimal" autocomplete="off" aria-label="Hoja ${i+1}" value="${inVal((d.h||[])[i])}"><span class="u">°C</span></div>`).join('')}</div></div>
+    <div class="note">Termohigrómetro a la altura de la planta y a la sombra. Hojas de arriba ya desarrolladas, al sol, a unos 20 cm. Mejor entre las 13:00 y las 15:00 solares. «Horas de calor»: las que marque el registro por encima de ${esU().tCal} °C.</div></div>`}
+function esAjHTML(){if(!esGestor())return '';const U=esU(),C=esCal();
+  return `<section class="card"><button class="esajb" type="button" data-esact="aj" aria-expanded="${!!st.es.aj}"><h3>Umbrales del semáforo</h3><span class="sub">Orientativos para tomate · ${C.n} medidas de planta sana${C.a!=null?' · calibrado':''}</span></button>
+    ${st.es.aj?`<div class="frm">${ES_CAMPOS.map(([k,l,u])=>`<div class="field"><label for="esu_${k}">${l}</label><div class="inp sm"><input id="esu_${k}" data-esu="${k}" inputmode="decimal" value="${inVal(U[k])}"><span class="u">${u}</span></div></div>`).join('')}</div>
+    <div class="row">${C.n?`<button class="btn" type="button" data-esact="calborra">Borrar calibración</button>`:''}<span class="note">Después pulsa «Guardar receta y ajustes».</span></div>`:''}</section>`}
+function vEstres(){const cab=st.cab,c=cabById(cab);if(!c)return '';const{zs}=esZonas(cab);if(!zs.find(x=>x.k===st.es.z))st.es.z=(zs[0]||{}).k||null;const x=zs.find(z=>z.k===st.es.z);
+  const U=esU(),R=zs.map(z=>esCalc(esDato(cab,z.k),U)).filter(Boolean),cuenta=n=>R.filter(r=>r.niv===n).length;
+  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Clima y estrés · ${esc(c.nombre)}</h3><div class="sub">${R.length?`${R.length} de ${zs.length} medidas hoy · ${[2,1,0].filter(n=>cuenta(n)).map(n=>cuenta(n)+' '+ES_TXT[n].toLowerCase()).join(' · ')}`:'Sin medidas hoy · toca una nave y apunta'}</div></div></div>
+    <div data-out="essvg">${esSVG(cab)}</div>
+    <div class="esley">${[0,1,2].map(n=>`<span><i style="background:${ES_COL[n]}"></i>${ES_TXT[n]}</span>`).join('')}<span><i style="background:#cfd8e3"></i>Sin medir</span></div></section>`;
+  if(x)h+=`<section class="card"><div><h3>${esc(x.lab)}</h3><div class="sub">Medida de hoy</div></div>${esFormHTML(cab,x)}<div data-out="esres">${esResHTML(cab,x)}</div></section>`;
+  return h+esAjHTML()}
+/* Apuntar: cada dato va al registro del día */
+function esPon(cab,k,f){const r=st.reg;if(!r.clima)r.clima={};const key=cab+':'+k,d={...(r.clima[key]||{})};f(d);d.hora=new Date().toTimeString().slice(0,5);r.clima[key]=d;marcaReg('clima.'+key)}
+$('#main').addEventListener('input',e=>{const t=e.target;if(!t.dataset)return;
+  if(t.dataset.es!=null){const v=num(t.value),k=t.dataset.es;esPon(st.cab,st.es.z,d=>{if(k==='h'){const a=[...(d.h||[])];a[+t.dataset.i]=v;while(a.length&&a[a.length-1]==null)a.pop();d.h=a}else d[k]=v});softUpdate();renderSave()}
+  else if(t.dataset.esu!=null&&esGestor()){const v=num(t.value);st.cfg.estres={...(st.cfg.estres||{})};if(v==null)delete st.cfg.estres[t.dataset.esu];else st.cfg.estres[t.dataset.esu]=v;st.dirtyCfg=true;softUpdate();renderSave()}});
+document.addEventListener('click',e=>{if(st.tab!=='estres')return;const g=e.target.closest&&e.target.closest('[data-esz]');if(g){st.es.z=g.dataset.esz;renderMain();return}
+  const b=e.target.closest&&e.target.closest('[data-esact]');if(!b)return;const a=b.dataset.esact,cab=st.cab,{zs}=esZonas(cab),x=zs.find(z=>z.k===st.es.z);
+  if(a==='aj'){st.es.aj=!st.es.aj;renderMain()}
+  else if(a==='cal'&&x&&esGestor()){const R=esCalc(esDato(cab,x.k),esU());if(!R||R.dt==null)return;const id=st.fecha+'@'+cab+':'+x.k,cal=[...(((st.cfg.estres||{}).cal)||[]).filter(p=>p.id!==id),{id,dt:+R.dt.toFixed(2),dpv:+R.dpv.toFixed(3)}];
+    st.cfg.estres={...(st.cfg.estres||{}),cal};st.dirtyCfg=true;renderSave();renderMain();toast(`Medida de planta sana guardada (${cal.length}${cal.length<6?' de 6':''}). Pulsa «Guardar receta y ajustes».`)}
+  else if(a==='calborra'&&esGestor()){st.cfg.estres={...(st.cfg.estres||{})};delete st.cfg.estres.cal;st.dirtyCfg=true;renderSave();renderMain()}
+  else if(a==='incid'&&x){const z=x.z;st.mNueva={tipo:'riego',prio:'media',txt:'Estrés: hoja caliente con drenaje y CE normales. ',adj:[],nave:z.nave??null,pasillo:null,x:z.c[0],y:z.c[1]};st.mSel=null;st.tab='mapa';renderCabs();renderTabs();renderMain()}});
+
 /* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */
 /* Gasolinera tenía las naves numeradas al revés en el plano (la 1 abajo). Lo apuntado tocando el plano guardó ese número:
    se pasa a la numeración buena (nave n → 7 − n) una sola vez, cuando entra un administrador. Cada incidencia queda marcada
@@ -3064,15 +3166,26 @@ document.addEventListener('click',e=>{if(st.tab!=='montaje')return;const b=e.tar
 document.addEventListener('input',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(k==='txt')st.tb.txt=t.value});
 document.addEventListener('change',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(!k)return;
   if(k==='diam')st.tb.diam=t.value;else if(k==='marc'){st.tb.marc[+t.dataset.i]=t.checked}else if(k==='foto'&&t.files&&t.files.length){const fs=[...t.files];t.value='';tbAddFotos(fs)}});
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje};
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje};
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);
 const vistaTab=()=>{const fn=VIEWS[st.tab];return st.reg&&st.reg.receta&&st.fecha<hoy()&&RECETA_DIA.has(st.tab)?conReceta(st.reg,fn):fn()};
-function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=vistaTab();if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()}
+function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=vistaTab();if(st.tab==='ajustes')ajAgrupar($('#main'));if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar()}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
-function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=vistaTab();const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
+/* Ajustes por apartados: cada tarjeta va a su grupo según su título; se abren y cierran tocando la cabecera */
+const AJ_GR=[['cab','Depósitos y bandejas',/^(Depósitos|Bandejas)/],['avisos','Avisos y alertas',/^(Aviso de llenado|Avisos de drenaje|Avisos en este móvil)/],['cultivo','Cultivo y partes',/^(Cultivo|Carpetas)/],
+  ['usuarios','Usuarios y acceso',/^Usuarios/],['conex','Conexiones y servidores',/^(IA de la app|Avisos con la app cerrada|Satélite|Sensores)/],['empresa','Empresa, copias y versión',/[\s\S]?/]];
+st.ajAb=new Set((()=>{try{return JSON.parse(localStorage.getItem('abono.ajAb')||'[]')}catch(e){return []}})());
+function ajAgrupar(root){const cards=[...root.children].filter(e=>e.matches('section.card'));if(cards.length<4)return;const G={};
+  for(const c of cards){const t=((c.querySelector('h3')||{}).textContent||'').trim(),g=AJ_GR.find(x=>x[2].test(t));(G[g[0]]=G[g[0]]||[]).push([c,t])}
+  for(const[k,n]of AJ_GR){const l=G[k];if(!l)continue;const ab=st.ajAb.has(k),w=document.createElement('section');w.className='ajg';
+    w.innerHTML=`<button class="ajh" type="button" data-ajt="${k}" aria-expanded="${ab}"><span><b>${esc(k==='cab'&&cabById(st.cab)?n+' · '+cabById(st.cab).nombre:n)}</b>${l.length>1||l[0][1]!==n?`<small>${l.map(x=>esc(x[1])).join(' · ')}</small>`:''}</span><i aria-hidden="true">›</i></button><div class="ajb"${ab?'':' hidden'}></div>`;
+    const body=w.querySelector('.ajb');for(const[c]of l)body.appendChild(c);root.appendChild(w)}}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ajt]');if(!b)return;const k=b.dataset.ajt,ab=!st.ajAb.has(k);if(ab)st.ajAb.add(k);else st.ajAb.delete(k);
+  b.setAttribute('aria-expanded',ab);const body=b.nextElementSibling;if(body)body.hidden=!ab;try{localStorage.setItem('abono.ajAb',JSON.stringify([...st.ajAb]))}catch(_){}});
+function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=vistaTab();if(st.tab==='ajustes')ajAgrupar(tmp);const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
 function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCfg;bar.hidden=!show;if(!show)return;
   $('#savemsg').textContent=st.saving?'Guardando…':'Cambios sin guardar';

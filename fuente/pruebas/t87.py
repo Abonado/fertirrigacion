@@ -18,13 +18,13 @@ async def main():
         await pg.reload(); await pg.wait_for_timeout(600)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         assert await pg.locator('#splash .emblema').count() == 1 and await pg.locator('#splash .splogo').count() == 0, 'sin logo: el dibujo'
-        await pg.evaluate("cerrarSplash();st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(500)
+        await pg.evaluate("cerrarSplash();st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(500)
         await pg.set_input_files('#logo_f', files=[{'name': 'logo.png', 'mimeType': 'image/png', 'buffer': datos}]); await pg.wait_for_timeout(1500)
         u = await pg.evaluate("st.cfg.logo||''"); print('logo guardado:', u[:22], len(u), 'caracteres'); assert u.startswith('data:image/') and len(u) < 180000
         await pg.reload(); await pg.wait_for_timeout(3500)
         assert await pg.locator('#splash .splogo img').count() == 1 and await pg.locator('#splash .emblema').count() == 0, 'con logo: el logo en vez del dibujo'
         await pg.screenshot(path='pruebas/salida/t87-inicio.png')
-        await pg.evaluate("cerrarSplash();st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(400); await pg.click('[data-act="logo-quitar"]'); await pg.wait_for_timeout(800)
+        await pg.evaluate("cerrarSplash();st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(400); await pg.click('[data-act="logo-quitar"]'); await pg.wait_for_timeout(800)
         assert not await pg.evaluate("st.cfg.logo") and await pg.locator('#splash .emblema').count() == 1
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

@@ -17,7 +17,7 @@ async def main():
         await pg.evaluate("""(async()=>{const a=NUBE.acc;a.emails=[...new Set([...a.emails,'pepe@demo.es'])];a.info={...a.info,'pepe@demo.es':{nombre:'Pepe',fincas:['pinta'],areas:['riego']}};await NUBE.db.doc('acceso/usuarios').set(a);await NUBE.cargarAcc();
           const t=new Date().toISOString();await Store.addCol('incidencias',{ts:t,cab:'gas',nave:1,txt:'fuga gasolinera',tipo:'riego',estado:'abierta'});await Store.addCol('incidencias',{ts:t,cab:'pla',nave:1,txt:'fuga planos',tipo:'riego',estado:'abierta'});
           await Store.addCol('tareas',{ts:t,titulo:'tarea gasolinera',finca:'pinta',cab:'gas',hecha:false,fecha:hoy()});await Store.addCol('tareas',{ts:t,titulo:'tarea planos',finca:'pinta',cab:'pla',hecha:false,fecha:hoy()});
-          cerrarSplash();st.tab='ajustes';renderAll()})()"""); await pg.wait_for_timeout(1500)
+          cerrarSplash();st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()})()"""); await pg.wait_for_timeout(1500)
         z = '[data-nube="zon"][data-em="pepe@demo.es"]'
         print('zonas que se pueden elegir:', await pg.locator(z).all_inner_texts())
         assert await pg.locator(f'{z}[data-f="pinta"]').count() == 3 and await pg.locator(f'{z}[data-f="fuente"]').count() == 0, 'solo las fincas que ve y con más de un cabezal'
@@ -43,7 +43,7 @@ async def main():
         # vuelve a verlo todo de Pinta Santos
         await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
-        await pg.evaluate("cerrarSplash();st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(800)
+        await pg.evaluate("cerrarSplash();st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(800)
         await pg.click(f'{z}[data-c="pla"]'); await pg.wait_for_timeout(800); await pg.click(f'{z}[data-c="fra"]'); await pg.wait_for_timeout(800)
         i = await pg.evaluate("NUBE.db.doc('acceso/usuarios').get().then(s=>s.data().info['pepe@demo.es'])"); print('todas otra vez:', i); assert 'cabs' not in i
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
