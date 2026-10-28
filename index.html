@@ -1992,12 +1992,14 @@ $('#main').addEventListener('input',onCvInput);$('#main').addEventListener('chan
 /* ---------- Clima y estrés: aire, humedad y hoja por nave → DPV, hoja − aire, punto de rocío y semáforo ----------
    De momento se apunta a mano (termohigrómetro a la sombra y pistola infrarroja); cuando haya sensores, se rellena solo.
    Umbrales orientativos para tomate, que el encargado puede cambiar. */
-const ES_DEF={dpvLo:.5,dpvHi:1.2,dpvMax:1.5,tCal:32,hCal:3,tFrio:10,dtRojo:1,dtAm:-1,rocio:1,drMin:10,dtSin:4};
+const ES_DEF={dpvLo:.5,dpvHi:1.2,dpvMax:1.5,tCal:30,hCal:3,tFrio:10,dtRojo:1,dtAm:-1,drMin:20,dtSin:4};
+/* Margen al rocío por estación: 2 °C de octubre a marzo (noches húmedas, botritis) y 1 °C de abril a septiembre */
+const esRocioDef=()=>{const m=+String(st.fecha||hoy()).slice(5,7);return m>=4&&m<=9?1:2};
 const ES_CAMPOS=[['dpvLo','DPV mínimo','kPa'],['dpvHi','DPV bueno hasta','kPa'],['dpvMax','DPV muy seco desde','kPa'],['tCal','Calor desde','°C'],['hCal','Horas de calor para rojo','h'],['tFrio','Frío por debajo de','°C'],
   ['dtAm','Hoja − aire: amarillo desde','°C'],['dtRojo','Hoja − aire: rojo desde','°C'],['rocio','Margen al rocío','°C'],['drMin','Drenaje bajo por debajo de','%'],['dtSin','Hoja − aire sin transpirar','°C']];
 const ES_COL=['#2e8b57','#e0a800','#c0392b'],ES_TXT=['Bien','Ojo','Estrés'];
 st.es=st.es||{z:null,aj:false};
-const esU=()=>({...ES_DEF,...((st.cfg&&st.cfg.estres)||{})});
+const esU=()=>({...ES_DEF,rocio:esRocioDef(),...((st.cfg&&st.cfg.estres)||{})});
 const pvs=t=>0.6108*Math.exp(17.27*t/(t+237.3));
 const esRocio=(t,hr)=>{const a=Math.log(hr/100)+17.27*t/(t+237.3);return 237.3*a/(17.27-a)};
 const esMedia=a=>{const v=(a||[]).filter(x=>x!=null&&isFinite(x));return v.length?v.reduce((s,x)=>s+x,0)/v.length:null};
@@ -2055,8 +2057,8 @@ function esFormHTML(cab,x){const d=esDato(cab,x.k)||{},f=(id,l,u,v,i)=>`<div cla
     <div class="field"><label>Hojas al sol (pistola infrarroja, 4 o 5 hojas)</label><div class="eshojas">${[0,1,2,3,4].map(i=>`<div class="inp sm"><input data-es="h" data-i="${i}" inputmode="decimal" autocomplete="off" aria-label="Hoja ${i+1}" value="${inVal((d.h||[])[i])}"><span class="u">°C</span></div>`).join('')}</div></div>
     <div class="note">Termohigrómetro a la altura de la planta y a la sombra. Hojas de arriba ya desarrolladas, al sol, a unos 20 cm. Mejor entre las 13:00 y las 15:00 solares. «Horas de calor» y «horas con humedad > 90 %»: las que marque el registro. Con la máxima y la mínima se calculan los grados-día de las plagas.</div></div>`}
 function esAjHTML(){if(!esGestor())return '';const U=esU(),C=esCal();
-  return `<section class="card"><button class="esajb" type="button" data-esact="aj" aria-expanded="${!!st.es.aj}"><h3>Umbrales del semáforo</h3><span class="sub">Orientativos para tomate · ${C.n} medidas de planta sana${C.a!=null?' · calibrado':''}</span></button>
-    ${st.es.aj?`<div class="frm">${ES_CAMPOS.map(([k,l,u])=>`<div class="field"><label for="esu_${k}">${l}</label><div class="inp sm"><input id="esu_${k}" data-esu="${k}" inputmode="decimal" value="${inVal(U[k])}"><span class="u">${u}</span></div></div>`).join('')}</div>
+  return `<section class="card"><button class="esajb" type="button" data-esact="aj" aria-expanded="${!!st.es.aj}"><h3>Umbrales del semáforo</h3><span class="sub">Orientativos para tomate · ${C.n} medidas de planta sana${C.a!=null?' · calibrado':''}${(st.cfg.estres||{}).rocio==null?' · margen al rocío según la estación':''}</span></button>
+    ${st.es.aj?`<div class="frm">${ES_CAMPOS.map(([k,l,u])=>`<div class="field"><label for="esu_${k}">${l}</label><div class="inp sm"><input id="esu_${k}" data-esu="${k}" inputmode="decimal" value="${inVal(U[k])}"><span class="u${u==='kPa'?' nt':''}">${u}</span></div></div>`).join('')}</div>
     <div class="row">${C.n?`<button class="btn" type="button" data-esact="calborra">Borrar calibración</button>`:''}<span class="note">Después pulsa «Guardar receta y ajustes».</span></div>`:''}</section>`}
 function vEstres(){const cab=st.cab,c=cabById(cab);if(!c)return '';const{zs}=esZonas(cab);if(!zs.find(x=>x.k===st.es.z))st.es.z=(zs[0]||{}).k||null;const x=zs.find(z=>z.k===st.es.z);
   const U=esU(),R=zs.map(z=>esCalc(esDato(cab,z.k),U)).filter(Boolean),cuenta=n=>R.filter(r=>r.niv===n).length;
@@ -2133,8 +2135,8 @@ function plRiesgos(cab,z){const D=plDias(),k=z.k,U=plU(),EU=esU(),hoyT=plTr(D[st
     const m=cl.length?(n?`${(rojo.length?rojo:am).length} de los últimos ${cl.length} días medidos con humedad alta o condensación${rojo.length?` (hasta ${Math.max(...rojo.map(x=>x.h))} h por encima del 90 %)`:''}`:'Humedad bajo control los últimos días'):'Sin medidas: apunta las horas con humedad por encima del 90 % que marque el registro';
     out.push({id:'bot',t:'Botrytis',n,m,p:n?'El riesgo sigue mientras haya noches húmedas y condensación al amanecer':'',q:'Ventila al amanecer para que no gotee, no riegues al final de la tarde, retira hojas y restos afectados. Si se esperan varios días húmedos, preventivo autorizado: consulta a tu técnico.'})}
   // Cambio de color del fruto
-  {const cl=plClima(D,cab,k,14),cal=cl.filter(([,d])=>(d.h32!=null&&d.h32>0)||(d.tmax!=null&&d.tmax>32)).length,mb=plCuentas(D,cab,k,'mb'),col=plCuentas(D,cab,k,'col'),D2=esDren(cab,z.z),ceMax=st.cfg.alertas.ceMax,causas=[];
-    if(cal)causas.push(`${cal} ${cal===1?'día':'días'} con más de 32 °C en 2 semanas (el calor frena el color: hombros amarillos)`);
+  {const cl=plClima(D,cab,k,14),tc=esU().tCal,cal=cl.filter(([,d])=>(d.h32!=null&&d.h32>0)||(d.tmax!=null&&d.tmax>tc)).length,mb=plCuentas(D,cab,k,'mb'),col=plCuentas(D,cab,k,'col'),D2=esDren(cab,z.z),ceMax=st.cfg.alertas.ceMax,causas=[];
+    if(cal)causas.push(`${cal} ${cal===1?'día':'días'} con más de ${tc} °C en 2 semanas (el calor frena el color: hombros amarillos)`);
     if(mb.length&&mb[0][1]>=U.mbAm)causas.push(`mosca blanca (${mb[0][1]} por placa): provoca maduración irregular`);
     if(D2.ce!=null&&ceMax!=null&&D2.ce>ceMax)causas.push(`CE de drenaje alta (${uS(D2.ce)} µS/cm)`);
     const v=col.length?col[0][1]:null,n=v!=null&&v>=U.colRojo?2:(v>0||causas.length)?1:0;
@@ -5340,7 +5342,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v138';
+window.APP_V='abonado-v139';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
