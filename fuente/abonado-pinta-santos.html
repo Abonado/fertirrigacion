@@ -2231,8 +2231,8 @@ function coNavesHTML(d){const P=(st.cfg.coste||{}).hora,N={};
     <div class="note">El €/kg reparte todas las horas de la nave (también destallar, bajar planta…) entre los kilos recolectados en esas fechas. Para que salga bien, el parte tiene que llevar la nave y, al recolectar, los kilos o las cajas.</div></section>`}
 $('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.coprecio==null||!esGestor())return;const v=num(t.value);st.cfg.coste={...(st.cfg.coste||{})};if(v==null)delete st.cfg.coste.hora;else st.cfg.coste.hora=v;st.dirtyCfg=true;renderSave();renderMain()});
 
-/* ---------- UCROP: leer una captura de su pantalla de clima con la IA y apuntarla en Clima y estrés ---------- */
-const UC_PROMPT=`Esta imagen es una captura de pantalla de UCROP (Novagric), la plataforma de control de clima y riego de un invernadero de tomate.
+/* ---------- Leer informe: foto o captura de un informe o pantalla de clima; la IA saca los datos por nave y se apuntan en Clima y estrés ---------- */
+const UC_PROMPT=`Esta imagen es una foto o captura de un informe o pantalla de control de clima de un invernadero de tomate.
 Saca SOLO los datos de clima que se lean en la imagen, para cada nave, sector o zona que aparezca. No inventes nada: si un dato no se ve, pon null. Usa punto decimal.
 Devuelve únicamente este JSON, sin texto alrededor:
 {"hora":"HH:MM o null","lecturas":[{"zona":"nombre tal y como aparece","nave":número de nave si se deduce del nombre o null,"ta":temperatura interior en °C,"hr":humedad relativa en %,"tmax":máxima del día en °C,"tmin":mínima del día en °C,"vent":apertura de ventanas en % o null}]}`;
@@ -2243,10 +2243,10 @@ async function ucLeer(file){const zs=esZonas(st.cab).zs;let b=file;try{b=await c
   try{const r=await iaFotoJson(UC_PROMPT,[b]);const L=(r&&Array.isArray(r.lecturas)?r.lecturas:[]).map(x=>({zona:String(x&&x.zona||''),nave:ucNum(x&&x.nave),ta:ucNum(x&&x.ta),hr:ucNum(x&&x.hr),tmax:ucNum(x&&x.tmax),tmin:ucNum(x&&x.tmin)})).filter(x=>x.ta!=null||x.hr!=null||x.tmax!=null);
     if(!L.length)throw{code:'nada'};
     st.es.uc={hora:r.hora||null,res:L.map(x=>{const n=x.nave!=null?x.nave:+((/nave\s*(\d+)/i.exec(x.zona)||[])[1]||NaN);return{...x,k:(zs.find(q=>q.z.nave!=null&&q.z.nave===n)||{}).k||''}})}}
-  catch(e){st.es.uc={err:e&&e.code==='nada'?'No se ven datos de clima en la captura. Prueba con la pantalla de clima de UCROP.':e&&e.code==='sin_ia'?'La IA no está configurada en esta app.':dgErr(e)}}
+  catch(e){st.es.uc={err:e&&e.code==='nada'?'No se ven datos de clima en la imagen. Prueba con el informe o la pantalla de clima de las naves.':e&&e.code==='sin_ia'?'La IA no está configurada en esta app.':dgErr(e)}}
   renderMain()}
 function ucHTML(cab){const U=st.es.uc,zs=esZonas(cab).zs;
-  let h=`<div class="ucbar"><label class="btn" for="es_uc">Leer captura de UCROP</label><input type="file" id="es_uc" accept="image/*" hidden><small>Haz una captura de la pantalla de clima de UCROP y la IA rellena las naves</small></div>`;
+  let h=`<div class="ucbar"><label class="btn" for="es_uc">Leer informe</label><input type="file" id="es_uc" accept="image/*" hidden><small>Haz una foto o captura del informe de clima y la IA rellena las naves</small></div>`;
   if(!U)return h;if(U.busy)return h+'<div class="note">Leyendo la captura…</div>';if(U.err)return h+`<div class="banner">${esc(U.err)}</div>`;
   return h+`<div class="ucres"><b>Esto he leído${U.hora?' ('+esc(U.hora)+')':''}. Revisa a qué nave va cada fila:</b>${U.res.map((x,i)=>`<div class="ucf"><span>${esc(x.zona||'—')}</span><span>${[x.ta!=null?fmt(x.ta,1)+' °C':'',x.hr!=null?fmt(x.hr,0)+' %':'',x.tmax!=null?'máx '+fmt(x.tmax,1):'',x.tmin!=null?'mín '+fmt(x.tmin,1):''].filter(Boolean).join(' · ')}</span><div class="inp"><select data-ucz="${i}" aria-label="Nave para ${esc(x.zona||'esta fila')}"><option value="">No apuntar</option>${zs.map(z=>`<option value="${z.k}" ${x.k===z.k?'selected':''}>${esc(z.lab)}</option>`).join('')}</select></div></div>`).join('')}
     <div class="row"><button class="btn pri" type="button" data-esact="ucok">Apuntar</button><button class="btn" type="button" data-esact="ucno">Descartar</button></div></div>`}
@@ -2255,7 +2255,7 @@ $('#main').addEventListener('change',e=>{const t=e.target;if(st.tab!=='estres'||
   else if(t.dataset&&t.dataset.ucz!=null&&st.es.uc&&st.es.uc.res){st.es.uc.res[+t.dataset.ucz].k=t.value}});
 document.addEventListener('click',e=>{if(st.tab!=='estres')return;const b=e.target.closest&&e.target.closest('[data-esact]');if(!b)return;const a=b.dataset.esact;
   if(a==='ucno'){st.es.uc=null;renderMain()}
-  else if(a==='ucok'&&st.es.uc&&st.es.uc.res){let n=0;for(const x of st.es.uc.res){if(!x.k)continue;esPon(st.cab,x.k,d=>{for(const f of ['ta','hr','tmax','tmin'])if(x[f]!=null)d[f]=x[f];d.src='ucrop'});n++}
+  else if(a==='ucok'&&st.es.uc&&st.es.uc.res){let n=0;for(const x of st.es.uc.res){if(!x.k)continue;esPon(st.cab,x.k,d=>{for(const f of ['ta','hr','tmax','tmin'])if(x[f]!=null)d[f]=x[f];d.src='informe'});n++}
     st.es.uc=null;renderMain();renderSave();toast(n?`Apuntado en ${n} ${n===1?'nave':'naves'}. Guarda el día para que quede.`:'No has elegido ninguna nave',5000)}});
 
 /* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */

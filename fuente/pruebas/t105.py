@@ -1,4 +1,4 @@
-"""Clima y estrés → «Leer captura de UCROP»: la IA lee la captura y devuelve las lecturas por nave; la app las propone en su nave
+"""Clima y estrés → «Leer informe»: la IA lee la foto o captura del informe de clima y devuelve las lecturas por nave; la app las propone en su nave
 (por el número del nombre), se puede cambiar o no apuntar una, y al apuntar se rellenan aire, humedad, máxima y mínima."""
 import asyncio, sys, json, io
 from playwright.async_api import async_playwright
@@ -26,17 +26,17 @@ async def main():
         await pg.reload(); await pg.wait_for_timeout(600)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash();st.cfg.iaUrl='https://ia.prueba.workers.dev';st.finca='pinta';st.cab='gas';st.tab='estres';renderAll()"); await pg.wait_for_timeout(600)
-        assert await pg.locator('label[for="es_uc"]').count() == 1
+        assert await pg.locator('label[for="es_uc"]').inner_text() in ('Leer informe', 'LEER INFORME') and 'UCROP' not in (await pg.text_content('#main')).upper()
         im = Image.new('RGB', (200, 120), (240, 240, 240)); bio = io.BytesIO(); im.save(bio, 'PNG')
-        await pg.set_input_files('#es_uc', files=[{'name': 'ucrop.png', 'mimeType': 'image/png', 'buffer': bio.getvalue()}]); await pg.wait_for_timeout(2500)
-        assert pedidos and 'UCROP' in pedidos[-1]['prompt'] and len(pedidos[-1]['images']) == 1
+        await pg.set_input_files('#es_uc', files=[{'name': 'informe.png', 'mimeType': 'image/png', 'buffer': bio.getvalue()}]); await pg.wait_for_timeout(2500)
+        assert pedidos and 'informe' in pedidos[-1]['prompt'] and len(pedidos[-1]['images']) == 1
         res = await pg.evaluate("st.es.uc.res.map(x=>[x.zona,x.k,x.ta,x.hr])"); print('leído:', res)
         assert res == [['Nave 1', 'n1', 27.4, 62], ['NAVE 4 · Sector 2', 'n4', 29.1, 48], ['Exterior', '', 22, 70]], 'nave por el número o por el nombre; el exterior no se apunta'
-        await pg.screenshot(path='pruebas/salida/t105-ucrop.png', full_page=True)
+        await pg.screenshot(path='pruebas/salida/t105-informe.png', full_page=True)
         await pg.select_option('[data-ucz="1"]', 'n5'); await pg.wait_for_timeout(200)
         await pg.click('[data-esact="ucok"]'); await pg.wait_for_timeout(500)
         c = await pg.evaluate("st.reg.clima"); print('apuntado:', c)
-        assert c['gas:n1']['ta'] == 27.4 and c['gas:n1']['tmax'] == 31.2 and c['gas:n1']['tmin'] == 14.1 and c['gas:n1']['src'] == 'ucrop'
+        assert c['gas:n1']['ta'] == 27.4 and c['gas:n1']['tmax'] == 31.2 and c['gas:n1']['tmin'] == 14.1 and c['gas:n1']['src'] == 'informe'
         assert c['gas:n5']['ta'] == 29.1 and 'gas:n4' not in c and await pg.evaluate("st.es.uc") is None and await pg.evaluate("st.dirtyReg") is True
         assert await pg.locator('#essvg [data-esz="n1"] polygon').get_attribute('fill') != '#cfd8e3', 'la nave 1 ya tiene medida'
         # si la IA no ve datos de clima
