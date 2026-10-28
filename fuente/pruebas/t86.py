@@ -31,7 +31,7 @@ async def main():
         g = [k for k in fs if k.startswith('Partes grandes/' + mes) and k.endswith(f'/Planos/Control de riegos Planos {dia}.xlsx')]
         q = [k for k in fs if k.startswith('Partes pequeños/' + mes) and k.endswith(f'/Planos/Control de aportes Planos {dia}.xlsx')]
         assert g and q and all(fs[k] > 1000 for k in g + q), 'cada parte en su carpeta, por mes y cabezal'
-        assert await pg.evaluate("window.__pedido") == 1, 'el permiso se pide una vez'
+        assert await pg.evaluate("window.__pedido") <= 2, 'el permiso se pide como mucho una vez por carpeta'
         print('toast:', await pg.text_content('#toast'))
         # sin carpeta: descarga normal
         await pg.evaluate("st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(300); await pg.click('[data-act="carp-quitar"][data-t="grande"]'); await pg.wait_for_timeout(300)

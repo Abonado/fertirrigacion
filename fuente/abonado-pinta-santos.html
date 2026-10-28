@@ -3442,8 +3442,8 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='inf-xlsx')exportXlsx();
   else if(t.dataset.act==='pt-ver'){st.ptAbierto=st.ptAbierto===t.dataset.id?null:t.dataset.id;renderMain()}
   else if(t.dataset.act==='pt-pdf'){const p=(st.partes||[]).find(x=>x.id===t.dataset.id),tp=t.dataset.tipo||'grande';if(p){t.disabled=true;(p.d&&p.d[PTIPO[tp].hoja]?parteHojaPdf([p.d],parteNombre(p.d,tp),tp):partePdfDe([ptDatos(p)])).finally(()=>{t.disabled=false})}}
-  else if(t.dataset.act==='pt-xlsx'){const p=(st.partes||[]).find(x=>x.id===t.dataset.id),tp=t.dataset.tipo||'grande';if(p&&p.d&&p.d[PTIPO[tp].hoja])parteHojaXlsx(p.d,parteNombre(p.d,tp),tp)}
-  else if(t.dataset.act==='parte-xlsx'){const tp=t.dataset.tipo||'grande';radCargar(st.cab,st.fecha).then(()=>{const d=parteData(st.cab);parteHojaXlsx(d,parteNombre(d,tp),tp)})}
+  else if(t.dataset.act==='pt-xlsx'){const p=(st.partes||[]).find(x=>x.id===t.dataset.id),tp=t.dataset.tipo||'grande';carpPedir(tp);if(p&&p.d&&p.d[PTIPO[tp].hoja])parteHojaXlsx(p.d,parteNombre(p.d,tp),tp)}
+  else if(t.dataset.act==='parte-xlsx'){const tp=t.dataset.tipo||'grande';carpPedir(tp);radCargar(st.cab,st.fecha).then(()=>{const d=parteData(st.cab);parteHojaXlsx(d,parteNombre(d,tp),tp)})}
   else if(t.dataset.act==='pf-save')pfGuardar();
   else if(t.dataset.act==='pt-rev'){st.ptRev=t.dataset.id;renderMain();const i=$('#pt_nota');if(i)i.focus()}
   else if(t.dataset.act==='pt-rev-no'){st.ptRev=null;renderMain()}
@@ -5107,24 +5107,36 @@ function idbAbrir(){return new Promise((res,rej)=>{const r=indexedDB.open('abono
 async function idbGet(k){try{const db=await idbAbrir();return await new Promise(res=>{const q=db.transaction('h').objectStore('h').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)})}catch(e){return null}}
 async function idbSet(k,v){try{const db=await idbAbrir();return await new Promise(res=>{const t=db.transaction('h','readwrite'),o=t.objectStore('h');if(v==null)o.delete(k);else o.put(v,k);t.oncomplete=()=>res(true);t.onerror=()=>res(false)})}catch(e){return false}}
 st.carp=null;
-async function carpCargar(){st.carp={grande:await idbGet('grande'),pequeno:await idbGet('pequeno')};if(st.tab==='ajustes')renderMain()}
+async function carpCargar(){st.carp={grande:await idbGet('grande'),pequeno:await idbGet('pequeno')};await carpEstado();if(st.tab==='ajustes')renderMain()}
+async function carpEstado(){st.carpEst={};for(const t of ['grande','pequeno']){const h=st.carp&&st.carp[t];if(h)try{st.carpEst[t]=await h.queryPermission({mode:'readwrite'})}catch(e){st.carpEst[t]='prompt'}}}
 const carpOk=()=>typeof window.showDirectoryPicker==='function';
+if(carpOk())setTimeout(()=>{if(st.carp===null)carpCargar().catch(()=>{})},0);
+/* Permiso pedido en el clic: se guarda la promesa y el guardado la espera */
+const carpPerm={};
+function carpPedir(tipo){const h=carpOk()&&st.carp&&st.carp[tipo];if(!h||(st.carpEst&&st.carpEst[tipo]==='granted'))return;try{carpPerm[tipo]=h.requestPermission({mode:'readwrite'}).then(r=>r==='granted',()=>null)}catch(e){carpPerm[tipo]=Promise.resolve(null)}}
 function carpetasHTML(){if(!carpOk())return '';if(st.carp===null){carpCargar();return ''}
   return `<section class="card"><div><h3>Carpetas de los partes en este ordenador</h3><div class="sub">Al descargar un parte en Excel se guarda solo en su carpeta, por mes y cabezal</div></div>
-    ${['grande','pequeno'].map(t=>{const h=st.carp[t];return `<div class="carpr"><div><b>${PTIPO[t].titulo}</b><small>${h?'Carpeta: '+esc(h.name)+' · dentro, por mes y cabezal':'Sin elegir: se descarga en Descargas'}</small></div><div class="row"><button class="btn${h?'':' pri'}" data-act="carp-elegir" data-t="${t}">${h?'Cambiar':'Elegir carpeta'}</button>${h?`<button class="btn" data-act="carp-quitar" data-t="${t}">Quitar</button>`:''}</div></div>`}).join('')}
-    <div class="note">Solo en el ordenador, con Chrome o Edge. Puede que el navegador pida permiso para guardar en la carpeta: elige «Permitir siempre» (o «Permitir en cada visita»).</div></section>`}
+    ${['grande','pequeno'].map(t=>{const h=st.carp[t];return `<div class="carpr"><div><b>${PTIPO[t].titulo}</b><small>${h?'Carpeta: '+esc(h.name)+' · dentro, por mes y cabezal'+(st.carpEst&&st.carpEst[t]==='granted'?' · con permiso':st.carpEst&&st.carpEst[t]?' · falta dar permiso':''):'Sin elegir: se descarga en Descargas'}</small></div><div class="row">${h&&st.carpEst&&st.carpEst[t]&&st.carpEst[t]!=='granted'?`<button class="btn pri" data-act="carp-permiso" data-t="${t}">Dar permiso</button>`:''}<button class="btn${h?'':' pri'}" data-act="carp-elegir" data-t="${t}">${h?'Cambiar':'Elegir carpeta'}</button>${h?`<button class="btn" data-act="carp-quitar" data-t="${t}">Quitar</button>`:''}</div></div>`}).join('')}
+    <div class="note">Solo en el ordenador, con Chrome o Edge. El navegador pide permiso para guardar en la carpeta: elige «Permitir en cada visita» para que no lo vuelva a pedir. Si el parte está abierto en Excel, se guarda como «(2)».</div></section>`}
 const carpNom=s=>String(s||'').replace(/[\\/:*?"<>|]+/g,'-').trim()||'Sin nombre';
-async function carpPermiso(h){try{const o={mode:'readwrite'};if(await h.queryPermission(o)==='granted')return true;return await h.requestPermission(o)==='granted'}catch(e){return false}}
+async function carpPermiso(h,tipo){const o={mode:'readwrite'};try{if(await h.queryPermission(o)==='granted')return true}catch(e){}
+  const pp=carpPerm[tipo];delete carpPerm[tipo];if(pp){const r=await pp;if(r!=null)return r}
+  try{return await h.requestPermission(o)==='granted'}catch(e){return null}}
 /* Guarda el parte en su carpeta; si no hay carpeta o algo falla, se descarga como siempre */
 async function guardarParte(blob,name,tipo,d){const h=carpOk()?(st.carp?st.carp[tipo]:await idbGet(tipo)):null;
-  if(h){try{if(await carpPermiso(h)){const f=diaRiego(d.fecha),mes=f.slice(0,7)+' '+MESES[+f.slice(5,7)-1].replace(/^./,x=>x.toUpperCase()),cab=carpNom(d.cab);
-        const dm=await h.getDirectoryHandle(mes,{create:true}),dc=await dm.getDirectoryHandle(cab,{create:true}),fh=await dc.getFileHandle(carpNom(name),{create:true}),w=await fh.createWritable();
-        await w.write(blob);await w.close();toast(`Guardado en ${h.name} / ${mes} / ${cab}`,5000);return}
-      toast('Sin permiso para la carpeta: se descarga en Descargas',5000)}catch(e){console.warn('carpeta',e);toast('No se pudo guardar en la carpeta: se descarga en Descargas',5000)}}
+  if(h){try{const ok=await carpPermiso(h,tipo);if(ok){const f=diaRiego(d.fecha),mes=f.slice(0,7)+' '+MESES[+f.slice(5,7)-1].replace(/^./,x=>x.toUpperCase()),cab=carpNom(d.cab);
+        const dm=await h.getDirectoryHandle(mes,{create:true}),dc=await dm.getDirectoryHandle(cab,{create:true}),base=carpNom(name),ext=(/\.[^.]+$/.exec(base)||[''])[0],raiz=base.slice(0,base.length-ext.length);
+        for(let i=1;i<=6;i++){const nm=i===1?base:`${raiz} (${i})${ext}`;try{const fh=await dc.getFileHandle(nm,{create:true}),w=await fh.createWritable();await w.write(blob);await w.close();st.carpEst=st.carpEst||{};st.carpEst[tipo]='granted';
+            toast(i===1?`Guardado en ${h.name} / ${mes} / ${cab}`:`El parte estaba abierto (en Excel): guardado como «${nm}» en ${h.name} / ${mes} / ${cab}`,6000);return}
+          catch(e){if(!e||!['NoModificationAllowedError','InvalidStateError','InvalidModificationError'].includes(e.name))throw e}}
+        throw new Error('bloqueado')}
+      toast(ok===false?'No diste permiso para la carpeta: se descarga en Descargas. Puedes darlo en Ajustes → Cultivo y partes.':'Hay que dar permiso a la carpeta otra vez (Ajustes → Cultivo y partes → «Dar permiso»). De momento se descarga en Descargas.',7000)}
+    catch(e){console.warn('carpeta',e);toast(e&&e.name==='NotFoundError'?'La carpeta ya no existe o se movió: elígela otra vez en Ajustes. Se descarga en Descargas.':'No se pudo guardar en la carpeta ('+((e&&e.name)||'error')+'): se descarga en Descargas',7000)}}
   await saveBlob(blob,name)}
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-act^="carp-"]');if(!b||!b.closest('#main'))return;const t=b.dataset.t;
-  if(b.dataset.act==='carp-elegir'){try{const h=await window.showDirectoryPicker({id:'partes-'+t,mode:'readwrite'});await idbSet(t,h);st.carp=st.carp||{};st.carp[t]=h;renderMain();toast('Carpeta para el '+PTIPO[t].corto.toLowerCase()+': '+h.name)}catch(e){if(!e||e.name!=='AbortError')toast('No se pudo elegir la carpeta')}}
-  else if(b.dataset.act==='carp-quitar'){await idbSet(t,null);if(st.carp)st.carp[t]=null;renderMain()}});
+  if(b.dataset.act==='carp-elegir'){try{const h=await window.showDirectoryPicker({id:'partes-'+t,mode:'readwrite'});await idbSet(t,h);st.carp=st.carp||{};st.carp[t]=h;await carpEstado();renderMain();toast('Carpeta para el '+PTIPO[t].corto.toLowerCase()+': '+h.name)}catch(e){if(!e||e.name!=='AbortError')toast('No se pudo elegir la carpeta')}}
+  else if(b.dataset.act==='carp-quitar'){await idbSet(t,null);if(st.carp)st.carp[t]=null;renderMain()}
+  else if(b.dataset.act==='carp-permiso'){const h=st.carp&&st.carp[t];if(!h)return;let r=null;try{r=await h.requestPermission({mode:'readwrite'})}catch(e){}await carpEstado();renderMain();toast(r==='granted'?'Permiso dado: los partes se guardarán en '+h.name:'Sin permiso: elige «Permitir en cada visita» cuando lo pida el navegador',6000)}});
 /* ---------- Logo de la empresa: sale arriba en la pantalla principal. Se guarda en los ajustes (no en el código), así cada empresa lleva el suyo ---------- */
 /* Si el logo llega (o cambia) con la pantalla de inicio abierta, se vuelve a pintar */
 function splashLogo(){try{const sp=$('#splash');if(sp&&!sp.hidden&&!!sp.querySelector('.splogo')!==!!(st.cfg&&st.cfg.logo))renderSplash()}catch(e){}}
