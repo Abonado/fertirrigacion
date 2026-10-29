@@ -28,7 +28,7 @@ bool radioIni() {
   af(e == RADIOLIB_ERR_NONE ? String("radio=ok") : "radio=err" + String(e));
   return e == RADIOLIB_ERR_NONE;
 }
-void enviar(const String& m) {
+void enviar(String m) {      // por copia: RadioLib pide un String que pueda tocar
   Serial.println(m); af("dato=" + m);
   int e = radio.transmit(m);
   if (e != RADIOLIB_ERR_NONE) af("envio=err" + String(e));
