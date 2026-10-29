@@ -1,4 +1,4 @@
-/* Taller de sensores · solo el administrador (Ajustes → Taller de sensores).
+/* Taller de sensores · solo el administrador (menú Taller → Taller de sensores).
    Eliges qué quieres medir y la app da: piezas, esquema de conexiones con avisos de errores, caja para imprimir en 3D
    (STL de la base y de la tapa, y .scad para retocarla en OpenSCAD) y la ficha de montaje y uso.
    Se carga solo cuando el administrador abre la pestaña. Los diseños se guardan en este móvil (abono.taller), no en la nube.

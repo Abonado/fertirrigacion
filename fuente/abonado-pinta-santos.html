@@ -45,6 +45,15 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .esmot{list-style:none;margin:0;padding:0;display:grid;gap:6px}.esmot li{border-left:4px solid var(--c);padding:6px 10px;background:var(--surface);border-radius:6px;display:grid;gap:2px}.esmot span{font-size:13px;color:var(--muted)}
 .escausa{display:grid;gap:6px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line)}.escausa .btn{justify-self:start}
 .plorden{border:2px solid #c0392b}.plorden ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.catq{margin:6px 0 2px;display:flex;width:100%}.catq input{flex:1;width:auto!important;min-width:0;max-width:none}.catres{display:grid;gap:8px}
+.catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.catf{all:unset;box-sizing:border-box;cursor:pointer;display:grid;align-content:start;gap:5px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}.catf:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+.catf svg{width:26px;height:26px;color:var(--navy)}.catf b{font-size:15px;line-height:1.2}.catf small{color:var(--muted);font-size:12px;line-height:1.3}.catf span{font-size:11px;font-weight:700;color:var(--muted)}
+.cath{display:flex;gap:10px;align-items:center;margin:6px 0 4px}.cath svg{width:30px;height:30px;color:var(--navy);flex:none}.catback{justify-self:start}
+.catit{border:1px solid var(--line);border-radius:12px;background:var(--surface)}.catit summary{list-style:none;cursor:pointer;display:flex;gap:10px;align-items:flex-start;padding:12px}.catit summary::-webkit-details-marker{display:none}
+.catn{flex:1;min-width:0;display:grid;gap:3px}.catn small{color:var(--muted);font-size:12.5px;line-height:1.35}.catit[open] summary{border-bottom:1px solid var(--line)}
+.catdl{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;padding:10px 12px;font-size:13.5px}.catdl dt{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.05em;padding-top:2px}.catdl dd{margin:0}
+.catit .row{padding:0 12px 12px}@media (max-width:560px){.catdl{grid-template-columns:1fr;gap:2px}.catdl dt{padding-top:6px}}
 .plzban{display:grid;gap:3px;padding:10px 12px;margin-bottom:8px;border-radius:12px;border:2px solid #c0392b;background:color-mix(in srgb,#c0392b 8%,var(--surface));font-size:13px}.plzban b{color:#c0392b;font-size:12px;letter-spacing:.06em}
 .plzp{margin-left:6px}.ucbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:2px 0 8px}.ucbar small{color:var(--muted);font-size:12px}
 .ucres{display:grid;gap:8px;padding:10px 12px;margin-bottom:8px;border:1px dashed var(--line);border-radius:12px}.ucf{display:grid;grid-template-columns:minmax(80px,1fr) auto minmax(120px,auto);gap:8px;align-items:center;font-size:13px}
@@ -709,7 +718,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['taller','Taller de sensores']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -822,7 +831,8 @@ const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
-  {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura','taller'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
+  {id:'lab',n:'Taller',tabs:['catalogo','taller'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
+  {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 /* Personal de campo: su propio menú (de momento, las collas) */
 const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctareas','corend','coparte','cubic','cvivo'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'cmsg',n:'Mensajes',tabs:['cmensajes'],ic:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>'},
@@ -831,7 +841,7 @@ const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctarea
   {id:'cajustes',n:'Ajustes',tabs:['cajustes','cogente'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 const CAMPO=new Set(GRUPOS_CAMPO.flatMap(g=>g.tabs));
 const areaDe=t=>CAMPO.has(t)?'campo':'riego';
-function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO;const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
+function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO.filter(g=>g.id!=='lab'||esAdminU());const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
 /* Mapa de la finca: incidencias, en vivo e instalación en una sola pantalla */
 const MF_VISTAS=['mapa','vivo','instal','estres','plagas'];
 function mfHead(){const n=(()=>{try{return incAbiertas().filter(i=>i.cab===st.cab).length}catch(e){return 0}})(),a=(()=>{try{return inAlertas(st.cab)}catch(e){return 0}})();
@@ -1359,7 +1369,7 @@ const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';i
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
 const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
-function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura'||k==='taller')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
+function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura'||k==='taller'||k==='catalogo')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||(fincasVis().some(f=>f.id===m.finca)&&cabOk(m.cab));
@@ -2259,6 +2269,36 @@ document.addEventListener('click',e=>{if(st.tab!=='estres')return;const b=e.targ
   if(a==='ucno'){st.es.uc=null;renderMain()}
   else if(a==='ucok'&&st.es.uc&&st.es.uc.res){let n=0;for(const x of st.es.uc.res){if(!x.k)continue;esPon(st.cab,x.k,d=>{for(const f of ['ta','hr','tmax','tmin'])if(x[f]!=null)d[f]=x[f];d.src='informe'});n++}
     st.es.uc=null;renderMain();renderSave();toast(n?`Apuntado en ${n} ${n===1?'nave':'naves'}. Guarda el día para que quede.`:'No has elegido ninguna nave',5000)}});
+
+/* ---------- Catálogo de tecnología agrícola (solo el administrador): carpetas y buscador; los datos están en catalogo.js ---------- */
+st.cat=st.cat||{q:'',c:null,f:''};
+const CAT_EST={app:['En la app','ok'],prep:['Preparado en la app','warn'],idea:['Se puede hacer',''],no:['No recomendado ahora','bad']};
+const catNorm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+/* Raíz de la palabra para buscar «pulverizacion» y encontrar «pulverizar», «plagas» y encontrar «plaga»… */
+const catRaiz=p=>{const r=p.replace(/(aciones|acion|iciones|icion|ciones|cion|mente|ados|adas|ado|ada|ar|er|ir|es|s)$/,'');return r.length>=4?r:p};
+function catCargar(){if(window.CATALOGO||st.catCarga)return;st.catCarga=1;const sc=document.createElement('script');sc.src='catalogo.js';
+  sc.onload=()=>{if(st.tab==='catalogo')renderMain()};sc.onerror=()=>{st.catCarga=0;sc.remove();toast('No se ha podido abrir el catálogo: necesitas conexión la primera vez')};document.head.appendChild(sc)}
+const catIco=p=>`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>`;
+function catItem(it,c){const E=CAT_EST[it.est]||CAT_EST.idea;
+  return `<details class="catit"><summary><span class="catn"><b>${esc(it.n)}</b><small>${esc(it.q)}</small></span><span class="pill ${E[1]}">${E[0]}</span></summary>
+    <dl class="catdl">${c?`<dt>Carpeta</dt><dd>${esc(c.n)}</dd>`:''}<dt>En tu finca</dt><dd>${esc(it.uso)}</dd><dt>Precio orientativo</dt><dd>${esc(it.prec)}</dd><dt>Ejemplos</dt><dd>${esc(it.ej)}</dd><dt>Conexión</dt><dd>${esc(it.con)}</dd><dt>Dificultad</dt><dd>${esc(it.dif)}</dd></dl>
+    ${it.taller?`<div class="row"><button class="btn" type="button" data-tab="taller">Diseñarlo en el Taller (${esc(it.taller)})</button></div>`:''}</details>`}
+function catLista(){const C=window.CATALOGO,S=st.cat,q=catNorm(S.q).trim(),ok=it=>!S.f||it.est===S.f;
+  if(q){const pal=q.split(/\s+/).filter(Boolean),R=[];for(const c of C.carpetas)for(const it of c.it){const h=catNorm([it.n,it.q,it.uso,it.ej,it.t,c.n].join(' '));if(pal.every(p=>h.includes(catRaiz(p)))&&ok(it))R.push([it,c])}
+    return `<div class="sub">${R.length} ${R.length===1?'resultado':'resultados'}</div>${R.length?R.map(([it,c])=>catItem(it,c)).join(''):'<div class="note">No hay nada con esas palabras. Prueba con otra: riego, plagas, robot, drenaje…</div>'}`}
+  if(S.c){const c=C.carpetas.find(x=>x.id===S.c);if(c){const L=c.it.filter(ok);
+    return `<button class="lnk catback" type="button" data-catc="">← Todas las carpetas</button><div class="cath">${catIco(c.ic)}<div><h3>${esc(c.n)}</h3><div class="sub">${esc(c.d)} · ${L.length} ${L.length===1?'elemento':'elementos'}</div></div></div>${L.map(it=>catItem(it)).join('')||'<div class="note">Nada con este filtro.</div>'}`}}
+  return `<div class="catgrid">${C.carpetas.map(c=>{const n=c.it.filter(ok).length,a=c.it.filter(x=>x.est==='app'||x.est==='prep').length;
+    return `<button class="catf" type="button" data-catc="${c.id}">${catIco(c.ic)}<b>${esc(c.n)}</b><small>${esc(c.d)}</small><span>${n} ${n===1?'elemento':'elementos'}${a?` · ${a} ya en la app`:''}</span></button>`}).join('')}</div>`}
+function vCatalogo(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador.</div></section>`;if(!window.CATALOGO){catCargar();return `<section class="card"><div class="note">Abriendo el catálogo…</div></section>`}
+  const C=window.CATALOGO,n=C.carpetas.reduce((s,c)=>s+c.it.length,0),S=st.cat;
+  return `<section class="card"><div><h3>Catálogo de tecnología agrícola</h3><div class="sub">${n} sensores, robots y herramientas en ${C.carpetas.length} carpetas · precios orientativos (${esc(C.act)}): confírmalos antes de comprar</div></div>
+    <div class="inp catq"><input id="cat_q" type="search" data-catq="1" placeholder="Buscar: riego, plagas, robot, CO₂…" aria-label="Buscar en el catálogo" value="${esc(S.q)}" autocomplete="off" style="text-align:left;text-transform:none"></div>
+    <div class="pick">${[['','Todo'],['app','En la app'],['prep','Preparado'],['idea','Se puede hacer'],['no','No recomendado']].map(([k,t])=>`<button class="chip" type="button" data-catf="${k}" aria-pressed="${S.f===k}">${t}</button>`).join('')}</div>
+    <div data-out="catres" class="catres">${catLista()}</div></section>`}
+$('#main').addEventListener('input',e=>{const t=e.target;if(!t.dataset||t.dataset.catq==null)return;st.cat.q=t.value;softUpdate()});
+document.addEventListener('click',e=>{if(st.tab!=='catalogo')return;const c=e.target.closest&&e.target.closest('[data-catc]');if(c){st.cat.c=c.dataset.catc||null;st.cat.q='';renderMain();window.scrollTo(0,0);return}
+  const f=e.target.closest&&e.target.closest('[data-catf]');if(f){st.cat.f=f.dataset.catf;renderMain()}});
 
 /* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */
 /* Gasolinera tenía las naves numeradas al revés en el plano (la 1 abajo). Lo apuntado tocando el plano guardó ese número:
@@ -3383,7 +3423,7 @@ document.addEventListener('click',e=>{if(st.tab!=='montaje')return;const b=e.tar
 document.addEventListener('input',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(k==='txt')st.tb.txt=t.value});
 document.addEventListener('change',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(!k)return;
   if(k==='diam')st.tb.diam=t.value;else if(k==='marc'){st.tb.marc[+t.dataset.i]=t.checked}else if(k==='foto'&&t.files&&t.files.length){const fs=[...t.files];t.value='';tbAddFotos(fs)}});
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller};
+const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);

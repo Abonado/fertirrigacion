@@ -15,8 +15,12 @@ async def main():
         await pg.reload(); await pg.wait_for_timeout(600)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("""(async()=>{const a=NUBE.acc;a.emails=[...new Set([...a.emails,'pepe@demo.es'])];a.info={...a.info,'pepe@demo.es':{nombre:'Pepe',encargado:true}};await NUBE.db.doc('acceso/usuarios').set(a);
-          cerrarSplash();st.finca='pinta';st.cab='gas';st.tab='ajustes';renderAll()})()"""); await pg.wait_for_timeout(800)
+          cerrarSplash();st.finca='pinta';st.cab='gas';st.tab='cuentas';renderAll()})()"""); await pg.wait_for_timeout(800)
+        assert await pg.locator('#grupos [data-grupo="lab"]').count() == 1, 'el administrador ve el apartado Taller en el menú'
+        await pg.click('#grupos [data-grupo="lab"]'); await pg.wait_for_timeout(600)
         assert await pg.locator('#tabs [data-tab="taller"]').count() == 1, 'el administrador ve la pestaña'
+        await pg.evaluate("st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(300); assert await pg.locator('#tabs [data-tab="taller"]').count() == 0, 'ya no está en Ajustes'
+        await pg.click('#grupos [data-grupo="lab"]'); await pg.wait_for_timeout(600)
         await pg.click('#tabs [data-tab="taller"]'); await pg.wait_for_timeout(1200)
         assert await pg.evaluate("!!window.TALLER") and 'Taller de sensores' in await pg.text_content('#main')
         assert await pg.locator('[data-tl="crear"]').is_disabled()
@@ -83,6 +87,7 @@ async def main():
         await pg.fill('#nb_em', 'pepe@demo.es'); await pg.fill('#nb_pw', 'pepe1234'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash();st.finca='pinta';st.cab='gas';st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(600)
         assert await pg.locator('#tabs [data-tab="taller"]').count() == 0, 'el encargado no ve la pestaña'
+        assert await pg.locator('#grupos [data-grupo="lab"]').count() == 0, 'el encargado no ve el apartado Taller'
         await pg.evaluate("st.tab='taller';renderAll()"); await pg.wait_for_timeout(600)
         assert await pg.evaluate("st.tab") != 'taller' and await pg.evaluate("!window.TALLER") and 'Taller' not in await pg.text_content('#main')
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)

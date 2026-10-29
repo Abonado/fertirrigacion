@@ -8,7 +8,8 @@ Todo lo necesario para rehacer la app desde cero. La web publicada (carpeta de a
 | `nube.src.js` + `firebase-config.json` | Conexión con Firebase (usuarios y datos compartidos) |
 | `build.py` | Monta la web en `netlify/abonado` |
 | `plantilla/`, `plantilla2/` | Hojas de la empresa: parte grande y parte pequeño |
-| `taller/taller.js` | Taller de sensores (Ajustes → Taller de sensores, solo el administrador): piezas, esquema, caja 3D y ficha. Se carga solo al abrirlo |
+| `taller/taller.js` | Taller de sensores (menú Taller → Taller de sensores, solo el administrador): piezas, esquema, caja 3D y ficha. Se carga solo al abrirlo |
+| `taller/catalogo.js` | Catálogo de tecnología agrícola (menú Taller → Catálogo, solo el administrador): sensores, robots, drones, conectividad y control por carpetas, con buscador. Se carga solo al abrirlo |
 | `libs/manifold.js` + `manifold.wasm` | [Manifold](https://github.com/elalish/manifold) 3.5.3 (licencia Apache-2.0, en `libs/LICENSE-manifold.txt`): genera las cajas STL del taller |
 | `firestore.rules` | Reglas de seguridad de Firebase (se pegan en la consola de Firebase) |
 | `mock-firebase.js` | Firebase de mentira para las pruebas |
