@@ -216,6 +216,9 @@ td.u{color:var(--muted);font-size:12px}
 .step:first-child{border-top:0}
 .step b{font:600 20px var(--f-display);white-space:nowrap}
 .step.water{background:var(--surface-2);margin:0 -14px;padding:10px 14px;border-radius:0 0 10px 10px}
+.fchk{cursor:pointer;align-items:center;-webkit-tap-highlight-color:transparent}.fchk>span{display:flex;align-items:center;gap:12px;flex:1;min-width:0}.fchk input{width:28px;height:28px;flex:none;margin:0;accent-color:var(--ok,#1a7f4b)}
+.fchk.hecho>span,.fchk.hecho>b{text-decoration:line-through;opacity:.55}.fcnt{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--muted);padding:6px 0 2px}
+.fcnt.ok{color:var(--ok,#1a7f4b)}.fbar{flex:1;max-width:140px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}.fbar i{display:block;height:100%;background:var(--ok,#1a7f4b)}
 
 .btn{font:600 15px var(--f-body);border-radius:8px;padding:9px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
@@ -1186,18 +1189,30 @@ function vRellenar(){const bs=bidonesDe(st.cab);if(!bs.length)return `<section c
       ${L.tipo==='llenado'?`<div class="field"><label for="lf_add">cm añadidos</label><div class="inp"><input id="lf_add" data-lf="add" inputmode="decimal" value="${inVal(L.add)}"><span class="u">cm</span></div></div>`:''}
       ${esDirecto(b)&&L.tipo==='llenado'?'':`<div class="field"><label for="lf_final">${L.tipo==='llenado'?'Vacío tras llenar':'Vacío ahora'}</label><div class="inp"><input id="lf_final" data-lf="final" inputmode="decimal" value="${inVal(aLectura(bid(L.bidon),L.final))}"><span class="u">cm</span></div></div>`}</div>
       ${L.tipo==='llenado'?`<label class="chk"><input type="checkbox" id="lf_desc" data-lf="desc" ${L.desc?'checked':''}> Descontar los abonos del almacén</label>`:''}
-      <div class="row"><button class="btn pri" data-act="lf-save">Guardar</button><button class="btn" data-act="lf-cancel">Cancelar</button></div></div>`;
+      ${L.falta&&L.falta.length?`<div class="banner"><b>Falta por marcar:</b> ${L.falta.map(p=>p==='agua'?'agua':esc(pn(p))).join(', ')}. ¿Lo has echado?</div><div class="row"><button class="btn pri" data-act="lf-save-igual">Sí, está todo echado: guardar</button><button class="btn" data-act="lf-falta-no">Volver a revisar</button></div>`
+        :`<div class="row"><button class="btn pri" data-act="lf-save">Guardar</button><button class="btn" data-act="lf-cancel">Cancelar</button></div>`}</div>`;
   const evs=llenadosDe(b).sort((a,c)=>llKey(a)<llKey(c)?1:-1).slice(0,8);
-  h+=`<div><h3 style="font-size:16px">Últimos llenados y medidas</h3>${evs.length?evs.map(e=>e.auto?`<div class="ev auto"><span><b>${fFecha(e.fecha)}</b> · Llenado hasta arriba <span class="pill nd">deducido</span> de los ${fmt(e.cmAdd,1)} cm gastados el ${esc(fCorta(e.de))}</span></div>`:`<div class="ev"><span><b>${fFecha(e.fecha)} · ${e.hora?esc(e.hora):'<span class="note" title="Hora en que se apuntó">apuntado '+hhmm(e.ts)+'</span>'}</b> · ${e.tipo==='llenado'?`Llenado +${fmt(e.cmAdd,1)} cm (${fmt(e.cmAdd*b.lpcm,0)} L) → vacío ${fmt(aLectura(b,e.cmFinal),1)} cm`:`Medida: vacío ${fmt(aLectura(b,e.cmFinal),1)} cm`}${e.por?' · '+esc(e.por):''}${e.tipo==='llenado'&&e.cantidades?`<small class="evc">${Object.entries(e.cantidades).map(([p,q])=>esc(pn(p))+' '+fmt(q,1)+' '+uCant(p)).join(' · ')}</small>`:''}</span>${st.confirmLl===e.id?`<span class="row"><button class="btn danger" data-act="ll-del-yes" data-id="${e.id}">Sí, borrar</button><button class="btn" data-act="ll-del-no">Cancelar</button></span>`:`<button class="btn" data-act="ll-del" data-id="${e.id}">Borrar</button>`}</div>`).join(''):'<div class="note">Sin registros.</div>'}</div></section>`;
+  h+=`<div><h3 style="font-size:16px">Últimos llenados y medidas</h3>${evs.length?evs.map(e=>e.auto?`<div class="ev auto"><span><b>${fFecha(e.fecha)}</b> · Llenado hasta arriba <span class="pill nd">deducido</span> de los ${fmt(e.cmAdd,1)} cm gastados el ${esc(fCorta(e.de))}</span></div>`:`<div class="ev"><span><b>${fFecha(e.fecha)} · ${e.hora?esc(e.hora):'<span class="note" title="Hora en que se apuntó">apuntado '+hhmm(e.ts)+'</span>'}</b> · ${e.tipo==='llenado'?`Llenado +${fmt(e.cmAdd,1)} cm (${fmt(e.cmAdd*b.lpcm,0)} L) → vacío ${fmt(aLectura(b,e.cmFinal),1)} cm`:`Medida: vacío ${fmt(aLectura(b,e.cmFinal),1)} cm`}${e.por?' · '+esc(e.por):''}${e.tipo==='llenado'&&e.cantidades?`<small class="evc">${Object.entries(e.cantidades).map(([p,q])=>esc(pn(p))+' '+fmt(q,1)+' '+uCant(p)).join(' · ')}</small>`:''}${e.sinMarcar&&e.sinMarcar.length?`<small class="evc">Guardado sin marcar en la lista: ${e.sinMarcar.map(p=>p==='agua'?'agua':esc(pn(p))).join(', ')}</small>`:''}</span>${st.confirmLl===e.id?`<span class="row"><button class="btn danger" data-act="ll-del-yes" data-id="${e.id}">Sí, borrar</button><button class="btn" data-act="ll-del-no">Cancelar</button></span>`:`<button class="btn" data-act="ll-del" data-id="${e.id}">Borrar</button>`}</div>`).join(''):'<div class="note">Sin registros.</div>'}</div></section>`;
   return h}
 /* Lo que falta para llenar hasta arriba (= gaste actual); si no se sabe el nivel, los cm habituales */
 function cmLlenar(b){const n=nivel(b);if(n&&n.max>0)return +Math.max(0,Math.min(n.max,n.max-Math.max(0,n.rest))).toFixed(1);return b.cmHabitual}
-function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b);if(cm==null)return '';const L=cm*b.lpcm;let liqCm=0;
-  let h=`<div class="line">Volumen a preparar: <b>${fmt(L,0)} L</b></div><div class="steps">`;
+/* Lista para marcar lo que se ha echado al llenar: así no se olvida nada. Se guarda en este móvil para hoy y se borra al registrar el llenado. */
+const FCHK='abono.fillchk';
+function fchkTodo(){try{const o=JSON.parse(localStorage.getItem(FCHK)||'{}'),h=hoy();for(const k of Object.keys(o))if(!k.startsWith(h+'|'))delete o[k];return o}catch(e){return {}}}
+const fchkK=b=>hoy()+'|'+b.id;
+function fchkDe(b){st.fchk=st.fchk||fchkTodo();return st.fchk[fchkK(b)]||[]}
+function fchkPon(b,p,v){st.fchk=st.fchk||fchkTodo();const k=fchkK(b),l=new Set(st.fchk[k]||[]);if(v)l.add(p);else l.delete(p);if(l.size)st.fchk[k]=[...l];else delete st.fchk[k];try{localStorage.setItem(FCHK,JSON.stringify(st.fchk))}catch(e){}}
+function fchkBorra(b){st.fchk=st.fchk||fchkTodo();delete st.fchk[fchkK(b)];try{localStorage.setItem(FCHK,JSON.stringify(st.fchk))}catch(e){}}
+/* Lo que hay que echar en este depósito (productos con dosis y el agua) */
+const fchkItems=b=>[...b.productos.filter(x=>x.dosis).map(x=>x.p),'agua'];
+const fchkFalta=b=>{const m=fchkDe(b);return fchkItems(b).filter(p=>!m.includes(p))};
+function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b);if(cm==null)return '';const L=cm*b.lpcm;let liqCm=0;const m=fchkDe(b),it=fchkItems(b),n=it.filter(p=>m.includes(p)).length;
+  const fila=(p,nom,q,cl)=>{const v=m.includes(p);return `<label class="step fchk${v?' hecho':''}${cl?' '+cl:''}"><span><input type="checkbox" data-fchk="${b.id}" data-p="${p}" ${v?'checked':''} aria-label="Echado: ${esc(nom.replace(/<[^>]+>/g,''))}">${nom}</span><b>${q}</b></label>`};
+  let h=`<div class="line">Volumen a preparar: <b>${fmt(L,0)} L</b></div><div class="fcnt${n===it.length?' ok':''}" data-out="fcnt"><span>${n===it.length?'✓ Todo echado: ya puedes registrar el llenado':'Marca cada cosa al echarla · '+n+' de '+it.length}</span><span class="fbar"><i style="width:${(n/it.length*100).toFixed(0)}%"></i></span></div><div class="steps">`;
   for(const x of b.productos){if(!x.dosis)continue;const q=L*conc(b,x)/1000;let extra='';if(prod(x.p).liq){const c=q/b.lpcm;liqCm+=c;extra=` <span class="note">≈ ${fmt(c,1)} cm</span>`}
-    h+=`<div class="step"><span>${esc(prod(x.p).n)}${extra}</span><b>${fmt(q,1)} ${uCant(x.p)}</b></div>`}
+    h+=fila(x.p,esc(prod(x.p).n)+extra,`${fmt(q,1)} ${uCant(x.p)}`)}
   if(cm*b.lpcm>b.capacidad*1.05)h+=`<div class="step" style="color:var(--bad)"><span>Pasas de la capacidad del depósito</span><b></b></div>`;
-  return h+`<div class="step water"><span>Agua (cm de depósito)</span><b>${fmt(cm-liqCm,1)} cm</b></div></div>`}
+  return h+fila('agua','Agua (cm de depósito)',`${fmt(cm-liqCm,1)} cm`,'water')+`</div>`}
 
 function vReceta(){const c=cabById(st.cab);let h=`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
   if(esGestor())h+=`<section class="card"><div class="field"><label for="rec_f">Este cambio de receta empieza el</label><div class="inp"><input type="date" id="rec_f" data-hr="rfecha" max="${hoy()}" value="${st.recFecha||hoy()}"></div></div><div class="note">Si os dieron la receta otro día y la metéis más tarde, pon aquí ese día: así sale bien en la hoja de cambios de receta.</div></section>`;
@@ -1725,12 +1740,14 @@ function lvlBanner(){const bs=bidonesDe(st.cab).filter(b=>bajoUmbral(nivel(b)));
 function lfOpen(tipo,o){o=o||{};const b=bid(o.bidon||st.fillB[st.cab]);const n=nivel(b),mx=maxCm(b),add=o.add??(st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b));
   st.lf={tipo,bidon:b.id,fecha:o.fecha||hoy(),hora:o.fecha&&o.fecha!==hoy()?'':horaAhora(),add:tipo==='llenado'?add:null,final:tipo==='llenado'?+mx.toFixed(2):(n?+Math.max(0,n.rest).toFixed(1):null),desc:true,finalTouched:false};renderMain()}
 async function lfSave(){const L=st.lf,b=bid(L.bidon);if(L.final==null||L.final<0||L.final>maxCm(b)+0.5){toast('Escribe el vacío en cm (entre 0 y '+fmt(maxCm(b),0)+')');return}if(L.tipo==='llenado'&&!(L.add>0)){toast('Escribe los cm añadidos');return}if(!/^\d{1,2}:\d{2}$/.test(L.hora||'')){toast(L.tipo==='llenado'?'Pon la hora del llenado':'Pon la hora de la medida');const i=$('#lf_hora');if(i)i.focus();return}
+  if(L.tipo==='llenado'&&!L.igual){const f=fchkFalta(b);if(f.length){L.falta=f;renderMain();const bn=document.querySelector('.panel .banner');if(bn)bn.scrollIntoView({block:'center'});return}}
   const ev={ts:new Date().toISOString(),fecha:L.fecha||st.fecha,hora:L.hora,bidon:b.id,tipo:L.tipo,cmFinal:L.final,por:yoNombre()};
+  if(L.tipo==='llenado'&&L.igual&&L.falta&&L.falta.length)ev.sinMarcar=L.falta;
   if(L.tipo==='llenado'){ev.cmAdd=L.add;ev.cantidades={};const lt=L.add*b.lpcm;for(const x of b.productos){if(!x.dosis)continue;ev.cantidades[x.p]=+(lt*conc(b,x)/1000).toFixed(2)}}
   try{const id=await Store.addCol('llenados',ev);st.llen.unshift({...ev,id});
     if(L.tipo==='llenado'&&L.desc)for(const m of (st.alm||[]).filter(m=>m.auto&&m.origen===b.id&&(m.fecha===ev.fecha||m.autoDe===ev.fecha))){try{await Store.delCol('almacen',m.id)}catch(e){}st.alm=st.alm.filter(x=>x.id!==m.id)}
     if(L.tipo==='llenado'&&L.desc)for(const[p,q]of Object.entries(ev.cantidades)){const m={ts:ev.ts,fecha:ev.fecha,tipo:'salida',alm:almDeCab(b.cabezales[0]),p,qty:-q,origen:b.id,llenado:id,por:yoNombre(),porEmail:miEmail()};const mid=await Store.addCol('almacen',m);st.alm.unshift({...m,id:mid})}
-    if(L.tipo==='llenado'&&L.desc)pushStock(Object.keys(ev.cantidades),almDeCab(b.cabezales[0]));st.lf=null;renderMain();pushProgramar();toast(L.tipo==='llenado'?'Llenado de las '+ev.hora+' guardado'+(L.desc?' y descontado del almacén':''):'Nivel guardado')}catch(e){toast(errMsg(e))}}
+    if(L.tipo==='llenado'&&L.desc)pushStock(Object.keys(ev.cantidades),almDeCab(b.cabezales[0]));if(L.tipo==='llenado')fchkBorra(b);st.lf=null;renderMain();pushProgramar();toast(L.tipo==='llenado'?'Llenado de las '+ev.hora+' guardado'+(L.desc?' y descontado del almacén':''):'Nivel guardado')}catch(e){toast(errMsg(e))}}
 async function llDel(id){try{await Store.delCol('llenados',id);st.llen=st.llen.filter(e=>e.id!==id);for(const m of st.alm.filter(m=>m.llenado===id)){await Store.delCol('almacen',m.id)}st.alm=st.alm.filter(m=>m.llenado!==id);st.confirmLl=null;renderMain();toast('Registro borrado')}catch(e){toast(errMsg(e))}}
 
 /* ---------- Almacén ---------- */
@@ -2404,6 +2421,8 @@ function vCatalogo(){if(!esAdminU())return `<section class="card"><div class="no
     <div class="pick">${[['','Todo'],['app','En la app'],['prep','Preparado'],['idea','Se puede hacer'],['no','No recomendado'],['dev','En desarrollo']].map(([k,t])=>`<button class="chip" type="button" data-catf="${k}" aria-pressed="${S.f===k}">${t}</button>`).join('')}</div>
     <div data-out="catres" class="catres">${catLista()}</div></section>`}
 $('#main').addEventListener('input',e=>{const t=e.target;if(!t.dataset||t.dataset.catq==null)return;st.cat.q=t.value;softUpdate()});
+$('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.fchk==null)return;const b=bid(t.dataset.fchk);if(!b)return;fchkPon(b,t.dataset.p,t.checked);
+  const o=document.querySelector('[data-out="fill"]');if(o)o.innerHTML=fillOut(b);if(st.lf&&st.lf.falta){st.lf.falta=fchkFalta(b);if(!st.lf.falta.length)st.lf.falta=null;renderMain()}});
 document.addEventListener('click',e=>{if(st.tab!=='catalogo')return;const c=e.target.closest&&e.target.closest('[data-catc]');if(c){st.cat.c=c.dataset.catc||null;st.cat.q='';st.cat.det=null;renderMain();window.scrollTo(0,0);return}
   const f=e.target.closest&&e.target.closest('[data-catf]');if(f){st.cat.f=f.dataset.catf;renderMain()}});
 
@@ -3661,6 +3680,8 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='lf-open')lfOpen(t.dataset.t);
   else if(t.dataset.act==='llenar-arriba'||t.dataset.act==='ll-inferido'){const id=t.dataset.id;st.fillB[st.cab]=id;st.tab='rellenar';const o={bidon:id};if(t.dataset.f){o.fecha=t.dataset.f;o.add=+t.dataset.add}renderAll();lfOpen('llenado',o);window.scrollTo(0,0)}
   else if(t.dataset.act==='lf-save')lfSave();
+  else if(t.dataset.act==='lf-save-igual'&&st.lf){st.lf.igual=true;lfSave()}
+  else if(t.dataset.act==='lf-falta-no'&&st.lf){st.lf.falta=null;renderMain();const o=document.querySelector('[data-out="fill"]');if(o)o.scrollIntoView({block:'start'})}
   else if(t.dataset.act==='lf-cancel'){st.lf=null;renderMain()}
   else if(t.dataset.act==='ll-del'){st.confirmLl=t.dataset.id;renderMain()}
   else if(t.dataset.act==='ll-del-no'){st.confirmLl=null;renderMain()}
@@ -5472,7 +5493,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v145';
+window.APP_V='abonado-v146';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;

@@ -9,7 +9,7 @@ class Q(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a): pass
 srv = http.server.ThreadingHTTPServer(('127.0.0.1', 8776), functools.partial(Q, directory='netlify/abonado'))
 threading.Thread(target=srv.serve_forever, daemon=True).start(); time.sleep(0.5)
-PRUEBAS = ['humo', 't61', 't66', 't68', 't69', 't70', 't71', 't73', 't74', 't75', 't76', 't77', 't78', 't79', 't80', 't81', 't82', 't83', 't84', 't85', 't86', 't87', 't88', 't91', 't92', 't93', 't94', 't95', 't96', 't97', 't98', 't99', 't100', 't101', 't102', 't103', 't104', 't105', 't106', 't107', 't108', 't109', 't110', 't111', 'casos']
+PRUEBAS = ['humo', 't61', 't66', 't68', 't69', 't70', 't71', 't73', 't74', 't75', 't76', 't77', 't78', 't79', 't80', 't81', 't82', 't83', 't84', 't85', 't86', 't87', 't88', 't91', 't92', 't93', 't94', 't95', 't96', 't97', 't98', 't99', 't100', 't101', 't102', 't103', 't104', 't105', 't106', 't107', 't108', 't109', 't110', 't111', 't112', 'casos']
 mal = []
 for t in PRUEBAS:
     t0 = time.time()
