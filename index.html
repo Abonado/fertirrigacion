@@ -72,6 +72,8 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .catit .row{padding:0 12px 12px}@media (max-width:560px){.catdl{grid-template-columns:1fr;gap:2px}.catdl dt{padding-top:6px}}
 .plzban{display:grid;gap:3px;padding:10px 12px;margin-bottom:8px;border-radius:12px;border:2px solid #c0392b;background:color-mix(in srgb,#c0392b 8%,var(--surface));font-size:13px}.plzban b{color:#c0392b;font-size:12px;letter-spacing:.06em}
 .plzp{margin-left:6px}.ucbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:2px 0 8px}.ucbar small{color:var(--muted);font-size:12px}
+.ucext{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:13px;padding:6px 0}.ucext b{font-size:12px;letter-spacing:.05em;color:var(--muted)}.ucmed{display:grid;gap:2px;font-size:13px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--navy) 6%,var(--surface))}.ucmed b{font-size:12px;letter-spacing:.05em}
+.ucinv{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
 .ucres{display:grid;gap:8px;padding:10px 12px;margin-bottom:8px;border:1px dashed var(--line);border-radius:12px}.ucf{display:grid;grid-template-columns:minmax(80px,1fr) auto minmax(120px,auto);gap:8px;align-items:center;font-size:13px}
 @media (max-width:560px){.ucf{grid-template-columns:1fr;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}}.rendt .cotot td{border-top:2px solid var(--line)}
 .plr{list-style:none;margin:0;padding:0;display:grid;gap:8px}.plr li{border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:10px 12px;display:grid;gap:4px}
@@ -684,13 +686,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{tipo:'planta',cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},trampa:{},sug:null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},trampa:{},meteo:{},sug:null}}
 /* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
 const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
 const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
 st.regMod=new Set();
 const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
-function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},meteo:{...(r.meteo||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -2055,7 +2057,7 @@ function esSVG(cab){const{Z,zs}=esZonas(cab),[vx,vy,vw,vh]=Z.vb,U=esU(),k=Math.m
 const esUd=h=>h.replace(/ kPa/g,' <span class="nt">kPa</span>').replace(/µS\/cm/g,'<span class="nt">µS/cm</span>');
 function esResHTML(cab,x){const U=esU(),d=esDato(cab,x.k),R=esCalc(d,U);if(!R)return `<div class="note">Apunta al menos la temperatura y la humedad del aire.</div>`;
   const C=esCal(),fila=(l,v,n)=>`<div class="esv"><span>${l}</span><b>${v}</b>${n?`<small>${n}</small>`:''}</div>`;
-  return esUd(`<div class="essem" style="--c:${ES_COL[R.niv]}"><i></i><b>${ES_TXT[R.niv]}</b><span>${esc(x.lab)}${d.hora?' · '+esc(d.hora):''}</span></div>
+  return esUd(`<div class="essem" style="--c:${ES_COL[R.niv]}"><i></i><b>${ES_TXT[R.niv]}</b><span>${esc(x.lab)}${d.hora?' · '+esc(d.hora):''}${d.vent&&d.vent.length?' · ventanas '+d.vent.map(v=>fmt(v,0)).join('/')+' %':''}</span></div>
     <div class="esvs">${fila('DPV del aire',fmt(R.dpv,2)+' kPa',`bien entre ${fmt(U.dpvLo,1)} y ${fmt(U.dpvHi,1)}`)}${R.dpvH!=null?fila('DPV de la hoja',fmt(R.dpvH,2)+' kPa'):''}
       ${R.dt!=null?fila('Hoja − aire',(R.dt>0?'+':'')+fmt(R.dt,1)+' °C','bien entre −1 y −3'):fila('Hoja − aire','—','apunta la hoja')}${fila('Punto de rocío',fmt(R.td,1)+' °C',`margen ${fmt(R.mg,1)} °C`)}
       ${R.cwsi!=null?fila('Índice de estrés hídrico',fmt(R.cwsi,2),'0 sin estrés · 1 total'):fila('Índice de estrés hídrico','—',C.n<6?`calibrando: ${C.n} de 6 medidas de planta sana`:'')}</div>
@@ -2073,7 +2075,7 @@ function esAjHTML(){if(!esGestor())return '';const U=esU(),C=esCal();
 function vEstres(){const cab=st.cab,c=cabById(cab);if(!c)return '';const{zs}=esZonas(cab);if(!zs.find(x=>x.k===st.es.z))st.es.z=(zs[0]||{}).k||null;const x=zs.find(z=>z.k===st.es.z);
   const U=esU(),R=zs.map(z=>esCalc(esDato(cab,z.k),U)).filter(Boolean),cuenta=n=>R.filter(r=>r.niv===n).length;
   let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Clima y estrés · ${esc(c.nombre)}</h3><div class="sub">${R.length?`${R.length} de ${zs.length} medidas hoy · ${[2,1,0].filter(n=>cuenta(n)).map(n=>cuenta(n)+' '+ES_TXT[n].toLowerCase()).join(' · ')}`:'Sin medidas hoy · toca una nave y apunta'}</div></div></div>
-    ${ucHTML(cab)}<div data-out="essvg">${esSVG(cab)}</div>
+    ${(()=>{const E=((st.reg||{}).meteo||{}).ext;return E?ucExtTxt(E,'Fuera'+(E.hora?' ('+E.hora+')':'')):''})()}${ucHTML(cab)}<div data-out="essvg">${esSVG(cab)}</div>
     <div class="esley">${[0,1,2].map(n=>`<span><i style="background:${ES_COL[n]}"></i>${ES_TXT[n]}</span>`).join('')}<span><i style="background:#cfd8e3"></i>Sin medir</span></div></section>`;
   if(x)h+=`<section class="card"><div><h3>${esc(x.lab)}</h3><div class="sub">Medida de hoy</div></div>${esFormHTML(cab,x)}<div data-out="esres">${esResHTML(cab,x)}</div></section>`;
   return h+esAjHTML()}
@@ -2268,27 +2270,44 @@ $('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.datas
 const UC_PROMPT=`Esta imagen es una foto o captura de un informe o pantalla de control de clima de un invernadero de tomate.
 Saca SOLO los datos de clima que se lean en la imagen, para cada nave, sector o zona que aparezca. No inventes nada: si un dato no se ve, pon null. Usa punto decimal.
 Devuelve únicamente este JSON, sin texto alrededor:
-{"hora":"HH:MM o null","lecturas":[{"zona":"nombre tal y como aparece","nave":número de nave si se deduce del nombre o null,"ta":temperatura interior en °C,"hr":humedad relativa en %,"tmax":máxima del día en °C,"tmin":mínima del día en °C,"vent":apertura de ventanas en % o null}]}`;
+Si las zonas se llaman «Compartimento 1», «Compartimento 2»…, pon ese nombre tal cual en "zona". En las ventanas, si pone «99% (Barlov.) --> 97%», la apertura actual es el primer número (99).
+{"hora":"HH:MM o null","lecturas":[{"zona":"nombre tal y como aparece","nave":número de nave si se deduce del nombre o null,"ta":temperatura interior en °C,"hr":humedad relativa en %,"tmax":máxima del día en °C,"tmin":mínima del día en °C,"vent":[apertura actual de cada ventana en %]}],"exterior":{"ta":temperatura exterior °C,"hr":humedad exterior %,"viento":velocidad del viento km/h,"dir":"dirección del viento","rad":radiación solar W/m²,"lluvia":true o false,"mm":pluviómetro l/m²} o null si no hay datos de fuera}`;
+/* Compartimentos del controlador → naves: de qué cabezal y si van al revés (el compartimento 1 es la última nave) */
+const ucComp=()=>({cab:'gas',inv:true,modo:'media',...((st.cfg&&st.cfg.climaComp)||{})});
+/* Media de los compartimentos leídos (temperatura, humedad, máxima, mínima y apertura media de ventanas) */
+function ucMedia(res){const C=res.filter(x=>x.comp),m=f=>esMedia(C.map(x=>x[f])),v=esMedia(C.flatMap(x=>x.vent||[]));return{n:C.length,ta:m('ta'),hr:m('hr'),tmax:m('tmax'),tmin:m('tmin'),vent:v==null?[]:[Math.round(v)]}}
+const ucCompK=n=>{const M=ucComp(),nv=((MAPAS[M.cab]||{}).naves||[]).length||6;return 'n'+(M.inv?nv+1-n:n)};
 async function iaFotoJson(prompt,blobs){const modo=iaModo();if(!modo)throw{code:'sin_ia'};if(modo==='claude')return await SM.json(prompt,{modelTier:'default',cache:false,images:blobs});
   if(modo==='gemini')return jsonSuelto(await NUBE.ia.json(prompt,blobs));return await iaServidor(prompt,blobs)}
 const ucNum=v=>{if(v==null||v==='')return null;const n=typeof v==='number'?v:num(String(v));return n==null||!isFinite(n)?null:n};
 async function ucLeer(file){const zs=esZonas(st.cab).zs;let b=file;try{b=await compressImg(file)}catch(e){}st.es.uc={busy:true};renderMain();
-  try{const r=await iaFotoJson(UC_PROMPT,[b]);const L=(r&&Array.isArray(r.lecturas)?r.lecturas:[]).map(x=>({zona:String(x&&x.zona||''),nave:ucNum(x&&x.nave),ta:ucNum(x&&x.ta),hr:ucNum(x&&x.hr),tmax:ucNum(x&&x.tmax),tmin:ucNum(x&&x.tmin)})).filter(x=>x.ta!=null||x.hr!=null||x.tmax!=null);
+  try{const r=await iaFotoJson(UC_PROMPT,[b]);const L=(r&&Array.isArray(r.lecturas)?r.lecturas:[]).map(x=>({zona:String(x&&x.zona||''),nave:ucNum(x&&x.nave),ta:ucNum(x&&x.ta),hr:ucNum(x&&x.hr),tmax:ucNum(x&&x.tmax),tmin:ucNum(x&&x.tmin),vent:(Array.isArray(x&&x.vent)?x.vent:x&&x.vent!=null?[x.vent]:[]).map(ucNum).filter(v=>v!=null),comp:+((/compart\w*\s*(\d+)/i.exec(String(x&&x.zona||''))||[])[1]||0)||null})).filter(x=>x.ta!=null||x.hr!=null||x.tmax!=null);
+    const ex=r&&r.exterior&&typeof r.exterior==='object'?{ta:ucNum(r.exterior.ta),hr:ucNum(r.exterior.hr),viento:ucNum(r.exterior.viento),dir:r.exterior.dir?String(r.exterior.dir):null,rad:ucNum(r.exterior.rad),lluvia:r.exterior.lluvia==null?null:!!r.exterior.lluvia&&r.exterior.lluvia!=='NO',mm:ucNum(r.exterior.mm)}:null;
+    if(L.some(x=>x.comp)&&st.cab!==ucComp().cab&&cabById(ucComp().cab)){st.cab=ucComp().cab;try{renderCabs()}catch(_){}}const zs2=esZonas(st.cab).zs;
     if(!L.length)throw{code:'nada'};
-    st.es.uc={hora:r.hora||null,res:L.map(x=>{const n=x.nave!=null?x.nave:+((/nave\s*(\d+)/i.exec(x.zona)||[])[1]||NaN);return{...x,k:(zs.find(q=>q.z.nave!=null&&q.z.nave===n)||{}).k||''}})}}
+    st.es.uc={hora:r.hora||null,ext:ex&&Object.values(ex).some(v=>v!=null)?ex:null,res:L.map(x=>{if(x.comp){const k=ucCompK(x.comp);return{...x,k:zs2.some(q=>q.k===k)?k:''}}const n=x.nave!=null?x.nave:+((/nave\s*(\d+)/i.exec(x.zona)||[])[1]||NaN);return{...x,k:(zs2.find(q=>q.z.nave!=null&&q.z.nave===n)||{}).k||''}})}}
   catch(e){st.es.uc={err:e&&e.code==='nada'?'No se ven datos de clima en la imagen. Prueba con el informe o la pantalla de clima de las naves.':e&&e.code==='sin_ia'?'La IA no está configurada en esta app.':dgErr(e)}}
   renderMain()}
+/* Datos de fuera de la estación del controlador */
+function ucExtTxt(E,tit){const t=[E.ta!=null?fmt(E.ta,1)+' °C':'',E.hr!=null?fmt(E.hr,0)+' %':'',E.viento!=null?'viento '+fmt(E.viento,E.viento%1?1:0)+' km/h'+(E.dir?' '+E.dir:''):'',E.rad!=null?'radiación '+fmt(E.rad,0)+' W/m²':'',E.lluvia==null?'':E.lluvia?'lloviendo':'sin lluvia',E.mm?fmt(E.mm,E.mm%1?1:0)+' l/m²':''].filter(Boolean).join(' · ');
+  return t?`<div class="ucext"><b>${esc(tit)}</b><span>${esc(t)}</span></div>`:''}
 function ucHTML(cab){const U=st.es.uc,zs=esZonas(cab).zs;
   let h=`<div class="ucbar"><label class="btn" for="es_uc">Leer informe</label><input type="file" id="es_uc" accept="image/*" hidden><small>Haz una foto o captura del informe de clima y la IA rellena las naves</small></div>`;
   if(!U)return h;if(U.busy)return h+'<div class="note">Leyendo la captura…</div>';if(U.err)return h+`<div class="banner">${esc(U.err)}</div>`;
-  return h+`<div class="ucres"><b>Esto he leído${U.hora?' ('+esc(U.hora)+')':''}. Revisa a qué nave va cada fila:</b>${U.res.map((x,i)=>`<div class="ucf"><span>${esc(x.zona||'—')}</span><span>${[x.ta!=null?fmt(x.ta,1)+' °C':'',x.hr!=null?fmt(x.hr,0)+' %':'',x.tmax!=null?'máx '+fmt(x.tmax,1):'',x.tmin!=null?'mín '+fmt(x.tmin,1):''].filter(Boolean).join(' · ')}</span><div class="inp"><select data-ucz="${i}" aria-label="Nave para ${esc(x.zona||'esta fila')}"><option value="">No apuntar</option>${zs.map(z=>`<option value="${z.k}" ${x.k===z.k?'selected':''}>${esc(z.lab)}</option>`).join('')}</select></div></div>`).join('')}
+  const M=ucComp(),hayC=U.res.some(x=>x.comp),nv=((MAPAS[M.cab]||{}).naves||[]).length||6;
+  return h+`<div class="ucres"><b>Esto he leído${U.hora?' ('+esc(U.hora)+')':''}. Revisa a qué nave va cada fila:</b>${hayC?`<div class="ucinv"><span>Cómo apuntarlo:</span><button class="chip" type="button" data-esact="ucmodo" data-v="media" aria-pressed="${M.modo==='media'}">Media en todas las naves</button><button class="chip" type="button" data-esact="ucmodo" data-v="nave" aria-pressed="${M.modo!=='media'}">Cada compartimento en su nave</button></div>`:''}${hayC&&M.modo==='media'?(()=>{const A=ucMedia(U.res);return `<div class="ucmed"><b>Media de los ${A.n} compartimentos</b><span>${[A.ta!=null?fmt(A.ta,1)+' °C':'',A.hr!=null?fmt(A.hr,0)+' %':'',A.vent.length?'ventanas '+A.vent[0]+' %':''].filter(Boolean).join(' · ')} → se apunta en las ${esZonas(cab).zs.length} naves de ${esc(cabNombre(cab))}</span></div>`})():''}${hayC&&M.modo!=='media'?`<div class="ucinv"><span>El compartimento 1 es la</span><button class="chip" type="button" data-esact="ucinv" data-v="1" aria-pressed="${!!M.inv}">nave ${nv} (al revés)</button><button class="chip" type="button" data-esact="ucinv" data-v="0" aria-pressed="${!M.inv}">nave 1</button></div>`:''}${U.ext?ucExtTxt(U.ext,'Fuera'):''}${U.res.map((x,i)=>`<div class="ucf"><span>${esc(x.zona||'—')}</span><span>${[x.ta!=null?fmt(x.ta,1)+' °C':'',x.hr!=null?fmt(x.hr,0)+' %':'',x.tmax!=null?'máx '+fmt(x.tmax,1):'',x.tmin!=null?'mín '+fmt(x.tmin,1):'',x.vent&&x.vent.length?'ventanas '+x.vent.map(v=>fmt(v,0)).join('/')+' %':''].filter(Boolean).join(' · ')}</span><div class="inp"${hayC&&M.modo==='media'&&x.comp?' hidden':''}><select data-ucz="${i}" aria-label="Nave para ${esc(x.zona||'esta fila')}"><option value="">No apuntar</option>${zs.map(z=>`<option value="${z.k}" ${x.k===z.k?'selected':''}>${esc(z.lab)}</option>`).join('')}</select></div></div>`).join('')}
     <div class="row"><button class="btn pri" type="button" data-esact="ucok">Apuntar</button><button class="btn" type="button" data-esact="ucno">Descartar</button></div></div>`}
 $('#main').addEventListener('change',e=>{const t=e.target;if(st.tab!=='estres'||!t.id&&!t.dataset)return;
   if(t.id==='es_uc'&&t.files&&t.files[0]){ucLeer(t.files[0]);t.value=''}
   else if(t.dataset&&t.dataset.ucz!=null&&st.es.uc&&st.es.uc.res){st.es.uc.res[+t.dataset.ucz].k=t.value}});
 document.addEventListener('click',e=>{if(st.tab!=='estres')return;const b=e.target.closest&&e.target.closest('[data-esact]');if(!b)return;const a=b.dataset.esact;
   if(a==='ucno'){st.es.uc=null;renderMain()}
-  else if(a==='ucok'&&st.es.uc&&st.es.uc.res){let n=0;for(const x of st.es.uc.res){if(!x.k)continue;esPon(st.cab,x.k,d=>{for(const f of ['ta','hr','tmax','tmin'])if(x[f]!=null)d[f]=x[f];d.src='informe'});n++}
+  else if(a==='ucmodo'&&st.es.uc){st.cfg.climaComp={...ucComp(),modo:b.dataset.v};if(esGestor()){st.dirtyCfg=true;renderSave()}renderMain()}
+  else if(a==='ucinv'&&st.es.uc&&st.es.uc.res){const inv=b.dataset.v==='1';st.cfg.climaComp={...ucComp(),inv};if(esGestor()){st.dirtyCfg=true;renderSave()}const zs=esZonas(st.cab).zs;for(const x of st.es.uc.res)if(x.comp){const k=ucCompK(x.comp);x.k=zs.some(q=>q.k===k)?k:''}renderMain()}
+  else if(a==='ucok'&&st.es.uc&&st.es.uc.res){let n=0;const med=ucComp().modo==='media'&&st.es.uc.res.some(x=>x.comp);
+    if(med){const A=ucMedia(st.es.uc.res);for(const z of esZonas(st.cab).zs){esPon(st.cab,z.k,d=>{for(const f of ['ta','hr','tmax','tmin'])if(A[f]!=null)d[f]=+A[f].toFixed(1);if(A.vent.length)d.vent=A.vent;d.src='informe (media)'});n++}}
+    for(const x of st.es.uc.res){if(!x.k||(med&&x.comp))continue;esPon(st.cab,x.k,d=>{for(const f of ['ta','hr','tmax','tmin'])if(x[f]!=null)d[f]=x[f];if(x.vent&&x.vent.length)d.vent=x.vent;d.src='informe'});n++}
+    if(st.es.uc.ext){const r=st.reg;r.meteo={...(r.meteo||{}),ext:{...st.es.uc.ext,hora:st.es.uc.hora||new Date().toTimeString().slice(0,5)}};marcaReg('meteo.ext')}
     st.es.uc=null;renderMain();renderSave();toast(n?`Apuntado en ${n} ${n===1?'nave':'naves'}. Guarda el día para que quede.`:'No has elegido ninguna nave',5000)}});
 
 /* ---------- Catálogo de tecnología agrícola (solo el administrador): carpetas y buscador; los datos están en catalogo.js ---------- */
@@ -5386,7 +5405,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v141';
+window.APP_V='abonado-v142';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
