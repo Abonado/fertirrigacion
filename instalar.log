@@ -1,0 +1,216 @@
++ mkdir -p /home/runner/bin
++ curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh
++ BINDIR=/home/runner/bin
++ sh
+Installing in /home/runner/bin
+ARCH=64bit
+OS=Linux
+Using curl as download tool
+Downloading https://downloads.arduino.cc/arduino-cli/arduino-cli_1.5.1_Linux_64bit.tar.gz
+install.sh: arduino-cli not found. You might want to add "/home/runner/bin" to your $PATH
+arduino-cli  Version: 1.5.1 Commit: 01f3d4f2b Date: 2026-06-05T10:22:17Z installed successfully in /home/runner/bin
++ export PATH=/home/runner/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
++ PATH=/home/runner/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
++ URL=https://espressif.github.io/arduino-esp32/package_esp32_index.json
++ arduino-cli core update-index --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+Downloading index: library_index.tar.bz2 0 B / 4.42 MiB    0.00%Downloading index: library_index.tar.bz2 downloaded
+Downloading index: package_index.tar.bz2 0 B / 111.61 KiB    0.00%Downloading index: package_index.tar.bz2 downloaded
+Downloading index: package_esp32_index.json 0 B / 636.15 KiB    0.00%Downloading index: package_esp32_index.json downloaded
+Downloading missing tool builtin:ctags@5.8-arduino11...
+builtin:ctags@5.8-arduino11 0 B / 108.99 KiB    0.00%builtin:ctags@5.8-arduino11 downloaded
+Installing builtin:ctags@5.8-arduino11...
+Skipping tool configuration....
+builtin:ctags@5.8-arduino11 installed
+Downloading missing tool builtin:dfu-discovery@0.1.2...
+builtin:dfu-discovery@0.1.2 0 B / 1.65 MiB    0.00%builtin:dfu-discovery@0.1.2 downloaded
+Installing builtin:dfu-discovery@0.1.2...
+Skipping tool configuration....
+builtin:dfu-discovery@0.1.2 installed
+Downloading missing tool builtin:mdns-discovery@1.1.0...
+builtin:mdns-discovery@1.1.0 0 B / 3.07 MiB    0.00%builtin:mdns-discovery@1.1.0 downloaded
+Installing builtin:mdns-discovery@1.1.0...
+Skipping tool configuration....
+builtin:mdns-discovery@1.1.0 installed
+Downloading missing tool builtin:serial-discovery@1.5.2...
+builtin:serial-discovery@1.5.2 0 B / 2.06 MiB    0.00%builtin:serial-discovery@1.5.2 downloaded
+Installing builtin:serial-discovery@1.5.2...
+Skipping tool configuration....
+builtin:serial-discovery@1.5.2 installed
+Downloading missing tool builtin:serial-monitor@0.15.0...
+builtin:serial-monitor@0.15.0 0 B / 2.33 MiB    0.00%builtin:serial-monitor@0.15.0 downloaded
+Installing builtin:serial-monitor@0.15.0...
+Skipping tool configuration....
+builtin:serial-monitor@0.15.0 installed
+Downloading index: package_index.tar.bz2 0 B / 111.61 KiB    0.00%Downloading index: package_index.tar.bz2 downloaded
+Downloading index: package_esp32_index.json 0 B / 636.15 KiB    0.00%Downloading index: package_esp32_index.json downloaded
++ arduino-cli core install esp32:esp32 --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
+Downloading packages...
+esp32:esp-x32@2601 0 B / 318.78 MiB    0.00%esp32:esp-x32@2601 0 B / 318.78 MiB    0.00%esp32:esp-x32@2601 45.12 MiB / 318.78 MiB   14.15% 00m02sesp32:esp-x32@2601 77.94 MiB / 318.78 MiB   24.45% 00m01sesp32:esp-x32@2601 110.00 MiB / 318.78 MiB   34.51% 00m01sesp32:esp-x32@2601 110.00 MiB / 318.78 MiB   34.51% 00m01sesp32:esp-x32@2601 150.00 MiB / 318.78 MiB   47.05% 00m01sesp32:esp-x32@2601 187.37 MiB / 318.78 MiB   58.78%esp32:esp-x32@2601 220.00 MiB / 318.78 MiB   69.01%esp32:esp-x32@2601 259.27 MiB / 318.78 MiB   81.33%esp32:esp-x32@2601 318.30 MiB / 318.78 MiB   99.85%esp32:esp-x32@2601 downloaded
+esp32:xtensa-esp-elf-gdb@17.1_20260402 0 B / 40.68 MiB    0.00%esp32:xtensa-esp-elf-gdb@17.1_20260402 downloaded
+esp32:esp-rv32@2601 0 B / 563.25 MiB    0.00%esp32:esp-rv32@2601 0 B / 563.25 MiB    0.00%esp32:esp-rv32@2601 52.31 MiB / 563.25 MiB    9.29% 00m03sesp32:esp-rv32@2601 101.21 MiB / 563.25 MiB   17.97% 00m02sesp32:esp-rv32@2601 160.96 MiB / 563.25 MiB   28.58% 00m01sesp32:esp-rv32@2601 219.36 MiB / 563.25 MiB   38.95% 00m01sesp32:esp-rv32@2601 219.36 MiB / 563.25 MiB   38.95% 00m01sesp32:esp-rv32@2601 272.32 MiB / 563.25 MiB   48.35% 00m01sesp32:esp-rv32@2601 318.68 MiB / 563.25 MiB   56.58% 00m01sesp32:esp-rv32@2601 371.90 MiB / 563.25 MiB   66.03%esp32:esp-rv32@2601 423.60 MiB / 563.25 MiB   75.21%esp32:esp-rv32@2601 423.60 MiB / 563.25 MiB   75.21%esp32:esp-rv32@2601 469.91 MiB / 563.25 MiB   83.43%esp32:esp-rv32@2601 531.44 MiB / 563.25 MiB   94.35%esp32:esp-rv32@2601 downloaded
+esp32:riscv32-esp-elf-gdb@17.1_20260402 0 B / 41.05 MiB    0.00%esp32:riscv32-esp-elf-gdb@17.1_20260402 0 B / 41.05 MiB    0.00%esp32:riscv32-esp-elf-gdb@17.1_20260402 downloaded
+esp32:openocd-esp32@v0.12.0-esp32-20260424 0 B / 2.51 MiB    0.00%esp32:openocd-esp32@v0.12.0-esp32-20260424 downloaded
+esp32:esptool_py@5.3.1 0 B / 79.71 MiB    0.00%esp32:esptool_py@5.3.1 0 B / 79.71 MiB    0.00%esp32:esptool_py@5.3.1 downloaded
+esp32:mkspiffs@0.2.3 0 B / 49.46 KiB    0.00%esp32:mkspiffs@0.2.3 downloaded
+esp32:mklittlefs@4.0.2-db0513a 0 B / 52.73 KiB    0.00%esp32:mklittlefs@4.0.2-db0513a downloaded
+arduino:dfu-util@0.11.0-arduino5 0 B / 2.18 MiB    0.00%arduino:dfu-util@0.11.0-arduino5 downloaded
+esp32:esp32-libs@3.3.12 0 B / 45.80 MiB    0.00%esp32:esp32-libs@3.3.12 0 B / 45.80 MiB    0.00%esp32:esp32-libs@3.3.12 downloaded
+esp32:esp32c3-libs@3.3.12 0 B / 58.01 MiB    0.00%esp32:esp32c3-libs@3.3.12 0 B / 58.01 MiB    0.00%esp32:esp32c3-libs@3.3.12 downloaded
+esp32:esp32c5-libs@3.3.12 0 B / 75.61 MiB    0.00%esp32:esp32c5-libs@3.3.12 0 B / 75.61 MiB    0.00%esp32:esp32c5-libs@3.3.12 35.76 MiB / 75.61 MiB   47.30%esp32:esp32c5-libs@3.3.12 downloaded
+esp32:esp32c6-libs@3.3.12 0 B / 66.34 MiB    0.00%esp32:esp32c6-libs@3.3.12 0 B / 66.34 MiB    0.00%esp32:esp32c6-libs@3.3.12 downloaded
+esp32:esp32h2-libs@3.3.12 0 B / 62.40 MiB    0.00%esp32:esp32h2-libs@3.3.12 0 B / 62.40 MiB    0.00%esp32:esp32h2-libs@3.3.12 downloaded
+esp32:esp32p4-libs@3.3.12 0 B / 96.49 MiB    0.00%esp32:esp32p4-libs@3.3.12 0 B / 96.49 MiB    0.00%esp32:esp32p4-libs@3.3.12 56.67 MiB / 96.49 MiB   58.73%esp32:esp32p4-libs@3.3.12 downloaded
+esp32:esp32p4_es-libs@3.3.12 0 B / 96.08 MiB    0.00%esp32:esp32p4_es-libs@3.3.12 0 B / 96.08 MiB    0.00%esp32:esp32p4_es-libs@3.3.12 33.31 MiB / 96.08 MiB   34.67%esp32:esp32p4_es-libs@3.3.12 downloaded
+esp32:esp32s2-libs@3.3.12 0 B / 43.82 MiB    0.00%esp32:esp32s2-libs@3.3.12 downloaded
+esp32:esp32s3-libs@3.3.12 0 B / 87.46 MiB    0.00%esp32:esp32s3-libs@3.3.12 0 B / 87.46 MiB    0.00%esp32:esp32s3-libs@3.3.12 53.00 MiB / 87.46 MiB   60.60%esp32:esp32s3-libs@3.3.12 downloaded
+esp32:esp32@3.3.12 0 B / 48.74 MiB    0.00%esp32:esp32@3.3.12 0 B / 48.74 MiB    0.00%esp32:esp32@3.3.12 downloaded
+Installing esp32:esp-x32@2601...
+Skipping tool configuration....
+esp32:esp-x32@2601 installed
+Installing esp32:xtensa-esp-elf-gdb@17.1_20260402...
+Skipping tool configuration....
+esp32:xtensa-esp-elf-gdb@17.1_20260402 installed
+Installing esp32:esp-rv32@2601...
+Skipping tool configuration....
+esp32:esp-rv32@2601 installed
+Installing esp32:riscv32-esp-elf-gdb@17.1_20260402...
+Skipping tool configuration....
+esp32:riscv32-esp-elf-gdb@17.1_20260402 installed
+Installing esp32:openocd-esp32@v0.12.0-esp32-20260424...
+Skipping tool configuration....
+esp32:openocd-esp32@v0.12.0-esp32-20260424 installed
+Installing esp32:esptool_py@5.3.1...
+Skipping tool configuration....
+esp32:esptool_py@5.3.1 installed
+Installing esp32:mkspiffs@0.2.3...
+Skipping tool configuration....
+esp32:mkspiffs@0.2.3 installed
+Installing esp32:mklittlefs@4.0.2-db0513a...
+Skipping tool configuration....
+esp32:mklittlefs@4.0.2-db0513a installed
+Installing arduino:dfu-util@0.11.0-arduino5...
+Skipping tool configuration....
+arduino:dfu-util@0.11.0-arduino5 installed
+Installing esp32:esp32-libs@3.3.12...
+Skipping tool configuration....
+esp32:esp32-libs@3.3.12 installed
+Installing esp32:esp32c3-libs@3.3.12...
+Skipping tool configuration....
+esp32:esp32c3-libs@3.3.12 installed
+Installing esp32:esp32c5-libs@3.3.12...
+Skipping tool configuration....
+esp32:esp32c5-libs@3.3.12 installed
+Installing esp32:esp32c6-libs@3.3.12...
+Skipping tool configuration....
+esp32:esp32c6-libs@3.3.12 installed
+Installing esp32:esp32h2-libs@3.3.12...
+Skipping tool configuration....
+esp32:esp32h2-libs@3.3.12 installed
+Installing esp32:esp32p4-libs@3.3.12...
+Skipping tool configuration....
+esp32:esp32p4-libs@3.3.12 installed
+Installing esp32:esp32p4_es-libs@3.3.12...
+Skipping tool configuration....
+esp32:esp32p4_es-libs@3.3.12 installed
+Installing esp32:esp32s2-libs@3.3.12...
+Skipping tool configuration....
+esp32:esp32s2-libs@3.3.12 installed
+Installing esp32:esp32s3-libs@3.3.12...
+Skipping tool configuration....
+esp32:esp32s3-libs@3.3.12 installed
+Installing platform esp32:esp32@3.3.12...
+Skipping platform configuration....
+Platform esp32:esp32@3.3.12 installed
++ arduino-cli lib install RadioLib 'Adafruit SHT4x Library' 'Adafruit MLX90614 Library' OneWire DallasTemperature 'Sensirion I2C SCD4x'
+Downloading RadioLib@7.8.1...
+RadioLib@7.8.1 0 B / 5.28 MiB    0.00%RadioLib@7.8.1 downloaded
+Installing RadioLib@7.8.1...
+Installed RadioLib@7.8.1
+Downloading Adafruit SHT4x Library@1.0.5...
+Adafruit SHT4x Library@1.0.5 0 B / 243.18 KiB    0.00%Adafruit SHT4x Library@1.0.5 downloaded
+Installing Adafruit SHT4x Library@1.0.5...
+Installed Adafruit SHT4x Library@1.0.5
+Downloading Adafruit BusIO@1.17.4...
+Adafruit BusIO@1.17.4 0 B / 30.36 KiB    0.00%Adafruit BusIO@1.17.4 downloaded
+Installing Adafruit BusIO@1.17.4...
+Installed Adafruit BusIO@1.17.4
+Downloading Adafruit Unified Sensor@1.1.15...
+Adafruit Unified Sensor@1.1.15 0 B / 15.06 KiB    0.00%Adafruit Unified Sensor@1.1.15 downloaded
+Installing Adafruit Unified Sensor@1.1.15...
+Installed Adafruit Unified Sensor@1.1.15
+Downloading Adafruit SH110X@2.1.15...
+Adafruit SH110X@2.1.15 0 B / 23.91 KiB    0.00%Adafruit SH110X@2.1.15 downloaded
+Installing Adafruit SH110X@2.1.15...
+Installed Adafruit SH110X@2.1.15
+Downloading Adafruit SSD1306@2.5.17...
+Adafruit SSD1306@2.5.17 0 B / 40.85 KiB    0.00%Adafruit SSD1306@2.5.17 downloaded
+Installing Adafruit SSD1306@2.5.17...
+Installed Adafruit SSD1306@2.5.17
+Downloading Adafruit GFX Library@1.13.0...
+Adafruit GFX Library@1.13.0 0 B / 349.28 KiB    0.00%Adafruit GFX Library@1.13.0 downloaded
+Installing Adafruit GFX Library@1.13.0...
+Installed Adafruit GFX Library@1.13.0
+Already installed Adafruit BusIO@1.17.4
+Downloading Adafruit MLX90614 Library@2.1.7...
+Adafruit MLX90614 Library@2.1.7 0 B / 10.83 KiB    0.00%Adafruit MLX90614 Library@2.1.7 downloaded
+Installing Adafruit MLX90614 Library@2.1.7...
+Installed Adafruit MLX90614 Library@2.1.7
+Downloading OneWire@2.3.8...
+OneWire@2.3.8 0 B / 22.55 KiB    0.00%OneWire@2.3.8 downloaded
+Installing OneWire@2.3.8...
+Installed OneWire@2.3.8
+Downloading DallasTemperature@4.0.6...
+DallasTemperature@4.0.6 0 B / 45.53 KiB    0.00%DallasTemperature@4.0.6 downloaded
+Installing DallasTemperature@4.0.6...
+Installed DallasTemperature@4.0.6
+Downloading Sensirion I2C SCD4x@1.1.0...
+Sensirion I2C SCD4x@1.1.0 0 B / 1.90 MiB    0.00%Sensirion I2C SCD4x@1.1.0 downloaded
+Installing Sensirion I2C SCD4x@1.1.0...
+Installed Sensirion I2C SCD4x@1.1.0
+Downloading Sensirion Core@0.7.3...
+Sensirion Core@0.7.3 0 B / 37.45 KiB    0.00%Sensirion Core@0.7.3 downloaded
+Installing Sensirion Core@0.7.3...
+Installed Sensirion Core@0.7.3
++ arduino-cli core list
+ID          Installed Latest Name
+esp32:esp32 3.3.12    3.3.12 esp32
+
++ arduino-cli lib list
+Name                      Installed Available Location Description
+Adafruit BusIO            1.17.4    -         user     -
+Adafruit GFX Library      1.13.0    -         user     -
+Adafruit MLX90614 Library 2.1.7     -         user     -
+Adafruit SH110X           2.1.15    -         user     -
+Adafruit SHT4x Library    1.0.5     -         user     -
+Adafruit SSD1306          2.5.17    -         user     -
+Adafruit Unified Sensor   1.1.15    -         user     -
+DallasTemperature         4.0.6     -         user     -
+OneWire                   2.3.8     -         user     -
+RadioLib                  7.8.1     -         user     -
+Sensirion Core            0.7.3     -         user     -
+Sensirion I2C SCD4x       1.1.0     -         user     -
+
++ arduino-cli board listall heltec
+Board Name                                  FQBN
+Heltec Capsule Sensor (V3)                  esp32:esp32:heltec_capsule_sensor_V3
+Heltec E-Ink Driver                         esp32:esp32:heltec_ht_de01
+Heltec Vision Master E213                   esp32:esp32:heltec_vision_master_e_213
+Heltec Vision Master E290                   esp32:esp32:heltec_vision_master_e290
+Heltec Vision Master T190                   esp32:esp32:heltec_vision_master_t190
+Heltec WiFi Kit 32                          esp32:esp32:heltec_wifi_kit_32
+Heltec WiFi Kit 32(V3)                      esp32:esp32:heltec_wifi_kit_32_V3
+Heltec WiFi LoRa 32                         esp32:esp32:heltec_wifi_lora_32
+Heltec WiFi LoRa 32(V2)                     esp32:esp32:heltec_wifi_lora_32_V2
+Heltec WiFi LoRa 32(V3)                     esp32:esp32:heltec_wifi_lora_32_V3
+Heltec WiFi LoRa 32(V4)                     esp32:esp32:heltec_wifi_lora_32_V4
+Heltec Wireless Bridge                      esp32:esp32:heltec_wireless_bridge
+Heltec Wireless Mini Shell                  esp32:esp32:heltec_wireless_mini_shell
+Heltec Wireless Paper                       esp32:esp32:heltec_wireless_paper
+Heltec Wireless Shell (V3)                  esp32:esp32:heltec_wireless_shell_V3
+Heltec Wireless Stick                       esp32:esp32:heltec_wireless_stick
+Heltec Wireless Stick Lite / Wireless Shell esp32:esp32:heltec_wireless_stick_lite
+Heltec Wireless Stick Lite(V3)              esp32:esp32:heltec_wireless_stick_lite_V3
+Heltec Wireless Stick(V3)                   esp32:esp32:heltec_wireless_stick_V3
+Heltec Wireless Tracker                     esp32:esp32:heltec_wireless_tracker
+Heltec Wireless Tracker(V2)                 esp32:esp32:heltec_wireless_tracker_v2
+
