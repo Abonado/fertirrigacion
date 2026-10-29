@@ -49,11 +49,12 @@ async def main():
         await pg.evaluate("st.cat={q:'drenaje automatico',c:null,f:'',ab:new Set()};renderMain()"); await pg.wait_for_timeout(300)
         it = pg.locator('#main details.catit').first; await it.locator('summary').click(); await pg.wait_for_timeout(200)
         await it.locator('[data-catest][data-v="montando"]').click(); await pg.wait_for_timeout(300)
-        assert await pg.evaluate("st.cfg.labEst['drenaje-automatico-en-la-bandeja']") == 'montando' and await pg.evaluate("st.dirtyCfg") is True
+        await pg.wait_for_timeout(1200)
+        assert await pg.evaluate("st.cfg.labEst['drenaje-automatico-en-la-bandeja']") == 'montando' and await pg.evaluate("st.dirtyCfg") is False, 'se guarda solo'
+        assert await pg.evaluate("$('#savebar').hidden"), 'no sale la barra de guardar'
         assert await pg.locator('#main details.catit[open]').count() == 1, 'la ficha sigue abierta'
         await pg.evaluate("st.cat.q='';st.cat.f='dev';renderMain()"); await pg.wait_for_timeout(300)
         assert 'agua' in await pg.evaluate("[...document.querySelectorAll('#main .catf')].filter(b=>b.textContent.includes('1 en desarrollo')).map(b=>b.dataset.catc).join()")
-        await pg.evaluate("saveCfg()"); await pg.wait_for_timeout(1500)
         assert (await pg.evaluate("Store.getConfig().then(c=>c.labEst)"))['drenaje-automatico-en-la-bandeja'] == 'montando'
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())
