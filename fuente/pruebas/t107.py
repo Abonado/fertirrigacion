@@ -33,24 +33,25 @@ async def main():
         k = await pg.locator('#main .catit').count(); assert k == dict(C)['agua']
         await pg.click('#main .catit:has-text("Nivel de depósitos") summary'); await pg.wait_for_timeout(200)
         f = await pg.text_content('#main .catit[open]'); assert 'En tu finca' in f and 'Precio orientativo' in f and 'Rellenar depósito' in f
-        assert await pg.locator('#main .catit[open] [data-tab="taller"]').count() == 1
+        assert await pg.locator('#main .catit[open] [data-tlnuevo]').count() == 1
         await pg.screenshot(path='pruebas/salida/t107-ficha.png', full_page=True)
         # buscador en todas las carpetas y sin tildes
         await pg.click('[data-catc=""]'); await pg.wait_for_timeout(200)
         await pg.fill('#cat_q', 'pulverizacion'); await pg.wait_for_timeout(300)
-        r = await pg.locator('#main .catit b').all_inner_texts(); print('«pulverizacion»:', r)
+        r = await pg.locator('#main .catit > summary b').all_inner_texts(); print('«pulverizacion»:', r)
         assert any('dron' in x.lower() for x in r) and any('carro' in x.lower() for x in r) and await pg.locator('#cat_q').evaluate("e=>document.activeElement===e"), 'busca en todas las carpetas y no pierde el foco'
         await pg.fill('#cat_q', 'tuta camara'); await pg.wait_for_timeout(300)
-        r = await pg.locator('#main .catit b').all_inner_texts(); print('«tuta camara»:', r); assert 'TRAMPA INTELIGENTE CON CÁMARA' in [x.upper() for x in r]
+        r = await pg.locator('#main .catit > summary b').all_inner_texts(); print('«tuta camara»:', r); assert 'TRAMPA INTELIGENTE CON CÁMARA' in [x.upper() for x in r]
         await pg.fill('#cat_q', 'zzzz'); await pg.wait_for_timeout(300); assert 'No hay nada' in await pg.text_content('#main .catres')
         # filtro por estado
         await pg.fill('#cat_q', ''); await pg.wait_for_timeout(200); await pg.click('[data-catf="no"]'); await pg.wait_for_timeout(200)
         await pg.click('#main .catf[data-catc="drones"]'); await pg.wait_for_timeout(200)
-        r = await pg.locator('#main .catit b').all_inner_texts(); print('drones no recomendados:', r); assert [x.upper() for x in r] == ['PULVERIZAR CON DRON']
+        r = await pg.locator('#main .catit > summary b').all_inner_texts(); print('drones no recomendados:', r); assert [x.upper() for x in r] == ['PULVERIZAR CON DRON']
         # del catálogo al taller
         await pg.click('[data-catf=""]'); await pg.wait_for_timeout(200); await pg.click('[data-catc=""]'); await pg.wait_for_timeout(200)
-        await pg.fill('#cat_q', 'nivel deposito'); await pg.wait_for_timeout(300); await pg.click('#main .catit:has-text("Nivel de depósitos") summary'); await pg.wait_for_timeout(200)
-        await pg.click('#main .catit[open] [data-tab="taller"]'); await pg.wait_for_timeout(1200); assert await pg.evaluate("st.tab") == 'taller'
+        await pg.fill('#cat_q', 'nivel deposito'); await pg.wait_for_timeout(300)
+        assert await pg.locator('#main .catit[open]:has-text("Nivel de depósitos")').count() == 1, 'recuerda la ficha que tenías abierta'
+        await pg.click('#main .catit[open] [data-tlnuevo]'); await pg.wait_for_timeout(1200); assert await pg.evaluate("[st.tab,st.tl.d&&st.tl.d.nodo]") == ['taller', 'N1']
         # el encargado no lo ve ni lo carga
         await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
         await pg.fill('#nb_em', 'pepe@demo.es'); await pg.fill('#nb_pw', 'pepe1234'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)

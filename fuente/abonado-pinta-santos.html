@@ -45,6 +45,8 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .esmot{list-style:none;margin:0;padding:0;display:grid;gap:6px}.esmot li{border-left:4px solid var(--c);padding:6px 10px;background:var(--surface);border-radius:6px;display:grid;gap:2px}.esmot span{font-size:13px;color:var(--muted)}
 .escausa{display:grid;gap:6px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line)}.escausa .btn{justify-self:start}
 .plorden{border:2px solid #c0392b}.plorden ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
+.catdev{display:grid;gap:6px;margin:0 12px 12px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--navy) 5%,var(--surface));font-size:13.5px}.catdev>b{font-size:12px;letter-spacing:.05em}.catdev ol{margin:0;padding-left:20px;display:grid;gap:3px}
+.catfase{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px}.catpills{display:grid;gap:4px;justify-items:end}
 .catq{margin:6px 0 2px;display:flex;width:100%}.catq input{flex:1;width:auto!important;min-width:0;max-width:none}.catres{display:grid;gap:8px}
 .catgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
 .catf{all:unset;box-sizing:border-box;cursor:pointer;display:grid;align-content:start;gap:5px;padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}.catf:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
@@ -2298,22 +2300,39 @@ const catRaiz=p=>{const r=p.replace(/(aciones|acion|iciones|icion|ciones|cion|me
 function catCargar(){if(window.CATALOGO||st.catCarga)return;st.catCarga=1;const sc=document.createElement('script');sc.src='catalogo.js';
   sc.onload=()=>{if(st.tab==='catalogo')renderMain()};sc.onerror=()=>{st.catCarga=0;sc.remove();toast('No se ha podido abrir el catálogo: necesitas conexión la primera vez')};document.head.appendChild(sc)}
 const catIco=p=>`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>`;
-function catItem(it,c){const E=CAT_EST[it.est]||CAT_EST.idea;
-  return `<details class="catit"><summary><span class="catn"><b>${esc(it.n)}</b><small>${esc(it.q)}</small></span><span class="pill ${E[1]}">${E[0]}</span></summary>
+const CAT_FASE=[['','Sin empezar'],['comprado','Comprado'],['montando','Montando'],['ok','Funcionando']];
+const catSlug=it=>catNorm(it.n).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const catFase=it=>((st.cfg&&st.cfg.labEst)||{})[catSlug(it)]||'';
+/* Cómo se desarrolla cada cosa: montarla en el Taller, comprarla y conectarla, ya está o no se recomienda */
+function catDev(it){const k=catSlug(it),f=catFase(it);let tit,txt='',pasos=[],btn='';
+  if(it.taller){tit='Lo montas tú';txt=`Diseño ${it.taller} del Taller: piezas, esquema de cables con avisos de errores, caja 3D para imprimir, ficha de montaje y código de partida.`;btn=`<button class="btn pri" type="button" data-tlnuevo="${esc(it.taller)}">Diseñarlo en el Taller (${esc(it.taller)})</button>`}
+  else if(it.est==='app'){tit='Ya funciona en la app';txt='Mira «En tu finca» para saber dónde está.'}
+  else if(it.est==='no'){tit='No recomendado ahora';txt='Por lo que dice «En tu finca». Se revisa si cambian la tecnología o la ley.'}
+  else if(/lorawan/i.test(it.con)){tit='Se compra y se conecta';pasos=['Comprar la versión europea EU868.','Darlo de alta en la red LoRaWAN (The Things Network) con la pasarela.','Conectar la red al servidor puente de la app (lo preparamos juntos).','Comprobar una semana que lo que llega coincide con lo que mides a mano.']}
+  else if(/manual|sin conexi|al m[oó]vil|^—$/i.test(it.con)&&!/app/i.test(it.ej)){tit='Se compra y se usa';pasos=['Comprarlo.','Apuntar lo que mide en la app (Clima y estrés, Plagas, cuaderno…).','Si se usa a diario, valorar la versión con conexión para que entre solo.']}
+  else if(/la app|por hacer|desarrollo/i.test(it.ej+it.prec)){tit='Se desarrolla en la app';pasos=['Pídelo y se hace como el resto de apartados, con sus pruebas.','Se usa primero en una nave o un cabezal.','Se ajusta con lo que veas en una o dos semanas.']}
+  else{tit='Se compra y se integra';pasos=['Pedir al fabricante cómo se sacan los datos: API, Modbus o informe exportable.','Mientras tanto, «Leer informe» con una foto de su pantalla.','Conectarlo al servidor puente para que entre solo en la app.','Comprobar una semana con lo que mides a mano.']}
+  return `<div class="catdev"><b>Desarrollo · ${tit}</b>${txt?`<span>${esc(txt)}</span>`:''}${pasos.length?`<ol>${pasos.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`:''}${btn?`<div class="row">${btn}</div>`:''}
+    ${it.est==='no'?'':`<div class="catfase"><span>Mi estado:</span>${CAT_FASE.map(([v,t])=>`<button class="chip" type="button" data-catest="${k}" data-v="${v}" aria-pressed="${f===v}">${t}</button>`).join('')}</div>`}</div>`}
+function catItem(it,c){const E=CAT_EST[it.est]||CAT_EST.idea,k=catSlug(it),f=catFase(it),F=CAT_FASE.find(x=>x[0]===f);
+  return `<details class="catit" data-catk="${k}" ${st.cat.ab&&st.cat.ab.has(k)?'open':''}><summary><span class="catn"><b>${esc(it.n)}</b><small>${esc(it.q)}</small></span><span class="catpills"><span class="pill ${E[1]}">${E[0]}</span>${f?`<span class="pill ok">${F[1]}</span>`:''}</span></summary>
     <dl class="catdl">${c?`<dt>Carpeta</dt><dd>${esc(c.n)}</dd>`:''}<dt>En tu finca</dt><dd>${esc(it.uso)}</dd><dt>Precio orientativo</dt><dd>${esc(it.prec)}</dd><dt>Ejemplos</dt><dd>${esc(it.ej)}</dd><dt>Conexión</dt><dd>${esc(it.con)}</dd><dt>Dificultad</dt><dd>${esc(it.dif)}</dd></dl>
-    ${it.taller?`<div class="row"><button class="btn" type="button" data-tab="taller">Diseñarlo en el Taller (${esc(it.taller)})</button></div>`:''}</details>`}
-function catLista(){const C=window.CATALOGO,S=st.cat,q=catNorm(S.q).trim(),ok=it=>!S.f||it.est===S.f;
+    ${catDev(it)}</details>`}
+document.addEventListener('toggle',e=>{const d=e.target;if(!d||!d.matches||!d.matches('details.catit'))return;st.cat.ab=st.cat.ab||new Set();if(d.open)st.cat.ab.add(d.dataset.catk);else st.cat.ab.delete(d.dataset.catk)},true);
+document.addEventListener('click',e=>{if(st.tab!=='catalogo')return;const t=e.target.closest&&e.target.closest('[data-tlnuevo]');if(t){st.tlNuevo=t.dataset.tlnuevo;st.tab='taller';renderCabs();renderTabs();renderMain();window.scrollTo(0,0);return}
+  const b=e.target.closest&&e.target.closest('[data-catest]');if(b&&esAdminU()){const v=b.dataset.v;st.cfg.labEst={...(st.cfg.labEst||{})};if(v)st.cfg.labEst[b.dataset.catest]=v;else delete st.cfg.labEst[b.dataset.catest];st.dirtyCfg=true;renderSave();renderMain()}});
+function catLista(){const C=window.CATALOGO,S=st.cat,q=catNorm(S.q).trim(),ok=it=>!S.f||(S.f==='dev'?!!catFase(it):it.est===S.f);
   if(q){const pal=q.split(/\s+/).filter(Boolean),R=[];for(const c of C.carpetas)for(const it of c.it){const h=catNorm([it.n,it.q,it.uso,it.ej,it.t,c.n].join(' '));if(pal.every(p=>h.includes(catRaiz(p)))&&ok(it))R.push([it,c])}
     return `<div class="sub">${R.length} ${R.length===1?'resultado':'resultados'}</div>${R.length?R.map(([it,c])=>catItem(it,c)).join(''):'<div class="note">No hay nada con esas palabras. Prueba con otra: riego, plagas, robot, drenaje…</div>'}`}
   if(S.c){const c=C.carpetas.find(x=>x.id===S.c);if(c){const L=c.it.filter(ok);
     return `<button class="lnk catback" type="button" data-catc="">← Todas las carpetas</button><div class="cath">${catIco(c.ic)}<div><h3>${esc(c.n)}</h3><div class="sub">${esc(c.d)} · ${L.length} ${L.length===1?'elemento':'elementos'}</div></div></div>${L.map(it=>catItem(it)).join('')||'<div class="note">Nada con este filtro.</div>'}`}}
   return `<div class="catgrid">${C.carpetas.map(c=>{const n=c.it.filter(ok).length,a=c.it.filter(x=>x.est==='app'||x.est==='prep').length;
-    return `<button class="catf" type="button" data-catc="${c.id}">${catIco(c.ic)}<b>${esc(c.n)}</b><small>${esc(c.d)}</small><span>${n} ${n===1?'elemento':'elementos'}${a?` · ${a} ya en la app`:''}</span></button>`}).join('')}</div>`}
+    const m=c.it.filter(x=>catFase(x)).length;return `<button class="catf" type="button" data-catc="${c.id}">${catIco(c.ic)}<b>${esc(c.n)}</b><small>${esc(c.d)}</small><span>${n} ${n===1?'elemento':'elementos'}${a?` · ${a} ya en la app`:''}${m?` · ${m} en desarrollo`:''}</span></button>`}).join('')}</div>`}
 function vCatalogo(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador.</div></section>`;if(!window.CATALOGO){catCargar();return `<section class="card"><div class="note">Abriendo el catálogo…</div></section>`}
   const C=window.CATALOGO,n=C.carpetas.reduce((s,c)=>s+c.it.length,0),S=st.cat;
   return `<section class="card"><div><h3>Catálogo de tecnología agrícola</h3><div class="sub">${n} sensores, robots y herramientas en ${C.carpetas.length} carpetas · precios orientativos (${esc(C.act)}): confírmalos antes de comprar</div></div>
     <div class="inp catq"><input id="cat_q" type="search" data-catq="1" placeholder="Buscar: riego, plagas, robot, CO₂…" aria-label="Buscar en el catálogo" value="${esc(S.q)}" autocomplete="off" style="text-align:left;text-transform:none"></div>
-    <div class="pick">${[['','Todo'],['app','En la app'],['prep','Preparado'],['idea','Se puede hacer'],['no','No recomendado']].map(([k,t])=>`<button class="chip" type="button" data-catf="${k}" aria-pressed="${S.f===k}">${t}</button>`).join('')}</div>
+    <div class="pick">${[['','Todo'],['app','En la app'],['prep','Preparado'],['idea','Se puede hacer'],['no','No recomendado'],['dev','En desarrollo']].map(([k,t])=>`<button class="chip" type="button" data-catf="${k}" aria-pressed="${S.f===k}">${t}</button>`).join('')}</div>
     <div data-out="catres" class="catres">${catLista()}</div></section>`}
 $('#main').addEventListener('input',e=>{const t=e.target;if(!t.dataset||t.dataset.catq==null)return;st.cat.q=t.value;softUpdate()});
 document.addEventListener('click',e=>{if(st.tab!=='catalogo')return;const c=e.target.closest&&e.target.closest('[data-catc]');if(c){st.cat.c=c.dataset.catc||null;st.cat.q='';renderMain();window.scrollTo(0,0);return}

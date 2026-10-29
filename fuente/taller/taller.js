@@ -75,7 +75,7 @@ const PREG=[
   {k:'energia',t:'¿Cómo se alimenta?',ops:[['enchufe','Enchufe cerca (menos de 3 m)'],['solar','Batería y placa solar']]},
   {k:'lugar',t:'¿Dónde va?',ops:[['inv','Dentro del invernadero'],['fuera','Al aire libre']]}
 ];
-function nodoDe(q){return {nivel:'N1',humedad:'N2',ce:'N3',pasarela:'P'}[q.medir]||null}
+function nodoDe(q){return {nivel:'N1',humedad:'N2',ce:'N3',clima:'N4',raiz:'N5',pulsos:'N6',ma:'N7',co2:'N8',bomba:'N9',pasarela:'P'}[q.medir]||null}
 
 /* ---------- Estado y guardado (solo en este móvil) ---------- */
 const LS='abono.taller';
@@ -83,13 +83,13 @@ const cargar=()=>{try{return JSON.parse(localStorage.getItem(LS)||'[]')}catch(e)
 const guardarTodo=l=>{try{localStorage.setItem(LS,JSON.stringify(l))}catch(e){}};
 const S=()=>(st.tl=st.tl||{q:{},d:null,v:'piezas',yaw:-35,pitch:28,expl:1});
 const CAJA0={pared:3.6,suelo:2.4,holg:3,extra:12,ranura:true,orejas:true,antena:false};
-function nuevo(q){const nodo=nodoDe(q),N=NODOS[nodo],pines={};for(const c of N.con)if(c.var)pines[c.var]=c.def;
+function nuevo(q){const nodo=q.nodo||nodoDe(q),N=NODOS[nodo],pines={};for(const c of N.con)if(c.var)pines[c.var]=c.def;
   const alim={};for(const c of N.con)if(c.alim)alim[c.alim]=c.v||3.3;
   return {id:'d'+Date.now().toString(36),nombre:N.corto+' '+new Date().toLocaleDateString('es-ES'),nodo,energia:q.energia,lugar:q.lugar,pines,alim,caja:{...CAJA0},hecho:[],mod:new Date().toISOString()}}
 
 /* ---------- Comprobaciones del esquema ---------- */
 T.validar=d=>{const N=NODOS[d.nodo],out=[],usados={};
-  for(const c of N.con){if(!c.var)continue;const g=+d.pines[c.var];(usados[g]=usados[g]||[]).push(c.nom);
+  const vistos=new Set();for(const c of N.con){if(!c.var||vistos.has(c.var))continue;vistos.add(c.var);const g=+d.pines[c.var];(usados[g]=usados[g]||[]).push(c.nom);
     if(RESERV[g])out.push(['bad',`GPIO ${g} lo usa ${RESERV[g]}: elige otro para «${c.nom}».`]);
     else if(c.tipo==='ana'&&!(g>=2&&g<=10))out.push(['bad',`GPIO ${g} no lee valores analógicos con el WiFi/LoRa en marcha: para «${c.nom}» usa del GPIO 2 al 7.`]);
     else if(ARRANQUE.includes(g))out.push(['warn',`GPIO ${g} influye en el arranque de la placa: funciona, pero mejor otro para «${c.nom}».`])}
@@ -98,7 +98,7 @@ T.validar=d=>{const N=NODOS[d.nodo],out=[],usados={};
     if(v<P.v[0]||v>P.v[1])out.push(['bad',`${P.n} funciona a ${P.v[0]===P.v[1]?n1(P.v[0]):n1(P.v[0])+'–'+n1(P.v[1])} V, no a ${n1(v)} V.`]);
     else if(P.sale==='v'&&v>3.3)out.push(['bad',`Alimentando ${P.n} a ${n1(v)} V, su señal también sale a ${n1(v)} V y el ESP32 solo aguanta 3,3 V en sus pines. Aliméntalo desde Ve (3,3 V).`])}
   if(d.nodo!=='P'&&!N.con.some(c=>c.a&&c.a[1]==='GND'))out.push(['bad','Falta la masa común (GND).']);
-  if((d.energia==='solar')!==['N2','N3'].includes(d.nodo)&&d.nodo!=='P')out.push(['warn',d.energia==='solar'?'Este nodo está pensado con enchufe en la primera versión; con batería y placa solar va en la fase 2.':'Este nodo está pensado con batería y placa solar.']);
+  if((d.energia==='solar')!==!!N.solar&&d.nodo!=='P')out.push(['warn',d.energia==='solar'?'Este nodo está pensado con enchufe en la primera versión; con batería y placa solar va en la fase 2.':'Este nodo está pensado con batería y placa solar.']);
   if(N.borrador)out.push(['warn','Esquema en BORRADOR: falta la hoja técnica del sensor RS485 para confirmar colores, tensión y dirección Modbus.']);
   return out};
 const hayError=d=>T.validar(d).some(x=>x[0]==='bad');
@@ -308,19 +308,271 @@ const FICHA={
     uso:['Si dejan de llegar datos de todos los sensores a la vez, mira primero la pasarela: luz, WiFi y enchufe.']}
 };
 
+/* ---------- Nodos del catálogo (N4–N9): lo que se puede montar con la misma placa ----------
+   I2C: SDA y SCL en GPIO 41 y 42 (libres en la Heltec V3; los 17 y 18 son de la pantalla). Varios sensores I2C comparten los dos cables (bus). */
+Object.assign(PIEZAS,{
+  sht40:{c:'SHT40',n:'Sensor de temperatura y humedad SHT40 (módulo I2C)',med:[0,0,0],dentro:false,color:'#0e7c86',v:[3.3,5],
+    nota:'Fuera de la caja, dentro de una garita con lamas, a la sombra y a la altura de la planta. Sin garita, al sol, marca 5–6 °C de más.',cable:'PG7'},
+  mlx:{c:'MLX90614 (3,3 V)',n:'Sensor de temperatura infrarrojo MLX90614 (GY-906, versión de 3,3 V)',med:[0,0,0],dentro:false,color:'#b03a2e',v:[3.3,3.3],
+    nota:'Mira a las hojas de arriba a unos 20–30 cm, sin ver cielo ni suelo. Compra la versión de 3,3 V (MLX90614BAA); la de 5 V no vale aquí.',cable:'PG7'},
+  ds18:{c:'DS18B20',n:'Sonda de temperatura DS18B20 sumergible (1 m de cable)',med:[0,0,0],dentro:false,color:'#1f77b4',v:[3,5.5],sale:'v',
+    nota:'Para el sustrato (raíz) o el depósito de solución. Lleva una resistencia de 4,7 kΩ entre el cable de datos y 3,3 V.',cable:'PG7'},
+  r47k:{c:'Resistencia 4,7 kΩ',n:'Resistencia de 4,7 kΩ (entre DATA y 3,3 V)',med:[12,4,4],dentro:true,color:'#8c564b'},
+  reed:{c:'Emisor de pulsos',n:'Emisor de pulsos de contacto seco (contador de agua, pluviómetro de cazoletas o anemómetro)',med:[0,0,0],dentro:false,color:'#2ca02c',
+    nota:'Contacto seco (reed): no lleva tensión. Si tu contador da pulsos con tensión (5–24 V, «open collector»), hace falta un optoacoplador: no lo conectes directo.',cable:'PG7'},
+  c100n:{c:'Condensador 100 nF',n:'Condensador cerámico de 100 nF (antirrebote del contacto)',med:[6,3,6],dentro:true,color:'#bcbd22'},
+  t420:{c:'Sensor 4–20 mA',n:'Transductor de 2 hilos 4–20 mA (presión 0–10 bar, nivel por radar, radiación…)',med:[0,0,0],dentro:false,color:'#9467bd',v:[12,24],
+    nota:'Dos hilos: el + al elevador de 12 V y el − a la resistencia de 150 Ω. La corriente (4–20 mA) se lee como 0,6–3,0 V en la placa.',cable:'PG7'},
+  r150:{c:'Resistencia 150 Ω',n:'Resistencia de 150 Ω, 1 %, 0,25 W (convierte los mA en voltios)',med:[12,4,4],dentro:true,color:'#8c564b'},
+  scd41:{c:'SCD41',n:'Sensor de CO₂ SCD41 (módulo I2C; también da temperatura y humedad)',med:[0,0,0],dentro:false,color:'#17becf',v:[3.3,5],
+    nota:'Necesita aire: en garita o en una cajita con rejilla, nunca dentro de la caja cerrada. Da picos de unos 200 mA al medir.',cable:'PG7'},
+  sct:{c:'SCT-013-030',n:'Pinza de corriente SCT-013-030 (30 A → 1 V, con salida de jack)',med:[0,0,0],dentro:false,color:'#e377c2',
+    nota:'Se abraza a UN solo cable de la bomba (la fase), nunca a la manguera entera. No hay que pelar ni tocar los 230 V. Si no lo ves claro, que la ponga el electricista.',cable:'PG7'},
+  bias:{c:'Polarización',n:'Placa de polarización: 2 resistencias de 10 kΩ y condensador de 10 µF',med:[25,15,8],dentro:true,color:'#7f7f7f',
+    nota:'Sube la señal de la pinza a la mitad (1,65 V) para que la placa pueda leer la parte negativa de la corriente alterna.'}
+});
+Object.assign(NODOS,{
+  N4:{n:'N4 · Clima y hoja (aire, humedad y temperatura de la hoja)',corto:'Clima y hoja',solar:true,piezas:['heltec','sht40','mlx','bat','carg','panel'],
+    con:[{de:['sht40','VCC'],a:['heltec','Ve'],c:'#d62728',alim:'sht40'},{de:['sht40','GND'],a:['heltec','GND'],c:'#222'},
+      {de:['sht40','SDA'],a:['heltec','GPIO'],c:'#1f77b4',var:'sda',tipo:'gpio',def:41,nom:'SDA (datos I2C)'},{de:['sht40','SCL'],a:['heltec','GPIO'],c:'#ff7f0e',var:'scl',tipo:'gpio',def:42,nom:'SCL (reloj I2C)'},
+      {de:['mlx','VIN'],a:['heltec','Ve'],c:'#d62728',alim:'mlx'},{de:['mlx','GND'],a:['heltec','GND'],c:'#222'},
+      {de:['mlx','SDA'],a:['heltec','GPIO'],c:'#1f77b4',var:'sda',tipo:'gpio',def:41,nom:'SDA (datos I2C)'},{de:['mlx','SCL'],a:['heltec','GPIO'],c:'#ff7f0e',var:'scl',tipo:'gpio',def:42,nom:'SCL (reloj I2C)'}],
+    glands:['sht40','mlx','panel']},
+  N5:{n:'N5 · Temperatura de la raíz o del agua (DS18B20)',corto:'Temperatura de raíz',solar:true,piezas:['heltec','ds18','r47k','bat','carg','panel'],
+    con:[{de:['ds18','Rojo (VCC)'],a:['heltec','Ve'],c:'#d62728',alim:'ds18'},{de:['ds18','Negro (GND)'],a:['heltec','GND'],c:'#222'},
+      {de:['ds18','Amarillo (DATA)'],a:['heltec','GPIO'],c:'#e6c300',var:'ow',tipo:'gpio',def:6,nom:'Datos de la sonda (1-Wire)'},
+      {de:['r47k','Pata 1'],a:['heltec','Ve'],c:'#d62728'},{de:['r47k','Pata 2'],a:['ds18','Amarillo (DATA)'],c:'#e6c300'}],
+    glands:['ds18','panel']},
+  N6:{n:'N6 · Pulsos: drenaje, contador de agua o viento',corto:'Contador de pulsos',solar:true,piezas:['heltec','reed','c100n','bat','carg','panel'],
+    con:[{de:['reed','Hilo 1'],a:['heltec','GPIO'],c:'#2ca02c',var:'pul',tipo:'gpio',def:2,nom:'Entrada de pulsos'},{de:['reed','Hilo 2'],a:['heltec','GND'],c:'#222'},
+      {de:['c100n','Pata 1'],a:['reed','Hilo 1'],c:'#2ca02c'},{de:['c100n','Pata 2'],a:['heltec','GND'],c:'#222',nota:'El condensador va entre la entrada de pulsos y GND, lo más cerca posible de la placa: evita que un rebote cuente doble'}],
+    glands:['reed','panel']},
+  N7:{n:'N7 · Sensor 4–20 mA (presión, nivel por radar, radiación…)',corto:'Sensor 4–20 mA',piezas:['heltec','t420','r150','mt3608','usb'],
+    con:[{de:['mt3608','VIN+'],a:['heltec','Ve'],c:'#d62728'},{de:['mt3608','VIN−'],a:['heltec','GND'],c:'#222'},
+      {de:['t420','+'],a:['mt3608','OUT+ (12 V)'],c:'#d62728',alim:'t420',v:12},{de:['t420','−'],a:['r150','Pata 1'],c:'#9467bd'},
+      {de:['r150','Pata 1'],a:['heltec','GPIO'],c:'#1f77b4',var:'ana',tipo:'ana',def:7,nom:'Lectura de la corriente (tensión en la resistencia)'},
+      {de:['r150','Pata 2'],a:['mt3608','OUT−'],c:'#222'},{de:['usb','USB-C'],a:['heltec','USB-C'],c:'#7f8c8d'}],
+    glands:['t420','usb']},
+  N8:{n:'N8 · CO₂ (SCD41)',corto:'CO₂',piezas:['heltec','scd41','usb'],
+    con:[{de:['scd41','VCC'],a:['heltec','Ve'],c:'#d62728',alim:'scd41'},{de:['scd41','GND'],a:['heltec','GND'],c:'#222'},
+      {de:['scd41','SDA'],a:['heltec','GPIO'],c:'#1f77b4',var:'sda',tipo:'gpio',def:41,nom:'SDA (datos I2C)'},{de:['scd41','SCL'],a:['heltec','GPIO'],c:'#ff7f0e',var:'scl',tipo:'gpio',def:42,nom:'SCL (reloj I2C)'},
+      {de:['usb','USB-C'],a:['heltec','USB-C'],c:'#7f8c8d'}],
+    glands:['scd41','usb']},
+  N9:{n:'N9 · Consumo de la bomba (pinza de corriente)',corto:'Consumo de bomba',piezas:['heltec','sct','bias','usb'],
+    con:[{de:['bias','Arriba (10 kΩ)'],a:['heltec','Ve'],c:'#d62728'},{de:['bias','Abajo (10 kΩ)'],a:['heltec','GND'],c:'#222'},
+      {de:['sct','Cuerpo del jack'],a:['bias','Punto medio'],c:'#7f7f7f'},
+      {de:['sct','Punta del jack'],a:['heltec','GPIO'],c:'#e377c2',var:'ana',tipo:'ana',def:5,nom:'Señal de la pinza'},{de:['usb','USB-C'],a:['heltec','USB-C'],c:'#7f8c8d'}],
+    glands:['sct','usb']}
+});
+NODOS.N2.solar=NODOS.N3.solar=true;
+for(const k of ['N4','N5','N6'])NODOS[k].con=NODOS[k].con.concat(SOLARF());
+const DORMIR=`  radio.sleep();
+  digitalWrite(VEXT, HIGH);  // apaga los sensores
+  esp_sleep_enable_timer_wakeup(DORMIR_MIN * 60ULL * 1000000ULL);
+  esp_deep_sleep_start();    // duerme y vuelve a empezar desde setup()`;
+const RADIO=`  SPI.begin(9, 11, 10, 8);
+  if (radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8) == RADIOLIB_ERR_NONE) radio.transmit(msg);`;
+Object.assign(COD,{
+N4:`// N4 · Clima y hoja · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librerías: RadioLib, Adafruit SHT4x, Adafruit MLX90614
+#include <RadioLib.h>
+#include <Wire.h>
+#include <Adafruit_SHT4x.h>
+#include <Adafruit_MLX90614.h>
+#define VEXT 36          // LOW = sensores encendidos
+#define I2C_SDA {sda}
+#define I2C_SCL {scl}
+SX1262 radio = new Module(8, 14, 12, 13);
+Adafruit_SHT4x sht; Adafruit_MLX90614 mlx;
+const uint64_t DORMIR_MIN = 10;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(300);
+  Wire.begin(I2C_SDA, I2C_SCL);
+  float ta = NAN, hr = NAN, th = NAN;
+  if (sht.begin()) { sensors_event_t h, t; sht.getEvent(&h, &t); ta = t.temperature; hr = h.relative_humidity; }
+  else Serial.println("No encuentro el SHT40: revisa SDA, SCL y la alimentación");
+  if (mlx.begin()) th = mlx.readObjectTempC();
+  else Serial.println("No encuentro el MLX90614");
+  String msg = "N4;ta=" + String(ta, 1) + ";hr=" + String(hr, 0) + ";th=" + String(th, 1) + ";bat=100";   // bat: pendiente
+  Serial.println(msg);
+${RADIO}
+${DORMIR}
+}
+void loop() {}
+`,
+N5:`// N5 · Temperatura de la raíz o del agua · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librerías: RadioLib, OneWire, DallasTemperature
+#include <RadioLib.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#define VEXT 36
+#define SONDA {ow}        // cable amarillo de la DS18B20
+SX1262 radio = new Module(8, 14, 12, 13);
+OneWire ow(SONDA); DallasTemperature sondas(&ow);
+const uint64_t DORMIR_MIN = 10;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(300);
+  sondas.begin(); sondas.requestTemperatures();
+  float t = sondas.getTempCByIndex(0);
+  if (t == DEVICE_DISCONNECTED_C) Serial.println("No responde la sonda: revisa el amarillo y la resistencia de 4,7 kΩ");
+  String msg = "N5;t=" + String(t, 1) + ";bat=100";
+  Serial.println(msg);
+${RADIO}
+${DORMIR}
+}
+void loop() {}
+`,
+N6:`// N6 · Contador de pulsos (drenaje, agua o viento) · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
+// Cuenta los pulsos todo el rato y manda la suma cada 10 minutos. Con placa solar va justo: en la fase 2, contador por hardware.
+#include <RadioLib.h>
+#define PULSOS {pul}
+SX1262 radio = new Module(8, 14, 12, 13);
+const float POR_PULSO = 5.0;       // CALIBRA: ml por vuelco de la cazoleta, litros por pulso del contador o km/h por pulso/s
+const unsigned long CADA_MS = 10UL * 60UL * 1000UL;
+volatile unsigned long cuenta = 0, ultimo = 0;
+void IRAM_ATTR pulso() { unsigned long t = millis(); if (t - ultimo > 30) { cuenta++; ultimo = t; } }   // 30 ms antirrebote
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(PULSOS, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PULSOS), pulso, FALLING);
+  SPI.begin(9, 11, 10, 8);
+  radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+}
+void loop() {
+  static unsigned long t0 = millis();
+  if (millis() - t0 >= CADA_MS) {
+    t0 = millis();
+    noInterrupts(); unsigned long n = cuenta; cuenta = 0; interrupts();
+    String msg = "N6;pul=" + String(n) + ";valor=" + String(n * POR_PULSO, 1) + ";bat=100";
+    Serial.println(msg);
+    radio.transmit(msg); radio.sleep();
+  }
+  delay(50);
+}
+`,
+N7:`// N7 · Sensor 4–20 mA · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
+#include <RadioLib.h>
+#define VEXT 36
+#define SENAL {ana}           // tensión en la resistencia de 150 Ω
+SX1262 radio = new Module(8, 14, 12, 13);
+const float R_OHM = 150.0;
+const float MIN_ESCALA = 0.0, MAX_ESCALA = 10.0;   // CAMBIA: lo que mide a 4 mA y a 20 mA (bar, cm, W/m²…)
+const char* UNIDAD = "bar";
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW);
+  SPI.begin(9, 11, 10, 8);
+  radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+}
+void loop() {
+  delay(1500);                                  // deja que el sensor arranque
+  long mv = 0; for (int i = 0; i < 32; i++) { mv += analogReadMilliVolts(SENAL); delay(5); }
+  float ma = (mv / 32.0) / R_OHM;               // mV / Ω = mA
+  float valor = MIN_ESCALA + (ma - 4.0) * (MAX_ESCALA - MIN_ESCALA) / 16.0;
+  if (ma < 3.5) Serial.println("Menos de 4 mA: cable cortado o sensor sin alimentar");
+  String msg = "N7;ma=" + String(ma, 2) + ";valor=" + String(valor, 2) + ";u=" + UNIDAD;
+  Serial.println(msg);
+  radio.transmit(msg); radio.sleep();
+  delay(60000);                                 // una lectura por minuto
+}
+`,
+N8:`// N8 · CO₂ (SCD41) · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librerías: RadioLib, Sensirion I2C SCD4x
+#include <RadioLib.h>
+#include <Wire.h>
+#include <SensirionI2cScd4x.h>
+#define VEXT 36
+#define I2C_SDA {sda}
+#define I2C_SCL {scl}
+SX1262 radio = new Module(8, 14, 12, 13);
+SensirionI2cScd4x scd;
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(300);
+  Wire.begin(I2C_SDA, I2C_SCL);
+  scd.begin(Wire, SCD41_I2C_ADDR_62);
+  scd.startPeriodicMeasurement();               // una medida cada 5 s; la primera tarda unos segundos
+  SPI.begin(9, 11, 10, 8);
+  radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+}
+void loop() {
+  delay(300000);                                // cada 5 minutos
+  uint16_t co2 = 0; float t = 0, hr = 0;
+  if (scd.readMeasurement(co2, t, hr) == 0 && co2 > 0) {
+    String msg = "N8;co2=" + String(co2) + ";ta=" + String(t, 1) + ";hr=" + String(hr, 0);
+    Serial.println(msg);
+    radio.transmit(msg); radio.sleep();
+  } else Serial.println("Sin medida del SCD41 todavía");
+}
+`,
+N9:`// N9 · Consumo de la bomba (pinza SCT-013-030) · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
+#include <RadioLib.h>
+#define PINZA {ana}
+SX1262 radio = new Module(8, 14, 12, 13);
+const float AMP_POR_VOLTIO = 30.0;   // SCT-013-030: 30 A dan 1 V
+const float UMBRAL_A = 1.0;          // por encima, la bomba está funcionando (CAMBIA tras mirar los valores)
+
+float amperios() {                   // valor eficaz de unas 10 ondas de 50 Hz
+  const int N = 2000; long suma = 0; float v[N];
+  for (int i = 0; i < N; i++) { v[i] = analogReadMilliVolts(PINZA); suma += v[i]; delayMicroseconds(100); }
+  float media = suma / (float)N, cuad = 0;
+  for (int i = 0; i < N; i++) { float d = v[i] - media; cuad += d * d; }
+  return sqrt(cuad / N) / 1000.0 * AMP_POR_VOLTIO;
+}
+void setup() {
+  Serial.begin(115200);
+  SPI.begin(9, 11, 10, 8);
+  radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+}
+void loop() {
+  float a = amperios();
+  String msg = "N9;amp=" + String(a, 1) + ";marcha=" + String(a > UMBRAL_A ? 1 : 0);
+  Serial.println(msg);
+  radio.transmit(msg); radio.sleep();
+  delay(60000);
+}
+`});
+const SOLAR_PASOS=['Antes de enchufar la batería: comprueba con el polímetro cuál es el + del conector JST de la Heltec.','Conecta panel, cargador y pila como en el esquema. Primero la pila al cargador, luego el panel.'];
+Object.assign(FICHA,{
+  N4:{pasos:[...COMUN_INI,'Con la placa DESENCHUFADA, conecta el SHT40 y el MLX90614 a los mismos dos cables: SDA con SDA y SCL con SCL (es un bus: comparten pines). VCC a Ve y GND a GND.','Sube el código y mira en el monitor serie las tres temperaturas: aire, humedad y hoja.','Comprueba: el aire con un termómetro de confianza a la sombra; la hoja con la pistola infrarroja apuntando a la misma hoja.',...SOLAR_PASOS,'Pon el SHT40 dentro de una garita con lamas (comprada o impresa en 3D), a la sombra y a la altura de la planta.','Sujeta el MLX90614 mirando a las hojas de arriba a 20–30 cm, sin que vea cielo ni suelo.','Imprime la caja en PETG o ASA. Junta en la ranura y prensaestopas hacia abajo.','Una semana comparando con lo que apuntas a mano en Clima y estrés antes de fiarte.'],
+    uso:['Con estos tres datos la app calcula sola el DPV, la diferencia hoja–aire y el semáforo de estrés de esa nave.','Si la hoja marca igual que el aire todo el día, mira que el sensor no apunte a un tallo, al suelo o al cielo.','Limpia la ventanita del MLX90614 de polvo y gotas: falsea la medida.']},
+  N5:{pasos:[...COMUN_INI,'Con la placa DESENCHUFADA, conecta la sonda: rojo a Ve, negro a GND, amarillo al GPIO del esquema.','Pon la resistencia de 4,7 kΩ entre el amarillo y Ve (sin ella, la sonda no contesta).','Sube el código y comprueba en el monitor serie que sale la temperatura. Métela en un vaso de agua con un termómetro al lado.',...SOLAR_PASOS,'Clava la sonda en el saco, a media altura y siempre a la misma distancia del gotero, o métela en el depósito de solución.','Imprime la caja en PETG o ASA. Junta y prensaestopas hacia abajo.'],
+    uso:['En invierno, por debajo de unos 15 °C en la raíz la planta absorbe peor el agua y el abono.','En verano, la solución por encima de unos 25 °C lleva poco oxígeno a la raíz.']},
+  N6:{pasos:[...COMUN_INI,'Comprueba que el emisor de pulsos es de contacto seco: con el polímetro en continuidad debe abrir y cerrar al girar o vaciarse. Si da tensión, PARA: hace falta optoacoplador.','Con la placa DESENCHUFADA, conecta un hilo del contacto al GPIO del esquema y el otro a GND. Pon el condensador de 100 nF entre ese GPIO y GND.','Sube el código y provoca pulsos a mano: cada vuelco o vuelta debe sumar 1 en el monitor serie, nunca 2.','Calibra POR_PULSO: echa 500 ml en la cazoleta y cuenta los vuelcos (o mira el contador de agua tras X litros).',...SOLAR_PASOS,'Imprime la caja en PETG o ASA. Junta y prensaestopas hacia abajo.'],
+    uso:['Bajo la bandeja de drenaje: el drenaje de cada riego sale solo, sin probeta.','En el contador de agua: los m³ del cabezal y aviso de fugas u obstrucciones.','Limpia la cazoleta del pluviómetro de restos y cal cada pocas semanas.']},
+  N7:{pasos:[...COMUN_INI,'Ajusta el MT3608 a 12 V con el polímetro, SIN nada conectado a su salida.','Con la placa DESENCHUFADA, monta el lazo: 12 V al + del sensor, el − del sensor a la resistencia de 150 Ω, y la otra pata de la resistencia a OUT− del elevador.','Del lado de la resistencia que va al sensor, un cable al GPIO del esquema (lee la tensión).','Sube el código: sin presión debe marcar unos 4 mA (0,6 V). Si marca menos de 3,5 mA, hay un cable suelto.','Pon en el código lo que mide el sensor a 4 y a 20 mA (por ejemplo 0 y 10 bar).','Imprime la caja en PETG. Prensaestopas hacia abajo, lejos de salpicaduras del cabezal.'],
+    uso:['Dos sensores (antes y después del filtro) dan la pérdida de carga: la vista Instalación avisa de limpiar.','Una lectura de 4 mA fija con riego en marcha: sensor tapado o cable cortado.']},
+  N8:{pasos:[...COMUN_INI,'Con la placa DESENCHUFADA, conecta el SCD41: VCC a Ve, GND, SDA y SCL a los GPIO del esquema.','Sube el código: la primera medida tarda unos segundos. Fuera, al aire libre, debe marcar unos 420 ppm.','Pon el sensor con aire: en garita o en una cajita con rejilla, a la altura de la planta, lejos de puertas.','Imprime la caja de la placa en PETG. El sensor va fuera de ella.'],
+    uso:['Con ventanas cerradas en invierno, si baja de unos 300 ppm a mediodía la planta está «pasando hambre» de CO₂: ventilar un poco o enriquecer.','El SCD41 se recalibra solo si una vez por semana respira aire de fuera (unos 420 ppm).']},
+  N9:{pasos:[...COMUN_INI,'Monta la placa de polarización: dos resistencias de 10 kΩ en serie entre Ve y GND, y el condensador de 10 µF entre el punto medio y GND.','Con la placa DESENCHUFADA, conecta el jack de la pinza: el cuerpo al punto medio y la punta al GPIO del esquema.','Con la bomba PARADA, la lectura debe ser casi 0 A. Arranca la bomba y mira el valor.','Abraza la pinza a UN solo cable (la fase) de la bomba. Si no lo ves claro, que lo haga el electricista: no se toca nada de 230 V.','Ajusta UMBRAL_A a la mitad de lo que marca con la bomba en marcha.','Imprime la caja en PETG y ponla dentro del cuadro o al lado, protegida del agua.'],
+    uso:['Horas reales de bomba al día: si no cuadran con los riegos, hay un fallo.','Aviso si la bomba no arranca cuando toca regar, o si consume mucho más de lo normal (atasco, rodamientos).']}
+});
+
+PREG[0].ops.splice(PREG[0].ops.findIndex(o=>o[0]==='pasarela'),0,['clima','Clima y temperatura de la hoja'],['raiz','Temperatura de la raíz o del agua'],['pulsos','Pulsos: drenaje, contador de agua o viento'],['ma','Presión u otro sensor 4–20 mA'],['co2','CO₂'],['bomba','Consumo de la bomba']);
+
 /* ---------- Pantalla ---------- */
 const CSS=`.tl-tabs{display:flex;gap:6px;flex-wrap:wrap}.tl-avisos{display:grid;gap:6px}.tl-av{border-radius:8px;padding:8px 10px;font-size:13.5px;text-transform:none}.tl-av.bad{background:var(--bad-bg);color:var(--bad)}.tl-av.warn{background:var(--warn-bg);color:var(--warn)}.tl-av.ok{background:var(--ok-bg);color:var(--ok)}
 .tl-esq{width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px}.tl-wrap{overflow-x:auto}
 #tl_cv{width:100%;height:320px;touch-action:none;background:linear-gradient(#f6f8f6,#e7ede9);border-radius:10px;border:1px solid var(--line);cursor:grab}
 .tl-pz{display:grid;gap:8px}.tl-pz>div{display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;text-transform:none}.tl-pz i{width:14px;height:14px;border-radius:4px;margin-top:3px}.tl-pz small{display:block;color:var(--muted)}
 .tl-code{white-space:pre;overflow:auto;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;background:#15222c;color:#e8eef0;border-radius:10px;padding:12px;text-transform:none;max-height:420px}
-.tl-ck{display:grid;gap:6px}.tl-ck label{display:flex;gap:8px;align-items:flex-start;text-transform:none}.tl-ck input{margin-top:3px;width:18px;height:18px}.tl-ck label.hecho span{text-decoration:line-through;color:var(--muted)}
+.tl-nom .inp{width:100%}#tl_nom.wide{width:100%;min-width:0}.tl-ck{display:grid;gap:6px}.tl-ck label{display:flex;gap:8px;align-items:flex-start;text-transform:none}.tl-ck input{margin-top:3px;width:18px;height:18px}.tl-ck label.hecho span{text-decoration:line-through;color:var(--muted)}
 .tl-lst{display:grid;gap:6px}.tl-lst .r{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-transform:none}
 .tl-q{display:grid;gap:6px}.tl-q .row{flex-wrap:wrap}.tl-dim{font-size:13px;color:var(--muted);text-transform:none}`;
 function estilos(){if(document.getElementById('tl_css'))return;const e=document.createElement('style');e.id='tl_css';e.textContent=CSS;document.head.appendChild(e)}
 
 function vAsistente(s){const q=s.q,listo=PREG.every(p=>q[p.k]),lista=cargar();
-  return `<section class="card"><div><h3>Taller de sensores</h3><div class="sub">Dime qué quieres medir y te doy las piezas, el esquema de cables, la caja para imprimir en 3D y la ficha de montaje. Solo lo ves tú.</div></div>
+  return `<section class="card"><div><h3>Taller de sensores</h3><div class="sub">Dime qué quieres medir y te doy las piezas, el esquema de cables, la caja para imprimir en 3D y la ficha de montaje. Solo lo ves tú.</div></div><div class="row"><button class="btn" data-tab="catalogo">Ver todo en el catálogo</button></div>
     ${PREG.map(p=>`<div class="tl-q"><b>${p.t}</b><div class="row">${p.ops.map(([k,t])=>`<button class="chip" data-tl="q" data-k="${p.k}" data-v="${k}" aria-pressed="${q[p.k]===k}">${t}</button>`).join('')}</div></div>`).join('')}
     <div class="row"><button class="btn pri" data-tl="crear" ${listo?'':'disabled'}>Diseñar el sensor</button></div></section>
   ${lista.length?`<section class="card"><div><h3>Mis diseños</h3><div class="sub">Guardados en este móvil</div></div><div class="tl-lst">${lista.map(d=>`<div class="r"><span><b>${e_(d.nombre)}</b><br><small>${e_(NODOS[d.nodo].n)}</small></span><span class="row"><button class="btn" data-tl="abrir" data-id="${d.id}">Abrir</button><button class="btn" data-tl="borrar" data-id="${d.id}">Borrar</button></span></div>`).join('')}</div></section>`:''}
@@ -332,7 +584,7 @@ function vPiezas(d){const N=NODOS[d.nodo],g=distribuir(d);
     <div><i style="background:#95a5a6"></i><div><b>Cordón de goma (EPDM) o silicona de Ø 2 mm</b><small>Para la junta de la tapa. Y 4 tornillos M3 × 12 autorroscantes.</small></div></div></div>
     <div class="note" style="text-transform:none">Precios y tiendas: en el PDF de compra del sensor que ya tienes. Las medidas son aproximadas: mídelas con calibre cuando lleguen y ajusta la holgura de la caja.</div>`}
 
-function vEsquema(d){const N=NODOS[d.nodo],av=T.validar(d),vars=N.con.filter(c=>c.var);
+function vEsquema(d){const N=NODOS[d.nodo],av=T.validar(d),vars=N.con.filter((c,i,a)=>c.var&&a.findIndex(x=>x.var===c.var)===i);
   return `<div class="tl-avisos">${av.length?av.map(([k,t])=>`<div class="tl-av ${k}">${k==='bad'?'✗':'!'} ${e_(t)}</div>`).join(''):'<div class="tl-av ok">✓ Sin errores: pines libres, tensiones correctas y masa común.</div>'}</div>
     <div class="tl-wrap">${esquema(d)}</div>
     ${vars.length?`<div class="frm">${vars.map(c=>`<div class="field"><label for="tl_p_${c.var}">${e_(c.nom)}</label><div class="inp"><select id="tl_p_${c.var}" data-tlp="${c.var}">${HPINES.map(g=>`<option value="${g}" ${+d.pines[c.var]===g?'selected':''}>GPIO ${g}${RESERV[g]?' (ocupado)':''}</option>`).join('')}</select></div></div>`).join('')}</div>`:''}
@@ -356,18 +608,20 @@ function vFicha(d){const F=FICHA[d.nodo],cod=COD[d.nodo];
     <div><b>Uso del día a día</b><ul style="text-transform:none;margin:6px 0 0;padding-left:20px">${F.uso.map(u=>`<li>${e_(u)}</li>`).join('')}</ul></div>
     ${cod?`<div><b>Código de partida</b><div class="tl-dim">Con los pines de tu esquema. Sin probar todavía en la placa real: lo revisamos juntos cuando lleguen las piezas.</div></div><pre class="tl-code" id="tl_cod">${e_(codigo(d))}</pre><div class="row"><button class="btn" data-tl="copiar">Copiar código</button></div>`:'<div class="note" style="text-transform:none">El código de este nodo lo preparamos cuando tengamos la hoja técnica del sensor o en el hilo de desarrollo de sensores.</div>'}
     <div class="row"><button class="btn pri" data-tl="imprimir">Imprimir ficha</button></div>`}
-const codigo=d=>(COD[d.nodo]||'').replace('{rx}',d.pines.rx).replace('{ana}',d.pines.ana);
+const codigo=d=>(COD[d.nodo]||'').replace(/\{(\w+)\}/g,(m,k)=>d.pines[k]!=null?d.pines[k]:m);
 
 function vDiseno(s){const d=s.d,N=NODOS[d.nodo],err=hayError(d);
   const tabs=[['piezas','Piezas'],['esquema','Esquema'+(err?' ✗':'')],['caja','Caja 3D'],['ficha','Ficha']];
   const cuerpo={piezas:vPiezas,esquema:vEsquema,caja:x=>vCaja(x,s),ficha:vFicha}[s.v](d);
   return `<section class="card"><div class="row" style="justify-content:space-between"><button class="btn" data-tl="volver">‹ Mis diseños</button><button class="btn" data-tl="guardar">Guardar</button></div>
-    <div class="field"><label for="tl_nom">Nombre del diseño</label><div class="inp"><input id="tl_nom" class="wide" data-tln="1" value="${e_(d.nombre)}" style="text-transform:none"></div></div>
+    <div class="field tl-nom"><label for="tl_nom">Nombre del diseño</label><div class="inp"><input id="tl_nom" class="wide" data-tln="1" value="${e_(d.nombre)}" style="text-transform:none"></div></div>
     <div class="sub">${e_(N.n)} · ${d.energia==='solar'?'batería y placa solar':'enchufe'} · ${d.lugar==='fuera'?'al aire libre':'dentro del invernadero'}</div>
     <div class="tl-tabs">${tabs.map(([k,t])=>`<button class="chip" data-tl="v" data-v="${k}" aria-pressed="${s.v===k}">${t}</button>`).join('')}</div></section>
   <section class="card">${cuerpo}</section>`}
 
-T.vista=()=>{estilos();const s=S();return s.d?vDiseno(s):vAsistente(s)};
+/* Desde el catálogo: abre directamente el diseño de un nodo */
+T.crearNodo=n=>{if(!NODOS[n])return;const s=S();s.d=nuevo({nodo:n,energia:NODOS[n].solar?'solar':'enchufe',lugar:'inv'});s.v='piezas';s.m=null};
+T.vista=()=>{estilos();const s=S();if(st.tlNuevo){const n=st.tlNuevo;st.tlNuevo=null;T.crearNodo(n)}return s.d?vDiseno(s):vAsistente(s)};
 T.tras=()=>{const s=S();if(!s.d||s.v!=='caja')return;if(s.m&&s.mk===JSON.stringify([s.d.nodo,s.d.caja])){T.dibujar();return}
   const k=JSON.stringify([s.d.nodo,s.d.caja]);s.mk=k;T.mallas(s.d).then(m=>{if(s.mk!==k)return;s.m=m;const e=document.getElementById('tl_estado');if(e)e.textContent='Arrastra con el dedo para girarla. La tapa está levantada para ver las piezas.';T.dibujar()})
     .catch(err=>{console.warn(err);const e=document.getElementById('tl_estado');if(e)e.textContent='No se ha podido preparar la caja 3D en este móvil. Prueba a recargar la app.'})};
@@ -385,7 +639,7 @@ function imprimir(d){const N=NODOS[d.nodo],F=FICHA[d.nodo],w=window.open('','_bl
 
 const repinta=()=>renderMain();
 document.addEventListener('click',async e=>{if(st.tab!=='taller')return;const b=e.target.closest&&e.target.closest('[data-tl]');if(!b)return;const s=S(),a=b.dataset.tl;
-  if(a==='q'){s.q[b.dataset.k]=b.dataset.v;if(b.dataset.k==='medir'&&!s.q.energia)s.q.energia=b.dataset.v==='humedad'||b.dataset.v==='ce'?'solar':'enchufe';repinta()}
+  if(a==='q'){s.q[b.dataset.k]=b.dataset.v;if(b.dataset.k==='medir'&&!s.q.energia)s.q.energia=(NODOS[nodoDe({medir:b.dataset.v})]||{}).solar?'solar':'enchufe';repinta()}
   else if(a==='crear'){s.d=nuevo(s.q);s.v='piezas';s.m=null;repinta()}
   else if(a==='abrir'){const d=cargar().find(x=>x.id===b.dataset.id);if(d){s.d={...d,caja:{...CAJA0,...d.caja},hecho:d.hecho||[]};s.v='piezas';s.m=null;repinta()}}
   else if(a==='borrar'){if(!confirm('¿Borrar este diseño?'))return;guardarTodo(cargar().filter(x=>x.id!==b.dataset.id));repinta()}
