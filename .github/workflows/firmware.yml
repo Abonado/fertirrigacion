@@ -19,6 +19,7 @@ jobs:
           mkdir -p pub out
           {
             set -x
+            mkdir -p $HOME/bin
             curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=$HOME/bin sh
             export PATH=$HOME/bin:$PATH
             URL=https://espressif.github.io/arduino-esp32/package_esp32_index.json
