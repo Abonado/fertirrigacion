@@ -77,10 +77,19 @@ const PREG=[
 ];
 function nodoDe(q){return {nivel:'N1',humedad:'N2',ce:'N3',clima:'N4',raiz:'N5',pulsos:'N6',ma:'N7',co2:'N8',bomba:'N9',pasarela:'P'}[q.medir]||null}
 
-/* ---------- Estado y guardado (solo en este móvil) ---------- */
-const LS='abono.taller';
+/* ---------- Estado y guardado: en la nube (colección «tldisenos») y una copia en el móvil para abrirlos sin conexión ----------
+   nube:true = esa copia ya está en la nube. Lo que solo está en el móvil (hecho sin conexión o de antes) se sube al abrir el Taller;
+   lo que estaba en la nube y ya no está, se borró desde otro sitio y se quita también de aquí. */
+const LS='abono.taller',COL='tldisenos';
 const cargar=()=>{try{return JSON.parse(localStorage.getItem(LS)||'[]')}catch(e){return []}};
 const guardarTodo=l=>{try{localStorage.setItem(LS,JSON.stringify(l))}catch(e){}};
+const NB={ok:false,va:false};
+const aNube=d=>{const {nube,...x}=d;return {...JSON.parse(JSON.stringify(x)),ts:d.mod||new Date().toISOString()}};
+async function sincroniza(){if(NB.va||typeof Store==='undefined'||!Store.listCol)return;NB.va=true;
+  try{const n=await Store.listCol(COL,500),ids=new Set(n.map(x=>x.id)),loc=cargar(),out=n.map(x=>({...x,nube:true}));
+    for(const d of loc)if(!ids.has(d.id)&&!d.nube){try{await Store.setCol(COL,d.id,aNube(d));out.push({...d,nube:true})}catch(e){out.push(d)}}
+    out.sort((a,b)=>(a.mod||'')<(b.mod||'')?1:-1);guardarTodo(out.slice(0,200));NB.ok=true;if(st.tab==='taller')repinta()}catch(e){}NB.va=false}
+T.sincroniza=sincroniza;T.lista=()=>cargar();T.guardarActual=()=>{const s=S();if(s.d)guardar(s.d)};
 const S=()=>(st.tl=st.tl||{q:{},d:null,v:'piezas',yaw:-35,pitch:28,expl:1});
 const CAJA0={pared:3.6,suelo:2.4,holg:3,extra:12,ranura:true,orejas:true,antena:false};
 function nuevo(q){const nodo=q.nodo||nodoDe(q),N=NODOS[nodo],pines={};for(const c of N.con)if(c.var)pines[c.var]=c.def;
@@ -571,11 +580,11 @@ const CSS=`.tl-tabs{display:flex;gap:6px;flex-wrap:wrap}.tl-avisos{display:grid;
 .tl-q{display:grid;gap:6px}.tl-q .row{flex-wrap:wrap}.tl-dim{font-size:13px;color:var(--muted);text-transform:none}`;
 function estilos(){if(document.getElementById('tl_css'))return;const e=document.createElement('style');e.id='tl_css';e.textContent=CSS;document.head.appendChild(e)}
 
-function vAsistente(s){const q=s.q,listo=PREG.every(p=>q[p.k]),lista=cargar();
+function vAsistente(s){const q=s.q,listo=PREG.every(p=>q[p.k]),lista=cargar();if(!NB.ok)sincroniza();
   return `<section class="card"><div><h3>Taller de sensores</h3><div class="sub">Dime qué quieres medir y te doy las piezas, el esquema de cables, la caja para imprimir en 3D y la ficha de montaje. Solo lo ves tú.</div></div><div class="row"><button class="btn" data-tab="catalogo">Ver todo en el catálogo</button></div>
     ${PREG.map(p=>`<div class="tl-q"><b>${p.t}</b><div class="row">${p.ops.map(([k,t])=>`<button class="chip" data-tl="q" data-k="${p.k}" data-v="${k}" aria-pressed="${q[p.k]===k}">${t}</button>`).join('')}</div></div>`).join('')}
     <div class="row"><button class="btn pri" data-tl="crear" ${listo?'':'disabled'}>Diseñar el sensor</button></div></section>
-  ${lista.length?`<section class="card"><div><h3>Mis diseños</h3><div class="sub">Guardados en este móvil</div></div><div class="tl-lst">${lista.map(d=>`<div class="r"><span><b>${e_(d.nombre)}</b><br><small>${e_(NODOS[d.nodo].n)}</small></span><span class="row"><button class="btn" data-tl="abrir" data-id="${d.id}">Abrir</button><button class="btn" data-tl="borrar" data-id="${d.id}">Borrar</button></span></div>`).join('')}</div></section>`:''}
+  ${lista.length?`<section class="card"><div><h3>Mis diseños</h3><div class="sub">${NB.ok?'Guardados en la nube: los ves en cualquier móvil y en el ordenador':'Guardados en este móvil · conectando con la nube…'}</div></div><div class="tl-lst">${lista.map(d=>`<div class="r"><span><b>${e_(d.nombre)}</b><br><small>${e_(NODOS[d.nodo].n)}</small></span><span class="row"><button class="btn" data-tl="abrir" data-id="${d.id}">Abrir</button><button class="btn" data-tl="borrar" data-id="${d.id}">Borrar</button></span></div>`).join('')}</div></section>`:''}
   <section class="card"><div><h3>Lo que ya existe y usamos</h3></div><div class="note" style="text-transform:none">Las cajas se generan con <a href="https://github.com/elalish/manifold" target="_blank" rel="noopener">Manifold</a> (el mismo motor que usa OpenSCAD) y se pueden retocar en el <a href="https://ochafik.com/openscad2" target="_blank" rel="noopener">OpenSCAD Playground</a>. Para probar código sin piezas: <a href="https://wokwi.com" target="_blank" rel="noopener">Wokwi</a>. Cajas ya hechas para la Heltec: <a href="https://www.printables.com/model/1090297-heltec-wifi-lora-32-v3-case-dual-18650" target="_blank" rel="noopener">Printables</a> y <a href="https://meshtastic.org/docs/community/enclosures/heltec-enclosures" target="_blank" rel="noopener">Meshtastic</a> (casi todas de interior).</div></section>`}
 
 function vPiezas(d){const N=NODOS[d.nodo],g=distribuir(d);
@@ -613,7 +622,7 @@ const codigo=d=>(COD[d.nodo]||'').replace(/\{(\w+)\}/g,(m,k)=>d.pines[k]!=null?d
 function vDiseno(s){const d=s.d,N=NODOS[d.nodo],err=hayError(d);
   const tabs=[['piezas','Piezas'],['esquema','Esquema'+(err?' ✗':'')],['caja','Caja 3D'],['ficha','Ficha']];
   const cuerpo={piezas:vPiezas,esquema:vEsquema,caja:x=>vCaja(x,s),ficha:vFicha}[s.v](d);
-  return `<section class="card"><div class="row" style="justify-content:space-between"><button class="btn" data-tl="volver">‹ Mis diseños</button><button class="btn" data-tl="guardar">Guardar</button></div>
+  return `<section class="card"><div class="row" style="justify-content:space-between"><button class="btn" data-tl="volver">‹ Mis diseños</button><span class="row"><button class="btn" data-tlinst="${e_(d.id)}">Lo he instalado</button><button class="btn" data-tl="guardar">Guardar</button></span></div>
     <div class="field tl-nom"><label for="tl_nom">Nombre del diseño</label><div class="inp"><input id="tl_nom" class="wide" data-tln="1" value="${e_(d.nombre)}" style="text-transform:none"></div></div>
     <div class="sub">${e_(N.n)} · ${d.energia==='solar'?'batería y placa solar':'enchufe'} · ${d.lugar==='fuera'?'al aire libre':'dentro del invernadero'}</div>
     <div class="tl-tabs">${tabs.map(([k,t])=>`<button class="chip" data-tl="v" data-v="${k}" aria-pressed="${s.v===k}">${t}</button>`).join('')}</div></section>
@@ -626,7 +635,8 @@ T.tras=()=>{const s=S();if(!s.d||s.v!=='caja')return;if(s.m&&s.mk===JSON.stringi
   const k=JSON.stringify([s.d.nodo,s.d.caja]);s.mk=k;T.mallas(s.d).then(m=>{if(s.mk!==k)return;s.m=m;const e=document.getElementById('tl_estado');if(e)e.textContent='Arrastra con el dedo para girarla. La tapa está levantada para ver las piezas.';T.dibujar()})
     .catch(err=>{console.warn(err);const e=document.getElementById('tl_estado');if(e)e.textContent='No se ha podido preparar la caja 3D en este móvil. Prueba a recargar la app.'})};
 
-function guardar(d){const l=cargar().filter(x=>x.id!==d.id);d.mod=new Date().toISOString();l.unshift(JSON.parse(JSON.stringify(d)));guardarTodo(l.slice(0,50))}
+function guardar(d){d.mod=new Date().toISOString();const c=JSON.parse(JSON.stringify({...d,nube:false})),l=cargar().filter(x=>x.id!==d.id);l.unshift(c);guardarTodo(l.slice(0,200));
+  if(typeof Store!=='undefined'&&Store.setCol)return Store.setCol(COL,d.id,aNube(d)).then(()=>{const m=cargar();const x=m.find(y=>y.id===d.id);if(x&&x.mod===d.mod){x.nube=true;guardarTodo(m)}return true},()=>false);return Promise.resolve(false)}
 function bajar(blob,nombre){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombre;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500)}
 const archivo=d=>d.nombre.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'').toLowerCase()||'sensor';
 function imprimir(d){const N=NODOS[d.nodo],F=FICHA[d.nodo],w=window.open('','_blank');if(!w){toast('Deja que la app abra ventanas para imprimir');return}
@@ -642,9 +652,9 @@ document.addEventListener('click',async e=>{if(st.tab!=='taller')return;const b=
   if(a==='q'){s.q[b.dataset.k]=b.dataset.v;if(b.dataset.k==='medir'&&!s.q.energia)s.q.energia=(NODOS[nodoDe({medir:b.dataset.v})]||{}).solar?'solar':'enchufe';repinta()}
   else if(a==='crear'){s.d=nuevo(s.q);s.v='piezas';s.m=null;repinta()}
   else if(a==='abrir'){const d=cargar().find(x=>x.id===b.dataset.id);if(d){s.d={...d,caja:{...CAJA0,...d.caja},hecho:d.hecho||[]};s.v='piezas';s.m=null;repinta()}}
-  else if(a==='borrar'){if(!confirm('¿Borrar este diseño?'))return;guardarTodo(cargar().filter(x=>x.id!==b.dataset.id));repinta()}
+  else if(a==='borrar'){if(!confirm('¿Borrar este diseño?'))return;const id=b.dataset.id;guardarTodo(cargar().filter(x=>x.id!==id));repinta();if(typeof Store!=='undefined'&&Store.delCol)Store.delCol(COL,id).catch(()=>toast('Borrado en este móvil; en la nube se borrará al volver la conexión'))}
   else if(a==='volver'){s.d=null;s.m=null;repinta()}
-  else if(a==='guardar'){guardar(s.d);toast('Diseño guardado en este móvil')}
+  else if(a==='guardar'){guardar(s.d).then(ok=>toast(ok?'Diseño guardado en la nube':'Guardado en este móvil: se subirá a la nube al volver la conexión'))}
   else if(a==='v'){s.v=b.dataset.v;repinta()}
   else if(a==='stl'){const k=b.dataset.k;b.disabled=true;try{const buf=await T.stl(s.d,k);bajar(new Blob([buf],{type:'model/stl'}),archivo(s.d)+'-'+k+'.stl');toast('STL de la '+k+' descargado')}catch(err){console.warn(err);toast('No se ha podido generar el STL')}b.disabled=false}
   else if(a==='scad'){bajar(new Blob([T.scad(s.d)],{type:'text/plain'}),archivo(s.d)+'.scad');toast('Archivo .scad descargado')}

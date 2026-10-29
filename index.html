@@ -62,6 +62,11 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .escausa{display:grid;gap:6px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line)}.escausa .btn{justify-self:start}
 .plorden{border:2px solid #c0392b}.plorden ul{margin:0;padding-left:18px;display:grid;gap:6px;font-size:14px}
 .catdev{display:grid;gap:6px;margin:0 12px 12px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--navy) 5%,var(--surface));font-size:13.5px}.catdev>b{font-size:12px;letter-spacing:.05em}.catdev ol{margin:0;padding-left:20px;display:grid;gap:3px}
+.aplst{display:grid;gap:8px}.aprow{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);color:inherit;font:inherit;cursor:pointer}
+.aprow>span:first-child{display:grid;gap:2px;min-width:0}.aprow small{color:var(--muted);font-size:12px}.aprow .pill{flex:none;max-width:45%;white-space:normal;text-align:center}
+.apres{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}.apres>div{display:grid;gap:2px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--navy) 5%,var(--surface))}.apres b{font:600 22px var(--f-display)}.apres span{font-size:12px;color:var(--muted)}.apres .bad b{color:var(--bad)}
+.apm{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.apm>span:first-child{display:grid;gap:2px;min-width:0}.apm small{color:var(--muted);font-size:12px}.apm.toca b{color:var(--bad)}.apm>.row{flex-wrap:nowrap;flex:none}
+.apadd{flex-wrap:nowrap}.apadd .inp:first-child{flex:1;min-width:0}.apadd .inp:first-child input{width:100%}.apfrm select{font:600 15px var(--f-body);border:0;background:transparent;padding:7px 4px;max-width:100%}.apficha{display:grid;gap:14px}
 .catdetb{margin:0 12px 10px;display:flex}.catdetb .btn{flex:1}
 .catdet{display:grid;gap:14px}.catdet h2{margin:0;font-size:22px;line-height:1.15}.catdet .catpills{justify-content:flex-start}
 .catdatos{display:grid;grid-template-columns:1fr 1fr;gap:8px}.catdatos div{padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--navy) 5%,var(--surface));display:grid;gap:2px}.catdatos small{font-size:11px;letter-spacing:.05em;color:var(--muted);font-weight:700}.catdatos span{font-size:14px}
@@ -752,7 +757,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -865,7 +870,7 @@ const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
-  {id:'lab',n:'Taller',tabs:['catalogo','taller'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
+  {id:'lab',n:'Taller',tabs:['catalogo','taller','aparatos'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 /* Personal de campo: su propio menú (de momento, las collas) */
 const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctareas','corend','coparte','cubic','cvivo'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
@@ -883,7 +888,7 @@ function mfHead(){const n=(()=>{try{return incAbiertas().filter(i=>i.cab===st.ca
 const grupoDe=tab=>{const G=gruposAct();return G.find(g=>g.tabs.includes(tab))||G[0]};
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(ptRevisa()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
-  try{n.riego=(n.riego||0)+(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)}catch(e){}try{n.equipo=(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}
+  try{n.riego=(n.riego||0)+(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)}catch(e){}try{n.equipo=(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}try{if(esAdminU()&&Store.db){apCargar();n.lab=apPendTotal()}}catch(e){}
   try{let a=0;if(st.mat&&miEmail())a+=matPend().filter(esGestor()?mVisible:mAmi).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
 function renderGrupos(){const g=grupoDe(st.tab),ins=insignias();$('#grupos').style.gridTemplateColumns=`repeat(${gruposAct().length},minmax(0,1fr))`;$('#grupos').classList.toggle('seis',gruposAct().length>5);$('#grupos').innerHTML=gruposAct().map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('')}
@@ -1416,7 +1421,7 @@ const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';i
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
 const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
-function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura'||k==='taller'||k==='catalogo')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
+function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura'||k==='taller'||k==='catalogo'||k==='aparatos')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||(fincasVis().some(f=>f.id===m.finca)&&cabOk(m.cab));
@@ -2425,6 +2430,108 @@ $('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.datas
   const o=document.querySelector('[data-out="fill"]');if(o)o.innerHTML=fillOut(b);if(st.lf&&st.lf.falta){st.lf.falta=fchkFalta(b);if(!st.lf.falta.length)st.lf.falta=null;renderMain()}});
 document.addEventListener('click',e=>{if(st.tab!=='catalogo')return;const c=e.target.closest&&e.target.closest('[data-catc]');if(c){st.cat.c=c.dataset.catc||null;st.cat.q='';st.cat.det=null;renderMain();window.scrollTo(0,0);return}
   const f=e.target.closest&&e.target.closest('[data-catf]');if(f){st.cat.f=f.dataset.catf;renderMain()}});
+
+/* ---------- Mis aparatos (Taller · solo el administrador): lo que está montado e instalado en la finca ----------
+   Colección «aparatos». Cada uno: dónde está, su mantenimiento (cada cuántos días y cuándo se hizo), calibración, último dato e historial.
+   El último dato y la batería los rellenará el servidor puente cuando lleguen los sensores; mientras tanto se pueden apuntar a mano. */
+const AP_TIPOS=[
+  ['N4','Clima y hoja (N4)',[['Limpiar la garita',30],['Limpiar la lente del MLX90614',30],['Limpiar la placa solar',30],['Subir garita y sensor con la planta',14]],180],
+  ['N1','Nivel de depósito (N1)',[['Limpiar la cara del sensor',60],['Revisar cables y prensaestopas',90]],180],
+  ['N2','Humedad de sustrato (N2)',[['Revisar el sellado del sensor',90],['Limpiar la placa solar',30]],120],
+  ['N3','Humedad, temperatura y CE (N3)',[['Limpiar las varillas del sensor',60],['Limpiar la placa solar',30]],90],
+  ['N5','Temperatura de raíz o solución (N5)',[['Comprobar que la sonda sigue en su sitio',30],['Limpiar la placa solar',30]],365],
+  ['N6','Pulsos: drenaje, contador o viento (N6)',[['Limpiar la cazoleta o el embudo',14],['Limpiar la placa solar',30]],90],
+  ['N7','Sensor 4–20 mA (N7)',[['Revisar que no gotea la toma',30],['Revisar cables',90]],180],
+  ['N8','CO₂ (N8)',[['Limpiar la garita o la rejilla',30],['Sacarlo al aire libre 10 minutos',30]],180],
+  ['N9','Consumo de la bomba (N9)',[['Revisar la pinza y el cable',90]],365],
+  ['P','Pasarela casera (P)',[['Comprobar luz y wifi',30]],0],
+  ['pasarela','Pasarela LoRaWAN 4G',[['Comprobar «Connected» en The Things Network',30],['Revisar el saldo de la SIM',30]],0],
+  ['lora','Sensor LoRaWAN comprado',[['Revisar la batería en la consola',90],['Limpiar la garita o el sensor',30]],365],
+  ['ceph','Sondas de CE y pH',[['Comprobar que la sonda de pH sigue mojada',7]],30],
+  ['trampa','Trampa de feromona o placas',[['Cambiar la feromona',42],['Cambiar las placas adhesivas',14]],0],
+  ['camara','Cámara',[['Limpiar la lente',30]],0],
+  ['estacion','Estación meteorológica',[['Limpiar el pluviómetro',30],['Revisar el mástil',180]],365],
+  ['otro','Otro aparato',[['Revisión general',90]],0]];
+const apTipo=k=>AP_TIPOS.find(t=>t[0]===k)||AP_TIPOS[AP_TIPOS.length-1];
+function apCargar(){if(st.ap!==undefined)return;st.ap=null;Store.listCol('aparatos',500).then(l=>{st.ap=l;renderGrupos();if(st.tab==='aparatos')renderMain()},()=>{st.ap=[];if(st.tab==='aparatos')renderMain()})}
+/* Días que faltan (negativo = ya toca). Sin hacer nunca: se cuenta desde la instalación. */
+const apFalta=(cada,ult,inst)=>cada?cada-diasEntre(ult||inst||hoy(),hoy()):null;
+function apPend(a){if(a.estado==='retirado')return [];const P=[];for(const m of a.mant||[]){const f=apFalta(m.cada,m.ult,a.inst);if(f!=null&&f<=0)P.push(m.t)}
+  if(a.calib&&a.calib.cada){const f=apFalta(a.calib.cada,a.calib.ult,a.inst);if(f!=null&&f<=0)P.push('Calibrar')}return P}
+const apPendTotal=()=>(st.ap||[]).reduce((s,a)=>s+apPend(a).length,0);
+const apDonde=a=>{const c=cabById(a.cab),f=c&&(st.cfg.fincas||[]).find(x=>x.cabezales.includes(c.id));return [f&&f.nombre,c&&c.nombre,a.nave?'Nave '+a.nave:''].filter(Boolean).join(' · ')||'Sin sitio'};
+const apHace=ts=>{const m=Math.round((Date.now()-Date.parse(ts))/60000);return m<60?'hace '+Math.max(0,m)+' min':m<1440?'hace '+Math.round(m/60)+' h':'hace '+Math.round(m/1440)+' días'};
+async function apGuarda(a,msg){a.mod=new Date().toISOString();const i=(st.ap||[]).findIndex(x=>x.id===a.id);if(i>=0)st.ap[i]=a;else st.ap.unshift(a);renderGrupos();renderMain();
+  try{const {id,...doc}=a;await Store.setCol('aparatos',a.id,doc);if(msg)toast(msg)}catch(e){toast(errMsg(e))}}
+function apNuevo(o){o=o||{};const t=apTipo(o.tipo||'N4');return {tipo:t[0],nombre:o.nombre||'',cab:o.cab||st.cab||'',nave:o.nave||'',inst:hoy(),nota:'',diseno:o.diseno||''}}
+function vAparatos(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador.</div></section>`;apCargar();
+  if(st.ap===null)return `<section class="card"><div class="note">Cargando tus aparatos…</div></section>`;
+  if(st.apF)return apForm();if(st.apSel){const a=st.ap.find(x=>x.id===st.apSel);if(a)return apFicha(a);st.apSel=null}
+  const act=st.ap.filter(a=>a.estado!=='retirado'),ret=st.ap.filter(a=>a.estado==='retirado'),pend=apPendTotal();
+  const grupos={};for(const a of act){const k=apDonde(a).split(' · ').slice(0,2).join(' · ');(grupos[k]=grupos[k]||[]).push(a)}
+  const fila=a=>{const P=apPend(a),t=apTipo(a.tipo);return `<button class="aprow" type="button" data-apver="${a.id}"><span><b>${esc(a.nombre||t[1])}</b><small>${esc(t[1])}${a.nave?' · Nave '+esc(a.nave):''}</small>
+    <small>${a.dato?esc(a.dato.txt||'')+(a.dato.bat!=null?' · batería '+esc(a.dato.bat)+' %':'')+' · '+apHace(a.dato.ts):'Sin datos todavía'}</small></span>
+    <span class="pill ${P.length?'bad':'ok'}">${P.length?'Toca: '+esc(P[0])+(P.length>1?' y '+(P.length-1)+' más':''):'Al día'}</span></button>`};
+  return `<section class="card"><div><h3>Mis aparatos</h3><div class="sub">Lo que tienes montado e instalado: dónde está, su mantenimiento y sus datos</div></div>
+    <div class="apres"><div><b>${act.length}</b><span>instalados</span></div><div class="${pend?'bad':''}"><b>${pend}</b><span>tareas pendientes</span></div></div>
+    <div class="row"><button class="btn pri" type="button" data-apnuevo="1">+ Añadir aparato</button></div>
+    <div class="note">El último dato y la batería se rellenarán solos cuando conectemos los sensores a la app. Mientras tanto puedes apuntarlos a mano en cada aparato.</div></section>
+  ${act.length?Object.entries(grupos).map(([k,l])=>`<section class="card"><h3 style="font-size:15px">${esc(k)}</h3><div class="aplst">${l.map(fila).join('')}</div></section>`).join('')
+    :`<section class="card"><div class="note">Aún no hay ninguno. Cuando instales un aparato, dalo de alta aquí (o desde su diseño del Taller con «Lo he instalado»).</div></section>`}
+  ${ret.length?`<section class="card"><details><summary><b>Retirados (${ret.length})</b></summary><div class="aplst">${ret.map(fila).join('')}</div></details></section>`:''}`}
+function apCabOps(sel){const out=[];for(const f of fincasVis())for(const c of f.cabezales){const cb=cabById(c);if(cb)out.push(`<option value="${c}" ${c===sel?'selected':''}>${esc(f.nombre)} · ${esc(cb.nombre)}</option>`)}return out.join('')}
+function apForm(){const F=st.apF,ed=!!F.id,dis=(Store.lsGet('abono.taller')||[]);
+  return `<section class="card"><button class="lnk catback" type="button" data-apcancel="1">← ${ed?'Volver al aparato':'Mis aparatos'}</button><h3>${ed?'Editar aparato':'Añadir aparato'}</h3>
+    <div class="frm apfrm">
+      <div class="field"><label for="ap_tipo">Qué es</label><div class="inp"><select id="ap_tipo" data-apf="tipo">${AP_TIPOS.map(t=>`<option value="${t[0]}" ${t[0]===F.tipo?'selected':''}>${esc(t[1])}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="ap_nom">Nombre (para reconocerlo)</label><div class="inp"><input id="ap_nom" data-apf="nombre" value="${esc(F.nombre)}" placeholder="${esc(apTipo(F.tipo)[1])}" style="text-align:left;text-transform:none"></div></div>
+      <div class="field"><label for="ap_cab">Dónde</label><div class="inp"><select id="ap_cab" data-apf="cab"><option value="">—</option>${apCabOps(F.cab)}</select></div></div>
+      <div class="field"><label for="ap_nave">Nave</label><div class="inp"><input id="ap_nave" data-apf="nave" inputmode="numeric" value="${esc(F.nave)}" style="width:5ch"></div></div>
+      <div class="field"><label for="ap_inst">Instalado el</label><div class="inp"><input id="ap_inst" type="date" data-apf="inst" value="${esc(F.inst)}"></div></div>
+      ${dis.length?`<div class="field"><label for="ap_dis">Diseño del Taller</label><div class="inp"><select id="ap_dis" data-apf="diseno"><option value="">—</option>${dis.map(d=>`<option value="${esc(d.id)}" ${d.id===F.diseno?'selected':''}>${esc(d.nombre)}</option>`).join('')}</select></div></div>`:''}
+      <div class="field"><label for="ap_nota">Nota</label><div class="inp"><input id="ap_nota" data-apf="nota" value="${esc(F.nota)}" placeholder="Por ejemplo: en el poste del centro" style="text-align:left;text-transform:none"></div></div></div>
+    ${ed?'':`<div class="note">Se le ponen las tareas de mantenimiento y la calibración habituales de este tipo de aparato: luego las puedes cambiar.</div>`}
+    <div class="row"><button class="btn pri" type="button" data-apsave="1">Guardar</button><button class="btn" type="button" data-apcancel="1">Cancelar</button></div></section>`}
+function apFicha(a){const t=apTipo(a.tipo),P=apPend(a);
+  const mant=(a.mant||[]).map((m,i)=>{const f=apFalta(m.cada,m.ult,a.inst);return `<div class="apm ${f!=null&&f<=0?'toca':''}"><span><b>${esc(m.t)}</b><small>Cada ${m.cada} días · ${m.ult?'hecho el '+esc(fPunto(m.ult)):'sin hacer todavía'} · ${f==null?'':f<=0?'toca'+(f<0?' desde hace '+(-f)+' días':' hoy'):'en '+f+' días'}</small></span>
+    <span class="row"><button class="btn ${f!=null&&f<=0?'pri':''}" type="button" data-aphecho="${i}">Hecho hoy</button><button class="lnk" type="button" data-apmdel="${i}" aria-label="Quitar tarea">✕</button></span></div>`}).join('');
+  const cf=a.calib&&a.calib.cada?apFalta(a.calib.cada,a.calib.ult,a.inst):null;
+  return `<section class="card apficha"><button class="lnk catback" type="button" data-apver="">← Mis aparatos</button>
+    <div><div class="sub">${esc(t[1])}</div><h2 style="margin:0">${esc(a.nombre||t[1])}</h2><div class="sub">${esc(apDonde(a))}${a.inst?' · instalado el '+esc(fPunto(a.inst)):''}${a.estado==='retirado'?' · RETIRADO':''}</div>${a.nota?`<div class="note" style="text-transform:none">${esc(a.nota)}</div>`:''}</div>
+    <div class="apres"><div class="${P.length?'bad':''}"><b>${P.length}</b><span>pendientes</span></div><div><b>${a.dato?esc(a.dato.txt||'—'):'—'}</b><span>${a.dato?'último dato · '+apHace(a.dato.ts):'sin datos todavía'}</span></div>${a.dato&&a.dato.bat!=null?`<div class="${a.dato.bat<25?'bad':''}"><b>${esc(a.dato.bat)} %</b><span>batería</span></div>`:''}</div>
+    <div class="catsec"><h4>Mantenimiento</h4>${mant||'<div class="note">Sin tareas.</div>'}
+      <div class="row apadd"><div class="inp"><input id="ap_mt" placeholder="Nueva tarea" style="text-align:left;text-transform:none"></div><div class="inp"><input id="ap_mc" inputmode="numeric" placeholder="días" style="width:5ch"></div><button class="btn" type="button" data-apmadd="1">Añadir</button></div></div>
+    <div class="catsec"><h4>Calibración</h4>${a.calib&&a.calib.cada?`<div class="apm ${cf<=0?'toca':''}"><span><b>Calibrar o comparar con un aparato de confianza</b><small>Cada ${a.calib.cada} días · ${a.calib.ult?'última el '+esc(fPunto(a.calib.ult)):'sin calibrar todavía'} · ${cf<=0?'toca':'en '+cf+' días'}</small></span><button class="btn ${cf<=0?'pri':''}" type="button" data-apcal="1">Calibrado hoy</button></div>`:'<div class="note">Este aparato no necesita calibración periódica.</div>'}</div>
+    <div class="catsec"><h4>Apuntar un dato a mano</h4><div class="row apadd"><div class="inp"><input id="ap_dt" placeholder="Lo que marca (ej. 24,1 °C · 71 %)" style="text-align:left;text-transform:none"></div><div class="inp"><input id="ap_db" inputmode="numeric" placeholder="bat. %" style="width:6ch"></div><button class="btn" type="button" data-apdato="1">Apuntar</button></div></div>
+    <div class="catsec"><h4>Historial</h4><div class="row apadd"><div class="inp"><input id="ap_h" placeholder="Qué ha pasado (cambio de pila, avería…)" style="text-align:left;text-transform:none"></div><button class="btn" type="button" data-aphist="1">Apuntar</button></div>
+      ${(a.hist||[]).slice(0,30).map(h=>`<div class="ev"><span><b>${esc(fPunto(h.f))}</b> · ${esc(h.t)}${h.por?' · '+esc(h.por):''}</span></div>`).join('')||'<div class="note">Sin anotaciones.</div>'}</div>
+    <div class="row"><button class="btn" type="button" data-apedit="1">Editar</button><button class="btn" type="button" data-apret="1">${a.estado==='retirado'?'Volver a instalarlo':'Retirar'}</button>${st.apDel===a.id?`<button class="btn danger" type="button" data-apdelok="1">Sí, borrar</button><button class="btn" type="button" data-apdelno="1">No</button>`:`<button class="btn" type="button" data-apdel="1">Borrar</button>`}</div></section>`}
+const apHist=(a,t)=>{a.hist=[{f:hoy(),t,por:yoNombre()},...(a.hist||[])].slice(0,200)};
+document.addEventListener('click',e=>{if(st.tab!=='aparatos'&&st.tab!=='taller')return;const q=s=>e.target.closest&&e.target.closest(s);let b;
+  if(st.tab==='taller'&&(b=q('[data-tlinst]'))){const d=(window.TALLER&&st.tl&&st.tl.d)||{};st.apF={...apNuevo({tipo:d.nodo,diseno:d.id,nombre:d.nombre})};if(window.TALLER&&st.tl&&st.tl.d)TALLER.guardarActual&&TALLER.guardarActual();st.tab='aparatos';renderTabs();renderMain();window.scrollTo(0,0);return}
+  if(st.tab!=='aparatos')return;
+  if(q('[data-apnuevo]')){st.apF=apNuevo();renderMain();window.scrollTo(0,0);return}
+  if(q('[data-apcancel]')){st.apF=null;renderMain();return}
+  if((b=q('[data-apver]'))){st.apSel=b.dataset.apver||null;st.apDel=null;renderMain();window.scrollTo(0,0);return}
+  if(q('[data-apsave]')){const F=st.apF;for(const el of document.querySelectorAll('[data-apf]'))F[el.dataset.apf]=el.value.trim();const t=apTipo(F.tipo);
+    if(F.id){const a=st.ap.find(x=>x.id===F.id);if(!a)return;const cambiaTipo=a.tipo!==F.tipo;Object.assign(a,{tipo:F.tipo,nombre:F.nombre,cab:F.cab,nave:F.nave,inst:F.inst,nota:F.nota,diseno:F.diseno});
+      if(cambiaTipo){a.mant=t[2].map(([x,c])=>({t:x,cada:c,ult:''}));a.calib={cada:t[3],ult:''}}st.apF=null;apGuarda(a,'Aparato guardado');return}
+    const a={id:'ap'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),ts:new Date().toISOString(),tipo:F.tipo,nombre:F.nombre,cab:F.cab,nave:F.nave,inst:F.inst||hoy(),nota:F.nota,diseno:F.diseno,estado:'activo',
+      mant:t[2].map(([x,c])=>({t:x,cada:c,ult:''})),calib:{cada:t[3],ult:''},hist:[{f:F.inst||hoy(),t:'Instalado',por:yoNombre()}]};
+    st.apF=null;st.apSel=a.id;apGuarda(a,'Aparato dado de alta');window.scrollTo(0,0);return}
+  const a=st.apSel&&(st.ap||[]).find(x=>x.id===st.apSel);if(!a)return;
+  if((b=q('[data-aphecho]'))){const m=a.mant[+b.dataset.aphecho];if(!m)return;m.ult=hoy();apHist(a,m.t);apGuarda(a,'Apuntado: '+m.t);return}
+  if((b=q('[data-apmdel]'))){a.mant.splice(+b.dataset.apmdel,1);apGuarda(a);return}
+  if(q('[data-apmadd]')){const t=$('#ap_mt').value.trim(),c=parseInt($('#ap_mc').value,10);if(!t||!(c>0)){toast('Escribe la tarea y cada cuántos días');return}(a.mant=a.mant||[]).push({t,cada:c,ult:''});apGuarda(a,'Tarea añadida');return}
+  if(q('[data-apcal]')){a.calib.ult=hoy();apHist(a,'Calibrado');apGuarda(a,'Calibración apuntada');return}
+  if(q('[data-apdato]')){const t=$('#ap_dt').value.trim(),bt=$('#ap_db').value.trim();if(!t&&!bt){toast('Escribe lo que marca');return}a.dato={ts:new Date().toISOString(),txt:t,bat:bt?Math.max(0,Math.min(100,parseInt(bt,10)||0)):null,manual:true};apGuarda(a,'Dato apuntado');return}
+  if(q('[data-aphist]')){const t=$('#ap_h').value.trim();if(!t){toast('Escribe qué ha pasado');return}apHist(a,t);apGuarda(a,'Apuntado en el historial');return}
+  if(q('[data-apedit]')){st.apF={id:a.id,tipo:a.tipo,nombre:a.nombre||'',cab:a.cab||'',nave:a.nave||'',inst:a.inst||'',nota:a.nota||'',diseno:a.diseno||''};renderMain();window.scrollTo(0,0);return}
+  if(q('[data-apret]')){a.estado=a.estado==='retirado'?'activo':'retirado';apHist(a,a.estado==='retirado'?'Retirado':'Instalado de nuevo');apGuarda(a);return}
+  if(q('[data-apdel]')){st.apDel=a.id;renderMain();return}
+  if(q('[data-apdelno]')){st.apDel=null;renderMain();return}
+  if(q('[data-apdelok]')){const id=a.id;st.ap=st.ap.filter(x=>x.id!==id);st.apSel=null;st.apDel=null;renderGrupos();renderMain();Store.delCol('aparatos',id).then(()=>toast('Aparato borrado'),e=>toast(errMsg(e)))}});
+$('#main').addEventListener('change',e=>{const t=e.target;if(st.tab!=='aparatos'||!st.apF||!t.dataset||t.dataset.apf!=='tipo')return;for(const el of document.querySelectorAll('[data-apf]'))st.apF[el.dataset.apf]=el.value.trim();renderMain()});
 
 /* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */
 /* Gasolinera tenía las naves numeradas al revés en el plano (la 1 abajo). Lo apuntado tocando el plano guardó ese número:
@@ -3549,7 +3656,7 @@ document.addEventListener('click',e=>{if(st.tab!=='montaje')return;const b=e.tar
 document.addEventListener('input',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(k==='txt')st.tb.txt=t.value});
 document.addEventListener('change',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(!k)return;
   if(k==='diam')st.tb.diam=t.value;else if(k==='marc'){st.tb.marc[+t.dataset.i]=t.checked}else if(k==='foto'&&t.files&&t.files.length){const fs=[...t.files];t.value='';tbAddFotos(fs)}});
-const VIEWS={estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+const VIEWS={aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);
@@ -5493,7 +5600,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v146';
+window.APP_V='abonado-v147';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
