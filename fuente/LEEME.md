@@ -10,6 +10,7 @@ Todo lo necesario para rehacer la app desde cero. La web publicada (carpeta de a
 | `plantilla/`, `plantilla2/` | Hojas de la empresa: parte grande y parte pequeño |
 | `taller/taller.js` | Taller de sensores (menú Taller → Taller de sensores, solo el administrador): piezas, esquema, caja 3D y ficha. Se carga solo al abrirlo |
 | `taller/catalogo.js` | Catálogo de tecnología agrícola (menú Taller → Catálogo, solo el administrador): sensores, robots, drones, conectividad y control por carpetas, con buscador; cada ficha con su página de «Detalles» (qué es, cómo hacerlo, qué necesitas, dónde comprarlo con enlaces de búsqueda, ojo con, mantenimiento, en la app). Se carga solo al abrirlo |
+| `taller/montaje.js` + `guias-*.js` | Guías de montaje del catálogo (se juntan en `montaje.js` al construir y se cargan al abrir una ficha): visor paso a paso con dibujo animado, materiales con enlace de compra y total, herramientas. `guias-taller.js` las genera del diseño del Taller (un paso por cable); `guias-casa.js` proyectos caseros y variantes; `guias-compra.js` instalación de lo comprado y «qué pedir» al instalador; `guias-img.js` imágenes realistas orientativas (IA) |
 | `libs/manifold.js` + `manifold.wasm` | [Manifold](https://github.com/elalish/manifold) 3.5.3 (licencia Apache-2.0, en `libs/LICENSE-manifold.txt`): genera las cajas STL del taller |
 | `firestore.rules` | Reglas de seguridad de Firebase (se pegan en la consola de Firebase) |
 | `mock-firebase.js` | Firebase de mentira para las pruebas |

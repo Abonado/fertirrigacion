@@ -2348,6 +2348,13 @@ function catItem(it,c){const E=CAT_EST[it.est]||CAT_EST.idea,k=catSlug(it),f=cat
     <div class="catdetb"><button class="btn pri" type="button" data-catdet="${k}">Detalles: cómo hacerlo y dónde comprar</button></div>
     ${catDev(it)}</details>`}
 /* Página de detalle: todo lo de una ficha para ponerlo en marcha */
+function cargaJs(src,ok){if(document.querySelector(`script[data-src="${src}"]`))return;const sc=document.createElement('script');sc.src=src;sc.dataset.src=src;
+  sc.onload=()=>{if(ok)ok()};sc.onerror=()=>{sc.remove();toast('No se ha podido abrir: necesitas conexión la primera vez')};document.head.appendChild(sc)}
+/* Guía de montaje (montaje.js; las de los aparatos del Taller necesitan también taller.js) */
+function catGuia(it,k){const M=window.MONTAJE;if(!M){cargaJs('montaje.js',()=>{if(st.tab==='catalogo'&&st.cat.det)renderMain()});return `<section class="card"><div class="note">Abriendo la guía de montaje…</div></section>`}
+  M._it=x=>catBusca(x)[0];
+  if(M.necesitaTaller(it)){cargaJs('taller.js',()=>{if(st.tab==='catalogo'&&st.cat.det)renderMain()});return `<section class="card"><div class="note">Abriendo la guía de montaje…</div></section>`}
+  return M.html(it,k,{paso:0,admin:esAdminU(),sinImg:((st.cfg.mjOcultas)||[]).includes(k)})}
 function catBusca(it){const C=window.CATALOGO;for(const c of C.carpetas)for(const x of c.it)if(catSlug(x)===it)return [x,c];return [null,null]}
 function catLinks(D){if(!D||!D.b)return '';const q=encodeURIComponent(D.b);
   const L=D.pro?[['Buscar distribuidor','https://www.google.com/search?q='+encodeURIComponent(D.b+' distribuidor España')]]:[['Amazon.es','https://www.amazon.es/s?k='+q],['AliExpress','https://es.aliexpress.com/wholesale?SearchText='+q],['Google','https://www.google.com/search?q='+encodeURIComponent('comprar '+D.b)]];
@@ -2361,22 +2368,27 @@ function vCatDet(k){const [it,c]=catBusca(k);if(!it){st.cat.det=null;return ''}c
     <div><div class="sub">${esc(c.n)}</div><h2>${esc(it.n)}</h2></div><div class="catpills"><span class="pill ${E[1]}">${E[0]}</span>${f?`<span class="pill ok">${F[1]}</span>`:''}</div>
     <div class="catdatos"><div><small>Precio orientativo</small><span>${esc(it.prec)}</span></div><div><small>Dificultad</small><span>${esc(it.dif)}</span></div><div><small>Conexión</small><span>${esc(it.con)}</span></div><div><small>Ejemplos</small><span>${esc(it.ej)}</span></div></div>
     ${sec('Qué es',par(D.q||it.q))}${sec('Para qué te sirve en la finca',par(it.uso))}
-    ${sec(it.est==='no'?'Qué hacer en su lugar':'Cómo hacerlo, paso a paso',lst(D.p,'ol'))}
+    ${sec(it.est==='no'?'Qué hacer en su lugar':'En resumen (la guía completa, más abajo)',lst(D.p,'ol'))}
     ${comp?sec('Qué necesitas',lst(D.nec)):''}
     ${compra?sec('Dónde comprarlo',lst(D.d)+catLinks(D)):''}
     ${sec(it.est==='no'?'Por qué no':'Ojo con',lst(D.o),'ojo')}
     ${sec('Mantenimiento',par(D.m))}${sec('En la app',par(D.a))}
     ${catDev(it)}
     ${compra?`<div class="row"><button class="btn" type="button" data-catcomp="${k}">Compartir lista de la compra</button></div>`:''}
-    <div class="sub">Precios orientativos de ${esc(window.CATALOGO.act)}: confírmalos antes de comprar.</div></section>`}
+    <div class="sub">Precios orientativos de ${esc(window.CATALOGO.act)}: confírmalos antes de comprar.</div></section>${catGuia(it,k)}`}
 document.addEventListener('toggle',e=>{const d=e.target;if(!d||!d.matches||!d.matches('details.catit'))return;st.cat.ab=st.cat.ab||new Set();if(d.open)st.cat.ab.add(d.dataset.catk);else st.cat.ab.delete(d.dataset.catk)},true);
 document.addEventListener('click',e=>{if(st.tab!=='catalogo')return;const t=e.target.closest&&e.target.closest('[data-tlnuevo]');if(t){st.tlNuevo=t.dataset.tlnuevo;st.tab='taller';renderCabs();renderTabs();renderMain();window.scrollTo(0,0);return}
+  const mp=e.target.closest&&e.target.closest('[data-mjp]');if(mp&&window.MONTAJE){const v=mp.closest('[data-mjv]');if(v)window.MONTAJE.ir(v,+mp.dataset.mjp);return}
+  const mo=e.target.closest&&e.target.closest('[data-mjoculta]');if(mo&&esAdminU()){st.cfg.mjOcultas=[...new Set([...(st.cfg.mjOcultas||[]),mo.dataset.mjoculta])];if(st.dirtyCfg){renderSave();renderMain()}else{st.dirtyCfg=true;renderMain();saveCfg().then(()=>{if(!st.dirtyCfg)toast('Imagen oculta')})}return}
   const dt=e.target.closest&&e.target.closest('[data-catdet]');if(dt){const k=dt.dataset.catdet;if(k){st.cat.y=window.scrollY;st.cat.det=k;renderMain();window.scrollTo(0,0)}else{st.cat.det=null;renderMain();window.scrollTo(0,st.cat.y||0)}return}
-  const cp=e.target.closest&&e.target.closest('[data-catcomp]');if(cp){const [it]=catBusca(cp.dataset.catcomp);if(!it)return;const tx=catTexto(it,(window.CATALOGO.det||{})[it.n]);
+  const cp=e.target.closest&&e.target.closest('[data-catcomp]');if(cp){const [it]=catBusca(cp.dataset.catcomp);if(!it)return;const gx=window.MONTAJE&&window.MONTAJE.texto(it);const tx=gx?it.n+'\n\n'+gx:catTexto(it,(window.CATALOGO.det||{})[it.n]);
     if(navigator.share)navigator.share({title:it.n,text:tx}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(tx).then(()=>toast('Lista copiada: pégala en WhatsApp o en un correo'),()=>toast('No se ha podido copiar'));return}
   const b=e.target.closest&&e.target.closest('[data-catest]');if(b&&esAdminU()){const v=b.dataset.v;st.cfg.labEst={...(st.cfg.labEst||{})};if(v)st.cfg.labEst[b.dataset.catest]=v;else delete st.cfg.labEst[b.dataset.catest];
     /* sin otros cambios pendientes se guarda al momento; si hay ajustes sin guardar, se queda con ellos para no guardarlos sin querer */
     if(st.dirtyCfg){renderSave();renderMain()}else{st.dirtyCfg=true;renderMain();saveCfg().then(()=>{if(!st.dirtyCfg)toast('Estado guardado')})}}});
+{let x0=null,y0=0;document.addEventListener('touchstart',e=>{const s=e.target.closest&&e.target.closest('.mj-st');x0=s?e.touches[0].clientX:null;y0=s?e.touches[0].clientY:0},{passive:true});
+  document.addEventListener('touchend',e=>{if(x0==null||!window.MONTAJE)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;const v=e.target.closest&&e.target.closest('[data-mjv]');x0=null;
+    if(v&&Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5)window.MONTAJE.ir(v,dx<0?1:-1)},{passive:true})}
 function catLista(){const C=window.CATALOGO,S=st.cat,q=catNorm(S.q).trim(),ok=it=>!S.f||(S.f==='dev'?!!catFase(it):it.est===S.f);
   if(q){const pal=q.split(/\s+/).filter(Boolean),R=[];for(const c of C.carpetas)for(const it of c.it){const h=catNorm([it.n,it.q,it.uso,it.ej,it.t,c.n].join(' '));if(pal.every(p=>h.includes(catRaiz(p)))&&ok(it))R.push([it,c])}
     return `<div class="sub">${R.length} ${R.length===1?'resultado':'resultados'}</div>${R.length?R.map(([it,c])=>catItem(it,c)).join(''):'<div class="note">No hay nada con esas palabras. Prueba con otra: riego, plagas, robot, drenaje…</div>'}`}
@@ -5460,7 +5472,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v144';
+window.APP_V='abonado-v145';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;

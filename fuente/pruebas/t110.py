@@ -30,14 +30,14 @@ async def main():
         await it.locator('[data-catdet]').scroll_into_view_if_needed(); y0 = await pg.evaluate("window.scrollY"); assert y0 > 0
         await it.locator('[data-catdet]').click(); await pg.wait_for_timeout(400); assert await pg.evaluate("window.scrollY") == 0
         t = await pg.text_content('#main'); print(t[:300])
-        for x in ['Cámara térmica para el móvil', 'Cómo hacerlo, paso a paso', 'Qué necesitas', 'Dónde comprarlo', 'Ojo con', 'Mantenimiento', 'En la app', 'Desarrollo']: assert x in t, x
+        for x in ['Cámara térmica para el móvil', 'En resumen', 'Qué necesitas', 'Dónde comprarlo', 'Ojo con', 'Mantenimiento', 'En la app', 'Desarrollo']: assert x in t, x
         hrefs = await pg.eval_on_selector_all('#main .catlinks a', "a=>a.map(x=>[x.textContent,x.href,x.target])"); print(hrefs)
         assert hrefs[0][1].startswith('https://www.amazon.es/s?k=InfiRay') and all(h[2] == '_blank' for h in hrefs)
         await pg.screenshot(path='pruebas/salida/t110-detalle.png', full_page=True)
         # compartir: sin navigator.share copia al portapapeles
         await pg.evaluate("window._cp='';navigator.share=undefined;Object.defineProperty(navigator,'clipboard',{value:{writeText:t=>{window._cp=t;return Promise.resolve()}},configurable:true})")
         await pg.click('[data-catcomp]'); await pg.wait_for_timeout(200)
-        cp = await pg.evaluate("window._cp"); assert 'Qué necesitas:' in cp and 'Dónde comprarlo:' in cp and 'Precio orientativo' in cp, cp
+        cp = await pg.evaluate("window._cp"); assert ('Materiales:' in cp and 'Total orientativo' in cp and 'Herramientas:' in cp) or ('Qué necesitas:' in cp and 'Dónde comprarlo:' in cp), cp
         # volver: misma carpeta, ficha abierta y misma altura
         await pg.click('[data-catdet=""]'); await pg.wait_for_timeout(400)
         assert await pg.evaluate("st.cat.det") is None and 'Clima del invernadero' in await pg.text_content('#main .cath')
