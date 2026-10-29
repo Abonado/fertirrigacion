@@ -143,6 +143,15 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
     if (request.method === 'GET') return json({ ok: true, servicio: 'Avisos de Abonado', kv: !!env.AVISOS, vapid: !!(env.VAPID_PRIVADA || VAPID_PRIVADA_EN_CODIGO) });
     if (request.method !== 'POST') return json({ error: 'metodo' }, 405);
+    /* Aviso desde otro servidor nuestro (el puente de los sensores), con la clave compartida INTERNO_TOKEN: no viene de la app */
+    if (new URL(request.url).pathname.replace(/\/+$/, '').endsWith('/interno')) {
+      const tk = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+      if (!env.INTERNO_TOKEN || !env.AVISOS || tk.length !== env.INTERNO_TOKEN.length || tk !== env.INTERNO_TOKEN) return json({ error: 'clave' }, 401);
+      let b; try { b = await request.json(); } catch { return json({ error: 'peticion' }, 400); }
+      const para = (Array.isArray(b.para) ? b.para : []).map(e => String(e || '').toLowerCase()).filter(e => /^\S+@\S+$/.test(e)).slice(0, 5);
+      if (!para.length) return json({ ok: true, enviados: 0 });
+      return json({ ok: true, ...(await enviarA(env, para, datosDe(b), true)) });
+    }
     if (!ORIGENES.includes(origin)) return json({ error: 'origen' }, 403);
     if (!env.AVISOS) return json({ error: 'sin_kv' }, 500);
 

@@ -19,7 +19,7 @@ async def main():
         g = await pg.locator('#grupos .grp span').all_inner_texts(); print('menú:', g); assert len(g) == 7
         await pg.click('#grupos [data-grupo="lab"]'); await pg.wait_for_timeout(1200)
         assert await pg.evaluate("st.tab") == 'catalogo' and await pg.evaluate("!!window.CATALOGO")
-        tabs = await pg.locator('#tabs .tab').all_inner_texts(); print('pestañas:', tabs); assert len(tabs) == 3 and 'MIS APARATOS' in [x.upper() for x in tabs]
+        tabs = await pg.locator('#tabs .tab').all_inner_texts(); print('pestañas:', tabs); assert len(tabs) == 4 and 'MIS APARATOS' in [x.upper() for x in tabs] and 'CAJÓN Y COMPRA' in [x.upper() for x in tabs]
         C = await pg.evaluate("window.CATALOGO.carpetas.map(c=>[c.id,c.it.length])"); n = sum(x[1] for x in C); print('carpetas:', C, '· elementos:', n)
         assert len(C) >= 10 and n >= 80
         # todos los elementos con su ficha completa y un estado válido

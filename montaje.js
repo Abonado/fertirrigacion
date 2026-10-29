@@ -179,6 +179,7 @@ const CSS=`.mj{display:grid;gap:14px}.mj h3{margin:0}.mj-img{position:relative;b
 .mj-tab .mj-pr{white-space:nowrap;text-align:right}.mj-lk{display:inline-flex;gap:10px;flex-wrap:wrap;margin-top:3px}.mj-lk a{font-size:12.5px;font-weight:700;color:var(--accent,#1a7f4b);text-decoration:none}
 .mj-tot{display:flex;justify-content:space-between;font-weight:700;padding-top:8px;border-top:2px solid var(--line)}.mj-todo ol{margin:0;padding-left:22px;display:grid;gap:10px}.mj-todo li p{margin:4px 0 0}
 .mj-pro{padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--navy,#1b2e45) 6%,var(--surface))}`;
+M.estilos=()=>estilos();
 function estilos(){if(document.getElementById('mj_css'))return;const e=document.createElement('style');e.id='mj_css';e.textContent=CSS;document.head.appendChild(e)}
 
 const par=t=>String(t||'').split(/\n\n+/).map(x=>`<p>${e_(x)}</p>`).join('');
@@ -193,7 +194,8 @@ M.html=(it,k,o)=>{estilos();const G=M.guia(it);if(!G)return '';o=o||{};
   const i=Math.min(o.paso||0,G.pasos.length-1),P=pasoHTML(G,i),T=M.total(G);
   const imgU=(M.IMG||{})[it.n]||G.img;const img=imgU&&!o.sinImg?`<figure class="mj-img"><img src="${e_(imgU)}" alt="Así queda: ${e_(it.n)}" loading="lazy" onerror="this.closest('figure').hidden=true"><figcaption><span>Imagen orientativa generada con IA: para montarlo, sigue los dibujos.</span>${o.admin?`<button class="lnk" type="button" data-mjoculta="${k}">Ocultar</button>`:''}</figcaption></figure>`:'';
   const herr=(G.herr||[]).map(h=>{const H=HERR[h];if(!H)return '';return `<tr><td>·</td><td>${e_(H.n)}<small>${e_(H.por)}</small>${H.u?`<span class="mj-lk"><a href="${H.u}" target="_blank" rel="noopener">Descargar ↗</a></span>`:M.enlaces(H.b)}</td><td class="mj-pr">${e_(H.p)}</td></tr>`}).join('');
-  const mat=(G.mat||[]).map(m=>`<tr><td>${e_(m.c||1)}×</td><td>${e_(m.n)}${m.por?`<small>${e_(m.por)}</small>`:''}${M.enlaces(m.b,m.pro)}</td><td class="mj-pr">${e_(m.p||'')}</td></tr>`).join('');
+  const tg=n=>window.cajonTengo?window.cajonTengo(n):null;
+  const mat=(G.mat||[]).map(m=>{const t=tg(m.n);return `<tr><td>${e_(m.c||1)}×</td><td>${e_(m.n)}${t?` <span class="pill ok">tienes ${t}</span>`:''}${m.por?`<small>${e_(m.por)}</small>`:''}${M.enlaces(m.b,m.pro)}</td><td class="mj-pr">${e_(m.p||'')}</td></tr>`}).join('');
   return `<section class="card mj" data-mjg="${k}"><div><h3>Guía de montaje</h3><div class="sub">${G.pasos.length} pasos · ${e_(G.tiempo||'')}${G.nivel?' · '+e_(G.nivel):''}</div></div>${img}
     ${G.intro?`<div class="catsec">${par(G.intro)}</div>`:''}
     <div class="mj-vis" data-mjv="${k}" data-i="${i}"><div class="mj-top" data-mjo="top">${P.top}</div><div class="mj-st" data-mjo="st">${P.st}</div>

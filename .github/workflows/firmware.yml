@@ -1,0 +1,53 @@
+name: Firmware de los nodos
+# Compila el código de los nodos del Taller (fuente/firmware/src, lo genera build.py) para la Heltec WiFi LoRa 32 V3
+# y deja los .bin en la rama «firmware», de donde los instala la app por el cable USB (Taller → Instalar y probar).
+# En estado.json queda qué nodos han compilado y, si alguno falla, su registro (.log) para corregirlo.
+on:
+  push:
+    paths: ['fuente/firmware/src/**', '.github/workflows/firmware.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  compilar:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Instalar arduino-cli, la placa ESP32 y las librerías
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=$HOME/bin sh
+          echo "$HOME/bin" >> $GITHUB_PATH
+          export PATH=$HOME/bin:$PATH
+          URL=https://espressif.github.io/arduino-esp32/package_esp32_index.json
+          arduino-cli core update-index --additional-urls $URL
+          arduino-cli core install esp32:esp32 --additional-urls $URL
+          arduino-cli lib install RadioLib "Adafruit SHT4x Library" "Adafruit MLX90614 Library" OneWire DallasTemperature "Sensirion I2C SCD4x"
+          arduino-cli core list > core.txt; arduino-cli lib list > libs.txt
+      - name: Compilar cada nodo
+        run: |
+          mkdir -p out pub
+          for d in fuente/firmware/src/*/; do n=$(basename "$d")
+            if arduino-cli compile --fqbn esp32:esp32:heltec_wifi_lora_32_V3 --export-binaries --output-dir "out/$n" "$d" > "pub/$n.log" 2>&1; then
+              m=$(ls out/$n/*.merged.bin 2>/dev/null | head -1)
+              if [ -n "$m" ]; then cp "$m" "pub/$n.bin"; echo "$n ok" >> out/estado.txt; else echo "$n sin_merged" >> out/estado.txt; ls -la out/$n >> "pub/$n.log"; fi
+            else echo "$n error" >> out/estado.txt; fi
+          done
+          cat out/estado.txt
+      - name: Publicar en la rama firmware
+        run: |
+          python3 - <<'PY'
+          import json,os,hashlib,datetime
+          est={}
+          for l in open('out/estado.txt'):
+              n,e=l.split(); d={'estado':e}
+              if os.path.exists(f'pub/{n}.bin'):
+                  b=open(f'pub/{n}.bin','rb').read(); d.update(bytes=len(b),sha256=hashlib.sha256(b).hexdigest())
+              est[n]=d
+          json.dump({'commit':os.environ['GITHUB_SHA'][:7],'fecha':datetime.datetime.utcnow().isoformat()+'Z','placa':'esp32:esp32:heltec_wifi_lora_32_V3','nodos':est,
+                     'core':open('core.txt').read(),'librerias':open('libs.txt').read()},open('pub/estado.json','w'),ensure_ascii=False,indent=1)
+          PY
+          cd pub
+          git init -q -b firmware
+          git add -A
+          git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -q -m "Firmware de ${GITHUB_SHA::7}"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" firmware

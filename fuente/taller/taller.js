@@ -231,78 +231,7 @@ function esquema(d){const N=NODOS[d.nodo],otras=N.piezas.filter(p=>p!=='heltec')
   return s+'</svg>'}
 
 /* ---------- Código de partida ---------- */
-const COD={
-N1:`// N1 · Nivel del depósito · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
-// Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib (Programa → Incluir librería → Administrar → RadioLib)
-#include <RadioLib.h>
-#define VEXT 36        // LOW = sensores encendidos
-#define SENSOR_RX {rx}  // cable blanco (TX del A02YYUW)
-SX1262 radio = new Module(8, 14, 12, 13);   // NSS, DIO1, RST, BUSY (fijos en la Heltec V3)
-HardwareSerial Sensor(1);
-const float FONDO_CM = 167;   // distancia del sensor al fondo: CÁMBIALA por la medida real
-const float LLENO_CM = 20;    // distancia con el depósito lleno: CÁMBIALA
-
-int leerMM() {                // el sensor manda 4 bytes: 0xFF, alto, bajo, suma
-  unsigned long t0 = millis();
-  while (millis() - t0 < 1000) {
-    if (Sensor.available() >= 4 && Sensor.read() == 0xFF) {
-      int h = Sensor.read(), l = Sensor.read(), s = Sensor.read();
-      if (((0xFF + h + l) & 0xFF) == s) return h * 256 + l;
-    }
-  }
-  return -1;                  // no ha llegado nada válido
-}
-
-void setup() {
-  Serial.begin(115200);
-  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(500);
-  Sensor.begin(9600, SERIAL_8N1, SENSOR_RX, -1);
-  SPI.begin(9, 11, 10, 8);
-  int e = radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
-  if (e == RADIOLIB_ERR_NONE) Serial.println("LoRa OK");
-  else { Serial.print("Error LoRa: "); Serial.println(e); }
-}
-
-void loop() {
-  int mm = leerMM();
-  if (mm > 0) {
-    float cm = mm / 10.0;
-    int pct = constrain(round((FONDO_CM - cm) * 100 / (FONDO_CM - LLENO_CM)), 0, 100);
-    String msg = "N1;cm=" + String(cm, 0) + ";pct=" + String(pct) + ";bat=100";   // bat: pendiente
-    Serial.println(msg);
-    radio.transmit(msg);
-  } else Serial.println("Sin lectura del sensor: revisa el cable blanco y la alimentación");
-  delay(60000);               // una lectura por minuto
-}
-`,
-N2:`// N2 · Humedad del sustrato (capacitivo) · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
-// Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
-#include <RadioLib.h>
-#define VEXT 36        // LOW = sensor encendido
-#define AOUT {ana}      // salida analógica del sensor
-SX1262 radio = new Module(8, 14, 12, 13);
-const int SECO = 3000;     // CALIBRA: valor con el sensor al aire
-const int MOJADO = 1300;   // CALIBRA: valor con el sensor en un vaso de agua (hasta la raya)
-const uint64_t DORMIR_MIN = 10;
-
-void setup() {
-  Serial.begin(115200);
-  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(800);
-  analogReadResolution(12);
-  long suma = 0; for (int i = 0; i < 16; i++) { suma += analogRead(AOUT); delay(20); }
-  int raw = suma / 16;
-  int hum = constrain(map(raw, SECO, MOJADO, 0, 100), 0, 100);
-  String msg = "N2;hum=" + String(hum) + ";raw=" + String(raw) + ";bat=100";      // bat: pendiente
-  Serial.println(msg);
-  SPI.begin(9, 11, 10, 8);
-  if (radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8) == RADIOLIB_ERR_NONE) radio.transmit(msg);
-  radio.sleep();
-  digitalWrite(VEXT, HIGH);  // apaga el sensor
-  esp_sleep_enable_timer_wakeup(DORMIR_MIN * 60ULL * 1000000ULL);
-  esp_deep_sleep_start();    // duerme y vuelve a empezar desde setup()
-}
-void loop() {}
-`};
+const COD={};
 
 /* ---------- Ficha de montaje y uso ---------- */
 const COMUN_INI=['Ten delante el esquema de conexiones (pestaña Esquema) y esta ficha impresa.','Suelda los pines de la Heltec: soldador en su soporte, gafas, ventilación y nada de 230 V cerca.','Prueba la Heltec sola por USB: sube un ejemplo y mira que la pantalla se enciende.'];
@@ -375,125 +304,238 @@ Object.assign(NODOS,{
 });
 NODOS.N2.solar=NODOS.N3.solar=true;
 for(const k of ['N4','N5','N6'])NODOS[k].con=NODOS[k].con.concat(SOLARF());
-const DORMIR=`  radio.sleep();
-  digitalWrite(VEXT, HIGH);  // apaga los sensores
-  esp_sleep_enable_timer_wakeup(DORMIR_MIN * 60ULL * 1000000ULL);
-  esp_deep_sleep_start();    // duerme y vuelve a empezar desde setup()`;
-const RADIO=`  SPI.begin(9, 11, 10, 8);
-  if (radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8) == RADIOLIB_ERR_NONE) radio.transmit(msg);`;
+/* ---------- Código de los nodos (versión 1) ----------
+   Todos comparten COMUN: el número de cada placa (sale del chip, no se repite), la batería de verdad, la autoprueba «#AF …» que lee la app
+   por el cable USB (Taller → Comprobar en la mesa) y el modo cobertura (botón PRG apretado al encender: una señal cada 10 s durante 15 min).
+   Los mensajes por radio: «N4;id=1A2B3C;ta=24.1;hr=71;th=22.8;bat=3.98». La pasarela casera (P) los sube al servidor puente.
+   Se compilan solos en GitHub con cada publicación (firmware/), para instalarlos desde la app. Sin probar todavía en placas reales. */
+const COMUN=`// ---- Común a todos los nodos Agro FLY (no hace falta tocarlo) ----
+#define ADC_CTRL 37     // control de la lectura de batería de la Heltec V3
+#define ADC_ON LOW      // si la batería marca 0 V, cambia a HIGH (placas V3.2)
+#define VBAT_PIN 1
+#define BOTON_PRG 0
+SX1262 radio = new Module(8, 14, 12, 13);   // NSS, DIO1, RST, BUSY (fijos en la Heltec V3)
+String ID;
+String idNodo() { uint64_t m = ESP.getEfuseMac(); char b[7]; snprintf(b, sizeof b, "%06X", (unsigned)((m >> 24) & 0xFFFFFF)); return String(b); }
+float batV() {
+  pinMode(ADC_CTRL, OUTPUT); digitalWrite(ADC_CTRL, ADC_ON); delay(10);
+  uint32_t mv = 0; for (int i = 0; i < 8; i++) mv += analogReadMilliVolts(VBAT_PIN);
+  digitalWrite(ADC_CTRL, !ADC_ON);
+  return mv / 8.0 * 4.9 / 1000.0;   // divisor de 390 kΩ y 100 kΩ
+}
+void af(const String& s) { Serial.println("#AF " + s); }   // autoprueba: la lee la app por el cable USB
+bool radioIni() {
+  SPI.begin(9, 11, 10, 8);
+  int e = radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+  af(e == RADIOLIB_ERR_NONE ? String("radio=ok") : "radio=err" + String(e));
+  return e == RADIOLIB_ERR_NONE;
+}
+void enviar(const String& m) {
+  Serial.println(m); af("dato=" + m);
+  int e = radio.transmit(m);
+  if (e != RADIOLIB_ERR_NONE) af("envio=err" + String(e));
+}
+void dormir(uint64_t minutos) {
+  radio.sleep(); pinMode(36, OUTPUT); digitalWrite(36, HIGH);   // apaga la radio y los sensores (Vext)
+  esp_sleep_enable_timer_wakeup(minutos * 60ULL * 1000000ULL);
+  esp_deep_sleep_start();   // duerme y vuelve a empezar desde setup()
+}
+// Modo cobertura: con el botón PRG apretado al encender, una señal cada 10 s durante 15 minutos
+void cobertura() {
+  if (digitalRead(BOTON_PRG) != LOW) return;
+  af("modo=cobertura");
+  if (!radioIni()) return;
+  for (int n = 1; n <= 90; n++) { enviar("PING;id=" + ID + ";n=" + String(n)); delay(10000); }
+  ESP.restart();
+}
+void inicio(const char* nodo) {
+  Serial.begin(115200); delay(300);
+  pinMode(BOTON_PRG, INPUT_PULLUP);
+  ID = idNodo();
+  af(String("nodo=") + nodo); af("id=" + ID); af("version=1");
+  cobertura();
+}
+// ---- Fin de lo común ----`;
 Object.assign(COD,{
-N4:`// N4 · Clima y hoja · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+N1:`// N1 · Nivel del depósito · versión 1 (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
+#include <RadioLib.h>
+#define VEXT 36
+#define SENSOR_RX {rx}   // cable blanco (TX del A02YYUW)
+${COMUN}
+HardwareSerial Sensor(1);
+const float FONDO_CM = 167;   // distancia del sensor al fondo: CÁMBIALA por la medida real
+const float LLENO_CM = 20;    // distancia con el depósito lleno: CÁMBIALA
+
+int leerMM() {                // el sensor manda 4 bytes: 0xFF, alto, bajo, suma
+  unsigned long t0 = millis();
+  while (millis() - t0 < 1000) {
+    if (Sensor.available() >= 4 && Sensor.read() == 0xFF) {
+      int h = Sensor.read(), l = Sensor.read(), s = Sensor.read();
+      if (((0xFF + h + l) & 0xFF) == s) return h * 256 + l;
+    }
+  }
+  return -1;
+}
+void setup() {
+  inicio("N1");
+  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(500);
+  Sensor.begin(9600, SERIAL_8N1, SENSOR_RX, -1);
+  af(leerMM() > 0 ? "a02=ok" : "a02=no");
+  radioIni();
+}
+void loop() {
+  int mm = leerMM();
+  if (mm > 0) {
+    float cm = mm / 10.0;
+    int pct = constrain((int)round((FONDO_CM - cm) * 100 / (FONDO_CM - LLENO_CM)), 0, 100);
+    enviar("N1;id=" + ID + ";cm=" + String(cm, 0) + ";pct=" + String(pct));
+  } else af("a02=no");
+  af("fin");
+  delay(60000);               // una lectura por minuto
+}
+`,
+N2:`// N2 · Humedad del sustrato (capacitivo) · versión 1 (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
+#include <RadioLib.h>
+#define VEXT 36
+#define AOUT {ana}       // salida analógica del sensor
+${COMUN}
+const int SECO = 3000;     // CALIBRA: valor con el sensor al aire
+const int MOJADO = 1300;   // CALIBRA: valor con el sensor en un vaso de agua (hasta la raya)
+const uint64_t DORMIR_MIN = 10;
+
+void setup() {
+  inicio("N2");
+  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(800);
+  analogReadResolution(12);
+  long suma = 0; for (int i = 0; i < 16; i++) { suma += analogRead(AOUT); delay(20); }
+  int raw = suma / 16;
+  af(raw > 100 && raw < 4000 ? "cap=ok" : "cap=no");
+  int hum = constrain(map(raw, SECO, MOJADO, 0, 100), 0, 100);
+  float b = batV(); af("bat=" + String(b, 2));
+  radioIni();
+  enviar("N2;id=" + ID + ";hum=" + String(hum) + ";raw=" + String(raw) + ";bat=" + String(b, 2));
+  af("fin");
+  dormir(DORMIR_MIN);
+}
+void loop() {}
+`,
+N4:`// N4 · Clima y hoja · versión 1 (sin probar todavía en la placa real)
 // Placa: Heltec WiFi LoRa 32 V3 · Librerías: RadioLib, Adafruit SHT4x, Adafruit MLX90614
 #include <RadioLib.h>
 #include <Wire.h>
 #include <Adafruit_SHT4x.h>
 #include <Adafruit_MLX90614.h>
-#define VEXT 36          // LOW = sensores encendidos
+#define VEXT 36
 #define I2C_SDA {sda}
 #define I2C_SCL {scl}
-SX1262 radio = new Module(8, 14, 12, 13);
+${COMUN}
 Adafruit_SHT4x sht; Adafruit_MLX90614 mlx;
 const uint64_t DORMIR_MIN = 10;
 
 void setup() {
-  Serial.begin(115200);
+  inicio("N4");
   pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(300);
   Wire.begin(I2C_SDA, I2C_SCL);
   float ta = NAN, hr = NAN, th = NAN;
-  if (sht.begin()) { sensors_event_t h, t; sht.getEvent(&h, &t); ta = t.temperature; hr = h.relative_humidity; }
-  else Serial.println("No encuentro el SHT40: revisa SDA, SCL y la alimentación");
-  if (mlx.begin()) th = mlx.readObjectTempC();
-  else Serial.println("No encuentro el MLX90614");
-  String msg = "N4;ta=" + String(ta, 1) + ";hr=" + String(hr, 0) + ";th=" + String(th, 1) + ";bat=100";   // bat: pendiente
-  Serial.println(msg);
-${RADIO}
-${DORMIR}
+  if (sht.begin(&Wire)) { sensors_event_t h, t; sht.getEvent(&h, &t); ta = t.temperature; hr = h.relative_humidity; af("sht40=ok"); }
+  else af("sht40=no");
+  if (mlx.begin(MLX90614_I2CADDR, &Wire)) { th = mlx.readObjectTempC(); af("mlx=ok"); }
+  else af("mlx=no");
+  float b = batV(); af("bat=" + String(b, 2));
+  radioIni();
+  enviar("N4;id=" + ID + ";ta=" + String(ta, 1) + ";hr=" + String(hr, 0) + ";th=" + String(th, 1) + ";bat=" + String(b, 2));
+  af("fin");
+  dormir(DORMIR_MIN);
 }
 void loop() {}
 `,
-N5:`// N5 · Temperatura de la raíz o del agua · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+N5:`// N5 · Temperatura de la raíz o del agua · versión 1 (sin probar todavía en la placa real)
 // Placa: Heltec WiFi LoRa 32 V3 · Librerías: RadioLib, OneWire, DallasTemperature
 #include <RadioLib.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #define VEXT 36
-#define SONDA {ow}        // cable amarillo de la DS18B20
-SX1262 radio = new Module(8, 14, 12, 13);
+#define SONDA {ow}       // cable amarillo de la DS18B20
+${COMUN}
 OneWire ow(SONDA); DallasTemperature sondas(&ow);
 const uint64_t DORMIR_MIN = 10;
 
 void setup() {
-  Serial.begin(115200);
+  inicio("N5");
   pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(300);
   sondas.begin(); sondas.requestTemperatures();
   float t = sondas.getTempCByIndex(0);
-  if (t == DEVICE_DISCONNECTED_C) Serial.println("No responde la sonda: revisa el amarillo y la resistencia de 4,7 kΩ");
-  String msg = "N5;t=" + String(t, 1) + ";bat=100";
-  Serial.println(msg);
-${RADIO}
-${DORMIR}
+  af(t == DEVICE_DISCONNECTED_C ? "ds18=no" : "ds18=ok");
+  float b = batV(); af("bat=" + String(b, 2));
+  radioIni();
+  enviar("N5;id=" + ID + ";t=" + String(t, 1) + ";bat=" + String(b, 2));
+  af("fin");
+  dormir(DORMIR_MIN);
 }
 void loop() {}
 `,
-N6:`// N6 · Contador de pulsos (drenaje, agua o viento) · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+N6:`// N6 · Contador de pulsos (drenaje, agua o viento) · versión 1 (sin probar todavía en la placa real)
 // Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
-// Cuenta los pulsos todo el rato y manda la suma cada 10 minutos. Con placa solar va justo: en la fase 2, contador por hardware.
+// Cuenta los pulsos todo el rato y manda la suma cada 10 minutos.
 #include <RadioLib.h>
 #define PULSOS {pul}
-SX1262 radio = new Module(8, 14, 12, 13);
-const float POR_PULSO = 5.0;       // CALIBRA: ml por vuelco de la cazoleta, litros por pulso del contador o km/h por pulso/s
+${COMUN}
+const float POR_PULSO = 5.0;       // CALIBRA: ml por vuelco, litros por pulso o km/h por pulso/s
 const unsigned long CADA_MS = 10UL * 60UL * 1000UL;
 volatile unsigned long cuenta = 0, ultimo = 0;
 void IRAM_ATTR pulso() { unsigned long t = millis(); if (t - ultimo > 30) { cuenta++; ultimo = t; } }   // 30 ms antirrebote
 
 void setup() {
-  Serial.begin(115200);
+  inicio("N6");
   pinMode(PULSOS, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(PULSOS), pulso, FALLING);
-  SPI.begin(9, 11, 10, 8);
-  radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+  af("pulsos=listo"); af("bat=" + String(batV(), 2));
+  radioIni();
+  af("fin");
 }
 void loop() {
-  static unsigned long t0 = millis();
+  static unsigned long t0 = millis(), visto = 0;
+  if (cuenta != visto) { visto = cuenta; af("pulso=" + String(visto)); }   // en la mesa: cada vuelco suma 1
   if (millis() - t0 >= CADA_MS) {
     t0 = millis();
-    noInterrupts(); unsigned long n = cuenta; cuenta = 0; interrupts();
-    String msg = "N6;pul=" + String(n) + ";valor=" + String(n * POR_PULSO, 1) + ";bat=100";
-    Serial.println(msg);
-    radio.transmit(msg); radio.sleep();
+    noInterrupts(); unsigned long n = cuenta; cuenta = 0; visto = 0; interrupts();
+    enviar("N6;id=" + ID + ";pul=" + String(n) + ";valor=" + String(n * POR_PULSO, 1) + ";bat=" + String(batV(), 2));
+    radio.sleep();
   }
   delay(50);
 }
 `,
-N7:`// N7 · Sensor 4–20 mA · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+N7:`// N7 · Sensor 4–20 mA · versión 1 (sin probar todavía en la placa real)
 // Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
 #include <RadioLib.h>
 #define VEXT 36
-#define SENAL {ana}           // tensión en la resistencia de 150 Ω
-SX1262 radio = new Module(8, 14, 12, 13);
+#define SENAL {ana}      // tensión en la resistencia de 150 Ω
+${COMUN}
 const float R_OHM = 150.0;
 const float MIN_ESCALA = 0.0, MAX_ESCALA = 10.0;   // CAMBIA: lo que mide a 4 mA y a 20 mA (bar, cm, W/m²…)
 const char* UNIDAD = "bar";
 
+float leerMA() { long mv = 0; for (int i = 0; i < 32; i++) { mv += analogReadMilliVolts(SENAL); delay(5); } return (mv / 32.0) / R_OHM; }
 void setup() {
-  Serial.begin(115200);
-  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW);
-  SPI.begin(9, 11, 10, 8);
-  radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+  inicio("N7");
+  pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(1500);   // deja que el sensor arranque
+  float ma = leerMA();
+  af(ma >= 3.5 ? "lazo=ok" : "lazo=no"); af("ma=" + String(ma, 2));
+  radioIni();
 }
 void loop() {
-  delay(1500);                                  // deja que el sensor arranque
-  long mv = 0; for (int i = 0; i < 32; i++) { mv += analogReadMilliVolts(SENAL); delay(5); }
-  float ma = (mv / 32.0) / R_OHM;               // mV / Ω = mA
+  float ma = leerMA();
   float valor = MIN_ESCALA + (ma - 4.0) * (MAX_ESCALA - MIN_ESCALA) / 16.0;
-  if (ma < 3.5) Serial.println("Menos de 4 mA: cable cortado o sensor sin alimentar");
-  String msg = "N7;ma=" + String(ma, 2) + ";valor=" + String(valor, 2) + ";u=" + UNIDAD;
-  Serial.println(msg);
-  radio.transmit(msg); radio.sleep();
-  delay(60000);                                 // una lectura por minuto
+  if (ma < 3.5) af("lazo=no");
+  enviar("N7;id=" + ID + ";ma=" + String(ma, 2) + ";valor=" + String(valor, 2) + ";u=" + UNIDAD);
+  radio.sleep();
+  af("fin");
+  delay(60000);               // una lectura por minuto
 }
 `,
-N8:`// N8 · CO₂ (SCD41) · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+N8:`// N8 · CO₂ (SCD41) · versión 1 (sin probar todavía en la placa real)
 // Placa: Heltec WiFi LoRa 32 V3 · Librerías: RadioLib, Sensirion I2C SCD4x
 #include <RadioLib.h>
 #include <Wire.h>
@@ -501,54 +543,134 @@ N8:`// N8 · CO₂ (SCD41) · CÓDIGO DE PARTIDA (sin probar todavía en la plac
 #define VEXT 36
 #define I2C_SDA {sda}
 #define I2C_SCL {scl}
-SX1262 radio = new Module(8, 14, 12, 13);
+${COMUN}
 SensirionI2cScd4x scd;
 
 void setup() {
-  Serial.begin(115200);
+  inicio("N8");
   pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(300);
   Wire.begin(I2C_SDA, I2C_SCL);
   scd.begin(Wire, SCD41_I2C_ADDR_62);
-  scd.startPeriodicMeasurement();               // una medida cada 5 s; la primera tarda unos segundos
-  SPI.begin(9, 11, 10, 8);
-  radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+  scd.stopPeriodicMeasurement(); delay(500);
+  af(scd.startPeriodicMeasurement() == 0 ? "scd41=ok" : "scd41=no");   // una medida cada 5 s
+  radioIni();
 }
 void loop() {
-  delay(300000);                                // cada 5 minutos
+  static bool primera = true;
+  delay(primera ? 10000 : 300000);              // la primera a los 10 s; después cada 5 minutos
+  primera = false;
   uint16_t co2 = 0; float t = 0, hr = 0;
   if (scd.readMeasurement(co2, t, hr) == 0 && co2 > 0) {
-    String msg = "N8;co2=" + String(co2) + ";ta=" + String(t, 1) + ";hr=" + String(hr, 0);
-    Serial.println(msg);
-    radio.transmit(msg); radio.sleep();
-  } else Serial.println("Sin medida del SCD41 todavía");
+    enviar("N8;id=" + ID + ";co2=" + String(co2) + ";ta=" + String(t, 1) + ";hr=" + String(hr, 0));
+    radio.sleep();
+  } else af("scd41=sin_medida");
+  af("fin");
 }
 `,
-N9:`// N9 · Consumo de la bomba (pinza SCT-013-030) · CÓDIGO DE PARTIDA (sin probar todavía en la placa real)
+N9:`// N9 · Consumo de la bomba (pinza SCT-013-030) · versión 1 (sin probar todavía en la placa real)
 // Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
 #include <RadioLib.h>
 #define PINZA {ana}
-SX1262 radio = new Module(8, 14, 12, 13);
+${COMUN}
 const float AMP_POR_VOLTIO = 30.0;   // SCT-013-030: 30 A dan 1 V
 const float UMBRAL_A = 1.0;          // por encima, la bomba está funcionando (CAMBIA tras mirar los valores)
 
 float amperios() {                   // valor eficaz de unas 10 ondas de 50 Hz
-  const int N = 2000; long suma = 0; float v[N];
+  const int N = 2000; static float v[N]; long suma = 0;
   for (int i = 0; i < N; i++) { v[i] = analogReadMilliVolts(PINZA); suma += v[i]; delayMicroseconds(100); }
   float media = suma / (float)N, cuad = 0;
   for (int i = 0; i < N; i++) { float d = v[i] - media; cuad += d * d; }
+  af("media_mv=" + String(media, 0));   // con la placa de polarización debe salir cerca de 1650
   return sqrt(cuad / N) / 1000.0 * AMP_POR_VOLTIO;
 }
 void setup() {
-  Serial.begin(115200);
-  SPI.begin(9, 11, 10, 8);
-  radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+  inicio("N9");
+  float a = amperios();
+  af("pinza=ok"); af("amp=" + String(a, 1));
+  radioIni();
 }
 void loop() {
   float a = amperios();
-  String msg = "N9;amp=" + String(a, 1) + ";marcha=" + String(a > UMBRAL_A ? 1 : 0);
-  Serial.println(msg);
-  radio.transmit(msg); radio.sleep();
+  enviar("N9;id=" + ID + ";amp=" + String(a, 1) + ";marcha=" + String(a > UMBRAL_A ? 1 : 0));
+  radio.sleep();
+  af("fin");
   delay(60000);
+}
+`,
+P:`// P · Pasarela casera (LoRa → wifi → servidor puente) · versión 1 (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib (WiFi, HTTPClient y Preferences vienen con la placa)
+// La wifi, la dirección del servidor y la clave se le pasan desde la app por el cable USB (Taller → Comprobar en la mesa):
+// la app manda «CFG wifi=…|clave=…|url=…|token=…» y la placa lo guarda y se reinicia.
+#include <RadioLib.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <Preferences.h>
+${COMUN}
+Preferences cfg; String WIFI, CLAVE, URL, TOKEN;
+volatile bool llega = false;
+void IRAM_ATTR alRecibir() { llega = true; }
+String cola[20]; int nCola = 0;
+
+void leerCfg() {
+  cfg.begin("af", true);
+  WIFI = cfg.getString("wifi", ""); CLAVE = cfg.getString("clave", ""); URL = cfg.getString("url", ""); TOKEN = cfg.getString("token", "");
+  cfg.end();
+}
+void mirarSerie() {
+  if (!Serial.available()) return;
+  String l = Serial.readStringUntil('\\n'); l.trim();
+  if (!l.startsWith("CFG ")) return;
+  l = l.substring(4);
+  cfg.begin("af", false);
+  while (l.length()) {
+    int p = l.indexOf('|'); String kv = p < 0 ? l : l.substring(0, p); l = p < 0 ? "" : l.substring(p + 1);
+    int e = kv.indexOf('='); if (e > 0) cfg.putString(kv.substring(0, e).c_str(), kv.substring(e + 1));
+  }
+  cfg.end();
+  af("cfg=ok"); delay(300); ESP.restart();
+}
+bool conectar() {
+  if (WiFi.status() == WL_CONNECTED) return true;
+  if (!WIFI.length()) return false;
+  WiFi.mode(WIFI_STA); WiFi.begin(WIFI.c_str(), CLAVE.c_str());
+  for (int i = 0; i < 40 && WiFi.status() != WL_CONNECTED; i++) { delay(250); mirarSerie(); }
+  return WiFi.status() == WL_CONNECTED;
+}
+bool subir(const String& json) {
+  if (!URL.length() || !conectar()) return false;
+  HTTPClient h; h.begin(URL);
+  h.addHeader("Content-Type", "application/json"); h.addHeader("Authorization", "Bearer " + TOKEN);
+  int c = h.POST(json); h.end();
+  return c >= 200 && c < 300;
+}
+void setup() {
+  inicio("P");
+  leerCfg();
+  af(WIFI.length() ? "wifi_cfg=ok" : "wifi_cfg=falta");
+  af(conectar() ? "wifi=ok" : "wifi=no");
+  af(URL.length() ? "url=ok" : "url=falta");
+  if (radioIni()) { radio.setPacketReceivedAction(alRecibir); radio.startReceive(); }
+  af("fin");
+}
+void loop() {
+  mirarSerie();
+  if (llega) {
+    llega = false;
+    String m; int e = radio.readData(m);
+    if (e == RADIOLIB_ERR_NONE) {
+      String j = "{\\"raw\\":\\"" + m + "\\",\\"rssi\\":" + String(radio.getRSSI(), 0) + ",\\"snr\\":" + String(radio.getSNR(), 1) + ",\\"gw\\":\\"" + ID + "\\"}";
+      af("recibido=" + m);
+      if (!subir(j) && nCola < 20) cola[nCola++] = j;
+    }
+    radio.startReceive();
+  }
+  static unsigned long t0 = 0;
+  if (millis() - t0 > 600000UL) {   // cada 10 minutos: «sigo viva» y lo que no se pudo subir
+    t0 = millis();
+    subir("{\\"raw\\":\\"P;id=" + ID + ";up=" + String(millis() / 60000) + "\\",\\"gw\\":\\"" + ID + "\\"}");
+    int q = 0; for (int i = 0; i < nCola; i++) if (!subir(cola[i])) cola[q++] = cola[i];
+    nCola = q;
+  }
 }
 `});
 const SOLAR_PASOS=['Antes de enchufar la batería: comprueba con el polímetro cuál es el + del conector JST de la Heltec.','Conecta panel, cargador y pila como en el esquema. Primero la pila al cargador, luego el panel.'];
@@ -569,6 +691,101 @@ Object.assign(FICHA,{
 
 PREG[0].ops.splice(PREG[0].ops.findIndex(o=>o[0]==='pasarela'),0,['clima','Clima y temperatura de la hoja'],['raiz','Temperatura de la raíz o del agua'],['pulsos','Pulsos: drenaje, contador de agua o viento'],['ma','Presión u otro sensor 4–20 mA'],['co2','CO₂'],['bomba','Consumo de la bomba']);
 
+/* ---------- Batería y placa solar: ¿aguanta todo el año? ----------
+   Consumo: dormido + cada envío (despertar, leer sensores y transmitir por LoRa). Valores medidos en placas parecidas, con margen:
+   la Heltec V3 dormida con los sensores apagados gasta unos 20–60 µA, más el divisor de la batería; se toma 0,1 mA para no quedarse corto.
+   Sol: radiación media diaria en Murcia sobre placa inclinada ~35° al sur (PVGIS, kWh/m²·día = horas de sol pico). */
+const SOL_MURCIA=[4.6,5.3,6.0,6.2,6.4,6.6,6.9,6.7,6.2,5.4,4.7,4.3];
+const MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const EN0={min:10,w:2,mah:3000};
+/* Lo que hace el nodo en cada envío: segundos despierto y mA medios (sensores + placa), más la transmisión LoRa (SF9: ~0,25 s a ~120 mA) */
+const ENVIO={N1:[2,90],N2:[1.5,70],N3:[3,110],N4:[1.5,80],N5:[1.5,75],N6:[0.4,60],N7:[2,110],N8:[6,90],N9:[1,80],P:[0,0]};
+T.energia=d=>{const e={...EN0,...(d.en||{})},[as,am]=ENVIO[d.nodo]||[2,90],ciclos=24*60/e.min,sleep=0.1;
+  const dia=sleep*24+ciclos*(as*am+0.25*120)/3600;   // mAh al día
+  const dentro=d.lugar!=='fuera',fac=(dentro?0.6:1)*0.8*0.75;   // plástico y blanqueo · suciedad y sombras · cargador y pila
+  const gen=SOL_MURCIA.map(h=>e.w*h*fac/3.7*1000);       // mAh al día que mete la placa
+  const util=e.mah*0.8;return {e,dia,gen,util,dias:util/dia,peor:Math.min(...gen),dentro,ciclos}};
+function vEnergia(d){const N=NODOS[d.nodo],E=T.energia(d),e=E.e,solar=d.energia==='solar';
+  const sel=(k,ops,u)=>`<div class="field"><label for="tle_${k}">${{min:'Manda un dato cada',w:'Placa solar',mah:'Pila 18650'}[k]}</label><div class="inp"><select id="tle_${k}" data-tle="${k}">${ops.map(v=>`<option value="${v}" ${v==e[k]?'selected':''}>${v} ${u}</option>`).join('')}</select></div></div>`;
+  let h=`<div><h3>Batería y placa solar</h3><div class="sub">¿Aguanta todo el año? Cálculo con el sol de Murcia y lo que gasta este nodo</div></div>
+    <div class="row">${sel('min',[1,5,10,15,30,60],'min')}${solar?sel('w',[1,2,3,5],'W')+sel('mah',[2000,2500,3000,3500],'mAh'):''}</div>
+    <div class="tl-av ok" style="text-transform:none">Gasta unos <b>${E.dia.toFixed(1).replace('.',',')} mAh al día</b> (${Math.round(E.ciclos)} envíos).</div>`;
+  if(!solar)return h+`<div class="note" style="text-transform:none">Va enchufado: no depende del sol. Al día gasta unos ${(E.dia*5/1000).toFixed(2).replace('.',',')} Wh, nada en la factura.</div>`;
+  const ok=E.peor>=E.dia*1.5,max=Math.max(...E.gen,E.dia);
+  h+=`<div class="tl-av ${ok?'ok':'bad'}" style="text-transform:none">${ok?`<b>Aguanta todo el año.</b> En el peor mes (diciembre) la placa mete unas ${Math.round(E.peor/E.dia)} veces lo que gasta.`:`<b>Va justo en invierno.</b> En diciembre la placa mete menos de 1,5 veces lo que gasta: pon una placa más grande o manda menos a menudo.`}
+    Sin nada de sol, la pila aguanta unos <b>${Math.round(E.dias)} días</b>.</div>
+    <div class="tl-mes">${E.gen.map((g,i)=>`<div><i style="height:${(g/max*100).toFixed(0)}%" class="${g<E.dia*1.5?'bad':''}"></i><b style="bottom:${(E.dia/max*100).toFixed(0)}%"></b><span>${MES[i]}</span></div>`).join('')}</div>
+    <div class="note" style="text-transform:none">Barras: lo que mete la placa cada día de media (${E.dentro?'dentro del invernadero, con plástico y blanqueo':'al aire libre'}, sucia a medias y con las pérdidas del cargador). Raya: lo que gasta el nodo. Son cuentas con margen, no medidas: la de verdad la dará el propio nodo cuando mande su batería.</div>`;
+  return h}
+const CSS_EN=`.tl-rev{display:grid;gap:8px;margin-top:10px;padding-top:12px;border-top:1px solid var(--line)}.tl-revl{display:grid;gap:5px}.tl-rev small{opacity:.85}
+.tl-mes{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;height:130px;align-items:end;padding-top:6px}.tl-mes>div{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end}
+.tl-mes i{display:block;background:#2e9e5b;border-radius:3px 3px 0 0;min-height:2px}.tl-mes i.bad{background:#e67e22}.tl-mes b{position:absolute;left:-2px;right:-2px;height:2px;background:#c0392b}.tl-mes span{position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:9.5px;color:var(--muted)}
+.tl-mes{margin-bottom:20px}`;
+/* ---------- Instalar y probar: por el cable USB, desde Chrome o Edge en el ordenador (Web Serial) ----------
+   Instalar: baja el firmware que compila GitHub (rama «firmware») y lo carga con esptool-js de Espressif.
+   Comprobar: reinicia la placa y lee su autoprueba («#AF clave=valor») para ir marcando qué funciona. */
+const FW='https://raw.githubusercontent.com/Abonado/fertirrigacion/firmware/';
+const ESPERA={N1:[['a02','Sensor de ultrasonidos']],N2:[['cap','Sensor capacitivo']],N4:[['sht40','SHT40 (aire)'],['mlx','MLX90614 (hoja)']],N5:[['ds18','Sonda DS18B20']],N6:[['pulsos','Entrada de pulsos']],
+  N7:[['lazo','Lazo 4–20 mA']],N8:[['scd41','SCD41 (CO₂)']],N9:[['pinza','Pinza de corriente']],P:[['wifi_cfg','Wifi configurada'],['wifi','Conectada a la wifi'],['url','Servidor puente']]};
+const PISTA={a02:'Revisa el cable blanco (TX) al GPIO del esquema y que el sensor tiene 5 V o 3,3 V.',cap:'Revisa el cable AOUT y que el sensor está alimentado.',sht40:'Revisa SDA, SCL, VCC y GND del SHT40.',mlx:'Revisa SDA, SCL y que es la versión de 3,3 V.',ds18:'Falta la resistencia de 4,7 kΩ o el amarillo no está en su GPIO.',
+  pulsos:'',lazo:'Menos de 4 mA: el elevador no da 12 V, el lazo está abierto o al revés.',scd41:'Revisa SDA, SCL y que el SCD41 tiene alimentación.',pinza:'',wifi_cfg:'Mándale la wifi con el formulario de abajo.',wifi:'Nombre o clave de la wifi mal, o la señal no llega.',url:'Pon la dirección del servidor puente en el formulario.',radio:'La radio no arranca: mira la antena y que la placa es la V3 de 868 MHz.'};
+const PL={log:[],af:{},estado:'',prog:0,port:null};
+const hayWebSerial=()=>typeof navigator!=='undefined'&&!!(navigator.serial&&navigator.serial.requestPort);
+const dormirMs=ms=>new Promise(r=>setTimeout(r,ms));
+async function abrirPuerto(){if(PL.port)return PL.port;PL.port=await navigator.serial.requestPort({filters:[{usbVendorId:0x10c4},{usbVendorId:0x1a86},{usbVendorId:0x303a}]});return PL.port}
+T.instalar=async()=>{const s=S(),d=s.d;if(!d)return;if(!hayWebSerial()){toast('Hace falta Chrome o Edge en un ordenador');return}
+  PL.estado='bajando';PL.prog=0;PL.log=[];PL.af={};repinta();let bin;
+  try{const r=await fetch(FW+d.nodo+'.bin',{cache:'no-store'});if(!r.ok)throw new Error('no');bin=new Uint8Array(await r.arrayBuffer())}catch(e){PL.estado='';toast('No hay firmware compilado de '+d.nodo+' todavía');repinta();return}
+  let tr=null;try{const port=await abrirPuerto();PL.estado='conectando';repinta();const m=await import('./esptool.js');tr=new m.Transport(port,false);
+    const term={clean(){},writeLine(t){PL.log.push(String(t))},write(t){}};const ld=new m.ESPLoader({transport:tr,baudrate:460800,terminal:term});
+    const chip=await ld.main();PL.log.push('Placa: '+chip);if(!/ESP32-S3/i.test(chip))throw new Error('No es una Heltec V3 (ESP32-S3): '+chip);
+    PL.estado='instalando';repinta();
+    await ld.writeFlash({fileArray:[{data:bin,address:0}],flashMode:'keep',flashFreq:'keep',flashSize:'keep',eraseAll:false,compress:true,reportProgress:(i,w,t)=>{PL.prog=Math.round(w/t*100);const o=document.getElementById('tl_prog');if(o)o.style.width=PL.prog+'%'}});
+    await ld.after('hard_reset');await tr.disconnect();tr=null;PL.estado='instalado';toast('Instalado. Ahora la comprobación');repinta();await dormirMs(800);T.comprobar(true)}
+  catch(e){PL.estado='';PL.log.push('Error: '+(e&&e.message||e));toast(e&&e.name==='NotFoundError'?'No has elegido la placa':'No se ha podido instalar: '+(e&&e.message||'mira el registro'));try{if(tr)await tr.disconnect()}catch(x){}repinta()}};
+T.comprobar=async(sinPedir)=>{const s=S(),d=s.d;if(!d)return;if(!hayWebSerial()){toast('Hace falta Chrome o Edge en un ordenador');return}
+  let port;try{port=sinPedir&&PL.port?PL.port:await abrirPuerto()}catch(e){return}
+  PL.af={};PL.log=[];PL.estado='leyendo';repinta();
+  try{await port.open({baudRate:115200})}catch(e){}
+  try{await port.setSignals({dataTerminalReady:false,requestToSend:true});await dormirMs(120);await port.setSignals({dataTerminalReady:false,requestToSend:false})}catch(e){}
+  const rd=port.readable.getReader(),dec=new TextDecoder();let buf='',fin=Date.now()+45000;PL.reader=rd;
+  try{while(Date.now()<fin){const r=await Promise.race([rd.read(),dormirMs(1000).then(()=>({tic:true}))]);if(r.tic)continue;if(r.done)break;buf+=dec.decode(r.value,{stream:true});let i;
+      while((i=buf.indexOf('\n'))>=0){const l=buf.slice(0,i).replace(/\r$/,'');buf=buf.slice(i+1);if(!l)continue;PL.log.push(l);if(PL.log.length>200)PL.log.shift();const m=/^#AF (\w+)=(.*)$/.exec(l);
+        if(m){PL.af[m[1]]=m[2];if(m[1]==='fin'||(m[1]==='dato'&&d.nodo!=='P'))fin=Math.min(fin,Date.now()+(m[1]==='fin'?600:3000))}const o=document.getElementById('tl_placa');if(o)o.innerHTML=placaRes(d)}}}
+  catch(e){PL.log.push('Error: '+(e&&e.message||e))}
+  try{rd.releaseLock()}catch(e){}PL.reader=null;PL.estado='hecho';repinta()};
+T.mandarCfg=async()=>{const v=k=>(document.getElementById('tl_'+k)||{}).value||'';const c={wifi:v('wifi').trim(),clave:v('clave'),url:v('url').trim(),token:v('token').trim()};
+  if(!c.wifi||!c.url){toast('Pon la wifi y la dirección del servidor');return}if(/[|\n]/.test(Object.values(c).join(''))){toast('Sin «|» en los datos');return}
+  try{const port=PL.port||await abrirPuerto();try{await port.open({baudRate:115200})}catch(e){}const w=port.writable.getWriter();await w.write(new TextEncoder().encode('CFG wifi='+c.wifi+'|clave='+c.clave+'|url='+c.url+'|token='+c.token+'\n'));w.releaseLock();
+    try{await port.close()}catch(e){}toast('Configuración enviada: la placa se reinicia');await dormirMs(1500);T.comprobar(true)}catch(e){toast('No se ha podido mandar: '+(e&&e.message||''))}};
+function placaRes(d){const A=PL.af,E=[['nodo','Placa con el código de '+d.nodo],['id','Número de la placa'],['radio','Radio LoRa'],...(ESPERA[d.nodo]||[]),...(NODOS[d.nodo].solar?[['bat','Batería']]:[]),...(d.nodo==='P'?[]:[['dato','Dato enviado por radio']])];
+  const est=k=>{const v=A[k];if(v==null)return PL.estado==='leyendo'?['…','wait']:['✗','bad'];if(k==='nodo')return v===d.nodo?['✓','ok']:['✗','bad'];if(k==='id'||k==='dato')return ['✓','ok'];
+    if(k==='bat'){const b=parseFloat(v);return b>=3.3&&b<=4.3?['✓','ok']:['!','warn']}if(k==='pulsos')return ['✓','ok'];if(k==='pinza')return ['✓','ok'];return /^ok/.test(v)?['✓','ok']:['✗','bad']};
+  return E.map(([k,n])=>{const [i,c]=est(k),v=A[k];return `<div class="tl-av ${c==='wait'?'':c}"><b>${i}</b> ${e_(n)}${v&&!/^ok$/.test(v)&&k!=='nodo'?` · <code>${e_(v.slice(0,60))}</code>`:''}${c==='bad'&&PL.estado!=='leyendo'&&PISTA[k]?`<br><small>${e_(PISTA[k])}</small>`:''}${k==='bat'&&v?'<br><small>Mide la pila con el polímetro: si no coincide (±0,1 V), en el código cambia ADC_ON a HIGH.</small>':''}${k==='nodo'&&v&&v!==d.nodo?`<br><small>Esta placa tiene el código de ${e_(v)}.</small>`:''}</div>`}).join('')+(A.pulso?`<div class="tl-av ok">Pulsos contados: ${e_(A.pulso)} (cada vuelco debe sumar 1)</div>`:'')}
+function vPlaca(d){const pinesDef=JSON.stringify(T.pinesDefecto(d.nodo))===JSON.stringify(Object.fromEntries(Object.keys(T.pinesDefecto(d.nodo)).map(k=>[k,+d.pines[k]]))),A=PL.af;
+  if(!COD[d.nodo])return `<div class="note">Este diseño todavía no tiene código.</div>`;
+  let h=`<div><h3>Instalar y probar</h3><div class="sub" style="text-transform:none">Con la placa conectada por USB al ordenador, en Chrome o Edge. Sin Arduino.</div></div>`;
+  if(!hayWebSerial())h+=`<div class="tl-av warn">Este navegador no puede usar el cable USB. Abre la app en Chrome o Edge en un ordenador (en el móvil y en el iPhone no se puede).</div>`;
+  if(!pinesDef)h+=`<div class="tl-av warn" style="text-transform:none">Has cambiado pines: el firmware que se instala desde aquí lleva los de serie. Para tus pines, usa el código de la pestaña Ficha con Arduino. La comprobación sí funciona.</div>`;
+  h+=`<div class="tl-av warn" style="text-transform:none">Antes de enchufar: la antena puesta. Sin antena la radio se puede estropear.</div>
+    <div class="row"><button class="btn pri" type="button" data-tlx="instalar" ${!hayWebSerial()||!pinesDef||['bajando','conectando','instalando','leyendo'].includes(PL.estado)?'disabled':''}>Instalar en la placa</button><button class="btn" type="button" data-tlx="comprobar" ${!hayWebSerial()||PL.estado==='leyendo'||PL.estado==='instalando'?'disabled':''}>Comprobar en la mesa</button></div>`;
+  if(['bajando','conectando','instalando'].includes(PL.estado))h+=`<div class="sub">${{bajando:'Bajando el firmware…',conectando:'Conectando con la placa… (si no conecta: mantén BOOT/PRG y pulsa RST)',instalando:'Instalando… no desenchufes'}[PL.estado]}</div><div class="tl-pbar"><i id="tl_prog" style="width:${PL.prog}%"></i></div>`;
+  if(PL.estado==='leyendo'||Object.keys(A).length)h+=`<div class="sub">${PL.estado==='leyendo'?'Leyendo la autoprueba de la placa…':'Resultado de la comprobación'}</div><div id="tl_placa" class="tl-avisos">${placaRes(d)}</div>`;
+  if(A.id&&PL.estado==='hecho')h+=`<div class="tl-av ok" style="text-transform:none">Número de esta placa: <b>${e_(A.id)}</b>. <button class="lnk" type="button" data-tlx="vincular">Ponerlo en Mis aparatos</button></div>`;
+  if(d.nodo==='P'){const cs=(typeof st!=='undefined'&&st.cfg&&st.cfg.sens)||{};h+=`<div class="catsec"><h4>Configurar la pasarela</h4><div class="frm">
+    <div class="field"><label for="tl_wifi">Wifi (nombre)</label><div class="inp"><input id="tl_wifi" autocomplete="off" style="text-transform:none;text-align:left"></div></div>
+    <div class="field"><label for="tl_clave">Clave de la wifi</label><div class="inp"><input id="tl_clave" type="password" autocomplete="off" style="text-transform:none;text-align:left"></div></div>
+    <div class="field"><label for="tl_url">Servidor puente</label><div class="inp"><input id="tl_url" value="${e_(cs.url?cs.url.replace(/\/+$/,'')+'/p':'')}" placeholder="https://…workers.dev/p" style="text-transform:none;text-align:left"></div></div>
+    <div class="field"><label for="tl_token">Clave del puente</label><div class="inp"><input id="tl_token" type="password" value="${e_(cs.token||'')}" style="text-transform:none;text-align:left"></div></div></div>
+    <div class="note" style="text-transform:none">La wifi y su clave no se guardan en la app: van directas a la placa por el cable.</div>
+    <div class="row"><button class="btn" type="button" data-tlx="cfg" ${hayWebSerial()?'':'disabled'}>Mandar a la placa</button></div></div>`}
+  if(PL.log.length)h+=`<details class="tl-log"><summary>Lo que dice la placa (${PL.log.length} líneas)</summary><pre>${e_(PL.log.slice(-80).join('\n'))}</pre></details>`;
+  return h}
+const CSS_PL=`.tl-pbar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}.tl-pbar i{display:block;height:100%;background:var(--accent,#1a7f4b);transition:width .3s}.tl-log pre{white-space:pre-wrap;font-size:11.5px;max-height:240px;overflow:auto;background:#15222c;color:#d5e8d4;padding:8px;border-radius:8px;text-transform:none}.tl-av code{font-size:12px}`;
+document.addEventListener('click',e=>{if(typeof st==='undefined'||st.tab!=='taller')return;const b=e.target.closest&&e.target.closest('[data-tlx]');if(!b)return;const a=b.dataset.tlx;
+  if(a==='instalar')T.instalar();else if(a==='comprobar')T.comprobar(false);else if(a==='cfg')T.mandarCfg();
+  else if(a==='vincular'){const s=S(),d=s.d;if(!d||!PL.af.id)return;if(typeof apVincular==='function')apVincular(d,PL.af.id)}});
+
 /* ---------- Pantalla ---------- */
 const CSS=`.tl-tabs{display:flex;gap:6px;flex-wrap:wrap}.tl-avisos{display:grid;gap:6px}.tl-av{border-radius:8px;padding:8px 10px;font-size:13.5px;text-transform:none}.tl-av.bad{background:var(--bad-bg);color:var(--bad)}.tl-av.warn{background:var(--warn-bg);color:var(--warn)}.tl-av.ok{background:var(--ok-bg);color:var(--ok)}
 .tl-esq{width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px}.tl-wrap{overflow-x:auto}
@@ -578,7 +795,7 @@ const CSS=`.tl-tabs{display:flex;gap:6px;flex-wrap:wrap}.tl-avisos{display:grid;
 .tl-nom .inp{width:100%}#tl_nom.wide{width:100%;min-width:0}.tl-ck{display:grid;gap:6px}.tl-ck label{display:flex;gap:8px;align-items:flex-start;text-transform:none}.tl-ck input{margin-top:3px;width:18px;height:18px}.tl-ck label.hecho span{text-decoration:line-through;color:var(--muted)}
 .tl-lst{display:grid;gap:6px}.tl-lst .r{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-transform:none}
 .tl-q{display:grid;gap:6px}.tl-q .row{flex-wrap:wrap}.tl-dim{font-size:13px;color:var(--muted);text-transform:none}`;
-function estilos(){if(document.getElementById('tl_css'))return;const e=document.createElement('style');e.id='tl_css';e.textContent=CSS;document.head.appendChild(e)}
+function estilos(){if(document.getElementById('tl_css'))return;const e=document.createElement('style');e.id='tl_css';e.textContent=CSS+CSS_EN+CSS_PL;document.head.appendChild(e)}
 
 function vAsistente(s){const q=s.q,listo=PREG.every(p=>q[p.k]),lista=cargar();if(!NB.ok)sincroniza();
   return `<section class="card"><div><h3>Taller de sensores</h3><div class="sub">Dime qué quieres medir y te doy las piezas, el esquema de cables, la caja para imprimir en 3D y la ficha de montaje. Solo lo ves tú.</div></div><div class="row"><button class="btn" data-tab="catalogo">Ver todo en el catálogo</button></div>
@@ -599,7 +816,27 @@ function vEsquema(d){const N=NODOS[d.nodo],av=T.validar(d),vars=N.con.filter((c,
     ${vars.length?`<div class="frm">${vars.map(c=>`<div class="field"><label for="tl_p_${c.var}">${e_(c.nom)}</label><div class="inp"><select id="tl_p_${c.var}" data-tlp="${c.var}">${HPINES.map(g=>`<option value="${g}" ${+d.pines[c.var]===g?'selected':''}>GPIO ${g}${RESERV[g]?' (ocupado)':''}</option>`).join('')}</select></div></div>`).join('')}</div>`:''}
     ${Object.keys(d.alim||{}).length?`<div class="frm">${Object.entries(d.alim).map(([p,v])=>`<div class="field"><label for="tl_a_${p}">Alimentación de ${e_(PIEZAS[p].n.split(' (')[0])}</label><div class="inp"><select id="tl_a_${p}" data-tla="${p}">${[3.3,5,12].map(x=>`<option value="${x}" ${+v===x?'selected':''}>${n1(x)} V${x===3.3?' (Ve)':x===5?' (5V)':' (MT3608)'}</option>`).join('')}</select></div></div>`).join('')}</div>`:''}
     <div class="note" style="text-transform:none">Cambia un pin para ver cómo avisa la app. Los pines que vienen puestos son los que ya decidimos en el dossier de sensores.</div>
-    ${N.con.filter(c=>c.nota).map(c=>`<div class="tl-av warn">! ${e_(c.nota)}</div>`).join('')}`}
+    ${N.con.filter(c=>c.nota).map(c=>`<div class="tl-av warn">! ${e_(c.nota)}</div>`).join('')}
+    ${vRevFoto(d)}`}
+/* ---------- Revisar el montaje con una foto: la IA compara la foto del cableado con este esquema ----------
+   Es una segunda mirada: no ve soldaduras frías ni tensiones. El polímetro sigue siendo lo que manda. */
+const COLN={'#d62728':'rojo','#222':'negro','#bbb':'blanco','#e6c300':'amarillo','#1f77b4':'azul','#ff7f0e':'naranja','#2ca02c':'verde','#9467bd':'morado','#17becf':'celeste','#7f8c8d':'gris','#e377c2':'rosa','#7f7f7f':'gris'};
+const conTxt=(d,c)=>{const N=NODOS[d.nodo],ph=c.a&&c.a[0]==='heltec'&&c.a[1]==='GPIO'?'GPIO '+d.pines[c.var]:c.a&&c.a[1];return c.a?`cable ${COLN[c.c]||''}: ${PIEZAS[c.de[0]].c} «${c.de[1]}» → ${c.a[0]==='heltec'?'Heltec V3':PIEZAS[c.a[0]].c} «${ph}»`:`${PIEZAS[c.de[0]].c} «${c.de[1]}»: sin conectar (aislado)`};
+T.promptFoto=d=>{const N=NODOS[d.nodo];return `Eres un técnico de electrónica revisando el montaje de un sensor casero para un invernadero. En la foto debería verse una placa Heltec WiFi LoRa 32 V3 (placa azul con pantalla) cableada así:
+${N.con.map((c,i)=>(i+1)+'. '+conTxt(d,c)).join('\n')}
+Para cada conexión de la lista, di si en la foto se ve bien hecha, dudosa, mal o si no se ve. Fíjate en el color del cable, en qué pin acaba (los pines de la Heltec van rotulados en la serigrafía) y en si hay puentes de estaño, cables pelados tocándose o la antena sin poner.
+Responde SOLO con JSON: {"conexiones":[{"n":1,"estado":"bien|dudoso|mal|no_se_ve","nota":"frase corta en español"}],"otros":["problemas que veas fuera de la lista, en español"],"resumen":"una frase en español"}. No inventes: si no se distingue, «no_se_ve».`};
+function vRevFoto(d){const s=S(),R=s.rev&&s.rev.id===d.id?s.rev:null,N=NODOS[d.nodo],EST={bien:['ok','✓ Bien'],dudoso:['warn','? Dudoso'],mal:['bad','✗ Mal'],no_se_ve:['warn','· No se ve']};
+  let h=`<div class="tl-rev"><div><b>Revisar el montaje con una foto</b><div class="sub" style="text-transform:none">Haz una foto de cerca y con buena luz de la placa con los cables puestos. La IA la compara con este esquema, cable a cable. Es una segunda mirada: no sustituye al polímetro.</div></div>
+    <label class="btn ${R&&R.busy?'':'pri'}" style="align-self:start">${R&&R.busy?'Revisando…':'Hacer o elegir foto'}<input type="file" accept="image/*" capture="environment" data-tlfoto="1" hidden ${R&&R.busy?'disabled':''}></label>`;
+  if(R&&R.err)h+=`<div class="tl-av bad">${e_(R.err)}</div>`;
+  if(R&&R.res){const C=R.res.conexiones||[],mal=C.filter(x=>x.estado==='mal').length,dud=C.filter(x=>x.estado!=='bien').length;
+    h+=`<div class="tl-av ${mal?'bad':dud?'warn':'ok'}">${e_(R.res.resumen||'')}</div><div class="tl-revl">${N.con.map((c,i)=>{const x=C.find(y=>+y.n===i+1)||{estado:'no_se_ve',nota:''},E=EST[x.estado]||EST.no_se_ve;return `<div class="tl-av ${E[0]}"><b>${E[1]}</b> · ${i+1}. ${e_(conTxt(d,c))}${x.nota?`<br><small>${e_(x.nota)}</small>`:''}</div>`}).join('')}</div>
+      ${(R.res.otros||[]).length?`<div class="tl-av warn"><b>Además:</b> ${(R.res.otros||[]).map(e_).join(' · ')}</div>`:''}`}
+  return h+'</div>'}
+T.revFoto=async(file)=>{const s=S(),d=s.d;if(!d||!file)return;s.rev={id:d.id,busy:true};repinta();let b=file;try{b=await compressImg(file)}catch(e){}
+  try{const r=await iaFotoJson(T.promptFoto(d),[b]);s.rev={id:d.id,res:{conexiones:Array.isArray(r&&r.conexiones)?r.conexiones:[],otros:Array.isArray(r&&r.otros)?r.otros.map(String):[],resumen:String(r&&r.resumen||'')}}}
+  catch(e){s.rev={id:d.id,err:e&&e.code==='sin_ia'?'La IA no está activada: actívala en Ajustes.':'No se ha podido revisar la foto. Prueba otra vez con más luz.'}}repinta()};
 
 function vCaja(d,s){const c=d.caja,g=geometria(d);
   const num=(k,t,min,max,st)=>`<div class="field"><label for="tl_c_${k}">${t}</label><div class="inp"><input id="tl_c_${k}" type="number" inputmode="decimal" min="${min}" max="${max}" step="${st}" value="${c[k]}" data-tlc="${k}"></div></div>`;
@@ -620,8 +857,8 @@ function vFicha(d){const F=FICHA[d.nodo],cod=COD[d.nodo];
 const codigo=d=>(COD[d.nodo]||'').replace(/\{(\w+)\}/g,(m,k)=>d.pines[k]!=null?d.pines[k]:m);
 
 function vDiseno(s){const d=s.d,N=NODOS[d.nodo],err=hayError(d);
-  const tabs=[['piezas','Piezas'],['esquema','Esquema'+(err?' ✗':'')],['caja','Caja 3D'],['ficha','Ficha']];
-  const cuerpo={piezas:vPiezas,esquema:vEsquema,caja:x=>vCaja(x,s),ficha:vFicha}[s.v](d);
+  const tabs=[['piezas','Piezas'],['esquema','Esquema'+(err?' ✗':'')],['caja','Caja 3D'],['energia','Batería'],['placa','Instalar y probar'],['ficha','Ficha']];
+  const cuerpo={piezas:vPiezas,esquema:vEsquema,caja:x=>vCaja(x,s),energia:vEnergia,placa:vPlaca,ficha:vFicha}[s.v](d);
   return `<section class="card"><div class="row" style="justify-content:space-between"><button class="btn" data-tl="volver">‹ Mis diseños</button><span class="row"><button class="btn" data-tlinst="${e_(d.id)}">Lo he instalado</button><button class="btn" data-tl="guardar">Guardar</button></span></div>
     <div class="field tl-nom"><label for="tl_nom">Nombre del diseño</label><div class="inp"><input id="tl_nom" class="wide" data-tln="1" value="${e_(d.nombre)}" style="text-transform:none"></div></div>
     <div class="sub">${e_(N.n)} · ${d.energia==='solar'?'batería y placa solar':'enchufe'} · ${d.lugar==='fuera'?'al aire libre':'dentro del invernadero'}</div>
@@ -661,11 +898,17 @@ document.addEventListener('click',async e=>{if(st.tab!=='taller')return;const b=
   else if(a==='copiar'){try{await navigator.clipboard.writeText(codigo(s.d));toast('Código copiado')}catch(_){toast('No se ha podido copiar: selecciónalo a mano')}}
   else if(a==='imprimir')imprimir(s.d)});
 document.addEventListener('change',e=>{if(st.tab!=='taller')return;const t=e.target,s=S();if(!s.d)return;
+  if(t.dataset.tlfoto&&t.files&&t.files[0]){T.revFoto(t.files[0]);t.value='';return}
   if(t.dataset.tlp){s.d.pines[t.dataset.tlp]=+t.value;repinta()}
   else if(t.dataset.tla){s.d.alim[t.dataset.tla]=+t.value;repinta()}
+  else if(t.dataset.tle){s.d.en={...EN0,...(s.d.en||{}),[t.dataset.tle]:+t.value};repinta()}
   else if(t.dataset.tlc){const k=t.dataset.tlc;if(t.type==='checkbox')s.d.caja[k]=t.checked;else{const v=parseFloat(String(t.value).replace(',','.'));if(!isFinite(v))return;const lim={pared:[2,6],holg:[1,15],extra:[4,40]}[k];s.d.caja[k]=Math.min(lim[1],Math.max(lim[0],v))}repinta()}
   else if(t.dataset.tlh!=null){const i=+t.dataset.tlh;s.d.hecho=t.checked?[...new Set([...s.d.hecho,i])]:s.d.hecho.filter(x=>x!==i);guardar(s.d);repinta()}
   else if(t.dataset.tln){s.d.nombre=t.value.trim()||s.d.nombre}});
 window.addEventListener('resize',()=>{if(st.tab==='taller')T.dibujar()});
 T._={PIEZAS,NODOS,geometria,distribuir};
+/* Código con los pines de serie (el que se compila en GitHub para instalar desde la app) */
+T.pinesDefecto=n=>{const p={};for(const c of NODOS[n].con)if(c.var)p[c.var]=c.def;return p};
+T.codigoDefecto=n=>COD[n]?codigo({nodo:n,pines:T.pinesDefecto(n)}):'';
+T.nodosConCodigo=()=>Object.keys(NODOS).filter(n=>COD[n]);
 })();

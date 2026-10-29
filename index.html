@@ -66,7 +66,12 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .aprow>span:first-child{display:grid;gap:2px;min-width:0}.aprow small{color:var(--muted);font-size:12px}.aprow .pill{flex:none;max-width:45%;white-space:normal;text-align:center}
 .apres{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}.apres>div{display:grid;gap:2px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--navy) 5%,var(--surface))}.apres b{font:600 22px var(--f-display)}.apres span{font-size:12px;color:var(--muted)}.apres .bad b{color:var(--bad)}
 .apm{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.apm>span:first-child{display:grid;gap:2px;min-width:0}.apm small{color:var(--muted);font-size:12px}.apm.toca b{color:var(--bad)}.apm>.row{flex-wrap:nowrap;flex:none}
-.apadd{flex-wrap:nowrap}.apadd .inp:first-child{flex:1;min-width:0}.apadd .inp:first-child input{width:100%}.apfrm select{font:600 15px var(--f-body);border:0;background:transparent;padding:7px 4px;max-width:100%}.apficha{display:grid;gap:14px}
+.apadd{flex-wrap:nowrap}.apadd .inp:first-child{flex:1;min-width:0}.apadd .inp:first-child input{width:100%}.cjsel,.cjlst{display:grid;gap:6px;max-height:420px;overflow:auto}.cjg{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 8px;border-radius:10px;border:1px solid var(--line)}.cjg.on{border-color:var(--ok,#1a7f4b);background:color-mix(in srgb,var(--ok,#1a7f4b) 6%,var(--surface))}.cjg>span:first-child{min-width:0;font-size:14px}.cjg .row{flex-wrap:nowrap;align-items:center}.cjg .btn{min-width:38px;padding:6px 0}.cjg b{min-width:2ch;text-align:center}tr.cjok td{opacity:.55}
+.apcolla{display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:0 0 8px}.apcolla select{font:600 14px var(--f-body);border:0;background:transparent;padding:6px 4px;max-width:160px}.apcolla small{color:var(--muted)}
+.apg{display:grid;gap:2px;padding:6px 0}.apgh{display:flex;justify-content:space-between;gap:8px;font-size:13px}.apgh span{color:var(--muted);font-size:12px}.apgs{width:100%;height:90px;background:color-mix(in srgb,var(--navy) 4%,var(--surface));border-radius:8px}
+.vvap{cursor:pointer}.cobm{width:100%;height:auto;background:color-mix(in srgb,var(--navy) 4%,var(--surface));border-radius:8px}
+.essens{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.apfrm select{font:600 15px var(--f-body);border:0;background:transparent;padding:7px 4px;max-width:100%}.apficha{display:grid;gap:14px}
 .catdetb{margin:0 12px 10px;display:flex}.catdetb .btn{flex:1}
 .catdet{display:grid;gap:14px}.catdet h2{margin:0;font-size:22px;line-height:1.15}.catdet .catpills{justify-content:flex-start}
 .catdatos{display:grid;grid-template-columns:1fr 1fr;gap:8px}.catdatos div{padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--navy) 5%,var(--surface));display:grid;gap:2px}.catdatos small{font-size:11px;letter-spacing:.05em;color:var(--muted);font-weight:700}.catdatos span{font-size:14px}
@@ -757,7 +762,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -870,7 +875,7 @@ const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
-  {id:'lab',n:'Taller',tabs:['catalogo','taller','aparatos'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
+  {id:'lab',n:'Taller',tabs:['catalogo','taller','aparatos','cajon'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 /* Personal de campo: su propio menú (de momento, las collas) */
 const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctareas','corend','coparte','cubic','cvivo'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
@@ -888,7 +893,7 @@ function mfHead(){const n=(()=>{try{return incAbiertas().filter(i=>i.cab===st.ca
 const grupoDe=tab=>{const G=gruposAct();return G.find(g=>g.tabs.includes(tab))||G[0]};
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(ptRevisa()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
-  try{n.riego=(n.riego||0)+(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)}catch(e){}try{n.equipo=(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}try{if(esAdminU()&&Store.db){apCargar();n.lab=apPendTotal()}}catch(e){}
+  try{n.riego=(n.riego||0)+(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)}catch(e){}try{n.equipo=(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}try{if(esAdminU()&&Store.db){apCargar();n.lab=apPendTotal()+(st.ap||[]).filter(apSinDatos).length}}catch(e){}
   try{let a=0;if(st.mat&&miEmail())a+=matPend().filter(esGestor()?mVisible:mAmi).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
 function renderGrupos(){const g=grupoDe(st.tab),ins=insignias();$('#grupos').style.gridTemplateColumns=`repeat(${gruposAct().length},minmax(0,1fr))`;$('#grupos').classList.toggle('seis',gruposAct().length>5);$('#grupos').innerHTML=gruposAct().map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('')}
@@ -1397,7 +1402,7 @@ async function crearTarea(){const g=st.tf,titulo=g.titulo.trim();if(!titulo){toa
   const t={ts:new Date().toISOString(),titulo,finca:f?f.id:'',cab:g.cab||'',nave:g.cab&&g.nave?+g.nave:null,maq:g.maq||'',of:g.of||'',np:Math.max(1,Math.min(20,Math.round(num(g.np)||1))),para:dest?dest.email:'',paraNombre:dest?dest.nombre.replace(/ \(yo\)$/,''):'',fecha:g.fecha||hoy(),urg:!!g.urg,rep:g.rep||'',det:g.det.trim(),adjuntos:g.adj.filter(a=>!a.tmp),hecha:false,creadaPor:yoNombre(),creadaEmail:miEmail()};
   try{const id=await Store.addCol('tareas',t);st.tareas.unshift({...t,id});pushEnviar(t.para?[t.para]:t.cab?quienVeCab(t.cab):quienVeFinca(t.finca),(t.urg?'Tarea URGENTE: ':'Tarea nueva: ')+t.titulo,`${fFecha(t.fecha)}${t.para?'':' · para el equipo'} · de ${t.creadaPor||''}`,'tarea-'+id,'tareas');st.tf={open:false,titulo:'',finca:t.finca,cab:'',nave:'',maq:'',para:'',fecha:hoy(),urg:false,rep:'',det:'',adj:[]};renderMain();toast(dest?'Tarea asignada a '+t.paraNombre:'Tarea creada')}catch(e){toast(errMsg(e))}}
 async function tareaHecha(id){const t=st.tareas.find(x=>x.id===id);if(!t)return;const p={hecha:true,hechaTs:new Date().toISOString(),hechaPor:yoNombre(),nota:st.td.nota.trim(),adjHecha:st.td.adj.filter(a=>!a.tmp)};
-  try{await Store.updCol('tareas',id,p);Object.assign(t,p);st.td={id:null,nota:'',adj:[]};if(t.creadaEmail)pushEnviar([t.creadaEmail],'Tarea hecha: '+t.titulo,'Por '+p.hechaPor+(p.nota?' · '+p.nota:''),'tareahecha-'+id,'tareas',{urgente:false});
+  try{await Store.updCol('tareas',id,p);Object.assign(t,p);st.td={id:null,nota:'',adj:[]};if(t.apId)apTareaHecha(t);if(t.creadaEmail)pushEnviar([t.creadaEmail],'Tarea hecha: '+t.titulo,'Por '+p.hechaPor+(p.nota?' · '+p.nota:''),'tareahecha-'+id,'tareas',{urgente:false});
     if(t.rep){const n={...t,ts:new Date().toISOString(),fecha:sumaFecha(t.fecha<hoy()?hoy():t.fecha,t.rep),hecha:false,nota:'',adjHecha:[],hechaTs:null,hechaPor:null};delete n.id;const nid=await Store.addCol('tareas',n);st.tareas.unshift({...n,id:nid});toast('Hecha. La próxima queda para el '+fFecha(n.fecha))}else toast('Tarea hecha');renderMain()}catch(e){toast(errMsg(e))}}
 async function tareaReabrir(id){const t=st.tareas.find(x=>x.id===id);if(!t)return;const p={hecha:false,hechaTs:null,hechaPor:null};try{await Store.updCol('tareas',id,p);Object.assign(t,p);renderMain()}catch(e){toast(errMsg(e))}}
 async function tareaDel(id){const t=st.tareas.find(x=>x.id===id);try{await Store.delCol('tareas',id);for(const a of [...((t&&t.adjuntos)||[]),...((t&&t.adjHecha)||[])])await Adj.del(a);st.tareas=st.tareas.filter(x=>x.id!==id);st.confirmT=null;renderMain();toast('Tarea borrada')}catch(e){toast(errMsg(e))}}
@@ -1421,7 +1426,7 @@ const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';i
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
 const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
-function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura'||k==='taller'||k==='catalogo'||k==='aparatos')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
+function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura'||k==='taller'||k==='catalogo'||k==='aparatos'||k==='cajon')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||(fincasVis().some(f=>f.id===m.finca)&&cabOk(m.cab));
@@ -2096,7 +2101,7 @@ function esResHTML(cab,x){const U=esU(),d=esDato(cab,x.k),R=esCalc(d,U);if(!R)re
     ${esCausa(cab,x.z,R,U)}
     ${esGestor()&&R.dt!=null?`<div class="row"><button class="btn" type="button" data-esact="cal">Plantas bien regadas: usar para calibrar</button></div>`:''}`)}
 function esFormHTML(cab,x){const d=esDato(cab,x.k)||{},f=(id,l,u,v,i)=>`<div class="field"><label for="es_${id}">${l}</label><div class="inp sm"><input id="es_${id}" data-es="${id}"${i!=null?` data-i="${i}"`:''} inputmode="decimal" autocomplete="off" value="${inVal(v)}"><span class="u">${u}</span></div></div>`;
-  return `<div class="esform"><div class="frm">${f('ta','Aire (a la sombra)','°C',d.ta)}${f('hr','Humedad','%',d.hr)}${f('tmax','Máxima del día','°C',d.tmax)}${f('tmin','Mínima del día','°C',d.tmin)}${f('h32','Horas de calor','h',d.h32)}${f('h90','Horas con humedad > 90 %','h',d.h90)}</div>
+  return `<div class="esform">${esSensorHTML(cab,x.k)}<div class="frm">${f('ta','Aire (a la sombra)','°C',d.ta)}${f('hr','Humedad','%',d.hr)}${f('tmax','Máxima del día','°C',d.tmax)}${f('tmin','Mínima del día','°C',d.tmin)}${f('h32','Horas de calor','h',d.h32)}${f('h90','Horas con humedad > 90 %','h',d.h90)}</div>
     <div class="field"><label>Hojas al sol (pistola infrarroja, 4 o 5 hojas)</label><div class="eshojas">${[0,1,2,3,4].map(i=>`<div class="inp sm"><input data-es="h" data-i="${i}" inputmode="decimal" autocomplete="off" aria-label="Hoja ${i+1}" value="${inVal((d.h||[])[i])}"><span class="u">°C</span></div>`).join('')}</div></div>
     <div class="note">Termohigrómetro a la altura de la planta y a la sombra. Hojas de arriba ya desarrolladas, al sol, a unos 20 cm. Mejor entre las 13:00 y las 15:00 solares. «Horas de calor» y «horas con humedad > 90 %»: las que marque el registro. Con la máxima y la mínima se calculan los grados-día de las plagas.</div></div>`}
 function esAjHTML(){if(!esGestor())return '';const U=esU(),C=esCal();
@@ -2348,7 +2353,7 @@ const catNorm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCa
 /* Raíz de la palabra para buscar «pulverizacion» y encontrar «pulverizar», «plagas» y encontrar «plaga»… */
 const catRaiz=p=>{const r=p.replace(/(aciones|acion|iciones|icion|ciones|cion|mente|ados|adas|ado|ada|ar|er|ir|es|s)$/,'');return r.length>=4?r:p};
 function catCargar(){if(window.CATALOGO||st.catCarga)return;st.catCarga=1;const sc=document.createElement('script');sc.src='catalogo.js';
-  sc.onload=()=>{if(st.tab==='catalogo')renderMain()};sc.onerror=()=>{st.catCarga=0;sc.remove();toast('No se ha podido abrir el catálogo: necesitas conexión la primera vez')};document.head.appendChild(sc)}
+  sc.onload=()=>{if(['catalogo','cajon'].includes(st.tab))renderMain()};sc.onerror=()=>{st.catCarga=0;sc.remove();toast('No se ha podido abrir el catálogo: necesitas conexión la primera vez')};document.head.appendChild(sc)}
 const catIco=p=>`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>`;
 const CAT_FASE=[['','Sin empezar'],['comprado','Comprado'],['montando','Montando'],['ok','Funcionando']];
 const catSlug=it=>catNorm(it.n).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -2453,32 +2458,37 @@ const AP_TIPOS=[
   ['estacion','Estación meteorológica',[['Limpiar el pluviómetro',30],['Revisar el mástil',180]],365],
   ['otro','Otro aparato',[['Revisión general',90]],0]];
 const apTipo=k=>AP_TIPOS.find(t=>t[0]===k)||AP_TIPOS[AP_TIPOS.length-1];
-function apCargar(){if(st.ap!==undefined)return;st.ap=null;Store.listCol('aparatos',500).then(l=>{st.ap=l;renderGrupos();if(st.tab==='aparatos')renderMain()},()=>{st.ap=[];if(st.tab==='aparatos')renderMain()})}
+function apCargar(){if(st.ap!==undefined)return;st.ap=null;Store.listCol('aparatos',500).then(l=>{st.ap=l;renderGrupos();if(st.tab==='aparatos')renderMain();setTimeout(apProgramar,5000)},()=>{st.ap=[];if(st.tab==='aparatos')renderMain()})}
 /* Días que faltan (negativo = ya toca). Sin hacer nunca: se cuenta desde la instalación. */
 const apFalta=(cada,ult,inst)=>cada?cada-diasEntre(ult||inst||hoy(),hoy()):null;
 function apPend(a){if(a.estado==='retirado')return [];const P=[];for(const m of a.mant||[]){const f=apFalta(m.cada,m.ult,a.inst);if(f!=null&&f<=0)P.push(m.t)}
   if(a.calib&&a.calib.cada){const f=apFalta(a.calib.cada,a.calib.ult,a.inst);if(f!=null&&f<=0)P.push('Calibrar')}return P}
 const apPendTotal=()=>(st.ap||[]).reduce((s,a)=>s+apPend(a).length,0);
 const apDonde=a=>{const c=cabById(a.cab),f=c&&(st.cfg.fincas||[]).find(x=>x.cabezales.includes(c.id));return [f&&f.nombre,c&&c.nombre,a.nave?'Nave '+a.nave:''].filter(Boolean).join(' · ')||'Sin sitio'};
+/* Batería: la que manda la placa viene en voltios; la apuntada a mano, en % */
+const apBat=b=>b==null?'':b<=5?fmt(b,2)+' V':Math.round(b)+' %';const apBatMal=b=>b!=null&&(b<=5?b<3.5:b<25);
 const apHace=ts=>{const m=Math.round((Date.now()-Date.parse(ts))/60000);return m<60?'hace '+Math.max(0,m)+' min':m<1440?'hace '+Math.round(m/60)+' h':'hace '+Math.round(m/1440)+' días'};
 async function apGuarda(a,msg){a.mod=new Date().toISOString();const i=(st.ap||[]).findIndex(x=>x.id===a.id);if(i>=0)st.ap[i]=a;else st.ap.unshift(a);renderGrupos();renderMain();
-  try{const {id,...doc}=a;await Store.setCol('aparatos',a.id,doc);if(msg)toast(msg)}catch(e){toast(errMsg(e))}}
-function apNuevo(o){o=o||{};const t=apTipo(o.tipo||'N4');return {tipo:t[0],nombre:o.nombre||'',cab:o.cab||st.cab||'',nave:o.nave||'',inst:hoy(),nota:'',diseno:o.diseno||''}}
+  try{const {id,...doc}=a;if(a._nuevo){delete doc._nuevo;delete a._nuevo;await Store.setCol('aparatos',a.id,doc)}else{if(doc.dato&&doc.dato.auto)delete doc.dato;await Store.updCol('aparatos',a.id,doc)}if(msg)toast(msg);apProgramar()}catch(e){toast(errMsg(e))}}
+function apNuevo(o){o=o||{};const t=apTipo(o.tipo||'N4');return {tipo:t[0],nombre:o.nombre||'',cab:o.cab||st.cab||'',nave:o.nave||'',inst:hoy(),nota:'',diseno:o.diseno||'',dev:o.dev||''}}
 function vAparatos(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador.</div></section>`;apCargar();
   if(st.ap===null)return `<section class="card"><div class="note">Cargando tus aparatos…</div></section>`;
-  if(st.apF)return apForm();if(st.apSel){const a=st.ap.find(x=>x.id===st.apSel);if(a)return apFicha(a);st.apSel=null}
+  if(st.apF)return apForm();if(st.apInf&&!st.apSel)return apInformeHTML();if(st.apSel){const a=st.ap.find(x=>x.id===st.apSel);if(a)return apFicha(a);st.apSel=null}
   const act=st.ap.filter(a=>a.estado!=='retirado'),ret=st.ap.filter(a=>a.estado==='retirado'),pend=apPendTotal();
   const grupos={};for(const a of act){const k=apDonde(a).split(' · ').slice(0,2).join(' · ');(grupos[k]=grupos[k]||[]).push(a)}
-  const fila=a=>{const P=apPend(a),t=apTipo(a.tipo);return `<button class="aprow" type="button" data-apver="${a.id}"><span><b>${esc(a.nombre||t[1])}</b><small>${esc(t[1])}${a.nave?' · Nave '+esc(a.nave):''}</small>
-    <small>${a.dato?esc(a.dato.txt||'')+(a.dato.bat!=null?' · batería '+esc(a.dato.bat)+' %':'')+' · '+apHace(a.dato.ts):'Sin datos todavía'}</small></span>
-    <span class="pill ${P.length?'bad':'ok'}">${P.length?'Toca: '+esc(P[0])+(P.length>1?' y '+(P.length-1)+' más':''):'Al día'}</span></button>`};
+  lecCargar();const sueltas=apSueltas(),sin=act.filter(apSinDatos);
+  const fila=a=>{const P=apPend(a),t=apTipo(a.tipo),sd=apSinDatos(a);return `<button class="aprow" type="button" data-apver="${a.id}"><span><b>${esc(a.nombre||t[1])}</b><small>${esc(t[1])}${a.nave?' · Nave '+esc(a.nave):''}</small>
+    <small>${a.dato?esc(a.dato.txt||'')+(a.dato.bat!=null?' · batería '+apBat(a.dato.bat):'')+' · '+apHace(a.dato.ts):'Sin datos todavía'}</small></span>
+    <span class="pill ${P.length||sd?'bad':'ok'}">${sd?'Sin datos'+(a.dato?' desde hace '+apHace(a.dato.ts).replace('hace ',''):''):P.length?'Toca: '+esc(P[0])+(P.length>1?' y '+(P.length-1)+' más':''):'Al día'}</span></button>`};
   return `<section class="card"><div><h3>Mis aparatos</h3><div class="sub">Lo que tienes montado e instalado: dónde está, su mantenimiento y sus datos</div></div>
-    <div class="apres"><div><b>${act.length}</b><span>instalados</span></div><div class="${pend?'bad':''}"><b>${pend}</b><span>tareas pendientes</span></div></div>
-    <div class="row"><button class="btn pri" type="button" data-apnuevo="1">+ Añadir aparato</button></div>
+    <div class="apres"><div><b>${act.length}</b><span>instalados</span></div><div class="${pend?'bad':''}"><b>${pend}</b><span>tareas pendientes</span></div>${sin.length?`<div class="bad"><b>${sin.length}</b><span>sin mandar datos</span></div>`:''}</div>
+    <div class="row"><button class="btn pri" type="button" data-apnuevo="1">+ Añadir aparato</button>${act.length?`<button class="btn" type="button" data-apqrall="1">Imprimir etiquetas QR</button><button class="btn" type="button" data-apinf="${hoy().slice(0,7)}">Informe del mes</button>`:''}</div>
     <div class="note">El último dato y la batería se rellenarán solos cuando conectemos los sensores a la app. Mientras tanto puedes apuntarlos a mano en cada aparato.</div></section>
+  ${sueltas.length?`<section class="card"><h3 style="font-size:15px">Placas que mandan datos y no están dadas de alta</h3>${sueltas.map(x=>`<div class="apm"><span><b>Placa ${esc(x.dev)}</b><small>${esc(apTipo(x.nodo).slice(1,2)[0]||x.nodo)} · último dato ${apHace(new Date(x.t).toISOString())}</small></span><button class="btn pri" type="button" data-apalta="${esc(x.dev)}" data-n="${esc(x.nodo)}">Dar de alta</button></div>`).join('')}</section>`:''}
   ${act.length?Object.entries(grupos).map(([k,l])=>`<section class="card"><h3 style="font-size:15px">${esc(k)}</h3><div class="aplst">${l.map(fila).join('')}</div></section>`).join('')
     :`<section class="card"><div class="note">Aún no hay ninguno. Cuando instales un aparato, dalo de alta aquí (o desde su diseño del Taller con «Lo he instalado»).</div></section>`}
-  ${ret.length?`<section class="card"><details><summary><b>Retirados (${ret.length})</b></summary><div class="aplst">${ret.map(fila).join('')}</div></details></section>`:''}`}
+  ${ret.length?`<section class="card"><details><summary><b>Retirados (${ret.length})</b></summary><div class="aplst">${ret.map(fila).join('')}</div></details></section>`:''}
+  ${apConexion()}`}
 function apCabOps(sel){const out=[];for(const f of fincasVis())for(const c of f.cabezales){const cb=cabById(c);if(cb)out.push(`<option value="${c}" ${c===sel?'selected':''}>${esc(f.nombre)} · ${esc(cb.nombre)}</option>`)}return out.join('')}
 function apForm(){const F=st.apF,ed=!!F.id,dis=(Store.lsGet('abono.taller')||[]);
   return `<section class="card"><button class="lnk catback" type="button" data-apcancel="1">← ${ed?'Volver al aparato':'Mis aparatos'}</button><h3>${ed?'Editar aparato':'Añadir aparato'}</h3>
@@ -2489,35 +2499,40 @@ function apForm(){const F=st.apF,ed=!!F.id,dis=(Store.lsGet('abono.taller')||[])
       <div class="field"><label for="ap_nave">Nave</label><div class="inp"><input id="ap_nave" data-apf="nave" inputmode="numeric" value="${esc(F.nave)}" style="width:5ch"></div></div>
       <div class="field"><label for="ap_inst">Instalado el</label><div class="inp"><input id="ap_inst" type="date" data-apf="inst" value="${esc(F.inst)}"></div></div>
       ${dis.length?`<div class="field"><label for="ap_dis">Diseño del Taller</label><div class="inp"><select id="ap_dis" data-apf="diseno"><option value="">—</option>${dis.map(d=>`<option value="${esc(d.id)}" ${d.id===F.diseno?'selected':''}>${esc(d.nombre)}</option>`).join('')}</select></div></div>`:''}
+      <div class="field"><label for="ap_dev">Número de la placa</label><div class="inp"><input id="ap_dev" data-apf="dev" value="${esc(F.dev||'')}" placeholder="ej. 1A2B3C" maxlength="20" style="width:10ch;text-transform:uppercase"></div></div>
       <div class="field"><label for="ap_nota">Nota</label><div class="inp"><input id="ap_nota" data-apf="nota" value="${esc(F.nota)}" placeholder="Por ejemplo: en el poste del centro" style="text-align:left;text-transform:none"></div></div></div>
     ${ed?'':`<div class="note">Se le ponen las tareas de mantenimiento y la calibración habituales de este tipo de aparato: luego las puedes cambiar.</div>`}
     <div class="row"><button class="btn pri" type="button" data-apsave="1">Guardar</button><button class="btn" type="button" data-apcancel="1">Cancelar</button></div></section>`}
 function apFicha(a){const t=apTipo(a.tipo),P=apPend(a);
   const mant=(a.mant||[]).map((m,i)=>{const f=apFalta(m.cada,m.ult,a.inst);return `<div class="apm ${f!=null&&f<=0?'toca':''}"><span><b>${esc(m.t)}</b><small>Cada ${m.cada} días · ${m.ult?'hecho el '+esc(fPunto(m.ult)):'sin hacer todavía'} · ${f==null?'':f<=0?'toca'+(f<0?' desde hace '+(-f)+' días':' hoy'):'en '+f+' días'}</small></span>
-    <span class="row"><button class="btn ${f!=null&&f<=0?'pri':''}" type="button" data-aphecho="${i}">Hecho hoy</button><button class="lnk" type="button" data-apmdel="${i}" aria-label="Quitar tarea">✕</button></span></div>`}).join('');
+    <span class="row"><button class="btn ${f!=null&&f<=0?'pri':''}" type="button" data-aphecho="${i}">Hecho hoy</button><button class="lnk" type="button" data-apmdel="${i}" aria-label="Quitar tarea">✕</button></span></div>
+    ${f!=null&&f<=0?(m.tarea?`<div class="apcolla"><small>Mandada a la colla: se apuntará sola cuando la marquen hecha.</small></div>`:`<div class="apcolla"><div class="inp"><select id="ap_para_${i}" aria-label="Para quién"><option value="">Para el equipo</option>${personas().filter(u=>u.email!==miEmail()).map(u=>`<option value="${esc(u.email)}">${esc(u.nombre)}</option>`).join('')}</select></div><button class="btn" type="button" data-apmandar="${i}">Mandar a la colla</button></div>`):''}`}).join('');
   const cf=a.calib&&a.calib.cada?apFalta(a.calib.cada,a.calib.ult,a.inst):null;
   return `<section class="card apficha"><button class="lnk catback" type="button" data-apver="">← Mis aparatos</button>
     <div><div class="sub">${esc(t[1])}</div><h2 style="margin:0">${esc(a.nombre||t[1])}</h2><div class="sub">${esc(apDonde(a))}${a.inst?' · instalado el '+esc(fPunto(a.inst)):''}${a.estado==='retirado'?' · RETIRADO':''}</div>${a.nota?`<div class="note" style="text-transform:none">${esc(a.nota)}</div>`:''}</div>
-    <div class="apres"><div class="${P.length?'bad':''}"><b>${P.length}</b><span>pendientes</span></div><div><b>${a.dato?esc(a.dato.txt||'—'):'—'}</b><span>${a.dato?'último dato · '+apHace(a.dato.ts):'sin datos todavía'}</span></div>${a.dato&&a.dato.bat!=null?`<div class="${a.dato.bat<25?'bad':''}"><b>${esc(a.dato.bat)} %</b><span>batería</span></div>`:''}</div>
+    <div class="apres"><div class="${P.length?'bad':''}"><b>${P.length}</b><span>pendientes</span></div><div><b>${a.dato?esc(a.dato.txt||'—'):'—'}</b><span>${a.dato?'último dato · '+apHace(a.dato.ts):'sin datos todavía'}</span></div>${a.dato&&a.dato.bat!=null?`<div class="${apBatMal(a.dato.bat)?'bad':''}"><b>${apBat(a.dato.bat)}</b><span>batería</span></div>`:''}</div>
+    ${apVivo(a)}${apCob(a)}
     <div class="catsec"><h4>Mantenimiento</h4>${mant||'<div class="note">Sin tareas.</div>'}
       <div class="row apadd"><div class="inp"><input id="ap_mt" placeholder="Nueva tarea" style="text-align:left;text-transform:none"></div><div class="inp"><input id="ap_mc" inputmode="numeric" placeholder="días" style="width:5ch"></div><button class="btn" type="button" data-apmadd="1">Añadir</button></div></div>
     <div class="catsec"><h4>Calibración</h4>${a.calib&&a.calib.cada?`<div class="apm ${cf<=0?'toca':''}"><span><b>Calibrar o comparar con un aparato de confianza</b><small>Cada ${a.calib.cada} días · ${a.calib.ult?'última el '+esc(fPunto(a.calib.ult)):'sin calibrar todavía'} · ${cf<=0?'toca':'en '+cf+' días'}</small></span><button class="btn ${cf<=0?'pri':''}" type="button" data-apcal="1">Calibrado hoy</button></div>`:'<div class="note">Este aparato no necesita calibración periódica.</div>'}</div>
     <div class="catsec"><h4>Apuntar un dato a mano</h4><div class="row apadd"><div class="inp"><input id="ap_dt" placeholder="Lo que marca (ej. 24,1 °C · 71 %)" style="text-align:left;text-transform:none"></div><div class="inp"><input id="ap_db" inputmode="numeric" placeholder="bat. %" style="width:6ch"></div><button class="btn" type="button" data-apdato="1">Apuntar</button></div></div>
     <div class="catsec"><h4>Historial</h4><div class="row apadd"><div class="inp"><input id="ap_h" placeholder="Qué ha pasado (cambio de pila, avería…)" style="text-align:left;text-transform:none"></div><button class="btn" type="button" data-aphist="1">Apuntar</button></div>
       ${(a.hist||[]).slice(0,30).map(h=>`<div class="ev"><span><b>${esc(fPunto(h.f))}</b> · ${esc(h.t)}${h.por?' · '+esc(h.por):''}</span></div>`).join('')||'<div class="note">Sin anotaciones.</div>'}</div>
-    <div class="row"><button class="btn" type="button" data-apedit="1">Editar</button><button class="btn" type="button" data-apret="1">${a.estado==='retirado'?'Volver a instalarlo':'Retirar'}</button>${st.apDel===a.id?`<button class="btn danger" type="button" data-apdelok="1">Sí, borrar</button><button class="btn" type="button" data-apdelno="1">No</button>`:`<button class="btn" type="button" data-apdel="1">Borrar</button>`}</div></section>`}
+    <div class="row"><button class="btn" type="button" data-apqr="1">Etiqueta QR</button><button class="btn" type="button" data-apedit="1">Editar</button><button class="btn" type="button" data-apret="1">${a.estado==='retirado'?'Volver a instalarlo':'Retirar'}</button>${st.apDel===a.id?`<button class="btn danger" type="button" data-apdelok="1">Sí, borrar</button><button class="btn" type="button" data-apdelno="1">No</button>`:`<button class="btn" type="button" data-apdel="1">Borrar</button>`}</div></section>`}
 const apHist=(a,t)=>{a.hist=[{f:hoy(),t,por:yoNombre()},...(a.hist||[])].slice(0,200)};
 document.addEventListener('click',e=>{if(st.tab!=='aparatos'&&st.tab!=='taller')return;const q=s=>e.target.closest&&e.target.closest(s);let b;
   if(st.tab==='taller'&&(b=q('[data-tlinst]'))){const d=(window.TALLER&&st.tl&&st.tl.d)||{};st.apF={...apNuevo({tipo:d.nodo,diseno:d.id,nombre:d.nombre})};if(window.TALLER&&st.tl&&st.tl.d)TALLER.guardarActual&&TALLER.guardarActual();st.tab='aparatos';renderTabs();renderMain();window.scrollTo(0,0);return}
   if(st.tab!=='aparatos')return;
   if(q('[data-apnuevo]')){st.apF=apNuevo();renderMain();window.scrollTo(0,0);return}
+  if((b=q('[data-apalta]'))){st.apF=apNuevo({tipo:b.dataset.n==='lora'?'lora':b.dataset.n,dev:b.dataset.apalta});renderMain();window.scrollTo(0,0);return}
+  if((b=q('[data-aph]'))){st.apH=+b.dataset.aph;renderMain();return}
   if(q('[data-apcancel]')){st.apF=null;renderMain();return}
   if((b=q('[data-apver]'))){st.apSel=b.dataset.apver||null;st.apDel=null;renderMain();window.scrollTo(0,0);return}
   if(q('[data-apsave]')){const F=st.apF;for(const el of document.querySelectorAll('[data-apf]'))F[el.dataset.apf]=el.value.trim();const t=apTipo(F.tipo);
-    if(F.id){const a=st.ap.find(x=>x.id===F.id);if(!a)return;const cambiaTipo=a.tipo!==F.tipo;Object.assign(a,{tipo:F.tipo,nombre:F.nombre,cab:F.cab,nave:F.nave,inst:F.inst,nota:F.nota,diseno:F.diseno});
+    if(F.id){const a=st.ap.find(x=>x.id===F.id);if(!a)return;const cambiaTipo=a.tipo!==F.tipo;Object.assign(a,{tipo:F.tipo,nombre:F.nombre,cab:F.cab,nave:F.nave,inst:F.inst,nota:F.nota,diseno:F.diseno,dev:(F.dev||'').toUpperCase()});
       if(cambiaTipo){a.mant=t[2].map(([x,c])=>({t:x,cada:c,ult:''}));a.calib={cada:t[3],ult:''}}st.apF=null;apGuarda(a,'Aparato guardado');return}
     const a={id:'ap'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),ts:new Date().toISOString(),tipo:F.tipo,nombre:F.nombre,cab:F.cab,nave:F.nave,inst:F.inst||hoy(),nota:F.nota,diseno:F.diseno,estado:'activo',
-      mant:t[2].map(([x,c])=>({t:x,cada:c,ult:''})),calib:{cada:t[3],ult:''},hist:[{f:F.inst||hoy(),t:'Instalado',por:yoNombre()}]};
+      mant:t[2].map(([x,c])=>({t:x,cada:c,ult:''})),calib:{cada:t[3],ult:''},hist:[{f:F.inst||hoy(),t:'Instalado',por:yoNombre()}],dev:(F.dev||'').toUpperCase(),_nuevo:true};
     st.apF=null;st.apSel=a.id;apGuarda(a,'Aparato dado de alta');window.scrollTo(0,0);return}
   const a=st.apSel&&(st.ap||[]).find(x=>x.id===st.apSel);if(!a)return;
   if((b=q('[data-aphecho]'))){const m=a.mant[+b.dataset.aphecho];if(!m)return;m.ult=hoy();apHist(a,m.t);apGuarda(a,'Apuntado: '+m.t);return}
@@ -2526,12 +2541,211 @@ document.addEventListener('click',e=>{if(st.tab!=='aparatos'&&st.tab!=='taller')
   if(q('[data-apcal]')){a.calib.ult=hoy();apHist(a,'Calibrado');apGuarda(a,'Calibración apuntada');return}
   if(q('[data-apdato]')){const t=$('#ap_dt').value.trim(),bt=$('#ap_db').value.trim();if(!t&&!bt){toast('Escribe lo que marca');return}a.dato={ts:new Date().toISOString(),txt:t,bat:bt?Math.max(0,Math.min(100,parseInt(bt,10)||0)):null,manual:true};apGuarda(a,'Dato apuntado');return}
   if(q('[data-aphist]')){const t=$('#ap_h').value.trim();if(!t){toast('Escribe qué ha pasado');return}apHist(a,t);apGuarda(a,'Apuntado en el historial');return}
-  if(q('[data-apedit]')){st.apF={id:a.id,tipo:a.tipo,nombre:a.nombre||'',cab:a.cab||'',nave:a.nave||'',inst:a.inst||'',nota:a.nota||'',diseno:a.diseno||''};renderMain();window.scrollTo(0,0);return}
+  if(q('[data-apedit]')){st.apF={id:a.id,tipo:a.tipo,nombre:a.nombre||'',cab:a.cab||'',nave:a.nave||'',inst:a.inst||'',nota:a.nota||'',diseno:a.diseno||'',dev:a.dev||''};renderMain();window.scrollTo(0,0);return}
   if(q('[data-apret]')){a.estado=a.estado==='retirado'?'activo':'retirado';apHist(a,a.estado==='retirado'?'Retirado':'Instalado de nuevo');apGuarda(a);return}
   if(q('[data-apdel]')){st.apDel=a.id;renderMain();return}
   if(q('[data-apdelno]')){st.apDel=null;renderMain();return}
   if(q('[data-apdelok]')){const id=a.id;st.ap=st.ap.filter(x=>x.id!==id);st.apSel=null;st.apDel=null;renderGrupos();renderMain();Store.delCol('aparatos',id).then(()=>toast('Aparato borrado'),e=>toast(errMsg(e)))}});
 $('#main').addEventListener('change',e=>{const t=e.target;if(st.tab!=='aparatos'||!st.apF||!t.dataset||t.dataset.apf!=='tipo')return;for(const el of document.querySelectorAll('[data-apf]'))st.apF[el.dataset.apf]=el.value.trim();renderMain()});
+
+/* ---------- Cajón y compra (Taller · solo el administrador) ----------
+   El cajón: las piezas y herramientas que ya tienes (colección «cajon», una por pieza). La compra: eliges qué vas a montar y cuántos,
+   y sale una sola lista con todo lo que hace falta, lo que ya tienes y lo que falta, agrupada por dónde se compra. */
+const cjK=n=>catNorm(n).replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,120);
+function cjCargar(){if(st.cjd!==undefined)return;st.cjd=null;Store.listCol('cajon',2000).then(l=>{st.cjd=l;if(['cajon','catalogo'].includes(st.tab))renderMain()},()=>{st.cjd=[];if(st.tab==='cajon')renderMain()})}
+const cjTengo=n=>{const x=(st.cjd||[]).find(y=>y.id===cjK(n));return x?x.cant||0:0};
+window.cajonTengo=n=>st.cjd?cjTengo(n):null;
+async function cjPon(n,cant,ex){const id=cjK(n),i=(st.cjd||[]).findIndex(x=>x.id===id);cant=Math.max(0,Math.round(cant));
+  if(!cant){if(i>=0)st.cjd.splice(i,1);try{await Store.delCol('cajon',id)}catch(e){}return}
+  const doc={...(i>=0?st.cjd[i]:{}),...(ex||{}),n,cant,ts:new Date().toISOString()};delete doc.id;if(i>=0)st.cjd[i]={...doc,id};else (st.cjd=st.cjd||[]).push({...doc,id});
+  try{await Store.setCol('cajon',id,doc)}catch(e){toast(errMsg(e))}}
+const CJL='abono.cjsel';const cjSel=()=>{if(!st.cjs){try{st.cjs=JSON.parse(localStorage.getItem(CJL)||'{}')}catch(e){st.cjs={}}}return st.cjs};
+const cjSelGuarda=()=>{try{localStorage.setItem(CJL,JSON.stringify(st.cjs||{}))}catch(e){}};
+/* Junta los materiales y herramientas de las guías elegidas (cada una × las unidades) */
+function cjPlan(){const M=window.MONTAJE,S=cjSel(),mat=new Map(),her=new Map();
+  for(const [n,u] of Object.entries(S)){if(!(u>0))continue;const it=catBusca(catSlug({n}))[0];const G=it&&M.guia(it);if(!G||G.pro)continue;
+    for(const m of G.mat||[]){const k=cjK(m.n),x=mat.get(k)||{n:m.n,b:m.b,pro:m.pro,p:m.p,pc:m.pc,c:0,de:[]};x.c+=m.pc?0:(m.c||1)*u;if(m.pc)x.c=Math.max(x.c,1);if(!x.de.includes(n))x.de.push(n);mat.set(k,x)}
+    for(const h of G.herr||[]){const H=M.HERR[h];if(H&&!her.has(h))her.set(h,{...H,id:h})}}
+  for(const x of mat.values()){x.tengo=cjTengo(x.n);x.falta=Math.max(0,x.c-x.tengo)}
+  for(const x of her.values()){x.tengo=cjTengo('Herramienta: '+x.n)>0}
+  return {mat:[...mat.values()],her:[...her.values()]}}
+const cjDonde=m=>m.pro?'pro':m.b?'online':'otro';
+const CJ_DONDE={online:'Tienda online (Amazon o AliExpress)',pro:'Distribuidor o presupuesto',otro:'Ferretería o lo que tengas a mano'};
+function cjTexto(P){const L=['Lista de la compra · Agro FLY Taller',''];for(const g of ['online','pro','otro']){const l=P.mat.filter(m=>m.falta>0&&cjDonde(m)===g);if(!l.length)continue;L.push(CJ_DONDE[g]+':',...l.map(m=>`- ${m.falta}× ${m.n}${m.p?' ('+m.p+')':''}`),'')}
+  const h=P.her.filter(x=>!x.tengo);if(h.length)L.push('Herramientas:',...h.map(x=>'- '+x.n));return L.join('\n')}
+function vCajon(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador.</div></section>`;cjCargar();
+  if(!window.CATALOGO){catCargar();return `<section class="card"><div class="note">Abriendo…</div></section>`}
+  if(!window.MONTAJE){cargaJs('montaje.js',()=>{if(st.tab==='cajon')renderMain()});return `<section class="card"><div class="note">Abriendo…</div></section>`}
+  window.MONTAJE._it=x=>catBusca(x)[0];if(!window.TALLER){cargaJs('taller.js',()=>{if(st.tab==='cajon')renderMain()});return `<section class="card"><div class="note">Abriendo…</div></section>`}
+  if(st.cjd===null)return `<section class="card"><div class="note">Cargando el cajón…</div></section>`;window.MONTAJE.estilos&&window.MONTAJE.estilos();
+  const M=window.MONTAJE,S=cjSel(),guias=window.CATALOGO.carpetas.flatMap(c=>c.it).filter(it=>{const G=M.guia(it);return G&&!G.pro});
+  const P=cjPlan(),elegidos=Object.entries(S).filter(([,u])=>u>0),falta=P.mat.filter(m=>m.falta>0),q=catNorm(st.cjq||'');
+  let h=`<section class="card"><div><h3>Qué vas a montar</h3><div class="sub">Elige los aparatos y cuántos: sale una sola lista con todo, restando lo que ya tienes en el cajón</div></div>
+    <div class="inp catq"><input type="search" id="cj_q" data-cjq="1" placeholder="Buscar: clima, nivel, pasarela…" value="${esc(st.cjq||'')}" style="text-align:left;text-transform:none" autocomplete="off"></div>
+    <div class="cjsel" data-out="cjsel">${guias.filter(it=>!q||catNorm(it.n).includes(q)||(S[it.n]>0)).map(it=>{const u=S[it.n]||0;return `<div class="cjg ${u?'on':''}"><span>${esc(it.n)}</span><span class="row"><button class="btn" type="button" data-cju="${esc(it.n)}" data-d="-1" ${u?'':'disabled'} aria-label="Uno menos">−</button><b>${u}</b><button class="btn" type="button" data-cju="${esc(it.n)}" data-d="1" aria-label="Uno más">+</button></span></div>`}).join('')}</div></section>`;
+  if(elegidos.length){h+=`<section class="card"><div><h3>Lista de la compra</h3><div class="sub">${elegidos.map(([n,u])=>u+'× '+esc(n)).join(' · ')}</div></div>
+    ${!falta.length?'<div class="tl-av ok" style="text-transform:none">Tienes todas las piezas en el cajón.</div>':''}
+    ${['online','pro','otro'].map(g=>{const l=P.mat.filter(m=>cjDonde(m)===g);if(!l.length)return '';return `<div class="catsec"><h4>${CJ_DONDE[g]}</h4><table class="mj-tab">${l.map(m=>`<tr class="${m.falta?'':'cjok'}"><td>${m.falta?m.falta+'×':'✓'}</td><td>${esc(m.n)}<small>${m.c} hacen falta${m.tengo?' · tienes '+m.tengo:''} · para ${m.de.map(esc).join(', ')}</small>${m.falta&&window.MONTAJE?window.MONTAJE.enlaces(m.b,m.pro):''}</td><td class="mj-pr">${esc(m.p||'')}${m.falta?`<br><button class="lnk" type="button" data-cjcomp="${esc(m.n)}" data-c="${m.falta}">Comprado</button>`:''}</td></tr>`).join('')}</table></div>`}).join('')}
+    <div class="catsec"><h4>Herramientas</h4><table class="mj-tab">${P.her.map(x=>`<tr class="${x.tengo?'cjok':''}"><td>${x.tengo?'✓':'·'}</td><td>${esc(x.n)}${x.tengo?'':window.MONTAJE.enlaces(x.b)}</td><td class="mj-pr"><button class="lnk" type="button" data-cjher="${esc(x.n)}">${x.tengo?'No la tengo':'La tengo'}</button></td></tr>`).join('')}</table></div>
+    <div class="row"><button class="btn pri" type="button" data-cjshare="1" ${falta.length?'':'disabled'}>Compartir lista de la compra</button><button class="btn" type="button" data-cjtodo="1" ${falta.length?'':'disabled'}>Lo he comprado todo</button><button class="btn" type="button" data-cjvacia="1">Vaciar selección</button></div></section>`}
+  const cj=(st.cjd||[]).filter(x=>!x.n.startsWith('Herramienta: ')).sort((a,b)=>a.n.localeCompare(b.n));
+  h+=`<section class="card"><div><h3>El cajón</h3><div class="sub">Lo que tienes guardado (${cj.length} piezas). Se rellena solo al marcar «Comprado»; también puedes apuntar a mano.</div></div>
+    ${cj.length?`<div class="cjlst">${cj.map(x=>`<div class="cjg on"><span>${esc(x.n)}</span><span class="row"><button class="btn" type="button" data-cjm="${esc(x.n)}" data-d="-1" aria-label="Uno menos">−</button><b>${x.cant}</b><button class="btn" type="button" data-cjm="${esc(x.n)}" data-d="1" aria-label="Uno más">+</button></span></div>`).join('')}</div>`:'<div class="note">Vacío.</div>'}
+    <div class="row apadd"><div class="inp"><input id="cj_n" placeholder="Pieza (ej. Heltec V3)" style="text-align:left;text-transform:none"></div><div class="inp"><input id="cj_c" inputmode="numeric" value="1" style="width:4ch"></div><button class="btn" type="button" data-cjadd="1">Añadir</button></div></section>`;
+  return h}
+$('#main').addEventListener('input',e=>{const t=e.target;if(!t.dataset||t.dataset.cjq==null)return;st.cjq=t.value;const o=document.querySelector('[data-out="cjsel"]');if(o){const n=document.createElement('div');n.innerHTML=vCajon();const x=n.querySelector('[data-out="cjsel"]');if(x)o.innerHTML=x.innerHTML}});
+document.addEventListener('click',e=>{if(st.tab!=='cajon')return;const q=s=>e.target.closest&&e.target.closest(s);let b;
+  if((b=q('[data-cju]'))){const S=cjSel(),n=b.dataset.cju;S[n]=Math.max(0,(S[n]||0)+(+b.dataset.d));if(!S[n])delete S[n];cjSelGuarda();renderMain();return}
+  if(q('[data-cjvacia]')){st.cjs={};cjSelGuarda();renderMain();return}
+  if((b=q('[data-cjcomp]'))){const n=b.dataset.cjcomp;cjPon(n,cjTengo(n)+(+b.dataset.c)).then(()=>{renderMain();toast('Al cajón: '+n)});return}
+  if(q('[data-cjtodo]')){const P=cjPlan();Promise.all(P.mat.filter(m=>m.falta>0).map(m=>cjPon(m.n,m.tengo+m.falta))).then(()=>{renderMain();toast('Todo al cajón')});return}
+  if((b=q('[data-cjher]'))){const n='Herramienta: '+b.dataset.cjher;cjPon(n,cjTengo(n)?0:1).then(()=>renderMain());return}
+  if((b=q('[data-cjm]'))){const n=b.dataset.cjm;cjPon(n,cjTengo(n)+(+b.dataset.d)).then(()=>renderMain());return}
+  if(q('[data-cjadd]')){const n=$('#cj_n').value.trim(),c=parseInt($('#cj_c').value,10)||1;if(!n){toast('Escribe la pieza');return}cjPon(n,cjTengo(n)+c).then(()=>renderMain());return}
+  if(q('[data-cjshare]')){const tx=cjTexto(cjPlan());if(navigator.share)navigator.share({title:'Lista de la compra',text:tx}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(tx).then(()=>toast('Lista copiada'),()=>toast('No se ha podido copiar'))}});
+
+/* ---------- Mis aparatos · etiquetas QR, tareas para la colla y avisos de mantenimiento ---------- */
+const apUrl=a=>location.origin+location.pathname+'#ap='+encodeURIComponent(a.id);
+function qrSVG(txt){if(!window.qrcode)return '';const q=qrcode(0,'M');q.addData(txt);q.make();return q.createSvgTag({cellSize:4,margin:2,scalable:true})}
+function apEtiquetas(lista){const w=window.open('','_blank');if(!w){toast('Deja que la app abra ventanas para imprimir');return}
+  const go=()=>{w.document.write(`<!doctype html><meta charset="utf-8"><title>Etiquetas de aparatos</title><style>body{font-family:system-ui,sans-serif;margin:10mm}.g{display:grid;grid-template-columns:repeat(3,1fr);gap:6mm}.e{border:1px dashed #999;border-radius:3mm;padding:3mm;text-align:center;break-inside:avoid}.e svg{width:38mm;height:38mm}.e b{display:block;font-size:11pt}.e small{display:block;font-size:8.5pt;color:#444}@media print{.np{display:none}}</style>
+    <p class="np">Imprime en papel adhesivo de exterior o plastifícalas. Al escanear, se abre la ficha del aparato en la app.</p><div class="g">${lista.map(a=>`<div class="e">${qrSVG(apUrl(a))}<b>${esc(a.nombre||apTipo(a.tipo)[1])}</b><small>${esc(apDonde(a))}</small></div>`).join('')}</div><script>setTimeout(()=>print(),400)<\/script>`);w.document.close()};
+  if(window.qrcode)go();else cargaJs('qrcode.js',go)}
+/* Tarea de mantenimiento para alguien del equipo: cuando la marca hecha, se apunta en el aparato */
+async function apMandar(a,i,para){const m=a.mant[i];if(!m)return;const dest=personas().find(u=>u.email===para),c=cabById(a.cab),f=c&&(st.cfg.fincas||[]).find(x=>x.cabezales.includes(c.id));
+  const t={ts:new Date().toISOString(),titulo:m.t+' · '+(a.nombre||apTipo(a.tipo)[1]),finca:f?f.id:'',cab:a.cab||'',nave:a.nave?+a.nave:null,maq:'',of:'',np:1,para:dest?dest.email:'',paraNombre:dest?dest.nombre.replace(/ \(yo\)$/,''):'',fecha:hoy(),urg:false,rep:'',
+    det:'Mantenimiento de «'+(a.nombre||apTipo(a.tipo)[1])+'» ('+apDonde(a)+'). Al marcarla hecha se apunta sola en el aparato.',adjuntos:[],hecha:false,creadaPor:yoNombre(),creadaEmail:miEmail(),apId:a.id,apMant:m.t};
+  try{const id=await Store.addCol('tareas',t);if(st.tareas)st.tareas.unshift({...t,id});m.tarea=id;apHist(a,'Mandado a '+(t.paraNombre||'el equipo')+': '+m.t);await apGuarda(a,dest?'Tarea mandada a '+t.paraNombre:'Tarea para el equipo');
+    pushEnviar(t.para?[t.para]:t.cab?quienVeCab(t.cab):quienVeFinca(t.finca),'Tarea nueva: '+t.titulo,fFecha(t.fecha)+' · de '+(t.creadaPor||''),'tarea-'+id,'tareas')}catch(e){toast(errMsg(e))}}
+/* Al marcar hecha una tarea que salió de un aparato */
+async function apTareaHecha(t){if(!t||!t.apId)return;try{let a=(st.ap||[]).find(x=>x.id===t.apId);if(!a){const l=await Store.listCol('aparatos',500);a=l.find(x=>x.id===t.apId);if(!a)return}
+  const m=(a.mant||[]).find(x=>x.t===t.apMant);if(!m)return;m.ult=hoy();delete m.tarea;a.hist=[{f:hoy(),t:m.t+' (tarea hecha)',por:t.hechaPor||yoNombre()},...(a.hist||[])].slice(0,200);a.mod=new Date().toISOString();
+  await Store.updCol('aparatos',a.id,{mant:a.mant,hist:a.hist});if(st.ap){const i=st.ap.findIndex(x=>x.id===a.id);if(i>=0)st.ap[i]=a}}catch(e){}}
+/* Aviso al móvil del administrador el día que toca algo de cada aparato (8:00); se reprograma al apuntar «Hecho hoy» */
+let apProgVa=false;
+async function apProgramar(){if(apProgVa||!esAdminU()||!st.ap||typeof pushListo!=='function'||!pushListo())return;apProgVa=true;
+  try{let prev={};try{prev=JSON.parse(localStorage.getItem('abono.pushprogap')||'{}')}catch(e){}const vivos=new Set();
+    for(const a of st.ap){const k='ap-'+a.id;vivos.add(k);let prox=null,que=[];
+      if(a.estado!=='retirado'){const L=[...(a.mant||[]).map(m=>[m.t,m.cada,m.ult]),...(a.calib&&a.calib.cada?[['Calibrar',a.calib.cada,a.calib.ult]]:[])];
+        for(const [t,cada,ult] of L){if(!cada)continue;const d0=new Date((ult||a.inst||hoy())+'T12:00:00');d0.setDate(d0.getDate()+cada);const f=isoD(d0);if(!prox||f<prox){prox=f;que=[t]}else if(f===prox)que.push(t)}}
+      const it=!prox?{id:k,borrar:true}:{id:k,cuando:Math.max(Date.now()+60000,new Date(prox+'T08:00:00').getTime()),ref:prox+'|'+que.join(','),para:[miEmail()],titulo:'Mantenimiento: '+(a.nombre||apTipo(a.tipo)[1]),cuerpo:que.join(' · ')+' · '+apDonde(a),tag:'ap-'+a.id,tab:'aparatos'};
+      const firma=JSON.stringify(it.borrar?it:{...it,cuando:prox});if(prev[k]===firma)continue;try{await pushApi('programar',it);prev[k]=firma}catch(e){break}}
+    for(const k of Object.keys(prev))if(!vivos.has(k)){try{await pushApi('programar',{id:k,borrar:true});delete prev[k]}catch(e){}}
+    try{localStorage.setItem('abono.pushprogap',JSON.stringify(prev))}catch(e){}}finally{apProgVa=false}}
+document.addEventListener('click',e=>{if(st.tab!=='aparatos')return;const q=s=>e.target.closest&&e.target.closest(s);let b;
+  if(q('[data-apqrall]')){apEtiquetas((st.ap||[]).filter(a=>a.estado!=='retirado'));return}
+  const a=st.apSel&&(st.ap||[]).find(x=>x.id===st.apSel);if(!a)return;
+  if(q('[data-apqr]')){apEtiquetas([a]);return}
+  if((b=q('[data-apmandar]'))){const i=+b.dataset.apmandar,sel=document.getElementById('ap_para_'+i);apMandar(a,i,sel?sel.value:'');return}});
+
+/* ---------- Mis aparatos · datos en vivo (los escribe el servidor puente en la colección «lecturas»: un documento por placa y día) ---------- */
+const AP_SIN_MIN=120;
+function lecCargar(forzar){if(st.lec!==undefined&&!forzar)return;st.lec=null;Store.listCol('lecturas',200).then(l=>{st.lec=l;if(['aparatos','instal','mapa','vivo'].includes(st.tab))renderMain()},()=>{st.lec=[]})}
+/* Puntos de una placa desde hace «horas», ordenados */
+function lecDe(dev,horas){const desde=Date.now()-horas*3600e3,P=[];for(const d of st.lec||[])if(d.dev===dev)for(const p of d.p||[])if(p.t>=desde)P.push(p);return P.sort((a,b)=>a.t-b.t)}
+const apSinDatos=a=>a.estado!=='retirado'&&a.dev&&(!a.dato||Date.now()-Date.parse(a.dato.ts)>AP_SIN_MIN*60e3);
+const AP_VARS={N1:[['pct','Nivel','%']],N2:[['hum','Humedad','%']],N4:[['ta','Aire','°C'],['th','Hoja','°C'],['hr','Humedad','%']],N5:[['t','Temperatura','°C']],N6:[['valor','Valor','']],N7:[['valor','Valor','']],N8:[['co2','CO₂','ppm']],N9:[['amp','Consumo','A']]};
+function apVars(a,P){const v=AP_VARS[a.tipo];if(v)return v;const ks=new Set();for(const p of P)for(const [k,x] of Object.entries(p.v||{}))if(typeof x==='number')ks.add(k);return [...ks].slice(0,4).map(k=>[k,k,''])}
+/* Gráfica sencilla (SVG) de una variable */
+function apGraf(P,k,nom,u,horas){const pts=P.filter(p=>p.v&&typeof p.v[k]==='number');if(pts.length<2)return `<div class="apg"><b>${esc(nom)}</b><div class="note">Pocos datos todavía.</div></div>`;
+  const W=320,H=90,t0=Date.now()-horas*3600e3,t1=Date.now(),vs=pts.map(p=>p.v[k]);let mn=Math.min(...vs),mx=Math.max(...vs);if(mx-mn<1){mn-=0.5;mx+=0.5}
+  const X=t=>((t-t0)/(t1-t0)*W).toFixed(1),Y=v=>(H-6-(v-mn)/(mx-mn)*(H-14)).toFixed(1),ult=pts[pts.length-1].v[k];
+  return `<div class="apg"><div class="apgh"><b>${esc(nom)}</b><span>${fmt(ult,1)} ${esc(u)} · mín ${fmt(Math.min(...vs),1)} · máx ${fmt(Math.max(...vs),1)}</span></div>
+    <svg viewBox="0 0 ${W} ${H}" class="apgs" preserveAspectRatio="none" role="img" aria-label="${esc(nom)}"><path d="M${pts.map(p=>X(p.t)+' '+Y(p.v[k])).join('L')}" fill="none" stroke="var(--accent,#1a7f4b)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg></div>`}
+/* Batería: tendencia de los últimos días → cuántos días le quedan hasta 3,4 V */
+function apBateria(P){const b=P.filter(p=>typeof p.bat==='number');if(b.length<6)return null;const n=b.length,dx=b.map(p=>p.t/864e5),mx=dx.reduce((s,x)=>s+x,0)/n,my=b.reduce((s,p)=>s+p.bat,0)/n;
+  let sxy=0,sxx=0;for(let i=0;i<n;i++){sxy+=(dx[i]-mx)*(b[i].bat-my);sxx+=(dx[i]-mx)**2}const pend=sxx?sxy/sxx:0,ult=b[n-1].bat;
+  return {ult,pend,dias:pend<-0.002?Math.max(0,(ult-3.4)/-pend):null}}
+function apVivo(a){if(!a.dev)return `<div class="catsec"><h4>Datos en vivo</h4><div class="note">Pon el número de la placa (sale en «Comprobar en la mesa») en Editar para ver aquí sus datos.</div></div>`;
+  lecCargar();if(st.lec===null)return `<div class="catsec"><h4>Datos en vivo</h4><div class="note">Cargando…</div></div>`;
+  const h=st.apH||24,P=lecDe(a.dev,h),P7=lecDe(a.dev,168),B=apBateria(P7);
+  return `<div class="catsec"><h4>Datos en vivo · placa ${esc(a.dev)}</h4><div class="pick">${[[24,'24 horas'],[168,'7 días']].map(([v,t])=>`<button class="chip" type="button" data-aph="${v}" aria-pressed="${h===v}">${t}</button>`).join('')}</div>
+    ${P.length?apVars(a,P).map(([k,n,u])=>apGraf(P,k,n,u,h)).join(''):'<div class="note">No ha llegado nada en este tiempo.</div>'}
+    ${B?`<div class="tl-av ${B.dias!=null&&B.dias<10?'bad':'ok'}" style="text-transform:none">Batería ${fmt(B.ult,2)} V · ${B.dias!=null?`baja ${fmt(-B.pend*1000,0)} mV al día: al ritmo de esta semana le quedan unos <b>${Math.round(B.dias)} días</b>.`:'estable o subiendo: la placa solar la mantiene.'}</div>`:''}
+    ${P.some(p=>typeof p.rssi==='number')?`<div class="note">Señal de la última: ${fmt(P[P.length-1].rssi,0)} dBm (mejor cuanto más cerca de 0; por debajo de −115 se pierden mensajes).</div>`:''}</div>`}
+/* Placas que mandan datos y aún no están en Mis aparatos */
+function apSueltas(){if(!st.lec)return [];const conocidas=new Set((st.ap||[]).map(a=>a.dev).filter(Boolean)),vis=new Map();
+  for(const d of st.lec){if(!d.dev||conocidas.has(d.dev)||d.nodo==='PING'||d.nodo==='P')continue;const t=Date.parse(d.ts||0);if(Date.now()-t>3*864e5)continue;const x=vis.get(d.dev);if(!x||t>x.t)vis.set(d.dev,{dev:d.dev,nodo:d.nodo,t})}
+  return [...vis.values()]}
+
+/* ---------- Mis aparatos · prueba de cobertura LoRa ----------
+   La placa en modo cobertura (PRG apretado al encender) manda «PING» cada 10 s. El móvil apunta por dónde vas (GPS) y, al terminar,
+   se cruza con los PING que llegaron al servidor (con su señal): verde llega bien, naranja justo, rojo no llega. */
+const COBK='abono.cob';
+function cobEstado(){if(st.cob===undefined){try{st.cob=JSON.parse(localStorage.getItem(COBK)||'null')}catch(e){st.cob=null}}return st.cob}
+const cobGuarda=()=>{try{localStorage.setItem(COBK,JSON.stringify(st.cob))}catch(e){}};
+let cobWatch=null;
+function cobEmpezar(a){if(!navigator.geolocation){toast('Este móvil no da la ubicación');return}st.cob={ap:a.id,dev:a.dev,ini:Date.now(),fin:null,pts:[]};cobGuarda();
+  cobWatch=navigator.geolocation.watchPosition(p=>{const c=st.cob;if(!c||c.fin)return;const u=c.pts[c.pts.length-1];if(u&&Date.now()-u[0]<4000)return;c.pts.push([Date.now(),+p.coords.latitude.toFixed(6),+p.coords.longitude.toFixed(6),Math.round(p.coords.accuracy)]);cobGuarda();
+    const o=document.querySelector('[data-out="cobn"]');if(o)o.textContent=c.pts.length+' puntos apuntados'},()=>toast('Deja que la app use la ubicación'),{enableHighAccuracy:true,maximumAge:2000,timeout:20000});renderMain()}
+async function cobTerminar(a){const c=st.cob;if(!c)return;if(cobWatch!=null){navigator.geolocation.clearWatch(cobWatch);cobWatch=null}c.fin=Date.now();cobGuarda();toast('Esperando a que lleguen las últimas señales…');renderMain();
+  await new Promise(r=>setTimeout(r,8000));const l=await Store.listCol('lecturas',200).catch(()=>[]);st.lec=l;
+  const P=[];for(const d of l)if(d.dev===c.dev)for(const p of d.p||[])if(p.v&&p.v.n!=null&&p.t>=c.ini-15000&&p.t<=c.fin+15000)P.push(p);
+  /* cada punto del recorrido: ¿llegó una señal en ±12 s? */
+  const res=c.pts.map(([t,la,lo])=>{let best=null;for(const p of P){const d=Math.abs(p.t-t);if(d<=12000&&(!best||d<best.d))best={d,rssi:p.rssi}}return [la,lo,best?(best.rssi==null?-90:best.rssi):null]});
+  const rec=res.filter(x=>x[2]!=null).length;a.cob={f:hoy(),ini:c.ini,n:res.length,rec,pts:res.slice(-300)};apHist(a,`Prueba de cobertura: llegan ${rec} de ${res.length} puntos`);st.cob=null;cobGuarda();await apGuarda(a,'Prueba de cobertura guardada')}
+function cobMapa(R){const pts=R.pts.filter(x=>x[0]&&x[1]);if(pts.length<2)return '<div class="note">Muy pocos puntos.</div>';const la=pts.map(x=>x[0]),lo=pts.map(x=>x[1]),la0=Math.min(...la),la1=Math.max(...la),lo0=Math.min(...lo),lo1=Math.max(...lo);
+  const mLat=111320,mLon=111320*Math.cos(la0*Math.PI/180),Wm=Math.max(20,(lo1-lo0)*mLon),Hm=Math.max(20,(la1-la0)*mLat),W=320,H=Math.min(320,Math.max(140,W*Hm/Wm)),k=Math.min((W-20)/Wm,(H-20)/Hm);
+  const X=v=>(10+(v-lo0)*mLon*k).toFixed(1),Y=v=>(H-10-(v-la0)*mLat*k).toFixed(1),col=r=>r==null?'#c0392b':r>-100?'#1a7f4b':r>-115?'#e67e22':'#c0392b',esc100=Math.round(100*k);
+  return `<svg viewBox="0 0 ${W} ${H}" class="cobm" role="img" aria-label="Mapa de cobertura"><path d="M${pts.map(p=>X(p[1])+' '+Y(p[0])).join('L')}" fill="none" stroke="#bbb" stroke-width="1.5"/>
+    ${pts.map(p=>p[2]==null?`<path d="M${+X(p[1])-3} ${+Y(p[0])-3}l6 6m0-6l-6 6" stroke="#c0392b" stroke-width="2"/>`:`<circle cx="${X(p[1])}" cy="${Y(p[0])}" r="4" fill="${col(p[2])}"/>`).join('')}
+    ${esc100>15&&esc100<W-20?`<path d="M10 ${H-4}h${esc100}" stroke="#333" stroke-width="2"/><text x="${12+esc100}" y="${H-2}" font-size="9">100 m</text>`:''}<text x="${W-14}" y="14" font-size="10" font-weight="700">N↑</text></svg>
+    <div class="note">● verde: llega bien · ● naranja: llega justo · ✕ rojo: no llega. Norte arriba.</div>`}
+function apCob(a){if(!a.dev)return '';const c=cobEstado(),mia=c&&c.ap===a.id&&!c.fin;
+  return `<div class="catsec"><h4>Prueba de cobertura</h4>
+    ${mia?`<div class="tl-av warn" style="text-transform:none">Grabando el recorrido… camina con la placa por donde irá instalada. <b data-out="cobn">${c.pts.length} puntos apuntados</b></div><div class="row"><button class="btn pri" type="button" data-cobfin="1">Terminar y ver el mapa</button></div>`
+      :`<div class="note" style="text-transform:none">1. Enciende la placa con el botón PRG apretado (modo cobertura: una señal cada 10 s durante 15 minutos). 2. Pulsa «Empezar» y camina con el móvil y la placa por la finca. 3. Pulsa «Terminar». Hace falta la pasarela funcionando y el servidor puente.</div><div class="row"><button class="btn" type="button" data-cobini="1">Empezar</button></div>`}
+    ${a.cob?`<div class="sub">Última prueba: ${esc(fPunto(a.cob.f))} · llegan ${a.cob.rec} de ${a.cob.n} puntos</div>${cobMapa(a.cob)}`:''}</div>`}
+document.addEventListener('click',e=>{if(st.tab!=='aparatos')return;const q=s=>e.target.closest&&e.target.closest(s);const a=st.apSel&&(st.ap||[]).find(x=>x.id===st.apSel);if(!a)return;
+  if(q('[data-cobini]'))cobEmpezar(a);else if(q('[data-cobfin]'))cobTerminar(a)});
+
+/* Desde «Instalar y probar» del Taller: pone el número de la placa en su aparato (o lo da de alta) */
+async function apVincular(d,dev){dev=String(dev||'').toUpperCase();if(st.ap===undefined)apCargar();for(let i=0;i<40&&st.ap===null;i++)await new Promise(r=>setTimeout(r,150));
+  const ya=(st.ap||[]).find(a=>a.dev===dev);if(ya){st.apSel=ya.id;st.apF=null;st.tab='aparatos';renderAll();toast('Esta placa ya es «'+(ya.nombre||apTipo(ya.tipo)[1])+'»');return}
+  const c=(st.ap||[]).filter(a=>a.estado!=='retirado'&&(a.diseno===d.id||(a.tipo===d.nodo&&!a.dev)));
+  if(c.length===1){c[0].dev=dev;apHist(c[0],'Placa '+dev+' puesta');st.apSel=c[0].id;st.apF=null;st.tab='aparatos';renderAll();await apGuarda(c[0],'Placa '+dev+' puesta en «'+(c[0].nombre||apTipo(c[0].tipo)[1])+'»');return}
+  st.apF=apNuevo({tipo:d.nodo,diseno:d.id,nombre:d.nombre,dev});st.tab='aparatos';renderAll();window.scrollTo(0,0)}
+/* Conexión con el servidor puente (dirección y clave): la usa la pasarela casera al configurarla */
+function apConexion(){const c=st.cfg.sens||{};return `<section class="card"><details ${c.url?'':'open'}><summary><b>Conexión de los sensores (servidor puente)</b></summary>
+  <div class="note" style="text-transform:none">El servidor puente recibe los datos de la pasarela y de The Things Network y los deja aquí. Se monta una vez en Cloudflare (servidor/puente-worker.js). Pon su dirección y la clave PUENTE_TOKEN para configurar la pasarela casera desde el Taller.</div>
+  <div class="frm"><div class="field"><label for="sens_url">Dirección</label><div class="inp"><input id="sens_url" value="${esc(c.url||'')}" placeholder="https://puente….workers.dev" style="text-transform:none;text-align:left" autocomplete="off"></div></div>
+  <div class="field"><label for="sens_tok">Clave (PUENTE_TOKEN)</label><div class="inp"><input id="sens_tok" type="password" value="${esc(c.token||'')}" style="text-transform:none;text-align:left" autocomplete="off"></div></div></div>
+  <div class="row"><button class="btn" type="button" data-sensg="1">Guardar</button></div></details></section>`}
+document.addEventListener('click',e=>{if(st.tab!=='aparatos'||!(e.target.closest&&e.target.closest('[data-sensg]')))return;const u=$('#sens_url').value.trim().replace(/\/+$/,''),t=$('#sens_tok').value.trim();
+  if(u&&!/^https:\/\//.test(u)){toast('La dirección empieza por https://');return}st.cfg.sens={url:u,token:t};if(st.dirtyCfg){renderSave();toast('Pulsa «Guardar» abajo')}else{st.dirtyCfg=true;saveCfg().then(()=>{if(!st.dirtyCfg)toast('Conexión guardada')})}});
+
+/* ---------- Clima y estrés con los datos del sensor ----------
+   Si en la nave hay un nodo de clima y hoja (N4) con datos de hoy, rellena el día: la lectura más cercana a las 14:00 (aire, humedad y hoja),
+   la máxima y la mínima, las horas por encima del umbral de calor y las horas con humedad > 90 %. */
+function esSensorDe(cab,k){if(!st.ap)return null;const a=st.ap.find(x=>x.estado!=='retirado'&&x.cab===cab&&'n'+x.nave===k&&x.dev&&x.tipo==='N4');if(!a||!st.lec)return null;
+  const ini=new Date(st.fecha+'T00:00:00').getTime(),fin=ini+864e5,P=[];for(const d of st.lec)if(d.dev===a.dev)for(const p of d.p||[])if(p.t>=ini&&p.t<fin&&p.v&&typeof p.v.ta==='number')P.push(p);
+  P.sort((x,y)=>x.t-y.t);if(!P.length)return null;const U=esU(),obj=ini+14*3600e3,c=P.reduce((b,p)=>Math.abs(p.t-obj)<Math.abs(b.t-obj)?p:b,P[0]);
+  let h32=0,h90=0;for(let i=0;i<P.length;i++){const dt=Math.min(30,i?(P[i].t-P[i-1].t)/60000:10)/60;if(P[i].v.ta>U.tCal)h32+=dt;if(P[i].v.hr>90)h90+=dt}
+  const ta=P.map(p=>p.v.ta);return {a,n:P.length,hora:new Date(c.t).toTimeString().slice(0,5),v:{ta:+c.v.ta.toFixed(1),hr:Math.round(c.v.hr),...(typeof c.v.th==='number'?{h:[+c.v.th.toFixed(1)]}:{}),tmax:+Math.max(...ta).toFixed(1),tmin:+Math.min(...ta).toFixed(1),h32:+h32.toFixed(1),h90:+h90.toFixed(1)}}}
+function esSensorHTML(cab,k){apCargar();lecCargar();const S=esSensorDe(cab,k);if(!S)return '';
+  return `<div class="tl-av ok essens" style="text-transform:none"><span>El sensor «${esc(S.a.nombre||'Clima y hoja')}» tiene ${S.n} medidas de este día (la de las ${esc(S.hora)}: ${fmt(S.v.ta,1)} °C · ${S.v.hr} %${S.v.h?' · hoja '+fmt(S.v.h[0],1)+' °C':''}).</span><button class="btn pri" type="button" data-essens="${esc(k)}">Rellenar con el sensor</button></div>`}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-essens]');if(!b)return;const S=esSensorDe(st.cab,b.dataset.essens);if(!S)return;
+  esPon(st.cab,b.dataset.essens,d=>{Object.assign(d,S.v);d.fuente='sensor'});renderMain();renderSave();toast('Rellenado con el sensor: revisa y guarda')});
+
+/* ---------- Informe del mes: aparatos y naves con sensor frente a naves sin sensor ---------- */
+async function apInforme(mes){st.apInf={mes,cargando:true};renderMain();let regs=[];try{regs=st.hist||await Store.listRegs()}catch(e){}lecCargar(true);for(let i=0;i<40&&st.lec===null;i++)await new Promise(r=>setTimeout(r,150));
+  const U=esU(),deMes=regs.filter(r=>String(r.fecha||'').startsWith(mes)),aps=(st.ap||[]).filter(a=>a.estado!=='retirado');
+  const conSensor=new Set(aps.filter(a=>a.tipo==='N4'&&a.cab&&a.nave).map(a=>a.cab+':n'+a.nave)),nav={};
+  for(const r of deMes)for(const [k,d] of Object.entries(r.clima||{})){const c=esCalc(d,U);if(!c)continue;const x=nav[k]=nav[k]||{dias:0,rojo:0,amb:0,sensor:conSensor.has(k)};x.dias++;if(c.niv>=2)x.rojo++;else if(c.niv===1)x.amb++}
+  const grupo=s=>{const l=Object.values(nav).filter(x=>x.sensor===s),d=l.reduce((a,x)=>a+x.dias,0);return {naves:l.length,dias:d,rojo:l.reduce((a,x)=>a+x.rojo,0),amb:l.reduce((a,x)=>a+x.amb,0)}};
+  const filas=aps.map(a=>{const dias=new Set((st.lec||[]).filter(d=>d.dev&&d.dev===a.dev&&String(d.fecha).startsWith(mes)).map(d=>d.fecha)).size,pts=(st.lec||[]).filter(d=>d.dev===a.dev&&String(d.fecha).startsWith(mes)).reduce((s,d)=>s+(d.p||[]).length,0);
+    const bat=(st.lec||[]).filter(d=>d.dev===a.dev&&String(d.fecha).startsWith(mes)).flatMap(d=>(d.p||[]).map(p=>p.bat)).filter(v=>typeof v==='number');
+    const hechos=(a.hist||[]).filter(h=>String(h.f).startsWith(mes)&&!/^(Instalado|Mandado|Placa|Prueba)/.test(h.t)).length;return {a,dias,pts,batMin:bat.length?Math.min(...bat):null,hechos}});
+  const [y,m]=mes.split('-').map(Number),diasMes=new Date(y,m,0).getDate();st.apInf={mes,diasMes,con:grupo(true),sin:grupo(false),filas,regs:deMes.length};renderMain()}
+function apInformeHTML(){const I=st.apInf;if(!I)return '';if(I.cargando)return `<section class="card"><div class="note">Preparando el informe…</div></section>`;
+  const pct=(g,k)=>g.dias?Math.round(g[k]/g.dias*100)+' %':'—',MESL=new Date(I.mes+'-15').toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+  return `<section class="card apinf"><div class="tank-h"><div><h3>Informe de ${esc(MESL)}</h3><div class="sub">Aparatos y naves con sensor frente a naves sin sensor</div></div><button class="btn" type="button" data-apinfx="1">Cerrar</button></div>
+    <div class="catsec"><h4>Estrés en Clima y estrés (días apuntados)</h4><table class="mj-tab"><tr><td></td><td><b>Naves con sensor</b></td><td><b>Sin sensor</b></td></tr>
+      <tr><td>·</td><td>${I.con.naves} naves · ${I.con.dias} días</td><td>${I.sin.naves} naves · ${I.sin.dias} días</td></tr>
+      <tr><td>🔴</td><td>${pct(I.con,'rojo')} de los días en rojo</td><td>${pct(I.sin,'rojo')}</td></tr><tr><td>🟡</td><td>${pct(I.con,'amb')} en amarillo</td><td>${pct(I.sin,'amb')}</td></tr></table>
+      <div class="note" style="text-transform:none">${I.con.dias&&I.sin.dias?'Compara con cuidado: las naves no son iguales (orientación, variedad, fecha de plantación). Lo que vale es la tendencia de varios meses.':'Todavía no hay días suficientes de las dos clases para comparar: hacen falta naves con nodo de clima y hoja y días apuntados en Clima y estrés.'}</div></div>
+    <div class="catsec"><h4>Cada aparato</h4><table class="mj-tab">${I.filas.map(f=>`<tr><td>${f.a.dev?(f.dias>=I.diasMes*0.9?'✓':'!'):'·'}</td><td><b>${esc(f.a.nombre||apTipo(f.a.tipo)[1])}</b><small>${f.a.dev?`${f.dias} de ${I.diasMes} días con datos · ${f.pts} medidas${f.batMin!=null?' · batería mínima '+fmt(f.batMin,2)+' V':''}`:'sin placa conectada'} · ${f.hechos} mantenimientos apuntados</small></td><td></td></tr>`).join('')||'<tr><td></td><td>Sin aparatos.</td><td></td></tr>'}</table></div></section>`}
+document.addEventListener('click',e=>{if(st.tab!=='aparatos')return;const b=e.target.closest&&e.target.closest('[data-apinf],[data-apinfx]');if(!b)return;if(b.dataset.apinfx){st.apInf=null;renderMain();return}apInforme(b.dataset.apinf)});
 
 /* ---------- Mapa de naves: plano dibujado e incidencias sobre él ---------- */
 /* Gasolinera tenía las naves numeradas al revés en el plano (la 1 abajo). Lo apuntado tocando el plano guardó ese número:
@@ -3402,6 +3616,12 @@ const VV_EXTRA={regador:'<path d="M3.4 -7q6 1 5 6t-4 3" fill="none" stroke="#1f7
   fito:'<rect x="-6.8" y="-11" width="3.4" height="7.5" rx="1" fill="#2e86c1"/><rect x="-2.3" y="-14.2" width="4.6" height="1.9" rx=".8" fill="#5d6d7e"/><path d="M-5 -11q-3 4 -1 9" fill="none" stroke="#5d6d7e" stroke-width=".8"/>',
   mant:'<rect x="3.4" y="-5.2" width="5.4" height="3.8" rx=".6" fill="#c0392b"/><rect x="5" y="-6.6" width="2.2" height="1.6" fill="none" stroke="#7b241c" stroke-width=".6"/>'};
 const vvPersona=(col,ok,of)=>`<ellipse cy="1" rx="4.6" ry="1.8" fill="#000" opacity=".22"/><path d="M-4.2 0L-3.4 -10Q0 -13 3.4 -10L4.2 0Z" fill="${col}" stroke="#00000033" stroke-width=".6" opacity="${ok?.55:1}"/><circle cy="-14.6" r="3.6" fill="#f0c49c"/><path d="M-4.6 -15.6Q0 -21 4.6 -15.6Z" fill="${of==='tractorista'?'#3f8a4f':of==='fito'?'#eef2f3':'#f2d35c'}"/>${VV_EXTRA[of]||''}`;
+/* Mis aparatos sobre su nave (solo el administrador): verde al día, rojo si no manda o toca mantenimiento, gris sin placa */
+const apCorto=a=>{if(!a.dato)return apTipo(a.tipo)[0].length<4?apTipo(a.tipo)[0]:'·';const V=AP_VARS[a.tipo],v=a.dato.v||{};if(V&&typeof v[V[0][0]]==='number')return fmt(v[V[0][0]],V[0][2]==='%'||V[0][2]==='ppm'?0:1)+' '+V[0][2];return String(a.dato.txt||'').split(' · ')[0].slice(0,12)};
+function vvAparatos(cab,nv,c,P,H,K){if(!esAdminU())return '';apCargar();if(!st.ap)return '';const L=st.ap.filter(a=>a.estado!=='retirado'&&a.cab===cab&&String(a.nave)===String(nv.n));let o='';
+  L.forEach((a,k)=>{const S=P.p(c[0]+(k-(L.length-1)/2)*70*K,c[1],H*1.9),mal=apSinDatos(a)||apPend(a).length,col=!a.dev&&!a.dato?'#7f8c8d':mal?'#c0392b':'#1a7f4b',t=apCorto(a),w=t.length*6.4+22;
+    o+=`<g class="vvap" data-vv="ap:${esc(a.id)}" transform="translate(${S[0].toFixed(1)} ${S[1].toFixed(1)}) scale(${(K*1.2).toFixed(3)})"><line x1="0" y1="0" x2="0" y2="16" stroke="${col}" stroke-width="2"/><rect x="${(-w/2).toFixed(1)}" y="-14" width="${w.toFixed(1)}" height="16" rx="8" fill="${col}" stroke="#fff" stroke-width="1.2"/><circle cx="${(-w/2+8).toFixed(1)}" cy="-6" r="3" fill="#fff"/><text x="${(-w/2+15).toFixed(1)}" y="-2.5" font-size="9.5" font-weight="700" fill="#fff">${esc(t)}</text></g>`});
+  return o}
 function vvSVG(cab,F){const M=MAPAS[cab],R=VV_RUTA[cab],P=vvProj(M),[vx,vy,vw,vh]=M.vb,H=Math.max(vw,vh)*.032;
   const bx=vvCaja(M,R),x0=bx.x0,y0=bx.y0,W=bx.W,y1=y0+bx.Hh,K=W/430;
   const pp=(pts,z)=>pts.map(q=>P.p(q[0],q[1],z).map(v=>v.toFixed(1)).join(',')).join(' ');
@@ -3433,6 +3653,7 @@ function vvSVG(cab,F){const M=MAPAS[cab],R=VV_RUTA[cab],P=vvProj(M),[vx,vy,vw,vh
     const ws=nv.p.map((a,k)=>{const b=nv.p[(k+1)%nv.p.length];return{a,b,d:P.dep((a[0]+b[0])/2,(a[1]+b[1])/2)}}).sort((u,v)=>u.d-v.d);
     for(const w of ws){const A=P.p(w.a[0],w.a[1]),B=P.p(w.b[0],w.b[1]);s+=`<polygon class="vvw" points="${pp([w.a,w.b],0)} ${pp([w.b,w.a],H)}" fill="${B[0]>A[0]?'#f3f7f9':'#d9e4ea'}" stroke="#7e97ad" stroke-width="1"/>`}
     s+=`<polygon class="vvr" points="${pp(nv.p,H)}" fill="#eef4f7" stroke="${es?'#e2a32a':'#5f7d99'}" stroke-width="${es?4*K:1.6}"/>`;
+    s+=vvAparatos(cab,nv,c,P,H,K);
     for(const l of pasLineas(cab,nv))for(const[a,b]of (nv.q?clipLinea(l.p1,l.p2,nv.p):[[l.p1,l.p2]])){const A=P.p(a[0],a[1],H),B=P.p(b[0],b[1],H);s+=`<line class="vvrl" x1="${A[0].toFixed(1)}" y1="${A[1].toFixed(1)}" x2="${B[0].toFixed(1)}" y2="${B[1].toFixed(1)}" stroke="#a9bccb" stroke-width="1.4"/>`}
     const ex=ends[0],L=its.length?P.p(ex[0],ex[1],H):P.p(c[0],c[1],H),ni=incN(nv.n);s+=`<g transform="translate(${L[0].toFixed(1)} ${(L[1]-8*K).toFixed(1)}) scale(${K.toFixed(3)})"><rect x="-23" y="-9" width="46" height="16" rx="8" fill="#1b2f4a" opacity=".9"/><text y="3" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff" letter-spacing=".5">NAVE ${nv.n}</text>${ni?`<circle cx="24" cy="-8" r="7" fill="#c0392b"/><text x="24" y="-5" text-anchor="middle" font-size="9" font-weight="800" fill="#fff">${ni}</text>`:''}</g></g>`}
   // la gente, encima de todo para que siempre se vea
@@ -3577,6 +3798,7 @@ function vvAbrirCab(c){if(!MAPAS[c])return;st.cab=c;try{renderCabs()}catch(e){}s
 async function vvGuardarMaq(l){for(const c of [st.cfg,st.savedCfg])c.maquinas=clone(l);try{await Store.setConfig(st.savedCfg);renderMain();return true}catch(e){toast(errMsg(e));return false}}
 document.addEventListener('click',async e=>{if(st.tab!=='vivo'&&st.tab!=='cvivo')return;const b=e.target.closest('[data-vv],[data-act^="vv-"]');if(!b||!b.closest('#main'))return;
   if(b.dataset.vv&&b.dataset.vv.startsWith('cab:')){vvAbrirCab(b.dataset.vv.slice(4));return}
+  if(b.dataset.vv&&b.dataset.vv.startsWith('ap:')){st.apSel=b.dataset.vv.slice(3);st.apF=null;st.tab='aparatos';renderAll();window.scrollTo(0,0);return}
   if(b.dataset.vv){st.vv.sel=st.vv.sel===b.dataset.vv&&b.closest('svg')?null:b.dataset.vv;renderMain();if(st.vv.sel){const d=$('#vvdet');if(d&&!b.closest('#vvdet'))d.scrollIntoView({block:'nearest',behavior:'smooth'})}return}
   const a=b.dataset.act;
   if(a==='vv-rot'){st.vv.rot=(st.vv.rot+(+b.dataset.d)+4)%4;renderMain()}
@@ -3656,7 +3878,7 @@ document.addEventListener('click',e=>{if(st.tab!=='montaje')return;const b=e.tar
 document.addEventListener('input',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(k==='txt')st.tb.txt=t.value});
 document.addEventListener('change',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(!k)return;
   if(k==='diam')st.tb.diam=t.value;else if(k==='marc'){st.tb.marc[+t.dataset.i]=t.checked}else if(k==='foto'&&t.files&&t.files.length){const fs=[...t.files];t.value='';tbAddFotos(fs)}});
-const VIEWS={aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);
@@ -5592,7 +5814,8 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c);splashLogo()}}catch(e){}
   st.ready=true;loadFich();migNavesGas();if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
-  const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}})();
+  const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}
+  const ap=/[#&]ap=([\w-]+)/.exec(location.hash);if(ap){history.replaceState(null,'',location.pathname+location.search);if(esAdminU()){cerrarSplash();st.tab='aparatos';st.apSel=ap[1];renderAll()}else toast('Este aparato solo lo ve el administrador')}})();
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',e=>{const d=e.data||{};if(d.abrir!=null&&st.ready)irA(d.abrir||'cuentas-hoy')});
 /* Con datos compartidos: al volver a la app, recarga lo que hayan guardado otros */
 setInterval(()=>{if(!st.ready||document.hidden||st.fecha!==hoy())return;if(['rellenar','cuentas'].includes(st.tab))softUpdate();avisosLlenado()},300000);
@@ -5600,7 +5823,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v147';
+window.APP_V='abonado-v148';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
