@@ -577,6 +577,11 @@ body.conbn .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .hoyt{display:grid;justify-items:center;align-content:start;gap:6px;min-height:96px;padding:14px 6px 10px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--navy);cursor:pointer;font:inherit;text-align:center}
 .hoyt svg{width:28px;height:28px}.hoyt b{font:700 12.5px var(--f-display);letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}.hoyt small{font-size:11.5px;color:var(--muted);text-transform:none}
 .masg svg{width:24px;height:24px;color:var(--navy)}.masg h3{margin:0}.masg .bdg{position:static;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--bad);color:#fff;font:700 11px/17px var(--f-body);font-style:normal}
+.hoysal{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px;margin:10px 0 8px;padding-bottom:9px;border-bottom:1px solid var(--line)}.hoysal b{font:700 19px var(--f-display);letter-spacing:.02em;text-transform:uppercase;color:var(--navy)}.hoysal span{font-size:13px;color:var(--muted);text-transform:none}.hoysal span::first-letter{text-transform:uppercase}
+.hoynot{display:inline-flex;width:auto;max-width:max-content;align-items:center;gap:8px;margin:2px 0 10px;padding:8px 14px 8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:inherit;color:var(--ink);cursor:pointer}
+.hoynot b{font:700 13px var(--f-display);letter-spacing:.06em;text-transform:uppercase}.hoynot i{font-style:normal;font:700 12px/18px var(--f-body);min-width:20px;height:20px;border-radius:10px;padding:0 6px;color:#fff;background:var(--warn);text-align:center}.hoynot.bad i{background:var(--bad)}
+.hoydot{width:9px;height:9px;border-radius:50%;background:var(--ok)}.hoynot.warn .hoydot{background:var(--warn)}.hoynot.bad .hoydot{background:var(--bad)}.hoynot[disabled]{cursor:default;opacity:.85}.hoych{color:var(--muted);font-size:12px}
+.hoyav{margin:0 0 10px}.hoyfich{display:flex;justify-content:center;margin:2px 0 14px}.hoyfich .lnk{font:700 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--accent,#1a7f4b);background:none;border:0;padding:8px 12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -589,6 +594,7 @@ body.conbn .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
       <div class="brandl"><button class="fback" data-act="areas" aria-label="Volver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="fbackT">Menú</span></button><div><div class="eyebrow" id="eyeb">Fertirrigación · cabezales de riego</div><h1 id="h1">Abonado Pinta Santos</h1></div></div>
       <div class="topr"><label class="date" id="fechaL"><span>Día</span><input type="date" id="fecha"></label><button class="frec" type="button" id="recargar" aria-label="Recargar la app" title="Recargar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     </div>
+    <div class="hoysal" id="hoysal" hidden></div>
     <nav class="scroller" id="cabs" aria-label="Cabezal"></nav>
     <nav class="scroller tabs" id="tabs" role="tablist" aria-label="Secciones"></nav>
   </div>
@@ -872,7 +878,10 @@ function entrarArea(a){if(a==='campo'&&!puedeCollas())return;if(a==='riego'&&(!v
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['mas','estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
+/* En Hoy, el saludo y la fecha van en la cabecera, encima de las zonas, separados por una raya fina */
+function hoySaludo(){const nom=(yoNombre()||'').split(' ')[0],h=new Date().getHours();return {sal:(h<14?'Buenos días':h<21?'Buenas tardes':'Buenas noches')+(nom?', '+nom:''),fecha:new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}}
+function renderSaludo(){const e=$('#hoysal');if(!e)return;const on=st.tab==='hoy';e.hidden=!on;if(on){const S=hoySaludo();e.innerHTML=`<b>${esc(S.sal)}</b><span>${esc(S.fecha)}</span>`}}
+function renderCabs(){renderSaludo();const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['mas','estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
 const IC_HOY='<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',IC_MAS='<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>';
@@ -920,10 +929,12 @@ function hoyAvisos(){const av=[],n=(k,a,b)=>k+' '+(k===1?a:b);
   return av.filter(a=>tabPermitida(a[2]))}
 function hoyClima(){try{if(!st.lec)return '';const M=ucComp(),P=[];for(let n=1;n<=20;n++){const x=ucPuntos(M.cab,n,hoy());if(x.length)P.push(x[x.length-1])}if(!P.length)return '';
   const ta=ucMed(P.map(p=>p.v.ta)),hr=ucMed(P.map(p=>p.v.hr)),v=ucMed(P.map(p=>(p.v.vent||[])[0]));return [ta!=null?fmt(ta,1)+' °C':'',hr!=null?fmt(hr,0)+' %':'',v!=null?'ventanas '+fmt(v,0)+' %':''].filter(Boolean).join(' · ')}catch(e){return ''}}
-function vHoy(){lecCargar();const av=hoyAvisos(),nom=(yoNombre()||'').split(' ')[0],h=new Date().getHours(),sal=h<14?'Buenos días':h<21?'Buenas tardes':'Buenas noches',cl=hoyClima();
-  return `<section class="hoyh"><h2>${sal}${nom?', '+esc(nom):''}</h2><div class="sub">${esc(new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}))} · ${esc((fincaAct()||{}).nombre||'')}</div></section>
-  <section class="card"><div><h3>Para mirar</h3></div>${av.length?`<div class="hoyav">${av.map(([k,t,tab])=>`<button class="hoyai ${k}" type="button" data-tab="${tab}"><i></i><span>${esc(t)}</span><b>›</b></button>`).join('')}</div>`:'<div class="tl-av ok" style="text-transform:none">Todo en orden: no hay nada pendiente.</div>'}</section>
-  <section class="hoyg">${HOY_T.filter(([k])=>VIEWS[k]&&tabPermitida(k)).map(([k,t,ic])=>`<button class="hoyt" type="button" data-tab="${k}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ic}</svg><b>${t}</b>${k==='climanv'&&cl?`<small>${esc(cl)}</small>`:''}</button>`).join('')}</section>`}
+function vHoy(){lecCargar();const av=hoyAvisos(),cl=hoyClima(),ab=!!st.hoyAv,malo=av.some(a=>a[0]==='bad'),fich=['ubic','cubic'].find(k=>VIEWS[k]&&tabPermitida(k));
+  return `<button class="hoynot ${av.length?(malo?'bad':'warn'):'ok'}" type="button" data-hoyav="1" aria-expanded="${ab}" ${av.length?'':'disabled'}><span class="hoydot"></span><b>${av.length?'Para mirar':'Todo en orden'}</b>${av.length?`<i>${av.length}</i><span class="hoych">${ab?'▴':'▾'}</span>`:''}</button>
+  ${ab&&av.length?`<div class="hoyav">${av.map(([k,t,tab])=>`<button class="hoyai ${k}" type="button" data-tab="${tab}"><i></i><span>${esc(t)}</span><b>›</b></button>`).join('')}</div>`:''}
+  <section class="hoyg">${HOY_T.filter(([k])=>VIEWS[k]&&tabPermitida(k)).map(([k,t,ic])=>`<button class="hoyt" type="button" data-tab="${k}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ic}</svg><b>${t}</b>${k==='climanv'&&cl?`<small>${esc(cl)}</small>`:''}</button>`).join('')}</section>
+  ${fich?`<div class="hoyfich"><button class="lnk" type="button" data-tab="${fich}">Fichar hoy ›</button></div>`:''}`}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-hoyav]');if(!b||st.tab!=='hoy')return;st.hoyAv=!st.hoyAv;renderMain()});
 /* ---------- Más: Equipo, Notas, Taller y Ajustes ---------- */
 function vMas(){const G=gruposAct().filter(g=>MAS_G.includes(g.id)),ins=insignias();
   return G.map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k));if(!ts.length)return '';

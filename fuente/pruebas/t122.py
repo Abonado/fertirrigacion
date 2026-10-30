@@ -18,13 +18,20 @@ async def main():
         nav = await pg.locator('#grupos .grp span').all_inner_texts(); print(nav); assert [x.upper() for x in nav] == ['HOY', 'RIEGO', 'ALMACÉN', 'DATOS', 'MÁS']
         bb = await pg.locator('#grupos').bounding_box(); assert bb['y'] + bb['height'] >= 840, 'abajo del todo'
         assert await pg.locator('#tabs').is_hidden()
-        t = (await pg.text_content('#main')).upper(); assert 'PARA MIRAR' in t and 'CUENTAS DEL DÍA' in t and 'INFORME DEL MES' in t
+        t = (await pg.text_content('#main')).upper(); assert 'CUENTAS DEL DÍA' in t and 'INFORME DEL MES' in t and 'FICHAR HOY' in t
+        sal = (await pg.text_content('#hoysal')).upper(); assert await pg.locator('#hoysal').is_visible() and ('BUENAS' in sal or 'BUENOS' in sal) and 'JUANJO' not in t.split('CUENTAS')[0].replace('PARA MIRAR','')
+        hb, cb = await pg.locator('#hoysal').bounding_box(), await pg.locator('#cabs').bounding_box(); assert hb['y'] + hb['height'] <= cb['y'] + 1, 'el saludo va encima de las zonas'
         # un aviso: cosas del almacén para pedir → lleva al Almacén (y la insignia sale en la barra)
         await pg.evaluate("window._ins=insignias;window.insignias=()=>({..._ins(),almacen:2});renderAll()"); await pg.wait_for_timeout(200)
+        assert '2 COSAS DEL ALMACÉN' not in (await pg.text_content('#main')).upper() and 'PARA MIRAR' in (await pg.text_content('.hoynot')).upper() and '1' in await pg.text_content('.hoynot')
+        await pg.click('.hoynot'); await pg.wait_for_timeout(200)
         assert '2 COSAS DEL ALMACÉN' in (await pg.text_content('#main')).upper() and '2' in await pg.text_content('#grupos [data-grupo="almacen"]')
         await pg.screenshot(path='pruebas/salida/t122-hoy.png')
         await pg.click('.hoyai.warn'); await pg.wait_for_timeout(400); assert await pg.evaluate("st.tab") == 'almacen' and await pg.locator('#grupos [data-grupo="almacen"][aria-pressed="true"]').count() == 1
         await pg.evaluate("window.insignias=window._ins;renderAll()")
+        assert await pg.locator('#hoysal').is_hidden(), 'fuera de Hoy no sale el saludo'
+        # fichar
+        await pg.click('#grupos [data-grupo="hoy"]'); await pg.wait_for_timeout(300); await pg.click('.hoyfich [data-tab]'); await pg.wait_for_timeout(400); assert await pg.evaluate("st.tab") in ('ubic', 'cubic')
         # acceso grande
         await pg.click('#grupos [data-grupo="hoy"]'); await pg.wait_for_timeout(300); await pg.click('.hoyt[data-tab="informe"]'); await pg.wait_for_timeout(400)
         assert await pg.evaluate("st.tab") == 'informe' and await pg.locator('#grupos [data-grupo="datos"][aria-pressed="true"]').count() == 1
