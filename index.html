@@ -570,6 +570,7 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .chbox{display:grid;gap:8px}.chm{max-width:88%;padding:8px 12px;border-radius:14px;font:400 15px/1.45 var(--f-body)}.chm,.chm *,#ch_txt{text-transform:none!important;letter-spacing:normal}.chm.yo{justify-self:end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}.chm.ia{justify-self:start;background:var(--surface-2);border:1px solid var(--line);border-bottom-left-radius:4px}.chm p{margin:4px 0}.chm ul{margin:4px 0;padding-left:20px}.chm li{margin:2px 0}.chf{font-size:11px;opacity:.8}.chprev{max-height:90px;border-radius:8px}.chsug .chip{white-space:normal;text-align:left;text-transform:none}
 .tlk-carp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tlk-carp>button{border:1px solid var(--line);border-radius:10px;padding:9px 10px;display:grid;gap:3px;text-align:left;background:var(--surface,#fff);color:inherit;font:inherit;cursor:pointer;align-content:start}.tlk-carp>button.on{border-color:var(--navy,#1b2b3a);border-width:2px}.tlk-carp small{color:var(--muted);text-transform:none;font-size:12.5px;line-height:1.3}
 .ucv{display:grid;gap:8px;margin:8px 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.uct{width:100%;border-collapse:collapse;font-size:12.5px;text-transform:none}.uct th,.uct td{padding:4px 3px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}.uct td i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.uct small{color:var(--muted)}.ucbar{display:block;width:34px;height:5px;border-radius:3px;background:var(--line);margin-top:2px;overflow:hidden}.ucbar span{display:block;height:100%;background:#1f77b4}.ucvg{width:100%;height:auto}
+.ucley{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;text-transform:none}.ucley i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -764,7 +765,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
+const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -875,7 +876,7 @@ function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=cam
 const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
-  {id:'datos',n:'Datos',tabs:['cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
+  {id:'datos',n:'Datos',tabs:['climanv','cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
   {id:'lab',n:'Taller',tabs:['catalogo','taller','aparatos','cajon'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
@@ -2335,6 +2336,8 @@ function ucHTML(cab){const U=st.es.uc,zs=esZonas(cab).zs;
   const M=ucComp(),hayC=U.res.some(x=>x.comp),nv=((MAPAS[M.cab]||{}).naves||[]).length||6;
   return h+`<div class="ucres"><b>Esto he leído${U.hora?' ('+esc(U.hora)+')':''}. Revisa a qué nave va cada fila:</b>${hayC?`<div class="ucinv"><span>Cómo apuntarlo:</span><button class="chip" type="button" data-esact="ucmodo" data-v="media" aria-pressed="${M.modo==='media'}">Media en todas las naves</button><button class="chip" type="button" data-esact="ucmodo" data-v="nave" aria-pressed="${M.modo!=='media'}">Cada compartimento en su nave</button></div>`:''}${hayC&&M.modo==='media'?(()=>{const A=ucMedia(U.res);return `<div class="ucmed"><b>Media de los ${A.n} compartimentos</b><span>${[A.ta!=null?fmt(A.ta,1)+' °C':'',A.hr!=null?fmt(A.hr,0)+' %':'',A.vent.length?'ventanas '+A.vent[0]+' %':''].filter(Boolean).join(' · ')} → se apunta en las ${esZonas(cab).zs.length} naves de ${esc(cabNombre(cab))}</span></div>`})():''}${hayC&&M.modo!=='media'?`<div class="ucinv"><span>El compartimento 1 es la</span><button class="chip" type="button" data-esact="ucinv" data-v="1" aria-pressed="${!!M.inv}">nave ${nv} (al revés)</button><button class="chip" type="button" data-esact="ucinv" data-v="0" aria-pressed="${!M.inv}">nave 1</button></div>`:''}${U.ext?ucExtTxt(U.ext,'Fuera'):''}${U.res.map((x,i)=>`<div class="ucf"><span>${esc(x.zona||'—')}</span><span>${[x.ta!=null?fmt(x.ta,1)+' °C':'',x.hr!=null?fmt(x.hr,0)+' %':'',x.tmax!=null?'máx '+fmt(x.tmax,1):'',x.tmin!=null?'mín '+fmt(x.tmin,1):'',x.vent&&x.vent.length?'ventanas '+x.vent.map(v=>fmt(v,0)).join('/')+' %':''].filter(Boolean).join(' · ')}</span><div class="inp"${hayC&&M.modo==='media'&&x.comp?' hidden':''}><select data-ucz="${i}" aria-label="Nave para ${esc(x.zona||'esta fila')}"><option value="">No apuntar</option>${zs.map(z=>`<option value="${z.k}" ${x.k===z.k?'selected':''}>${esc(z.lab)}</option>`).join('')}</select></div></div>`).join('')}
     <div class="row"><button class="btn pri" type="button" data-esact="ucok">Apuntar</button><button class="btn" type="button" data-esact="ucno">Descartar</button></div></div>`}
+document.addEventListener('click',e=>{if(st.tab!=='climanv')return;const b=e.target.closest&&e.target.closest('[data-esact],[data-cnv]');if(!b)return;
+  if(b.dataset.esact==='uvar'){st.es.uvar=b.dataset.v;renderMain()}else if(b.dataset.cnv==='dvar'){st.es.dvar=b.dataset.v;renderMain()}else if(b.dataset.cnv==='cab'){st.cab=b.dataset.v;renderCabs();renderMain()}});
 $('#main').addEventListener('change',e=>{const t=e.target;if(st.tab!=='estres'||!t.id&&!t.dataset)return;
   if(t.id==='es_uc'&&t.files&&t.files[0]){ucLeer(t.files[0]);t.value=''}
   else if(t.dataset&&t.dataset.ucz!=null&&st.es.uc&&st.es.uc.res){st.es.uc.res[+t.dataset.ucz].k=t.value}});
@@ -2644,7 +2647,7 @@ document.addEventListener('click',e=>{if(st.tab!=='aparatos')return;const q=s=>e
 const AP_SIN_MIN=120;
 /* Las lecturas se vuelven a pedir a los 10 minutos (el controlador de clima y los sensores mandan cada rato) sin vaciar lo que ya se ve */
 function lecCargar(forzar){const viejo=!!st.lec&&Date.now()-(st.lecT||0)>600e3;if(st.lec!==undefined&&!forzar&&!viejo)return;if(st.lecVa&&!forzar)return;st.lecVa=1;st.lecT=Date.now();
-  const primero=st.lec==null||forzar;if(primero)st.lec=null;Store.listCol('lecturas',200).then(l=>{st.lecVa=0;st.lec=l;if(primero&&['aparatos','instal','mapa','vivo','estres'].includes(st.tab))renderMain()},()=>{st.lecVa=0;st.lec=st.lec||[]})}
+  const primero=st.lec==null||forzar;if(primero)st.lec=null;Store.listCol('lecturas',200).then(l=>{st.lecVa=0;st.lec=l;if(primero&&['aparatos','instal','mapa','vivo','estres','climanv'].includes(st.tab))renderMain()},()=>{st.lecVa=0;st.lec=st.lec||[]})}
 /* Puntos de una placa desde hace «horas», ordenados */
 function lecDe(dev,horas){const desde=Date.now()-horas*3600e3,P=[];for(const d of st.lec||[])if(d.dev===dev)for(const p of d.p||[])if(p.t>=desde)P.push(p);return P.sort((a,b)=>a.t-b.t)}
 const apSinDatos=a=>a.estado!=='retirado'&&a.dev&&(!a.dato||Date.now()-Date.parse(a.dato.ts)>AP_SIN_MIN*60e3);
@@ -2738,7 +2741,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
    servidor puente: cada compartimento es una «placa» UC-<CABEZAL>-<n> en las lecturas. Los compartimentos van a las naves como en
    «Leer informe» (al revés o no; media en todas o cada uno a su nave). Con eso se rellena el día igual que con un sensor N4. */
 const ucDev=(cab,n)=>`UC-${String(cab).toUpperCase()}-${n}`;
-function ucPuntos(cab,comp){const ini=new Date(st.fecha+'T00:00:00').getTime(),fin=ini+864e5,P=[];for(const d of st.lec||[])if(d.dev===ucDev(cab,comp))for(const p of d.p||[])if(p.t>=ini&&p.t<fin&&p.v)P.push(p);return P.sort((a,b)=>a.t-b.t)}
+function ucPuntos(cab,comp,f){const ini=new Date((f||st.fecha)+'T00:00:00').getTime(),fin=ini+864e5,P=[];for(const d of st.lec||[])if(d.dev===ucDev(cab,comp))for(const p of d.p||[])if(p.t>=ini&&p.t<fin&&p.v)P.push(p);return P.sort((a,b)=>a.t-b.t)}
 const ucMed=a=>{const v=a.filter(x=>typeof x==='number');return v.length?v.reduce((s,x)=>s+x,0)/v.length:null};
 function ucCtrlDe(cab,k){const M=ucComp();if(M.cab!==cab||!st.lec)return null;const nv=((MAPAS[cab]||{}).naves||[]).length||6;let P;
   if(M.modo==='media'){const G=new Map();for(let n=1;n<=20;n++)for(const p of ucPuntos(cab,n)){const g=G.get(p.t)||[];g.push(p.v);G.set(p.t,g)}
@@ -2761,7 +2764,7 @@ function ucVentHTML(cab){if(ucComp().cab!==cab||!st.lec)return '';const M=ucComp
   const X=t=>L+(t-ini)/864e5*(W-L-R),Y=v=>T+(hi-v)/((hi-lo)||1)*(H-T-B);
   let g=`<svg viewBox="0 0 ${W} ${H}" class="ucvg" role="img" aria-label="${esc(tit)} durante el día">`;
   for(const v of [lo,(lo+hi)/2,hi])g+=`<line x1="${L}" x2="${W-R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)"/><text x="${L-4}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--muted)">${fmt(v,0)}</text>`;
-  for(const h of [0,6,12,18,24])g+=`<text x="${X(ini+h*3600e3).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="9" fill="var(--muted)">${h}h</text>`;
+  for(const h of [0,6,12,18,24])g+=`<text x="${X(ini+h*3600e3).toFixed(1)}" y="${H-6}" text-anchor="${h===0?'start':h===24?'end':'middle'}" font-size="9" fill="var(--muted)">${h}h</text>`;
   C.forEach((c,i)=>{const pts=c.P.map(p=>[p.t,ucVal(p,k)]).filter(x=>x[1]!=null);if(pts.length)g+=`<polyline fill="none" stroke="${UC_COL[i%UC_COL.length]}" stroke-width="1.8" stroke-linejoin="round" points="${pts.map(([t,v])=>X(t).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}"/>`});
   g+='</svg>';
   const hora=new Date(Math.max(...C.map(c=>c.u.t))).toTimeString().slice(0,5),nV=Math.max(...C.map(c=>(c.u.v.vent||[]).length));
@@ -2771,7 +2774,45 @@ function ucVentHTML(cab){if(ucComp().cab!==cab||!st.lec)return '';const M=ucComp
     <div class="pick">${Object.entries(UC_VAR).filter(([q])=>q[0]!=='v'||+q[1]<=nV).map(([q,[t]])=>`<button class="chip" type="button" data-esact="uvar" data-v="${q}" aria-pressed="${q===k}">${t}</button>`).join('')}</div>${g}
     <div class="note" style="text-transform:none">${esc(tit)} de cada compartimento durante el día, con una lectura cada pocos minutos. Las ventanas son la apertura real que da el controlador (0 % cerrada, 100 % abierta del todo).</div></section>`}
 /* En Clima y estrés se vuelven a pedir las lecturas cada 5 minutos para ver las ventanas al día (sin repintar si estás escribiendo) */
-setInterval(()=>{if(st.tab!=='estres'||document.hidden||!st.lec||st.lecVa)return;st.lecVa=1;Store.listCol('lecturas',200).then(l=>{st.lecVa=0;st.lec=l;st.lecT=Date.now();const a=document.activeElement;if(st.tab==='estres'&&!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))renderMain()},()=>{st.lecVa=0})},5*60e3);
+setInterval(()=>{if(!['estres','climanv'].includes(st.tab)||document.hidden||!st.lec||st.lecVa)return;st.lecVa=1;Store.listCol('lecturas',200).then(l=>{st.lecVa=0;st.lec=l;st.lecT=Date.now();const a=document.activeElement;if(['estres','climanv'].includes(st.tab)&&!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))renderMain()},()=>{st.lecVa=0})},5*60e3);
+/* ---------- Datos → Clima de las naves ----------
+   Todo lo que manda el controlador de clima (el «Lector del clima» del PC de uCrop): cómo están ahora las ventanas, la temperatura y la
+   humedad de cada nave, cómo ha ido el día (gráfica y resumen) y los últimos días. Usa el día elegido arriba. */
+function ucDiaRes(P,U){const ta=P.map(p=>p.v.ta).filter(v=>typeof v==='number'),hr=P.map(p=>p.v.hr).filter(v=>typeof v==='number'),v1=P.map(p=>(p.v.vent||[])[0]).filter(v=>typeof v==='number');
+  let hc=0,hh=0;for(let i=0;i<P.length;i++){const dt=Math.min(30,i?(P[i].t-P[i-1].t)/60000:15)/60;if(P[i].v.ta>U.tCal)hc+=dt;if(P[i].v.hr>90)hh+=dt}
+  const ab=P.find(p=>((p.v.vent||[])[0]||0)>=10);
+  return ta.length?{max:Math.max(...ta),min:Math.min(...ta),med:ucMed(ta),hr:ucMed(hr),hrMax:hr.length?Math.max(...hr):null,v1:ucMed(v1),hc,hh,abre:ab?new Date(ab.t).toTimeString().slice(0,5):null,n:P.length}:null}
+const CNV_D={max:['Máxima','°C'],min:['Mínima','°C'],hr:['Humedad media','%'],v1:['Ventana 1 media','%'],hc:['Horas de calor','h']};
+function vClimaNaves(){lecCargar();const cab=st.cab,M=ucComp(),U=esU();
+  const cabs=[...new Set((st.lec||[]).filter(d=>d.nodo==='UC'&&d.cab&&d.dev!=='UC-ESTADO').map(d=>d.cab))];
+  let h=`<section class="card"><div><h3>Clima de las naves · ${esc(cabNombre(cab))}</h3><div class="sub">Del controlador de clima (uCrop), leído cada pocos minutos desde el ordenador de la oficina</div></div>`;
+  if(st.lec==null)return h+'<div class="note">Cargando lecturas…</div></section>';
+  if(!cabs.includes(cab)||M.cab!==cab)return h+`<div class="note" style="text-transform:none">Este cabezal aún no tiene el controlador conectado.${cabs.length?' Ahora llega el de:':' Cuando el «Lector del clima» empiece a mandar, saldrá aquí.'}</div>${cabs.length?`<div class="row">${cabs.filter(c=>cabById(c)).map(c=>`<button class="btn pri" type="button" data-cnv="cab" data-v="${esc(c)}">Ver ${esc(cabNombre(c))}</button>`).join('')}</div>`:''}</section>`;
+  h+=ucCtrlHTML(cab).replace(/<button[^>]*data-esuc[^>]*>[^<]*<\/button>/,'')+`</section>`;
+  const vent=ucVentHTML(cab);h+=vent?`<section class="card">${vent}</section>`:`<section class="card"><div class="note">No hay lecturas del ${new Date(st.fecha+'T12:00:00').toLocaleDateString('es-ES')}. Cambia el día arriba.</div></section>`;
+  const nv=((MAPAS[cab]||{}).naves||[]).length||6,comps=[...new Set((st.lec||[]).filter(d=>d.nodo==='UC'&&d.cab===cab&&d.comp).map(d=>+d.comp))].sort((a,b)=>a-b);
+  const naveDe=n=>M.inv?nv+1-n:n,orden=comps.slice().sort((a,b)=>naveDe(a)-naveDe(b));
+  // resumen del día
+  const R=orden.map(n=>({n,nave:naveDe(n),r:ucDiaRes(ucPuntos(cab,n).filter(p=>typeof p.v.ta==='number'),U)})).filter(x=>x.r);
+  if(R.length)h+=`<section class="card"><div><h3>Resumen del día</h3><div class="sub">${new Date(st.fecha+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})} · calor = horas por encima de ${fmt(U.tCal,0)} °C</div></div>
+    <div style="overflow-x:auto"><table class="uct"><tr><th>Nave</th><th>Máx.</th><th>Mín.</th><th>Media</th><th>Hum.</th><th>Calor</th><th>Hum.&gt;90</th><th>V1 media</th><th>Abre</th></tr>
+    ${R.map(x=>`<tr><td><b>Nave ${x.nave}</b></td><td>${fmt(x.r.max,1)}</td><td>${fmt(x.r.min,1)}</td><td>${fmt(x.r.med,1)}</td><td>${x.r.hr!=null?fmt(x.r.hr,0)+' %':'—'}</td><td>${fmt(x.r.hc,1)} h</td><td>${fmt(x.r.hh,1)} h</td><td>${x.r.v1!=null?fmt(x.r.v1,0)+' %':'—'}</td><td>${x.r.abre||'—'}</td></tr>`).join('')}</table></div></section>`;
+  // últimos días
+  const dias=[];for(let i=13;i>=0;i--){const d=new Date(st.fecha+'T12:00:00');d.setDate(d.getDate()-i);dias.push(isoD(d))}
+  const S=orden.map(n=>({n,nave:naveDe(n),d:dias.map(f=>ucDiaRes(ucPuntos(cab,n,f).filter(p=>typeof p.v.ta==='number'),U))})),k=st.es.dvar||'max';
+  const hay=dias.map((_,i)=>S.some(x=>x.d[i]));const i0=hay.indexOf(true);
+  if(i0>=0&&hay.filter(Boolean).length>=2){const D=dias.slice(i0),vals=S.flatMap(x=>x.d.slice(i0).map(r=>r&&r[k])).filter(v=>v!=null);
+    const lo=Math.floor(Math.min(...vals)-1),hi=Math.ceil(Math.max(...vals)+1),W=340,H=150,L=30,Rr=6,T=8,B=22,X=i=>L+(D.length<2?0:i/(D.length-1))*(W-L-Rr),Y=v=>T+(hi-v)/((hi-lo)||1)*(H-T-B);
+    let g=`<svg viewBox="0 0 ${W} ${H}" class="ucvg" role="img" aria-label="${CNV_D[k][0]} de cada nave por días">`;
+    for(const v of [lo,(lo+hi)/2,hi])g+=`<line x1="${L}" x2="${W-Rr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)"/><text x="${L-4}" y="${(Y(v)+3).toFixed(1)}" text-anchor="end" font-size="9" fill="var(--muted)">${fmt(v,0)}</text>`;
+    D.forEach((f,i)=>{if(D.length<=8||i%2===0)g+=`<text x="${X(i).toFixed(1)}" y="${H-6}" text-anchor="${i===0?'start':i===D.length-1?'end':'middle'}" font-size="9" fill="var(--muted)">${+f.slice(8)}/${+f.slice(5,7)}</text>`});
+    S.forEach((x,j)=>{const c=UC_COL[comps.indexOf(x.n)%UC_COL.length],pts=x.d.slice(i0).map((r,i)=>r&&r[k]!=null?[X(i),Y(r[k])]:null).filter(Boolean);
+      if(pts.length)g+=`<polyline fill="none" stroke="${c}" stroke-width="1.8" points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}"/>`+pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.4" fill="${c}"/>`).join('')});
+    g+='</svg>';
+    h+=`<section class="card"><div><h3>Últimos días</h3><div class="sub">${CNV_D[k][0]} de cada nave (${CNV_D[k][1]})</div></div>
+      <div class="pick">${Object.entries(CNV_D).map(([q,[t]])=>`<button class="chip" type="button" data-cnv="dvar" data-v="${q}" aria-pressed="${q===k}">${t}</button>`).join('')}</div>${g}
+      <div class="ucley">${S.map(x=>`<span><i style="background:${UC_COL[comps.indexOf(x.n)%UC_COL.length]}"></i>Nave ${x.nave}</span>`).join('')}</div></section>`}
+  return h+`<div class="note" style="text-transform:none;margin:0 4px">El reparto de compartimentos a naves es el de Clima y estrés (ahora: compartimento 1 = nave ${naveDe(1)}). Para apuntar estos datos en el registro del día: Mapa de la finca → Clima y estrés → «Rellenar las naves».</div>`}
 /* Estado del lector: cuándo llegó lo último */
 function ucEstado(){const d=(st.lec||[]).find(x=>x.dev==='UC-ESTADO');return d&&d.ts?{t:Date.parse(d.ts),cab:d.cab,n:d.n}:null}
 function ucCtrlHTML(cab){lecCargar();if(ucComp().cab!==cab)return '';const E=ucEstado(),zs=esZonas(cab).zs,hay=zs.filter(x=>ucCtrlDe(cab,x.k)).length;if(!E&&!hay)return '';
@@ -3968,7 +4009,7 @@ async function tlPoner(){if(!esAdminU())return;const a=($('#tlk_n1')||{}).value|
 document.addEventListener('click',e=>{if(!TL_TABS.includes(st.tab))return;const b=e.target.closest&&e.target.closest('[data-tlk]');if(!b)return;const a=b.dataset.tlk;
   if(a==='abrir')tlAbrir();else if(a==='poner')tlPoner();else if(a==='cerrar'){tlRecordar('');renderMain();window.scrollTo(0,0);toast('Taller cerrado con llave')}});
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!e.target||e.target.id!=='tlk_pw')return;e.preventDefault();tlAbrir()});
-const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
 for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
@@ -5914,7 +5955,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v155';
+window.APP_V='abonado-v156';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
