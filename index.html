@@ -598,6 +598,38 @@ body.conbn .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .hoynot b{font:700 13px var(--f-display);letter-spacing:.06em;text-transform:uppercase}.hoynot i{font-style:normal;font:700 12px/18px var(--f-body);min-width:20px;height:20px;border-radius:10px;padding:0 6px;color:#fff;background:var(--warn);text-align:center}.hoynot.bad i{background:var(--bad)}
 .hoydot{width:9px;height:9px;border-radius:50%;background:var(--ok)}.hoynot.warn .hoydot{background:var(--warn)}.hoynot.bad .hoydot{background:var(--bad)}.hoynot[disabled]{cursor:default;opacity:.85}.hoych{color:var(--muted);font-size:12px}
 .hoyav{margin:0 0 10px}.hoyfich{display:flex;justify-content:center;margin:2px 0 14px}.hoyfich .lnk{font:700 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--accent,#1a7f4b);background:none;border:0;padding:8px 12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+/* ---- cabecera más limpia: una sola fila arriba, sin raya; las zonas como un selector; sombra suave solo al bajar ---- */
+.top{border-bottom:0;transition:box-shadow .2s}
+body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
+.top .wrap{padding-block:10px 8px;gap:10px;grid-template-columns:minmax(0,1fr)}
+.date input{min-width:0;max-width:150px}
+.brandrow{flex-wrap:nowrap;align-items:center;gap:10px}
+.brandl{flex:1;min-width:0;gap:10px}.brandl>div{min-width:0}
+#h1{font-size:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:430px){#h1{font-size:21px}.brandrow,.brandl{gap:8px}.date{padding:0 10px 0 9px}}
+.top .eyebrow{font-size:10px;letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fback{flex:none;width:38px;height:38px;padding:0;justify-content:center;border-radius:50%}
+.fback span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.fback svg{width:20px;height:20px}
+.topr{flex:none;gap:6px;margin-left:0}
+.date>span{display:none}
+.date input{font-size:14px;padding:8px 10px;border-radius:999px;height:38px;box-sizing:border-box}
+.frec{width:38px;height:38px}
+.hoysal{border-bottom:0;padding-bottom:0;margin:2px 0 0;gap:2px 8px}.hoysal b{font-size:18px}
+#cabs:not([hidden]){display:inline-flex;flex-wrap:nowrap;gap:2px;padding:3px;margin:0;width:max-content;max-width:100%;overflow-x:auto;background:var(--surface-2,#e8ece8);border:1px solid var(--line);border-radius:999px;box-sizing:border-box}
+#cabs .chip{border:0;background:none;color:var(--muted);padding:7px 15px;font-weight:700;letter-spacing:.02em}
+#cabs .chip[aria-pressed="true"]{background:var(--surface);color:var(--navy);box-shadow:0 1px 4px rgba(15,30,40,.16)}
+.hoynot{display:flex;width:100%;max-width:none;align-items:center;gap:12px;margin:4px 0 10px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);text-align:left}
+.hoynot.warn{background:#fdf5e6;border-color:#f1dcb3}.hoynot.bad{background:#fbeceb;border-color:#f0c9c6}.hoynot.ok{background:var(--ok-bg,#e6f2ea);border-color:transparent}
+.hoyic{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;color:#fff;background:var(--ok)}.hoynot.warn .hoyic{background:var(--warn)}.hoynot.bad .hoyic{background:var(--bad)}.hoyic svg{width:19px;height:19px}
+.hoytx{flex:1;display:grid;gap:1px;min-width:0}.hoytx b{font:700 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}.hoytx small{font-size:13px;color:var(--muted);text-transform:none}
+.hoych{flex:none;width:22px;height:22px;color:var(--muted);transition:transform .2s}.hoych svg{width:22px;height:22px}.hoynot[aria-expanded="true"] .hoych{transform:rotate(180deg)}
+.hoynot[disabled]{opacity:1}
+.date{position:relative;gap:6px;height:38px;padding:0 12px 0 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--navy);cursor:pointer}
+.date .dcal{width:18px;height:18px}.date b{font:700 14px var(--f-display);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.date input{position:absolute;inset:0;width:100%;max-width:none;height:100%;opacity:0;border:0;padding:0;cursor:pointer}
+.date input::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.date.otro{background:var(--navy);border-color:var(--navy);color:#fff}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -612,7 +644,7 @@ body.conbn .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
   <div class="wrap">
     <div class="brandrow">
       <div class="brandl"><button class="fback" data-act="areas" aria-label="Volver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="fbackT">Menú</span></button><div><div class="eyebrow" id="eyeb">Fertirrigación · cabezales de riego</div><h1 id="h1">Abonado Pinta Santos</h1></div></div>
-      <div class="topr"><label class="date" id="fechaL"><span>Día</span><input type="date" id="fecha"></label><button class="frec" type="button" id="recargar" aria-label="Recargar la app" title="Recargar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+      <div class="topr"><label class="date" id="fechaL"><span>Día</span><svg class="dcal" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg><b id="fechaTxt"></b><input type="date" id="fecha" aria-label="Día"></label><button class="frec" type="button" id="recargar" aria-label="Recargar la app" title="Recargar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     </div>
     <div class="hoysal" id="hoysal" hidden></div>
     <nav class="scroller" id="cabs" aria-label="Cabezal"></nav>
@@ -901,8 +933,10 @@ document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.
 /* En Hoy, el saludo y la fecha van en la cabecera, encima de las zonas, separados por una raya fina */
 function hoySaludo(){const nom=(yoNombre()||'').split(' ')[0],h=new Date().getHours();return {sal:(h<14?'Buenos días':h<21?'Buenas tardes':'Buenas noches')+(nom?', '+nom:''),fecha:new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'})}}
 function renderSaludo(){const e=$('#hoysal');if(!e)return;const on=st.tab==='hoy';e.hidden=!on;if(on){const S=hoySaludo();e.innerHTML=`<b>${esc(S.sal)}</b><span>${esc(S.fecha)}</span>`}}
-function renderCabs(){renderSaludo();const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['mas','estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
-  $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
+/* El día de arriba: corto («30 oct»); si no es hoy, se marca para que se vea que estás en otro día */
+function fechaTxt(){const e=$('#fechaTxt');if(!e)return;const d=new Date(st.fecha+'T12:00:00'),h=st.fecha===hoy();e.textContent=h?'Hoy':d.toLocaleDateString('es-ES',{day:'numeric',month:'short'}).replace('.','');$('#fechaL').classList.toggle('otro',!h)}
+function renderCabs(){renderSaludo();fechaTxt();const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['mas','estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
+  $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
 const IC_HOY='<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',IC_MAS='<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>';
 const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
@@ -950,10 +984,12 @@ function hoyAvisos(){const av=[],n=(k,a,b)=>k+' '+(k===1?a:b);
 function hoyClima(){try{if(!st.lec)return '';const M=ucComp(),P=[];for(let n=1;n<=20;n++){const x=ucPuntos(M.cab,n,hoy());if(x.length)P.push(x[x.length-1])}if(!P.length)return '';
   const ta=ucMed(P.map(p=>p.v.ta)),hr=ucMed(P.map(p=>p.v.hr)),v=ucMed(P.map(p=>(p.v.vent||[])[0]));return [ta!=null?fmt(ta,1)+' °C':'',hr!=null?fmt(hr,0)+' %':'',v!=null?'ventanas '+fmt(v,0)+' %':''].filter(Boolean).join(' · ')}catch(e){return ''}}
 function vHoy(){lecCargar();const av=hoyAvisos(),cl=hoyClima(),ab=!!st.hoyAv,malo=av.some(a=>a[0]==='bad'),fich=['ubic','cubic'].find(k=>VIEWS[k]&&tabPermitida(k));
-  return `<button class="hoynot ${av.length?(malo?'bad':'warn'):'ok'}" type="button" data-hoyav="1" aria-expanded="${ab}" ${av.length?'':'disabled'}><span class="hoydot"></span><b>${av.length?'Para mirar':'Todo en orden'}</b>${av.length?`<i>${av.length}</i><span class="hoych">${ab?'▴':'▾'}</span>`:''}</button>
+  const urg=av.filter(a=>a[0]==='bad').length,BELL='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
+  return `<button class="hoynot ${av.length?(urg?'bad':'warn'):'ok'}" type="button" data-hoyav="1" aria-expanded="${ab}" ${av.length?'':'disabled'}><span class="hoyic">${BELL}</span><span class="hoytx"><b>${av.length?'Para mirar':'Todo en orden'}</b><small>${av.length?`${av.length} aviso${av.length>1?'s':''}${urg?` · ${urg} urgente${urg>1?'s':''}`:''}`:'Nada pendiente por ahora'}</small></span>${av.length?'<span class="hoych" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>':''}</button>
   ${ab&&av.length?`<div class="hoyav">${av.map(([k,t,tab])=>`<button class="hoyai ${k}" type="button" data-tab="${tab}"><i></i><span>${esc(t)}</span><b>›</b></button>`).join('')}</div>`:''}
   <section class="hoyg">${HOY_T.filter(([k])=>VIEWS[k]&&tabPermitida(k)).map(([k,t,ic])=>`<button class="hoyt" type="button" data-tab="${k}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ic}</svg><b>${t}</b>${k==='climanv'&&cl?`<small>${esc(cl)}</small>`:''}</button>`).join('')}</section>
   ${fich?`<div class="hoyfich"><button class="lnk" type="button" data-tab="${fich}">Fichar hoy ›</button></div>`:''}`}
+window.addEventListener('scroll',()=>document.body.classList.toggle('scrolled',window.scrollY>4),{passive:true});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-hoyav]');if(!b||st.tab!=='hoy')return;st.hoyAv=!st.hoyAv;renderMain()});
 /* ---------- Más: Equipo, Notas, Taller y Ajustes ---------- */
 function vMas(){const G=gruposAct().filter(g=>MAS_G.includes(g.id)),ins=insignias();
@@ -4175,7 +4211,7 @@ function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCf
   $('#savemsg').textContent=st.saving?'Guardando…':'Cambios sin guardar';
   $('#savebtns').innerHTML=(st.dirtyCfg?`<button class="btn" data-act="save-cfg" ${st.saving?'disabled':''}>Guardar receta y ajustes</button>`:'')+(st.dirtyReg?`<button class="btn pri" data-act="save-reg" ${st.saving?'disabled':''}>Guardar día ${fCorta(st.fecha)}</button>`:'')}
 function renderFoot(){}
-function renderAll(){$('#fecha').value=st.fecha;renderCabs();renderTabs();renderMain();renderSave();renderFoot()}
+function renderAll(){$('#fecha').value=st.fecha;fechaTxt();renderCabs();renderTabs();renderMain();renderSave();renderFoot()}
 let tt;function toast(t,ms){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(tt);tt=setTimeout(()=>e.hidden=true,ms||2600)}
 
 async function irA(g){g=String(g||'cuentas-hoy');cerrarSplash();st.tab=g.startsWith('rellenar:')?'rellenar':g.startsWith('cuentas')?'cuentas':g.startsWith('mensajes')?'mensajes':g;if(g==='mensajes-mios')st.msgF='mios';if(g==='mensajes-priv')st.msgF='priv';if(g.startsWith('rellenar:'))st.cab=g.split(':')[1];if(st.tab==='notas'&&!veRiego())st.tab='cnotas';if(!VIEWS[st.tab])st.tab='cuentas';
@@ -4363,7 +4399,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='reset'){st.confirmReset=true;renderMain()}
   else if(t.dataset.act==='reset-no'){st.confirmReset=false;renderMain()}
   else if(t.dataset.act==='reset-yes'){st.cfg=clone(DEFAULT_CONFIG);st.dirtyCfg=true;st.confirmReset=false;renderAll();toast('Valores iniciales cargados: pulsa «Guardar receta y ajustes»')}});
-$('#fecha').addEventListener('change',async e=>{const f=e.target.value;if(!f||f===st.fecha)return;if(st.dirtyReg)await saveReg();await loadFecha(f)});
+$('#fecha').addEventListener('change',async e=>{const f=e.target.value;fechaTxt();if(!f||f===st.fecha)return;if(st.dirtyReg)await saveReg();await loadFecha(f)});
 
 /* ---------- Collas: asistencia por persona y rendimiento de las labores en las matas ---------- */
 /* Cada colla tiene un jefe (usuario de la app) y su gente (solo el nombre, no necesitan la app).
@@ -6095,7 +6131,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v161';
+window.APP_V='abonado-v162';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
