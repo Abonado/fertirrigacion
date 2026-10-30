@@ -1,0 +1,21 @@
+AGRO FLY · LECTOR DEL CLIMA
+Lee cada rato la tabla «Estados» del controlador de clima (Compartimento 1…6: temperatura, humedad y ventanas)
+y la manda a la app (servidor puente, ruta /clima). En la app sale en Clima y estrés: «Rellenar las naves».
+
+INSTALAR (una vez, en el ordenador donde se ve el controlador, con Microsoft Edge)
+ 1. Descomprime esta carpeta en un sitio fijo, por ejemplo Documentos\lector-clima (no la borres luego).
+ 2. En Edge, escribe en la barra:  edge://extensions
+ 3. Activa «Modo de desarrollador» (abajo a la izquierda).
+ 4. Pulsa «Cargar desempaquetada» y elige la carpeta lector-clima.
+ 5. Pulsa el icono de las piezas de puzle (arriba a la derecha) → el ojo junto a «Lector del clima» para tenerlo a mano.
+
+CONFIGURAR
+ 1. Abre el programa del clima, entra en la finca y en la pestaña «Estados» (la tabla de compartimentos).
+ 2. Pulsa el icono del Lector del clima → «Usar esta pestaña». Debe salir la tabla leída.
+ 3. Rellena la dirección del puente y la clave (PUENTE_TOKEN), el cabezal (Gasolinera) y cada cuánto leer → «Guardar».
+ 4. Pulsa «Leer y mandar ya» para probar. Debe decir «Enviado: 6 compartimentos».
+
+PARA QUE NO PARE
+ · El ordenador encendido y sin suspender (Configuración → Sistema → Energía → Suspender: Nunca).
+ · Edge abierto (puede estar minimizado) con la pestaña fijada del clima. Para usar el programa, ábrelo en otra pestaña.
+ · Si deja de llegar más de hora y media entre las 8 y las 20 h, el puente avisa al móvil del administrador.

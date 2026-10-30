@@ -42,7 +42,7 @@ else:
     (out/'nube.js').unlink(missing_ok=True)
 _a, _b, _c = s.rpartition('</script>')   # solo en el script principal (el último), una vez
 s = _a + """
-window.APP_V='abonado-v152';
+window.APP_V='abonado-v153';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
@@ -73,7 +73,7 @@ head = """<!doctype html>
  "background_color":"#eef2ef","theme_color":"#1b2f4a",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
           {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]},ensure_ascii=False,indent=1))
-(out/'sw.js').write_text("""const C='abonado-v152';
+(out/'sw.js').write_text("""const C='abonado-v153';
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./badge-96.png','./pdf-lib.min.js','./parte-tpl.js','./parte-tpl-p.js'"""+(",'./nube.js'" if nube else '')+"""];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(FILES.map(f=>new Request(f,{cache:'reload'})))));self.skipWaiting()});   // siempre de la red, nunca de la caché del navegador
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
@@ -99,6 +99,9 @@ subprocess.run(['node', 'firmware/genera.cjs'], check=True)   # firmware/src: el
 (out/'robots.txt').write_text('User-agent: *\nDisallow: /\n')   # que ningún buscador la indexe
 shutil.copy('plantilla/parte-tpl.js', out/'parte-tpl.js')
 shutil.copy('plantilla2/parte-tpl-p.js', out/'parte-tpl-p.js')
+import zipfile
+with zipfile.ZipFile(out/'lector-clima.zip','w',zipfile.ZIP_DEFLATED) as z:   # Lector del clima (extensión de Edge para el PC del controlador)
+    for f in sorted(pathlib.Path('lector-clima').iterdir()): z.write(f, 'lector-clima/'+f.name)
 shutil.copy('taller/taller.js', out/'taller.js')          # Taller de sensores (solo el administrador; se carga al abrirlo)
 shutil.copy('taller/catalogo.js', out/'catalogo.js')    # Catálogo de tecnología agrícola (solo el administrador; se carga al abrirlo)
 # Guías de montaje del catálogo (solo el administrador; se carga al abrir una ficha): el visor y las guías van en un solo archivo

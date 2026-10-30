@@ -1,0 +1,22 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Lector del clima</title>
+<style>
+body{font:13px/1.4 system-ui,'Segoe UI',sans-serif;width:360px;margin:0;padding:12px 14px;color:#15222c;background:#f7f5ef}
+h1{font-size:15px;margin:0 0 2px;text-transform:uppercase;letter-spacing:.5px}.sub{color:#5f6b72;margin-bottom:10px}
+label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;color:#5f6b72;margin:8px 0 3px}
+input,select{width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid #cfd6d1;border-radius:7px;font:inherit;background:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}button{flex:1;padding:8px 10px;border-radius:8px;border:1px solid #cfd6d1;background:#fff;font:inherit;font-weight:700;cursor:pointer;text-transform:uppercase;font-size:11.5px}
+button.pri{background:#1a7f4b;color:#fff;border-color:#1a7f4b}.box{margin-top:10px;padding:8px 10px;border-radius:8px;background:#fff;border:1px solid #e1e5e1}
+.ok{color:#1a7f4b}.mal{color:#b00020}table{width:100%;border-collapse:collapse;margin-top:6px;font-size:12px}th,td{padding:3px 4px;border-bottom:1px solid #eee;text-align:left}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:8px}small{color:#5f6b72}
+</style></head><body>
+<h1>Lector del clima</h1><div class="sub">Lee la tabla del controlador cada rato y la manda a la app</div>
+<div class="box" id="estado">…</div>
+<label for="puente">Dirección del servidor puente</label><input id="puente" placeholder="https://puente-sensores….workers.dev">
+<label for="token">Clave (PUENTE_TOKEN)</label><input id="token" type="password">
+<div class="dos"><div><label for="cab">Cabezal</label><select id="cab"><option value="gas">Gasolinera</option><option value="pla">Planos</option><option value="fra">Franco</option></select></div>
+<div><label for="cada">Leer cada</label><select id="cada"><option>5</option><option>10</option><option>15</option><option>30</option><option>60</option></select></div></div>
+<label>Página del clima</label><div id="pagina"><small>Sin elegir</small></div>
+<div class="row"><button id="probar">Usar esta pestaña</button><button class="pri" id="guardar">Guardar</button></div>
+<div class="row"><button id="ahora">Leer y mandar ya</button></div>
+<div class="box" id="res" hidden></div>
+<script src="popup.js"></script></body></html>

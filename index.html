@@ -2112,7 +2112,7 @@ function esAjHTML(){if(!esGestor())return '';const U=esU(),C=esCal();
 function vEstres(){const cab=st.cab,c=cabById(cab);if(!c)return '';const{zs}=esZonas(cab);if(!zs.find(x=>x.k===st.es.z))st.es.z=(zs[0]||{}).k||null;const x=zs.find(z=>z.k===st.es.z);
   const U=esU(),R=zs.map(z=>esCalc(esDato(cab,z.k),U)).filter(Boolean),cuenta=n=>R.filter(r=>r.niv===n).length;
   let h=`<section class="card mapcard"><div class="tank-h"><div><h3>Clima y estrés · ${esc(c.nombre)}</h3><div class="sub">${R.length?`${R.length} de ${zs.length} medidas hoy · ${[2,1,0].filter(n=>cuenta(n)).map(n=>cuenta(n)+' '+ES_TXT[n].toLowerCase()).join(' · ')}`:'Sin medidas hoy · toca una nave y apunta'}</div></div></div>
-    ${(()=>{const E=((st.reg||{}).meteo||{}).ext;return E?ucExtTxt(E,'Fuera'+(E.hora?' ('+E.hora+')':'')):''})()}${ucHTML(cab)}<div data-out="essvg">${esSVG(cab)}</div>
+    ${(()=>{const E=((st.reg||{}).meteo||{}).ext;return E?ucExtTxt(E,'Fuera'+(E.hora?' ('+E.hora+')':'')):''})()}${ucCtrlHTML(cab)}${ucHTML(cab)}<div data-out="essvg">${esSVG(cab)}</div>
     <div class="esley">${[0,1,2].map(n=>`<span><i style="background:${ES_COL[n]}"></i>${ES_TXT[n]}</span>`).join('')}<span><i style="background:#cfd8e3"></i>Sin medir</span></div></section>`;
   if(x)h+=`<section class="card"><div><h3>${esc(x.lab)}</h3><div class="sub">Medida de hoy</div></div>${esFormHTML(cab,x)}<div data-out="esres">${esResHTML(cab,x)}</div></section>`;
   return h+esAjHTML()}
@@ -2641,7 +2641,9 @@ document.addEventListener('click',e=>{if(st.tab!=='aparatos')return;const q=s=>e
 
 /* ---------- Mis aparatos · datos en vivo (los escribe el servidor puente en la colección «lecturas»: un documento por placa y día) ---------- */
 const AP_SIN_MIN=120;
-function lecCargar(forzar){if(st.lec!==undefined&&!forzar)return;st.lec=null;Store.listCol('lecturas',200).then(l=>{st.lec=l;if(['aparatos','instal','mapa','vivo'].includes(st.tab))renderMain()},()=>{st.lec=[]})}
+/* Las lecturas se vuelven a pedir a los 10 minutos (el controlador de clima y los sensores mandan cada rato) sin vaciar lo que ya se ve */
+function lecCargar(forzar){const viejo=!!st.lec&&Date.now()-(st.lecT||0)>600e3;if(st.lec!==undefined&&!forzar&&!viejo)return;if(st.lecVa&&!forzar)return;st.lecVa=1;st.lecT=Date.now();
+  const primero=st.lec==null||forzar;if(primero)st.lec=null;Store.listCol('lecturas',200).then(l=>{st.lecVa=0;st.lec=l;if(primero&&['aparatos','instal','mapa','vivo','estres'].includes(st.tab))renderMain()},()=>{st.lecVa=0;st.lec=st.lec||[]})}
 /* Puntos de una placa desde hace «horas», ordenados */
 function lecDe(dev,horas){const desde=Date.now()-horas*3600e3,P=[];for(const d of st.lec||[])if(d.dev===dev)for(const p of d.p||[])if(p.t>=desde)P.push(p);return P.sort((a,b)=>a.t-b.t)}
 const apSinDatos=a=>a.estado!=='retirado'&&a.dev&&(!a.dato||Date.now()-Date.parse(a.dato.ts)>AP_SIN_MIN*60e3);
@@ -2666,7 +2668,7 @@ function apVivo(a){if(!a.dev)return `<div class="catsec"><h4>Datos en vivo</h4><
     ${P.some(p=>typeof p.rssi==='number')?`<div class="note">Señal de la última: ${fmt(P[P.length-1].rssi,0)} dBm (mejor cuanto más cerca de 0; por debajo de −115 se pierden mensajes).</div>`:''}</div>`}
 /* Placas que mandan datos y aún no están en Mis aparatos */
 function apSueltas(){if(!st.lec)return [];const conocidas=new Set((st.ap||[]).map(a=>a.dev).filter(Boolean)),vis=new Map();
-  for(const d of st.lec){if(!d.dev||conocidas.has(d.dev)||d.nodo==='PING'||d.nodo==='P')continue;const t=Date.parse(d.ts||0);if(Date.now()-t>3*864e5)continue;const x=vis.get(d.dev);if(!x||t>x.t)vis.set(d.dev,{dev:d.dev,nodo:d.nodo,t})}
+  for(const d of st.lec){if(!d.dev||conocidas.has(d.dev)||d.nodo==='PING'||d.nodo==='P'||d.nodo==='UC')continue;const t=Date.parse(d.ts||0);if(Date.now()-t>3*864e5)continue;const x=vis.get(d.dev);if(!x||t>x.t)vis.set(d.dev,{dev:d.dev,nodo:d.nodo,t})}
   return [...vis.values()]}
 
 /* ---------- Mis aparatos · prueba de cobertura LoRa ----------
@@ -2723,10 +2725,37 @@ function esSensorDe(cab,k){if(!st.ap)return null;const a=st.ap.find(x=>x.estado!
   P.sort((x,y)=>x.t-y.t);if(!P.length)return null;const U=esU(),obj=ini+14*3600e3,c=P.reduce((b,p)=>Math.abs(p.t-obj)<Math.abs(b.t-obj)?p:b,P[0]);
   let h32=0,h90=0;for(let i=0;i<P.length;i++){const dt=Math.min(30,i?(P[i].t-P[i-1].t)/60000:10)/60;if(P[i].v.ta>U.tCal)h32+=dt;if(P[i].v.hr>90)h90+=dt}
   const ta=P.map(p=>p.v.ta);return {a,n:P.length,hora:new Date(c.t).toTimeString().slice(0,5),v:{ta:+c.v.ta.toFixed(1),hr:Math.round(c.v.hr),...(typeof c.v.th==='number'?{h:[+c.v.th.toFixed(1)]}:{}),tmax:+Math.max(...ta).toFixed(1),tmin:+Math.min(...ta).toFixed(1),h32:+h32.toFixed(1),h90:+h90.toFixed(1)}}}
-function esSensorHTML(cab,k){apCargar();lecCargar();const S=esSensorDe(cab,k);if(!S)return '';
-  return `<div class="tl-av ok essens" style="text-transform:none"><span>El sensor «${esc(S.a.nombre||'Clima y hoja')}» tiene ${S.n} medidas de este día (la de las ${esc(S.hora)}: ${fmt(S.v.ta,1)} °C · ${S.v.hr} %${S.v.h?' · hoja '+fmt(S.v.h[0],1)+' °C':''}).</span><button class="btn pri" type="button" data-essens="${esc(k)}">Rellenar con el sensor</button></div>`}
-document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-essens]');if(!b)return;const S=esSensorDe(st.cab,b.dataset.essens);if(!S)return;
-  esPon(st.cab,b.dataset.essens,d=>{Object.assign(d,S.v);d.fuente='sensor'});renderMain();renderSave();toast('Rellenado con el sensor: revisa y guarda')});
+/* El sensor propio de la nave manda sobre el controlador de clima: si no hay sensor, se usa el controlador */
+const esFuenteDe=(cab,k)=>esSensorDe(cab,k)||ucCtrlDe(cab,k);
+function esSensorHTML(cab,k){apCargar();lecCargar();const S=esFuenteDe(cab,k);if(!S)return '';
+  return `<div class="tl-av ok essens" style="text-transform:none"><span>${S.uc?'El controlador de clima':`El sensor «${esc(S.a.nombre||'Clima y hoja')}»`} tiene ${S.n} medidas de este día (la de las ${esc(S.hora)}: ${fmt(S.v.ta,1)} °C · ${S.v.hr} %${S.v.h?' · hoja '+fmt(S.v.h[0],1)+' °C':''}${S.v.vent&&S.v.vent.length?' · ventanas '+S.v.vent.map(v=>fmt(v,0)).join('/')+' %':''}).</span><button class="btn pri" type="button" data-essens="${esc(k)}">Rellenar con ${S.uc?'el controlador':'el sensor'}</button></div>`}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-essens]');if(!b)return;const S=esFuenteDe(st.cab,b.dataset.essens);if(!S)return;
+  esPon(st.cab,b.dataset.essens,d=>{Object.assign(d,S.v);d.fuente=S.uc?'controlador':'sensor'});renderMain();renderSave();toast(`Rellenado con ${S.uc?'el controlador':'el sensor'}: revisa y guarda`)});
+
+/* ---------- Clima y estrés con el controlador de clima ----------
+   El «Lector del clima» (extensión de Edge en el PC donde se ve el controlador) lee la tabla de compartimentos cada rato y la manda al
+   servidor puente: cada compartimento es una «placa» UC-<CABEZAL>-<n> en las lecturas. Los compartimentos van a las naves como en
+   «Leer informe» (al revés o no; media en todas o cada uno a su nave). Con eso se rellena el día igual que con un sensor N4. */
+const ucDev=(cab,n)=>`UC-${String(cab).toUpperCase()}-${n}`;
+function ucPuntos(cab,comp){const ini=new Date(st.fecha+'T00:00:00').getTime(),fin=ini+864e5,P=[];for(const d of st.lec||[])if(d.dev===ucDev(cab,comp))for(const p of d.p||[])if(p.t>=ini&&p.t<fin&&p.v)P.push(p);return P.sort((a,b)=>a.t-b.t)}
+const ucMed=a=>{const v=a.filter(x=>typeof x==='number');return v.length?v.reduce((s,x)=>s+x,0)/v.length:null};
+function ucCtrlDe(cab,k){const M=ucComp();if(M.cab!==cab||!st.lec)return null;const nv=((MAPAS[cab]||{}).naves||[]).length||6;let P;
+  if(M.modo==='media'){const G=new Map();for(let n=1;n<=20;n++)for(const p of ucPuntos(cab,n)){const g=G.get(p.t)||[];g.push(p.v);G.set(p.t,g)}
+    P=[...G.entries()].sort((a,b)=>a[0]-b[0]).map(([t,vs])=>{const ve=[0,1,2].map(i=>ucMed(vs.map(v=>(v.vent||[])[i]))).filter(x=>x!=null);return {t,v:{ta:ucMed(vs.map(v=>v.ta)),hr:ucMed(vs.map(v=>v.hr)),vent:ve}}})}
+  else{const n=+String(k).slice(1);if(!n)return null;P=ucPuntos(cab,M.inv?nv+1-n:n)}
+  P=P.filter(p=>typeof p.v.ta==='number');if(!P.length)return null;
+  const U=esU(),ini=new Date(st.fecha+'T00:00:00').getTime(),obj=ini+14*3600e3,c=P.reduce((b,p)=>Math.abs(p.t-obj)<Math.abs(b.t-obj)?p:b,P[0]);
+  let h32=0,h90=0;for(let i=0;i<P.length;i++){const dt=Math.min(30,i?(P[i].t-P[i-1].t)/60000:15)/60;if(P[i].v.ta>U.tCal)h32+=dt;if(P[i].v.hr>90)h90+=dt}
+  const ta=P.map(p=>p.v.ta),ve=(c.v.vent||[]).map(v=>Math.round(v));
+  return {uc:true,n:P.length,hora:new Date(c.t).toTimeString().slice(0,5),v:{ta:+c.v.ta.toFixed(1),...(typeof c.v.hr==='number'?{hr:Math.round(c.v.hr)}:{}),tmax:+Math.max(...ta).toFixed(1),tmin:+Math.min(...ta).toFixed(1),h32:+h32.toFixed(1),h90:+h90.toFixed(1),...(ve.length?{vent:ve}:{})}}}
+/* Estado del lector: cuándo llegó lo último */
+function ucEstado(){const d=(st.lec||[]).find(x=>x.dev==='UC-ESTADO');return d&&d.ts?{t:Date.parse(d.ts),cab:d.cab,n:d.n}:null}
+function ucCtrlHTML(cab){lecCargar();if(ucComp().cab!==cab)return '';const E=ucEstado(),zs=esZonas(cab).zs,hay=zs.filter(x=>ucCtrlDe(cab,x.k)).length;if(!E&&!hay)return '';
+  const min=E?Math.round((Date.now()-E.t)/60000):null,viejo=min!=null&&min>90&&st.fecha===hoy(),cuando=min==null?'':min<60?`hace ${min} min`:min<1440?`hace ${Math.round(min/6)/10} h`:`el ${new Date(E.t).toLocaleDateString('es-ES')}`;
+  return `<div class="tl-av ${viejo?'warn':'ok'} essens" style="text-transform:none"><span><b>Controlador de clima</b>${E?` · última lectura ${cuando}`:''}${hay?` · ${hay} nave${hay>1?'s':''} con datos de este día`:''}${viejo?'. Mira que el ordenador del controlador esté encendido con Edge abierto.':''}</span>${hay?`<button class="btn pri" type="button" data-esuc="todas">Rellenar ${hay>1?'las '+hay+' naves':'la nave'}</button>`:''}</div>`}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-esuc]');if(!b)return;let n=0;
+  for(const x of esZonas(st.cab).zs){if(esSensorDe(st.cab,x.k))continue;const S=ucCtrlDe(st.cab,x.k);if(!S)continue;esPon(st.cab,x.k,d=>{Object.assign(d,S.v);d.fuente='controlador'});n++}
+  renderMain();renderSave();toast(n?`${n} nave${n>1?'s':''} rellenada${n>1?'s':''} con el controlador: revisa y guarda`:'No hay datos del controlador para este día')});
 
 /* ---------- Informe del mes: aparatos y naves con sensor frente a naves sin sensor ---------- */
 async function apInforme(mes){st.apInf={mes,cargando:true};renderMain();let regs=[];try{regs=st.hist||await Store.listRegs()}catch(e){}lecCargar(true);for(let i=0;i<40&&st.lec===null;i++)await new Promise(r=>setTimeout(r,150));
@@ -5861,7 +5890,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v152';
+window.APP_V='abonado-v153';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;

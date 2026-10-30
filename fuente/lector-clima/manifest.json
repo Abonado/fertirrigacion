@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Agro FLY · Lector del clima",
+  "version": "1.0.0",
+  "description": "Lee cada rato la tabla de compartimentos del controlador de clima (temperatura, humedad y ventanas) y la manda a la app Abonado-Fertirrigación.",
+  "permissions": ["alarms", "storage", "tabs", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_title": "Lector del clima" },
+  "icons": { "128": "icono.png" }
+}
