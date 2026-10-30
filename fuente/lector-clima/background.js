@@ -13,40 +13,49 @@ chrome.runtime.onInstalled.addListener(armar);
 chrome.runtime.onStartup.addListener(armar);
 chrome.alarms.onAlarm.addListener(a => { if (a.name === 'leer') ciclo(false).catch(e => ponEst({ msg: 'Error: ' + e.message })); });
 
-/* Se ejecuta DENTRO de la página del controlador: devuelve los compartimentos o por qué no se pueden leer */
+/* Se ejecuta DENTRO de la página del controlador: devuelve los compartimentos o por qué no se pueden leer.
+   Lee por POSICIÓN en pantalla, no por cómo esté hecha la página por dentro: las cabeceras «Compartimento N» marcan las columnas y
+   cada etiqueta («Humedad del compartimento»…) marca su fila; el valor de cada casilla es el texto que cae en ese cruce.
+   Así funciona igual con tablas, rejillas o primera columna fija (como uCrop). */
 function leerPagina() {
   const norm = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
-  const num = s => { s = norm(s); if (!s || s === '-') return null; const m = s.match(/-?\d+(?:[.,]\d+)?/); return m ? parseFloat(m[0].replace(',', '.')) : null; };
-  const texto = document.body ? document.body.innerText : '';
+  const num = s => { s = norm(s); if (!s || s === '-' || s === '—') return null; const m = s.match(/-?\d+(?:[.,]\d+)?/); return m ? parseFloat(m[0].replace(',', '.')) : null; };
+  if (!document.body) return { ok: false, motivo: 'La página está vacía' };
+  // todos los trozos de texto visibles, con su caja en pantalla
+  const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), T = [], rg = document.createRange();
+  for (let n = tw.nextNode(); n; n = tw.nextNode()) {
+    const t = norm(n.textContent); if (!t) continue;
+    rg.selectNodeContents(n); const r = rg.getBoundingClientRect(); if (r.width < 1 || r.height < 1) continue;
+    T.push({ t, l: r.left, r: r.right, top: r.top, b: r.bottom, cx: (r.left + r.right) / 2, cy: (r.top + r.bottom) / 2 });
+  }
+  // cabeceras de columna: la primera vez que sale cada «Compartimento N»
+  const H = new Map();
+  for (const x of T) { const m = /^compartimento\s*(\d+)$/i.exec(x.t); if (m && +m[1] <= 20 && !H.has(+m[1])) H.set(+m[1], x); }
+  const ns = [...H.keys()].sort((a, b) => a - b);
+  if (!ns.length) return { ok: false, motivo: 'No se ve la tabla de compartimentos (¿está en «Estados»? ¿pide entrar?)' };
+  const cols = ns.map((n, i) => {   // cada columna va de la mitad con la anterior a la mitad con la siguiente
+    const c = H.get(n).cx, ant = i ? H.get(ns[i - 1]).cx : null, sig = i < ns.length - 1 ? H.get(ns[i + 1]).cx : null;
+    const paso = sig != null ? sig - c : ant != null ? c - ant : 200;
+    return { n, a: ant != null ? (ant + c) / 2 : c - paso / 2, z: sig != null ? (c + sig) / 2 : c + paso / 2 };
+  });
   const FILAS = { hr: /^humedad del compartimento$/i, ta: /^temperatura del compartimento$/i, v1: /^posici\S{1,2}n ventana 1$/i, v2: /^posici\S{1,2}n ventana 2$/i, v3: /^posici\S{1,2}n ventana 3$/i };
-  const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), nodos = [];
-  for (let n = tw.nextNode(); n; n = tw.nextNode()) { const t = norm(n.textContent); if (t) nodos.push({ t, el: n.parentElement }); }
-  const N = Math.max(0, ...nodos.map(x => (/^compartimento\s*(\d+)$/i.exec(x.t) || [])[1]).filter(Boolean).map(Number).filter(n => n <= 20));
-  if (!N) return { ok: false, motivo: 'No se ve la tabla de compartimentos (¿está en «Estados»? ¿pide entrar?)' };
-  const celdas = el => {   // las celdas de la fila de una etiqueta: la fila de tabla o el primer antepasado con N+1 hijos
-    const tr = el.closest('tr'); if (tr) return [...tr.children].map(c => norm(c.innerText));
-    let r = el; for (let i = 0; i < 6 && r.parentElement; i++) { r = r.parentElement; if (r.children.length >= N + 1) return [...r.children].map(c => norm(c.innerText)); }
-    return null;
+  const leerFila = et => {   // textos a la altura de la etiqueta, a la derecha de ella, repartidos por columnas
+    const alto = Math.max(8, et.b - et.top), a = et.cy - alto * 0.8, z = et.cy + alto * 0.8;
+    return cols.map(c => num(T.filter(x => x !== et && x.cy >= a && x.cy <= z && x.l > et.r - 2 && x.cx >= c.a && x.cx < c.z).sort((p, q) => p.l - q.l).map(x => x.t).join(' ')));
   };
   const fila = {};
   for (const [k, re] of Object.entries(FILAS)) {
-    const x = nodos.find(y => re.test(y.t)); if (!x) continue;
-    let c = celdas(x.el);
-    if (c) { const i = c.findIndex(v => re.test(v)); c = c.slice(i + 1, i + 1 + N); }
-    if (!c || c.length < N) {   // plan B: el texto plano de la página, en la línea de la etiqueta (tabuladores) o en las líneas siguientes
-      const L = texto.split('\n').map(norm), i = L.findIndex(l => re.test(l.split('\t')[0]) || re.test(l));
-      const raw = texto.split('\n')[i] || '', partes = raw.split('\t').map(norm).filter(Boolean);
-      c = partes.length > N ? partes.slice(1, N + 1) : L.slice(i + 1).filter(Boolean).slice(0, N);
-    }
-    fila[k] = c.map(num);
+    let mejor = null;   // si la etiqueta sale varias veces (menús…), la que tiene más valores
+    for (const et of T.filter(x => re.test(x.t))) { const v = leerFila(et), n = v.filter(x => x != null).length; if (!mejor || n > mejor.n) mejor = { v, n }; }
+    if (mejor && mejor.n) fila[k] = mejor.v;
   }
-  if (!fila.ta && !fila.hr) return { ok: false, motivo: 'Veo los compartimentos, pero no las filas de humedad y temperatura' };
+  if (!fila.ta && !fila.hr) return { ok: false, motivo: 'Veo los compartimentos, pero no las filas de humedad y temperatura (baja la página hasta verlas)' };
   const comp = [];
-  for (let i = 0; i < N; i++) {
+  cols.forEach((c, i) => {
     const v = ['v1', 'v2', 'v3'].map(k => fila[k] ? fila[k][i] : null).filter(x => x != null);
-    const c = { n: i + 1, ta: fila.ta ? fila.ta[i] : null, hr: fila.hr ? fila.hr[i] : null, vent: v };
-    if (c.ta != null || c.hr != null) comp.push(c);
-  }
+    const x = { n: c.n, ta: fila.ta ? fila.ta[i] : null, hr: fila.hr ? fila.hr[i] : null, vent: v };
+    if (x.ta != null || x.hr != null) comp.push(x);
+  });
   if (!comp.length) return { ok: false, motivo: 'Las filas están vacías' };
   return { ok: true, comp, firma: JSON.stringify(comp) };
 }
