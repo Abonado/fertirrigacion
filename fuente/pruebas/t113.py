@@ -46,7 +46,7 @@ async def main():
         # instalado hace casi dos meses: las tareas de 14 y 30 días ya tocan
         pend = await pg.evaluate("apPend(st.ap[0])"); print('pendiente:', pend); assert len(pend) == 4 and 'Calibrar' not in pend
         await pg.evaluate("renderAll()"); await pg.wait_for_timeout(300)
-        bdg = await pg.text_content('#grupos [data-grupo="lab"]'); assert '4' in bdg, bdg
+        bdg = await pg.text_content('#grupos [data-grupo="mas"]'); assert '4' in bdg, bdg
         assert 'TOCA' in (await pg.text_content('#main')).upper()
         await pg.screenshot(path='pruebas/salida/t113-ficha.png', full_page=True)
         await pg.click('[data-aphecho="0"]'); await pg.wait_for_timeout(500)

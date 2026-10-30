@@ -558,6 +558,25 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .balt .balp td{padding-top:10px;border-bottom:0;text-align:left;text-transform:none}.balt .balp small{color:var(--muted)}
 .infck{display:flex;flex-wrap:wrap;gap:4px 14px;margin:4px 0 8px}.infck .chk{text-transform:none}
 .topr{display:flex;align-items:center;gap:8px;margin-left:auto}.frec{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--navy);cursor:pointer;padding:0;flex:none}.frec svg{width:20px;height:20px}.frec.gira svg{animation:frg .8s linear infinite}@keyframes frg{to{transform:rotate(360deg)}}
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:7;display:grid;gap:2px;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -3px 14px rgba(15,30,40,.07);padding:5px max(6px,env(safe-area-inset-left,0px)) calc(5px + env(safe-area-inset-bottom,0px))}
+.bnav .grp{grid-auto-flow:row;justify-content:normal;border:0;background:none;padding:4px 0 3px;border-radius:12px;font-size:10.5px;letter-spacing:.04em;gap:2px}
+.bnav .grp svg{width:24px;height:24px;padding:3px 14px;box-sizing:content-box;border-radius:999px;transition:background .15s}
+.bnav .grp[aria-pressed="true"]{background:none;color:var(--navy)}.bnav .grp[aria-pressed="true"] svg{background:var(--ok-bg,#e3efe7)}
+.bnav .grp .bdg{position:absolute;top:0;right:calc(50% - 26px)}
+@media (min-width:900px){.bnav{left:50%;right:auto;transform:translateX(-50%);width:min(560px,96vw);bottom:10px;border:1px solid var(--line);border-radius:18px;padding:5px 8px}}
+body.conbn{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+body.conbn .savebar{bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+body.conbn .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+@media (min-width:900px){body.conbn .savebar{bottom:0}}
+.hoyh{margin:6px 4px 10px}.hoyh h2{margin:0}
+.hoyav,.masl{display:grid;gap:6px}
+.hoyai{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:11px 12px;font:inherit;color:var(--ink);cursor:pointer;text-transform:none}
+.hoyai span{flex:1}.hoyai b{color:var(--muted);font-size:18px;line-height:1}.hoyai i{width:9px;height:9px;border-radius:50%;flex:none;background:var(--muted)}.hoyai.bad i{background:var(--bad)}.hoyai.warn i{background:var(--warn)}
+.hoyg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}
+@media (min-width:700px){.hoyg{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.hoyt{display:grid;justify-items:center;align-content:start;gap:6px;min-height:96px;padding:14px 6px 10px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--navy);cursor:pointer;font:inherit;text-align:center}
+.hoyt svg{width:28px;height:28px}.hoyt b{font:700 12.5px var(--f-display);letter-spacing:.04em;text-transform:uppercase;color:var(--ink)}.hoyt small{font-size:11.5px;color:var(--muted);text-transform:none}
+.masg svg{width:24px;height:24px;color:var(--navy)}.masg h3{margin:0}.masg .bdg{position:static;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--bad);color:#fff;font:700 11px/17px var(--f-body);font-style:normal}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -571,11 +590,11 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
       <div class="topr"><label class="date" id="fechaL"><span>Día</span><input type="date" id="fecha"></label><button class="frec" type="button" id="recargar" aria-label="Recargar la app" title="Recargar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     </div>
     <nav class="scroller" id="cabs" aria-label="Cabezal"></nav>
-    <nav class="grupos" id="grupos" aria-label="Apartados"></nav>
     <nav class="scroller tabs" id="tabs" role="tablist" aria-label="Secciones"></nav>
   </div>
 </header>
 <main class="wrap" id="main"></main>
+<nav class="bnav" id="grupos" aria-label="Apartados"></nav>
 <div class="savebar" id="savebar" hidden><div class="wrap"><span class="msg" id="savemsg"></span><div class="row" id="savebtns"></div></div></div>
 <div class="toast" id="toast" hidden></div>
 <div class="lb" id="lb" hidden><img id="lbimg" alt="Foto del mensaje"><button class="btn" data-act="lb-close">Cerrar</button></div>
@@ -748,7 +767,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
+const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -853,16 +872,18 @@ function entrarArea(a){if(a==='campo'&&!puedeCollas())return;if(a==='riego'&&(!v
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
   try{toast('Subiendo foto…');const a=await Adj.put(file);for(const c of [st.cfg,st.savedCfg]){const f=(c.fincas||[]).find(x=>x.id===id);if(f)f.foto=a}
     await Store.setConfig(st.savedCfg);toast('Foto cambiada');renderFincas()}catch(err){toast('No se pudo subir la foto')}});
-function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
+function renderCabs(){const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['mas','estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego · fertirrigación';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
-const GRUPOS_RIEGO=[{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+const IC_HOY='<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',IC_MAS='<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>';
+const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['climanv','cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
   {id:'lab',n:'Taller',tabs:['catalogo','taller','aparatos','cajon'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
-  {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
+  {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'},
+  {id:'mas',n:'Más',tabs:['mas'],ic:IC_MAS}];
 /* Personal de campo: su propio menú (de momento, las collas) */
 const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctareas','corend','coparte','cubic','cvivo'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'cmsg',n:'Mensajes',tabs:['cmensajes'],ic:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>'},
@@ -882,7 +903,37 @@ function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(
   try{n.riego=(n.riego||0)+(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)}catch(e){}try{n.equipo=(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}try{if(esAdminU()&&Store.db){apCargar();n.lab=apPendTotal()+(st.ap||[]).filter(apSinDatos).length}}catch(e){}
   try{let a=0;if(st.mat&&miEmail())a+=matPend().filter(esGestor()?mVisible:mAmi).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
-function renderGrupos(){const g=grupoDe(st.tab),ins=insignias();$('#grupos').style.gridTemplateColumns=`repeat(${gruposAct().length},minmax(0,1fr))`;$('#grupos').classList.toggle('seis',gruposAct().length>5);$('#grupos').innerHTML=gruposAct().map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('')}
+/* ---------- Hoy: lo que hay que mirar y lo de todos los días, de un vistazo ---------- */
+const HOY_T=[['cuentas','Cuentas del día','<path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>'],['rellenar','Rellenar depósito','<path d="M6 8h12l-1 12H7z"/><path d="M9 8V5h6v3"/>'],['drenaje','Drenaje','<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/><path d="M9 14h6"/>'],
+  ['parte','Parte diario','<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 12l2 2 3.5-4"/>'],['mapa','Mapa de la finca','<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>'],['climanv','Clima de las naves','<path d="M10 14V5a2 2 0 1 1 4 0v9a4 4 0 1 1-4 0z"/>'],
+  ['tareas','Tareas','<path d="M4 6h3M4 12h3M4 18h3"/><path d="M10 6h10M10 12h10M10 18h10"/>'],['almacen','Almacén','<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6"/>'],['informe','Informe del mes','<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>']];
+function hoyAvisos(){const av=[],n=(k,a,b)=>k+' '+(k===1?a:b);
+  try{for(const b of depsBajos())av.push(['bad',`Depósito bajo: ${b.nombre} · ${b.cabezales.map(cabNombre).join(' + ')}`,'rellenar'])}catch(e){}
+  try{const k=st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0;if(k)av.push(['bad',n(k,'incidencia','incidencias')+' de prioridad alta','mapa'])}catch(e){}
+  try{if(ptRevisa()&&st.partes){const k=ptPend().length;if(k)av.push(['warn',n(k,'parte','partes')+' por revisar','partes'])}}catch(e){}
+  try{const k=st.tareas?tareasMias().length:0;if(k)av.push(['warn',n(k,'tarea','tareas')+' para ti','tareas'])}catch(e){}
+  try{const k=(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0);if(k)av.push(['warn',n(k,'mensaje','mensajes')+' sin leer','mensajes'])}catch(e){}
+  const ins=insignias();if(ins.almacen)av.push(['warn',n(ins.almacen,'cosa','cosas')+' del almacén para pedir o revisar','almacen']);
+  if(ins.notas)av.push(['warn',n(ins.notas,'nota','notas')+' para hoy','notas']);
+  if(ins.lab&&tabPermitida('aparatos'))av.push(['warn',n(ins.lab,'aparato','aparatos')+' del taller a revisar','aparatos']);
+  try{const E=ucEstado();if(E&&Date.now()-E.t>90*60e3){const h=new Date().getHours();if(h>=8&&h<20)av.push(['warn','El lector del clima de uCrop no manda desde las '+new Date(E.t).toTimeString().slice(0,5),'climanv'])}}catch(e){}
+  return av.filter(a=>tabPermitida(a[2]))}
+function hoyClima(){try{if(!st.lec)return '';const M=ucComp(),P=[];for(let n=1;n<=20;n++){const x=ucPuntos(M.cab,n,hoy());if(x.length)P.push(x[x.length-1])}if(!P.length)return '';
+  const ta=ucMed(P.map(p=>p.v.ta)),hr=ucMed(P.map(p=>p.v.hr)),v=ucMed(P.map(p=>(p.v.vent||[])[0]));return [ta!=null?fmt(ta,1)+' °C':'',hr!=null?fmt(hr,0)+' %':'',v!=null?'ventanas '+fmt(v,0)+' %':''].filter(Boolean).join(' · ')}catch(e){return ''}}
+function vHoy(){lecCargar();const av=hoyAvisos(),nom=(yoNombre()||'').split(' ')[0],h=new Date().getHours(),sal=h<14?'Buenos días':h<21?'Buenas tardes':'Buenas noches',cl=hoyClima();
+  return `<section class="hoyh"><h2>${sal}${nom?', '+esc(nom):''}</h2><div class="sub">${esc(new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'}))} · ${esc((fincaAct()||{}).nombre||'')}</div></section>
+  <section class="card"><div><h3>Para mirar</h3></div>${av.length?`<div class="hoyav">${av.map(([k,t,tab])=>`<button class="hoyai ${k}" type="button" data-tab="${tab}"><i></i><span>${esc(t)}</span><b>›</b></button>`).join('')}</div>`:'<div class="tl-av ok" style="text-transform:none">Todo en orden: no hay nada pendiente.</div>'}</section>
+  <section class="hoyg">${HOY_T.filter(([k])=>VIEWS[k]&&tabPermitida(k)).map(([k,t,ic])=>`<button class="hoyt" type="button" data-tab="${k}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ic}</svg><b>${t}</b>${k==='climanv'&&cl?`<small>${esc(cl)}</small>`:''}</button>`).join('')}</section>`}
+/* ---------- Más: Equipo, Notas, Taller y Ajustes ---------- */
+function vMas(){const G=gruposAct().filter(g=>MAS_G.includes(g.id)),ins=insignias();
+  return G.map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k));if(!ts.length)return '';
+    return `<section class="card masg"><div class="row" style="align-items:center;gap:10px"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${g.ic}</svg><h3>${g.n}</h3>${ins[g.id]?`<i class="bdg">${ins[g.id]>9?'9+':ins[g.id]}</i>`:''}</div>
+      <div class="masl">${ts.map(([k,t])=>`<button class="hoyai" type="button" data-tab="${k}"><span>${t}</span><b>›</b></button>`).join('')}</div></section>`}).join('')}
+/* Barra de abajo: Hoy, Riego, Datos, Almacén y Más (Equipo, Notas, Taller y Ajustes van dentro de Más). El personal de campo ve sus apartados tal cual */
+const MAS_G=['equipo','notas','lab','ajustes'];
+function bnItems(){const G=gruposAct();if(areaDe(st.tab)==='campo')return G;return G.filter(g=>!MAS_G.includes(g.id))}
+function renderGrupos(){const g0=grupoDe(st.tab),g={id:MAS_G.includes(g0.id)&&areaDe(st.tab)!=='campo'?'mas':g0.id},ins0=insignias(),ins={...ins0,mas:MAS_G.reduce((a,k)=>a+(gruposAct().some(x=>x.id===k)?ins0[k]||0:0),0)},L=bnItems();
+  $('#grupos').style.gridTemplateColumns=`repeat(${L.length},minmax(0,1fr))`;$('#grupos').innerHTML=L.map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('');document.body.classList.add('conbn')}
 function renderTabs(){renderGrupos();const g=grupoDe(st.tab);st.ultTab[g.id]=st.tab;$('#tabs').hidden=g.tabs.length<2;if(MF_VISTAS.includes(st.tab))st.mfUlt=st.tab;$('#tabs').innerHTML=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k)&&(k==='instal'||!MF_VISTAS.includes(k))).map(([k,t])=>{const mf=k==='instal',d=mf?(st.mfUlt&&tabPermitida(st.mfUlt)?st.mfUlt:'mapa'):k;
     return `<button class="tab" role="tab" data-tab="${d}" aria-selected="${mf?MF_VISTAS.includes(st.tab):k===st.tab}">${t}</button>`}).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
 /* Menús desplazables con ratón: rueda y arrastrar */
@@ -4060,7 +4111,7 @@ async function tlPoner(){if(!esAdminU())return;const a=($('#tlk_n1')||{}).value|
 document.addEventListener('click',e=>{if(!TL_TABS.includes(st.tab))return;const b=e.target.closest&&e.target.closest('[data-tlk]');if(!b)return;const a=b.dataset.tlk;
   if(a==='abrir')tlAbrir();else if(a==='poner')tlPoner();else if(a==='cerrar'){tlRecordar('');renderMain();window.scrollTo(0,0);toast('Taller cerrado con llave')}});
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!e.target||e.target.id!=='tlk_pw')return;e.preventDefault();tlAbrir()});
-const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
 for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */

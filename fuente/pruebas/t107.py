@@ -16,8 +16,8 @@ async def main():
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("""(async()=>{const a=NUBE.acc;a.emails=[...new Set([...a.emails,'pepe@demo.es'])];a.info={...a.info,'pepe@demo.es':{nombre:'Pepe',encargado:true}};await NUBE.db.doc('acceso/usuarios').set(a);
           cerrarSplash();st.finca='pinta';st.cab='gas';st.tab='cuentas';renderAll()})()"""); await pg.wait_for_timeout(800)
-        g = await pg.locator('#grupos .grp span').all_inner_texts(); print('menú:', g); assert len(g) == 7
-        await pg.click('#grupos [data-grupo="lab"]'); await pg.wait_for_timeout(1200)
+        g = await pg.locator('#grupos .grp span').all_inner_texts(); print('menú:', g); assert len(g) == 5 and g[-1].upper() == 'MÁS'
+        await pg.click('#grupos [data-grupo="mas"]'); await pg.wait_for_timeout(300); await pg.click('#main [data-tab="catalogo"]'); await pg.wait_for_timeout(1200)
         assert await pg.evaluate("st.tab") == 'catalogo' and await pg.evaluate("!!window.CATALOGO")
         tabs = await pg.locator('#tabs .tab').all_inner_texts(); print('pestañas:', tabs); assert len(tabs) == 4 and 'MIS APARATOS' in [x.upper() for x in tabs] and 'CAJÓN Y COMPRA' in [x.upper() for x in tabs]
         C = await pg.evaluate("window.CATALOGO.carpetas.map(c=>[c.id,c.it.length])"); n = sum(x[1] for x in C); print('carpetas:', C, '· elementos:', n)
@@ -56,7 +56,7 @@ async def main():
         await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
         await pg.fill('#nb_em', 'pepe@demo.es'); await pg.fill('#nb_pw', 'pepe1234'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash();st.finca='pinta';st.tab='cuentas';renderAll()"); await pg.wait_for_timeout(500)
-        assert await pg.locator('#grupos [data-grupo="lab"]').count() == 1 and len(await pg.locator('#grupos .grp').all()) == 7
+        assert await pg.evaluate("gruposAct().some(g=>g.id==='lab')") and len(await pg.locator('#grupos .grp').all()) == 5
         await pg.evaluate("st.tab='catalogo';renderAll()"); await pg.wait_for_timeout(600)
         assert await pg.evaluate("st.tab") == 'catalogo' and await pg.evaluate("!window.CATALOGO") and 'CERRADO CON LLAVE' in (await pg.text_content('#main')).upper()
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)

@@ -25,7 +25,7 @@ async def main():
         await pg.click('#fincas [data-act="gl-abrir"]'); await pg.wait_for_timeout(1200)
         txt = await pg.evaluate("document.querySelector('#main').textContent")
         print('pestaña:', await pg.evaluate('st.tab'))
-        orden = await pg.evaluate("GRUPOS_RIEGO[0].tabs"); print('menú riego:', orden); assert orden[-1] == 'global' and orden[-2] == 'partes'
+        orden = await pg.evaluate("GRUPOS_RIEGO.find(g=>g.id==='riego').tabs"); print('menú riego:', orden); assert orden[-1] == 'global' and orden[-2] == 'partes'
         for t in ['Pinta Santos', 'Las Palacias', 'La Fuente', 'Planos', 'Gasolinera', 'Franco', 'Multitúnel 2', 'Todavía sin cabezales', 'Sin cuentas de este día']: assert t in txt, t
         assert await pg.locator('.gcab').count() >= 5
         print('CE fuera marcadas:', await pg.locator('.gtab td.tbad').count()); assert await pg.locator('.gtab td.tbad').count() > 0

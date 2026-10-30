@@ -29,6 +29,7 @@ async def main():
         it = pg.locator('#main details.catit:has-text("Cámara térmica para el móvil")'); await it.locator('summary').click(); await pg.wait_for_timeout(200)
         await it.locator('[data-catdet]').scroll_into_view_if_needed(); y0 = await pg.evaluate("window.scrollY"); assert y0 > 0
         await it.locator('[data-catdet]').click(); await pg.wait_for_timeout(400); assert await pg.evaluate("window.scrollY") == 0
+        y0 = await pg.evaluate("st.cat.y")   # donde estaba al tocar (la barra de abajo puede hacer que el clic desplace un poco)
         t = await pg.text_content('#main'); print(t[:300])
         for x in ['Cámara térmica para el móvil', 'En resumen', 'Qué necesitas', 'Dónde comprarlo', 'Ojo con', 'Mantenimiento', 'En la app', 'Desarrollo']: assert x in t, x
         hrefs = await pg.eval_on_selector_all('#main .catlinks a', "a=>a.map(x=>[x.textContent,x.href,x.target])"); print(hrefs)

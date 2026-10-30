@@ -18,7 +18,7 @@ async def main():
           cerrarSplash();st.finca='pinta';st.cab='gas';st.tab='cuentas';renderAll()})()"""); await pg.wait_for_timeout(800)
         riego = await pg.locator('#tabs .tab').all_inner_texts(); print('Riego:', riego)
         assert 'MAPA DE LA FINCA' in [t.upper() for t in riego] and not any('INSTALACIÓN' in t.upper() for t in riego)
-        await pg.click('#grupos [data-grupo="equipo"]'); await pg.wait_for_timeout(300)
+        await pg.click('#grupos [data-grupo="mas"]'); await pg.wait_for_timeout(300); await pg.click('#main [data-tab="'+await pg.evaluate("GRUPOS_RIEGO.find(g=>g.id==='equipo').tabs.find(tabPermitida)")+'"]'); await pg.wait_for_timeout(300)
         eq = [t.upper() for t in await pg.locator('#tabs .tab').all_inner_texts()]; print('Equipo:', eq)
         assert 'MAPA DE NAVES' not in eq and 'FINCA EN VIVO' not in eq and 'TAREAS' in eq
         assert await pg.evaluate("insignias().riego") >= 1, 'la incidencia urgente cuenta en Riego'
