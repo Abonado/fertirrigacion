@@ -41,6 +41,12 @@ async def main():
         await pg.evaluate("st.lec.find(x=>x.dev==='UC-ESTADO').ts=new Date(Date.now()-3*3600e3).toISOString();renderMain()"); await pg.wait_for_timeout(200)
         t = (await pg.text_content('#main')).upper(); assert 'HACE 3 H' in t and 'MIRA QUE EL ORDENADOR' in t
         await pg.screenshot(path='pruebas/salida/t118-clima.png', full_page=True)
+        # ventanas: tabla por nave y gráfica del día
+        await pg.evaluate("st.lec.find(x=>x.dev==='UC-ESTADO').ts=new Date().toISOString();renderMain()"); await pg.wait_for_timeout(200)
+        t = (await pg.text_content('.ucv')).upper(); assert 'VENTANAS Y CLIMA DE LAS NAVES' in t and 'NAVE 6COMP. 1' in t and '91%' in t and await pg.locator('.uct tr').count() == 7, t[:300]
+        assert await pg.locator('.ucvg polyline').count() == 6
+        await pg.click('[data-esact="uvar"][data-v="ta"]'); await pg.wait_for_timeout(200); assert await pg.evaluate("st.es.uvar") == 'ta' and await pg.locator('.ucvg polyline').count() == 6
+        await pg.evaluate("document.querySelector('.ucv').scrollIntoView();window.scrollBy(0,-330)"); await pg.screenshot(path='pruebas/salida/t118-ventanas.png'); assert await pg.evaluate("document.querySelector('.ucv').scrollWidth<=document.querySelector('.ucv').clientWidth+2"), 'la tabla cabe'
         # Planos no usa el controlador
         assert await pg.evaluate("ucCtrlHTML('pla')") == ''
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
