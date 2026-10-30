@@ -555,6 +555,7 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .tlk-carp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tlk-carp>button{border:1px solid var(--line);border-radius:10px;padding:9px 10px;display:grid;gap:3px;text-align:left;background:var(--surface,#fff);color:inherit;font:inherit;cursor:pointer;align-content:start}.tlk-carp>button.on{border-color:var(--navy,#1b2b3a);border-width:2px}.tlk-carp small{color:var(--muted);text-transform:none;font-size:12.5px;line-height:1.3}
 .ucv{display:grid;gap:8px;margin:8px 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.uct{width:100%;border-collapse:collapse;font-size:12.5px;text-transform:none}.uct th,.uct td{padding:4px 3px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}.uct td i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.uct small{color:var(--muted)}.ucbar{display:block;width:34px;height:5px;border-radius:3px;background:var(--line);margin-top:2px;overflow:hidden}.ucbar span{display:block;height:100%;background:#1f77b4}.ucvg{width:100%;height:auto}
 .ucley{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;text-transform:none}.ucley i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+.balt .balp td{padding-top:10px;border-bottom:0;text-align:left;text-transform:none}.balt .balp small{color:var(--muted)}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -1820,11 +1821,21 @@ function informeData(mes){const regs=(st.hist||[]).filter(r=>r.fecha.slice(0,7)=
     return{c,dias:rs.length,m3,kg,dren:av(dr),ceE:av(ce),ceD:av(cd),phD:av(ph)}});
   const alm=(st.alm||[]).filter(m=>(m.fecha||'').slice(0,7)===mes),ent={},sal={};for(const m of alm){if(m.tipo==='entrada')ent[m.p]=(ent[m.p]||0)+m.qty;else if(m.tipo==='salida')sal[m.p]=(sal[m.p]||0)-m.qty}
   const tot={};for(const x of cabs)for(const p in x.kg)tot[p]=(tot[p]||0)+x.kg[p];
-  return{mes,regs,cabs,ent,sal,tot,alm}}
+  const alms=almsVis().map(a=>({a,b:balanceAlm(mes,a.id,{cabs})})).filter(x=>x.b.length);
+  return{mes,regs,cabs,ent,sal,tot,alm,alms}}
 const nomMes=m=>new Date(m+'-15T12:00:00').toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+/* Balance del almacén en el mes: stock al empezar + entradas − salidas ± ajustes = stock al acabar (o hoy, si es el mes en curso).
+   Al lado, lo gastado según las cuentas del día de los cabezales de ese almacén, para ver si cuadra con lo que ha salido. */
+const finMes=m=>{const[y,mm]=m.split('-').map(Number);return isoD(new Date(y,mm,0))};
+function balanceAlm(mes,aid,d){const ini=mes+'-01',fin=finMes(mes),al=almById(aid),cabs=al?al.cabezales:[];const out=[];
+  for(const p of Object.keys(st.cfg.productos)){let s0=0,e=0,sl=0,a=0;
+    for(const m of st.alm||[]){if(m.p!==p||almDeMov(m)!==aid)continue;const f=m.fecha||'';if(f<ini)s0+=m.qty||0;else if(f<=fin){if(m.tipo==='entrada')e+=m.qty||0;else if(m.tipo==='salida')sl+=-(m.qty||0);else a+=m.qty||0}}
+    const g=d.cabs.filter(x=>cabs.includes(x.c.id)).reduce((t,x)=>t+(x.kg[p]||0),0);
+    if([s0,e,sl,a,g].some(v=>Math.abs(v)>0.001))out.push({p,s0,e,s:sl,a,s1:s0+e-sl+a,g})}
+  return out}
 function vInforme(){if(st.hist===null||st.alm===null){if(st.hist===null)loadHist();if(st.alm===null)loadOps();return '<div class="card"><div class="note">Cargando datos…</div></div>'}
   const d=informeData(st.mes);
-  let h=`<section class="card"><div class="tank-h"><div><h3>Informe de ${nomMes(st.mes)}</h3><div class="sub">Agua, abonos, drenaje y almacén</div></div>
+  let h=`<section class="card"><div class="tank-h"><div><h3>Informe de ${nomMes(st.mes)}</h3><div class="sub">Agua, abonos, drenaje y almacén${st.mes===hoy().slice(0,7)?' · se va rellenando cada día con las cuentas, los llenados y las entradas':''}</div></div>
     <div class="field"><label for="inf_mes">Mes</label><div class="inp"><input type="month" id="inf_mes" data-inf="mes" value="${st.mes}"></div></div></div>
     <div class="row"><button class="btn pri" data-act="inf-pdf" ${d.regs.length?'':'disabled'}>Descargar PDF</button><button class="btn" data-act="inf-xlsx" ${d.regs.length?'':'disabled'}>Descargar Excel</button></div></section>`;
   if(!d.regs.length)return h+`<section class="card"><div class="note">Sin días guardados en este mes.</div></section>`;
@@ -1832,14 +1843,19 @@ function vInforme(){if(st.hist===null||st.alm===null){if(st.hist===null)loadHist
   h+=`<section class="summary"><div class="stat"><span>Días guardados</span><b>${d.regs.length}</b><small>${nomMes(st.mes)}</small></div><div class="stat"><span>Agua regada</span><b>${fmt(cu.reduce((a,x)=>a+x.m3,0),0)} m³</b><small>toda la finca</small></div><div class="stat"><span>Abono aplicado</span><b>${fmt(ps.reduce((a,p)=>a+d.tot[p],0),0)}</b><small>kg + L en total</small></div></section>`;
   h+=`<section class="card"><div><h3>Por cabezal</h3><div class="sub">Medias del mes</div></div><div class="tbl"><table><thead><tr><th>Cabezal</th><th>Días</th><th>m³</th><th>Dren. %</th><th>CE dren. µS</th><th>pH dren.</th></tr></thead><tbody>${cu.map(x=>`<tr><td>${esc(x.c.nombre)}</td><td>${x.dias}</td><td>${fmt(x.m3,0)}</td><td>${fmt(x.dren,1)}</td><td>${fUS(x.ceD)}</td><td>${fmt(x.phD,1)}</td></tr>`).join('')}</tbody></table></div></section>`;
   h+=`<section class="card"><div><h3>Abono aplicado</h3><div class="sub">Kg o litros por cabezal</div></div><div class="tbl"><table><thead><tr><th>Producto</th>${cu.map(x=>`<th>${esc(x.c.nombre)}</th>`).join('')}<th>Total</th></tr></thead><tbody>${ps.map(p=>`<tr><td>${esc(prod(p).n)}</td>${cu.map(x=>`<td>${fmt(x.kg[p]||0,1)}</td>`).join('')}<td><b>${fmt(d.tot[p],1)} ${uCant(p)}</b></td></tr>`).join('')}</tbody></table></div></section>`;
-  h+=`<section class="card"><div><h3>Almacén</h3><div class="sub">Entradas y salidas del mes</div></div>${pa.length?`<div class="tbl"><table><thead><tr><th>Producto</th><th>Entradas</th><th>Salidas</th><th>Stock hoy</th></tr></thead><tbody>${pa.map(p=>`<tr><td>${esc(prod(p).n)}</td><td>${fmt(d.ent[p]||0,1)}</td><td>${fmt(d.sal[p]||0,1)}</td><td>${fmt(stockDe(p),1)} ${uCant(p)}</td></tr>`).join('')}</tbody></table></div>`:'<div class="note">Sin movimientos este mes.</div>'}</section>`;
+  const enCurso=st.mes===hoy().slice(0,7);
+  h+=d.alms.length?d.alms.map(({a,b})=>`<section class="card"><div><h3>Almacén ${esc(a.nombre)} · balance del mes</h3><div class="sub">${esc(a.cabezales.map(cabNombre).join(', '))} · stock al empezar + entradas − salidas ± ajustes = stock ${enCurso?'hoy':'al acabar el mes'}</div></div>
+    <div class="tbl"><table class="balt"><thead><tr><th>Inicio</th><th>Entradas</th><th>Salidas</th><th>Ajustes</th><th>${enCurso?'Hoy':'Final'}</th></tr></thead><tbody>${b.map(x=>{const dif=x.g-x.s,mal=x.g>0.5&&Math.abs(dif)>Math.max(2,x.g*0.1);
+      return `<tr class="balp"><td colspan="5"><b>${esc(prod(x.p).n)}</b> <small>${uCant(x.p)} · gastado según las cuentas ${fmt(x.g,1)}</small>${mal?` <span class="pill warn" title="Lo gastado según las cuentas no cuadra con lo salido del almacén">no cuadra: ${dif>0?'+':'−'}${fmt(Math.abs(dif),1)}</span>`:''}</td></tr>
+        <tr><td>${fmt(x.s0,1)}</td><td>${x.e?'+'+fmt(x.e,1):'—'}</td><td>${x.s?'−'+fmt(x.s,1):'—'}</td><td>${Math.abs(x.a)>0.001?(x.a>0?'+':'−')+fmt(Math.abs(x.a),1):'—'}</td><td><b class="${x.s1<-0.001?'bad':''}">${fmt(x.s1,1)}</b></td></tr>`}).join('')}</tbody></table></div>
+    <div class="note">«Salidas» son los abonos descontados al registrar los llenados de depósito; «Gastado» es lo que sale de las cuentas del día de sus cabezales. Si no cuadran (aviso naranja), falta apuntar algún llenado o alguna entrada.</div></section>`).join(''):`<section class="card"><div><h3>Almacén</h3></div><div class="note">Sin movimientos este mes.</div></section>`;
   return h}
 const rN=(v,d)=>v==null||!isFinite(v)?'':+v.toFixed(d);
 const fD=f=>f.split('-').reverse().join('/');
 function informeTablas(d){const cu=d.cabs.filter(x=>x.dias),ps=Object.keys(d.tot).filter(p=>d.tot[p]>0.0001),pa=[...new Set([...Object.keys(d.ent),...Object.keys(d.sal)])];
   return[{hoja:'Resumen',titulo:'Resumen por cabezal',cab:['Cabezal','Días','m³','Drenaje %','CE drenaje µS/cm','pH drenaje'],filas:cu.map(x=>[x.c.nombre,x.dias,rN(x.m3,0),rN(x.dren,1),uS(x.ceD),rN(x.phD,1)])},
     {hoja:'Abonos',titulo:'Abono aplicado (kg o L)',cab:['Producto',...cu.map(x=>x.c.nombre),'Total'],filas:ps.map(p=>[pn(p)+' ('+uCant(p)+')',...cu.map(x=>rN(x.kg[p]||0,1)),rN(d.tot[p],1)])},
-    {hoja:'Almacén',titulo:'Almacén del mes',cab:['Producto','Entradas','Salidas','Stock hoy'],filas:pa.map(p=>[pn(p)+' ('+uCant(p)+')',rN(d.ent[p]||0,1),rN(d.sal[p]||0,1),rN(stockDe(p),1)])},
+    {hoja:'Almacén',titulo:'Balance del almacén (stock al empezar + entradas − salidas ± ajustes = stock final)',cab:['Almacén','Producto','Inicio','Entradas','Salidas','Ajustes','Final','Gastado cuentas'],filas:(d.alms||[]).flatMap(({a,b})=>b.map(x=>[a.nombre,pn(x.p)+' ('+uCant(x.p)+')',rN(x.s0,1),rN(x.e,1),rN(x.s,1),rN(x.a,1),rN(x.s1,1),rN(x.g,1)]))},
     {hoja:'Diario',titulo:'Detalle diario',cab:['Día','Cabezal','m³','Drenaje %','CE drenaje µS/cm','pH drenaje'],filas:d.regs.flatMap(r=>cu.filter(x=>r.m3&&r.m3[x.c.id]!=null).map(x=>[fD(r.fecha),x.c.nombre,rN(r.m3[x.c.id],0),rN(drenDia(r,x.c.id),1),uS(mediaSect(r,x.c.id,'ceD')),rN(mediaSect(r,x.c.id,'phD'),1)]))},
     {hoja:'Salida',titulo:'Agua de riego (salida) y riegos',cab:['Día','Cabezal','CE balsa','pH balsa','Increm.','Total sal.','pH sal.','Riegos'],filas:d.regs.flatMap(r=>d.cabs.map(x=>{const g=k=>(r[k]||{})[x.c.id],b=g('ceB'),i=g('inc'),rg=x.c.sectores.map(s=>(r.rie||{})[s.id]).filter(v=>v!=null);
       if([b,g('phB'),i,g('phS')].every(v=>v==null)&&!rg.length)return null;return[fD(r.fecha),x.c.nombre,rN(b,2),rN(g('phB'),1),rN(i,2),rN(b!=null&&i!=null?b+i:null,2),rN(g('phS'),1),rg.length?rg.join(' / '):'']}).filter(Boolean))},
