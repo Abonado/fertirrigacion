@@ -552,6 +552,7 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .carpr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line)}.carpr small{display:block;color:var(--muted);text-transform:none}
 .splogo{display:grid;place-items:center;width:min(380px,100%);margin:0 auto;padding:22px;background:#fff;border:1px solid var(--line);border-radius:24px;box-sizing:border-box}.splogo img{display:block;max-width:100%;max-height:150px;object-fit:contain}.splogo.sm{width:min(260px,100%);padding:14px;margin:8px 0}.splogo.sm img{max-height:90px}
 .chbox{display:grid;gap:8px}.chm{max-width:88%;padding:8px 12px;border-radius:14px;font:400 15px/1.45 var(--f-body)}.chm,.chm *,#ch_txt{text-transform:none!important;letter-spacing:normal}.chm.yo{justify-self:end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}.chm.ia{justify-self:start;background:var(--surface-2);border:1px solid var(--line);border-bottom-left-radius:4px}.chm p{margin:4px 0}.chm ul{margin:4px 0;padding-left:20px}.chm li{margin:2px 0}.chf{font-size:11px;opacity:.8}.chprev{max-height:90px;border-radius:8px}.chsug .chip{white-space:normal;text-align:left;text-transform:none}
+.tlk-carp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tlk-carp>button{border:1px solid var(--line);border-radius:10px;padding:9px 10px;display:grid;gap:3px;text-align:left;background:var(--surface,#fff);color:inherit;font:inherit;cursor:pointer;align-content:start}.tlk-carp>button.on{border-color:var(--navy,#1b2b3a);border-width:2px}.tlk-carp small{color:var(--muted);text-transform:none;font-size:12.5px;line-height:1.3}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -865,7 +866,7 @@ const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctarea
   {id:'cajustes',n:'Ajustes',tabs:['cajustes','cogente'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 const CAMPO=new Set(GRUPOS_CAMPO.flatMap(g=>g.tabs));
 const areaDe=t=>CAMPO.has(t)?'campo':'riego';
-function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO.filter(g=>g.id!=='lab'||esAdminU());const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
+function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO.filter(g=>g.id!=='lab'||tabPermitida('taller'));const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
 /* Mapa de la finca: incidencias, en vivo e instalación en una sola pantalla */
 const MF_VISTAS=['mapa','vivo','instal','estres','plagas'];
 function mfHead(){const n=(()=>{try{return incAbiertas().filter(i=>i.cab===st.cab).length}catch(e){return 0}})(),a=(()=>{try{return inAlertas(st.cab)}catch(e){return 0}})();
@@ -1405,7 +1406,7 @@ const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';i
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
 const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
-function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura'||k==='taller'||k==='catalogo'||k==='aparatos'||k==='cajon')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
+function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||(fincasVis().some(f=>f.id===m.finca)&&cabOk(m.cab));
@@ -2402,7 +2403,7 @@ function catLista(){const C=window.CATALOGO,S=st.cat,q=catNorm(S.q).trim(),ok=it
     return `<button class="lnk catback" type="button" data-catc="">← Todas las carpetas</button><div class="cath">${catIco(c.ic)}<div><h3>${esc(c.n)}</h3><div class="sub">${esc(c.d)} · ${L.length} ${L.length===1?'elemento':'elementos'}</div></div></div>${L.map(it=>catItem(it)).join('')||'<div class="note">Nada con este filtro.</div>'}`}}
   return `<div class="catgrid">${C.carpetas.map(c=>{const n=c.it.filter(ok).length,a=c.it.filter(x=>x.est==='app'||x.est==='prep').length;
     const m=c.it.filter(x=>catFase(x)).length;return `<button class="catf" type="button" data-catc="${c.id}">${catIco(c.ic)}<b>${esc(c.n)}</b><small>${esc(c.d)}</small><span>${n} ${n===1?'elemento':'elementos'}${a?` · ${a} ya en la app`:''}${m?` · ${m} en desarrollo`:''}</span></button>`}).join('')}</div>`}
-function vCatalogo(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador.</div></section>`;if(!window.CATALOGO){catCargar();return `<section class="card"><div class="note">Abriendo el catálogo…</div></section>`}
+function vCatalogo(){if(!window.CATALOGO){catCargar();return `<section class="card"><div class="note">Abriendo el catálogo…</div></section>`}
   if(st.cat.det){const h=vCatDet(st.cat.det);if(h)return h}
   const C=window.CATALOGO,n=C.carpetas.reduce((s,c)=>s+c.it.length,0),S=st.cat;
   return `<section class="card"><div><h3>Catálogo de tecnología agrícola</h3><div class="sub">${n} sensores, robots y herramientas en ${C.carpetas.length} carpetas · precios orientativos (${esc(C.act)}): confírmalos antes de comprar</div></div>
@@ -2450,7 +2451,7 @@ const apHace=ts=>{const m=Math.round((Date.now()-Date.parse(ts))/60000);return m
 async function apGuarda(a,msg){a.mod=new Date().toISOString();const i=(st.ap||[]).findIndex(x=>x.id===a.id);if(i>=0)st.ap[i]=a;else st.ap.unshift(a);renderGrupos();renderMain();
   try{const {id,...doc}=a;if(a._nuevo){delete doc._nuevo;delete a._nuevo;await Store.setCol('aparatos',a.id,doc)}else{if(doc.dato&&doc.dato.auto)delete doc.dato;await Store.updCol('aparatos',a.id,doc)}if(msg)toast(msg);apProgramar()}catch(e){toast(errMsg(e))}}
 function apNuevo(o){o=o||{};const t=apTipo(o.tipo||'N4');return {tipo:t[0],nombre:o.nombre||'',cab:o.cab||st.cab||'',nave:o.nave||'',inst:hoy(),nota:'',diseno:o.diseno||'',dev:o.dev||''}}
-function vAparatos(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador.</div></section>`;apCargar();
+function vAparatos(){apCargar();
   if(st.ap===null)return `<section class="card"><div class="note">Cargando tus aparatos…</div></section>`;
   if(st.apF)return apForm();if(st.apInf&&!st.apSel)return apInformeHTML();if(st.apSel){const a=st.ap.find(x=>x.id===st.apSel);if(a)return apFicha(a);st.apSel=null}
   const act=st.ap.filter(a=>a.estado!=='retirado'),ret=st.ap.filter(a=>a.estado==='retirado'),pend=apPendTotal();
@@ -2552,7 +2553,7 @@ const cjDonde=m=>m.pro?'pro':m.b?'online':'otro';
 const CJ_DONDE={online:'Tienda online (Amazon o AliExpress)',pro:'Distribuidor o presupuesto',otro:'Ferretería o lo que tengas a mano'};
 function cjTexto(P){const L=['Lista de la compra · Agro FLY Taller',''];for(const g of ['online','pro','otro']){const l=P.mat.filter(m=>m.falta>0&&cjDonde(m)===g);if(!l.length)continue;L.push(CJ_DONDE[g]+':',...l.map(m=>`- ${m.falta}× ${m.n}${m.p?' ('+m.p+')':''}`),'')}
   const h=P.her.filter(x=>!x.tengo);if(h.length)L.push('Herramientas:',...h.map(x=>'- '+x.n));return L.join('\n')}
-function vCajon(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador.</div></section>`;cjCargar();
+function vCajon(){cjCargar();
   if(!window.CATALOGO){catCargar();return `<section class="card"><div class="note">Abriendo…</div></section>`}
   if(!window.MONTAJE){cargaJs('montaje.js',()=>{if(st.tab==='cajon')renderMain()});return `<section class="card"><div class="note">Abriendo…</div></section>`}
   window.MONTAJE._it=x=>catBusca(x)[0];if(!window.TALLER){cargaJs('taller.js',()=>{if(st.tab==='cajon')renderMain()});return `<section class="card"><div class="note">Abriendo…</div></section>`}
@@ -2903,7 +2904,7 @@ function edArreglarCab(){const ok=st.cfg.cabezales.map(c=>c.id);if(!ok.includes(
 function edInp(attrs,val,extra){return `<div class="inp ${extra&&extra.sm?'sm':''}"><input ${attrs} value="${esc(val??'')}" autocomplete="off" ${extra&&extra.num?'inputmode="decimal"':'style="text-transform:none"'}>${extra&&extra.u?`<span class="u">${extra.u}</span>`:''}</div>`}
 const edBtnDel=(k,txt)=>st.edConf===k?`<span class="row" style="gap:6px"><button class="btn danger sm" data-ed="del-yes" data-k="${esc(k)}">Sí, borrar</button><button class="btn sm" data-ed="del-no">No</button></span>`:`<button class="btn sm" data-ed="del" data-k="${esc(k)}">${txt||'Borrar'}</button>`;
 /* Taller de sensores (solo el administrador): el código vive en taller.js y se carga al abrir la pestaña */
-function vTaller(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador.</div></section>`;if(window.TALLER)return TALLER.vista();
+function vTaller(){if(window.TALLER)return TALLER.vista();
   if(!st.tlCarga){st.tlCarga=1;const sc=document.createElement('script');sc.src='taller.js';sc.onload=()=>{if(st.tab==='taller')renderMain()};sc.onerror=()=>{st.tlCarga=0;sc.remove();toast('No se ha podido abrir el taller: necesitas conexión la primera vez')};document.head.appendChild(sc)}
   return `<section class="card"><div class="note">Abriendo el taller de sensores…</div></section>`}
 function vEstructura(){if(!esAdminU())return `<section class="card"><div class="note">Solo el administrador puede cambiar fincas y cabezales.</div></section>`;
@@ -3857,7 +3858,42 @@ document.addEventListener('click',e=>{if(st.tab!=='montaje')return;const b=e.tar
 document.addEventListener('input',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(k==='txt')st.tb.txt=t.value});
 document.addEventListener('change',e=>{if(st.tab!=='montaje')return;const t=e.target,k=t.dataset&&t.dataset.tb;if(!k)return;
   if(k==='diam')st.tb.diam=t.value;else if(k==='marc'){st.tb.marc[+t.dataset.i]=t.checked}else if(k==='foto'&&t.files&&t.files.length){const fs=[...t.files];t.value='';tbAddFotos(fs)}});
+/* ---------- Llave del Taller ----------
+   Todo el personal de riego ve en el menú el Taller y sus carpetas (Catálogo, Taller de sensores, Mis aparatos y Cajón), pero para abrirlas
+   hace falta la contraseña que pone el administrador. En la configuración solo se guarda su huella (SHA-256 con sal), nunca la contraseña.
+   Abierto una vez, sigue abierto en este móvil hasta cerrar la app o pulsar «Cerrar con llave». Si cambia la contraseña, se cierra en todos.
+   Es un cerrojo de la app: no cambia los permisos de la base de datos. Sin contraseña puesta, solo entra el administrador (y se le pide que la ponga). */
+const TL_TABS=['catalogo','taller','aparatos','cajon'],TL_OK='abono.tlok';
+const tlClave=()=>{const c=st.cfg&&st.cfg.tallerClave;return c&&c.h&&c.s?c:null};
+function tlAbierto(){const c=tlClave();if(!c)return esAdminU();try{return sessionStorage.getItem(TL_OK)===c.h}catch(e){return !!st.tlOk&&st.tlOk===c.h}}
+function tlRecordar(h){st.tlOk=h;try{h?sessionStorage.setItem(TL_OK,h):sessionStorage.removeItem(TL_OK)}catch(e){}}
+async function tlHuella(pw,sal){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(sal+'|'+pw));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+const TL_CARP=[['catalogo','Catálogo','Sensores, robots, drones y control, con guías de montaje'],['taller','Taller de sensores','Diseña hablando, piezas, cables, caja 3D e instalar'],['aparatos','Mis aparatos','Lo instalado, sus datos, batería y mantenimiento'],['cajon','Cajón y compra','Las piezas que tienes y la lista de compra']];
+function vTlLlave(){const c=tlClave(),t=(TABS.find(([k])=>k===st.tab)||[])[1]||'Taller';
+  const carp=`<div class="tlk-carp">${TL_CARP.map(([k,n,d])=>`<button type="button" data-tab="${k}" class="${k===st.tab?'on':''}"><b>🔒 ${n}</b><small>${d}</small></button>`).join('')}</div>`;
+  if(!c)return `<section class="card"><div><h3>Taller</h3><div class="sub">Cerrado con llave</div></div>${carp}<div class="note">El administrador aún no ha puesto la contraseña del Taller. Pídesela cuando la tenga.</div></section>`;
+  return `<section class="card tlk"><div><h3>Taller</h3><div class="sub">Cerrado con llave · escribe la contraseña para abrir ${esc(t)} y las demás carpetas</div></div>${carp}
+    <div class="frm"><div class="field"><label for="tlk_pw">Contraseña del Taller</label><div class="inp"><input id="tlk_pw" type="password" autocomplete="current-password" style="text-transform:none;text-align:left"></div></div></div>
+    <div class="row"><button class="btn pri" type="button" data-tlk="abrir">Abrir el Taller</button></div></section>`}
+/* Arriba de cada carpeta: al administrador sin contraseña puesta, que la ponga. Abajo: cerrar con llave y cambiar la contraseña */
+function tlCampos(nueva){return `<div class="frm"><div class="field"><label for="tlk_n1">${nueva?'Contraseña nueva':'Contraseña'}</label><div class="inp"><input id="tlk_n1" type="password" autocomplete="new-password" style="text-transform:none;text-align:left"></div></div>
+  <div class="field"><label for="tlk_n2">Repítela</label><div class="inp"><input id="tlk_n2" type="password" autocomplete="new-password" style="text-transform:none;text-align:left"></div></div></div>
+  <div class="row"><button class="btn pri" type="button" data-tlk="poner">${nueva?'Cambiar la contraseña':'Poner la contraseña'}</button></div>`}
+function tlAviso(){if(tlClave()||!esAdminU())return '';return `<section class="card tlk"><div><h3>Ponle contraseña al Taller</h3><div class="sub">Así lo verá todo el personal de riego en el menú, pero solo entrará quien la sepa. Mínimo 4 caracteres.</div></div>${tlCampos(false)}</section>`}
+function tlPie(){if(!tlClave())return '';return `<section class="card tlk"><div class="row" style="justify-content:space-between;align-items:center"><span class="sub">🔓 Taller abierto en este móvil</span><button class="btn" type="button" data-tlk="cerrar">Cerrar con llave</button></div>
+  ${esAdminU()?`<details><summary><b>Cambiar la contraseña</b></summary><div class="note">Al cambiarla se cierra el Taller en todos los móviles: hará falta la nueva.</div>${tlCampos(true)}</details>`:''}</section>`}
+async function tlAbrir(){const c=tlClave(),i=$('#tlk_pw'),pw=i?i.value:'';if(!c||!pw){toast('Escribe la contraseña');return}
+  if(await tlHuella(pw,c.s)===c.h){tlRecordar(c.h);renderMain();window.scrollTo(0,0)}else{toast('Contraseña incorrecta');if(i){i.value='';i.focus()}}}
+async function tlPoner(){if(!esAdminU())return;const a=($('#tlk_n1')||{}).value||'',b=($('#tlk_n2')||{}).value||'';
+  if(a.length<4){toast('Mínimo 4 caracteres');return}if(a!==b){toast('Las dos no coinciden');return}
+  const s=[...crypto.getRandomValues(new Uint8Array(12))].map(x=>x.toString(16).padStart(2,'0')).join(''),h=await tlHuella(a,s);
+  st.cfg.tallerClave={h,s,ts:new Date().toISOString()};tlRecordar(h);
+  if(st.dirtyCfg){renderSave();toast('Pulsa «Guardar» abajo para que quede puesta');renderMain()}else{st.dirtyCfg=true;renderMain();saveCfg().then(()=>{if(!st.dirtyCfg)toast('Contraseña del Taller puesta')})}}
+document.addEventListener('click',e=>{if(!TL_TABS.includes(st.tab))return;const b=e.target.closest&&e.target.closest('[data-tlk]');if(!b)return;const a=b.dataset.tlk;
+  if(a==='abrir')tlAbrir();else if(a==='poner')tlPoner();else if(a==='cerrar'){tlRecordar('');renderMain();window.scrollTo(0,0);toast('Taller cerrado con llave')}});
+document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!e.target||e.target.id!=='tlk_pw')return;e.preventDefault();tlAbrir()});
 const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);

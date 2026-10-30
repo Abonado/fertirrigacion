@@ -52,12 +52,12 @@ async def main():
         await pg.fill('#cat_q', 'nivel deposito'); await pg.wait_for_timeout(300)
         assert await pg.locator('#main .catit[open]:has-text("Nivel de depósitos")').count() == 1, 'recuerda la ficha que tenías abierta'
         await pg.click('#main .catit[open] [data-tlnuevo]'); await pg.wait_for_timeout(1200); assert await pg.evaluate("[st.tab,st.tl.d&&st.tl.d.nodo]") == ['taller', 'N1']
-        # el encargado no lo ve ni lo carga
+        # el encargado lo ve cerrado con llave y no se carga
         await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
         await pg.fill('#nb_em', 'pepe@demo.es'); await pg.fill('#nb_pw', 'pepe1234'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash();st.finca='pinta';st.tab='cuentas';renderAll()"); await pg.wait_for_timeout(500)
-        assert await pg.locator('#grupos [data-grupo="lab"]').count() == 0 and len(await pg.locator('#grupos .grp').all()) == 6
+        assert await pg.locator('#grupos [data-grupo="lab"]').count() == 1 and len(await pg.locator('#grupos .grp').all()) == 7
         await pg.evaluate("st.tab='catalogo';renderAll()"); await pg.wait_for_timeout(600)
-        assert await pg.evaluate("st.tab") != 'catalogo' and await pg.evaluate("!window.CATALOGO")
+        assert await pg.evaluate("st.tab") == 'catalogo' and await pg.evaluate("!window.CATALOGO") and 'CERRADO CON LLAVE' in (await pg.text_content('#main')).upper()
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

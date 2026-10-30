@@ -86,9 +86,9 @@ async def main():
         await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
         await pg.fill('#nb_em', 'pepe@demo.es'); await pg.fill('#nb_pw', 'pepe1234'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash();st.finca='pinta';st.cab='gas';st.tab='ajustes';renderAll()"); await pg.wait_for_timeout(600)
-        assert await pg.locator('#tabs [data-tab="taller"]').count() == 0, 'el encargado no ve la pestaña'
-        assert await pg.locator('#grupos [data-grupo="lab"]').count() == 0, 'el encargado no ve el apartado Taller'
+        assert await pg.locator('#grupos [data-grupo="lab"]').count() == 1, 'el encargado ve el apartado Taller (con llave)'
         await pg.evaluate("st.tab='taller';renderAll()"); await pg.wait_for_timeout(600)
-        assert await pg.evaluate("st.tab") != 'taller' and await pg.evaluate("!window.TALLER") and 'Taller' not in await pg.text_content('#main')
+        t = (await pg.text_content('#main')).upper()
+        assert await pg.evaluate("st.tab") == 'taller' and await pg.evaluate("!window.TALLER") and 'CERRADO CON LLAVE' in t and 'AÚN NO HA PUESTO LA CONTRASEÑA' in t, 'sin contraseña puesta no entra ni se carga'
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())
