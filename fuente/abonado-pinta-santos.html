@@ -556,6 +556,7 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .ucv{display:grid;gap:8px;margin:8px 0;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.uct{width:100%;border-collapse:collapse;font-size:12.5px;text-transform:none}.uct th,.uct td{padding:4px 3px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}.uct td i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.uct small{color:var(--muted)}.ucbar{display:block;width:34px;height:5px;border-radius:3px;background:var(--line);margin-top:2px;overflow:hidden}.ucbar span{display:block;height:100%;background:#1f77b4}.ucvg{width:100%;height:auto}
 .ucley{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;text-transform:none}.ucley i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
 .balt .balp td{padding-top:10px;border-bottom:0;text-align:left;text-transform:none}.balt .balp small{color:var(--muted)}
+.infck{display:flex;flex-wrap:wrap;gap:4px 14px;margin:4px 0 8px}.infck .chk{text-transform:none}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -1813,16 +1814,68 @@ async function mvDel(id){const m=st.alm.find(x=>x.id===id);try{await Store.delCo
 /* ---------- Informe mensual ---------- */
 function drenDia(r,cab){const z=r.resumen&&r.resumen[cab];if(z&&z.drenaje!=null)return z.drenaje;const ps=[];for(const s of cabById(cab).sectores)for(const bj of s.bandejas){const min=(r.min||{})[s.id],ml=(r.dren||{})[bj.id];if(min&&ml!=null&&bj.caudal)ps.push(ml*100/(min*bj.caudal))}return ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null}
 function kgCab(r,cab){const z=r.resumen&&r.resumen[cab];if(z&&z.kg)return z.kg;return withReg(r,()=>kgDia(cab))}
-function informeData(mes){const regs=(st.hist||[]).filter(r=>r.fecha.slice(0,7)===mes).sort((a,b)=>a.fecha<b.fecha?-1:1);
+function informeData(mes){const regs=(st.hist||[]).filter(r=>r.fecha.slice(0,7)===mes).sort((a,b)=>a.fecha<b.fecha?-1:1);if(infSec('clima'))lecCargar();
   const av=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
-  const cabs=cabsVis().map(c=>{const rs=regs.filter(r=>r.m3&&r.m3[c.id]!=null),kg={},dr=[],ce=[],cd=[],ph=[];let m3=0;
+  const todos=cabsVis().map(c=>{const rs=regs.filter(r=>r.m3&&r.m3[c.id]!=null),kg={},dr=[],ce=[],cd=[],ph=[];let m3=0;
     for(const r of rs){m3+=r.m3[c.id]||0;const k=kgCab(r,c.id);for(const p in k)kg[p]=(kg[p]||0)+k[p];const d=drenDia(r,c.id);if(d!=null)dr.push(d);
       for(const[arr,key]of[[ce,'ceE'],[cd,'ceD'],[ph,'phD']]){const v=mediaSect(r,c.id,key);if(v!=null)arr.push(v)}}
     return{c,dias:rs.length,m3,kg,dren:av(dr),ceE:av(ce),ceD:av(cd),phD:av(ph)}});
-  const alm=(st.alm||[]).filter(m=>(m.fecha||'').slice(0,7)===mes),ent={},sal={};for(const m of alm){if(m.tipo==='entrada')ent[m.p]=(ent[m.p]||0)+m.qty;else if(m.tipo==='salida')sal[m.p]=(sal[m.p]||0)-m.qty}
+  const cabs=todos.filter(x=>infCab(x.c.id)).map(x=>({...x,kg:Object.fromEntries(Object.entries(x.kg).filter(([p])=>infProd(p)))}));
+  const alm=(st.alm||[]).filter(m=>(m.fecha||'').slice(0,7)===mes&&infProd(m.p)&&(!infCfg().cabs||(almById(almDeMov(m))||{cabezales:[]}).cabezales.some(infCab))),ent={},sal={};for(const m of alm){if(m.tipo==='entrada')ent[m.p]=(ent[m.p]||0)+m.qty;else if(m.tipo==='salida')sal[m.p]=(sal[m.p]||0)-m.qty}
   const tot={};for(const x of cabs)for(const p in x.kg)tot[p]=(tot[p]||0)+x.kg[p];
-  const alms=almsVis().map(a=>({a,b:balanceAlm(mes,a.id,{cabs})})).filter(x=>x.b.length);
+  const alms=almsVis().filter(a=>a.cabezales.some(infCab)).map(a=>({a,b:balanceAlm(mes,a.id,{cabs:todos}).filter(x=>infProd(x.p))})).filter(x=>x.b.length);
   return{mes,regs,cabs,ent,sal,tot,alm,alms}}
+/* ---------- Qué sale en el informe ----------
+   El encargado o el administrador eligen qué apartados, qué cabezales y qué productos lleva el informe (en pantalla, PDF y Excel).
+   Se guarda en la configuración (cfg.informe) y vale para todos. También se puede pedir con palabras: la IA marca las casillas. */
+const INF_SEC=[['resumen','Resumen del mes'],['cabezal','Agua y drenaje por cabezal'],['abonos','Abono gastado por cabezal'],['almacen','Balance del almacén'],['movs','Movimientos de almacén (albaranes)'],
+  ['diario','Detalle diario por cabezal'],['salida','Agua de riego (CE y pH) y riegos'],['bandejas','Drenaje por bandeja'],['clima','Clima de las naves (controlador)']];
+const INF_DEF=['resumen','cabezal','abonos','almacen'];
+const infCfg=()=>{const c=st.cfg.informe||{},ok=new Set(INF_SEC.map(x=>x[0]));const sec=(Array.isArray(c.sec)?c.sec:[]).filter(k=>ok.has(k));
+  return {sec:sec.length?sec:INF_DEF,cabs:Array.isArray(c.cabs)&&c.cabs.length?c.cabs:null,prods:Array.isArray(c.prods)&&c.prods.length?c.prods:null}};
+const infSec=k=>infCfg().sec.includes(k),infCab=id=>{const c=infCfg().cabs;return !c||c.includes(id)},infProd=p=>{const c=infCfg().prods;return !c||c.includes(p)};
+const HOJA_SEC={Resumen:'cabezal',Abonos:'abonos','Almacén':'almacen',Movimientos:'movs',Diario:'diario',Salida:'salida',Bandejas:'bandejas',Clima:'clima'};
+function infBorr(){if(!st.infB){const c=infCfg();st.infB={sec:[...c.sec],cabs:c.cabs?[...c.cabs]:[],prods:c.prods?[...c.prods]:[],txt:'',ia:null}}return st.infB}
+function infPanelHTML(){const B=infBorr(),ed=esGestor(),cabs=cabsVis(),ps=Object.keys(st.cfg.productos),ck=(g,v,on,t)=>`<label class="chk"><input type="checkbox" data-infsel="${g}" value="${esc(v)}" ${on?'checked':''} ${ed?'':'disabled'}> ${esc(t)}</label>`;
+  const iaOn=typeof iaModo==='function'&&!!iaModo();
+  return `<section class="card"><details ${st.infAbierto?'open':''} data-infdet="1"><summary><b>Qué sale en el informe</b> <small class="sub">${B.sec.length} apartados${B.cabs.length?' · '+B.cabs.length+' cabezales':''}${B.prods.length?' · '+B.prods.length+' productos':''}</small></summary>
+    ${iaOn&&ed?`<div class="field" style="margin-top:8px"><label for="inf_ia">Pídelo con tus palabras</label><div class="inp"><textarea id="inf_ia" rows="2" style="width:100%;text-transform:none" placeholder="Ej.: solo Gasolinera, el nitrato y el calcio, con el balance del almacén y el clima de las naves">${esc(B.txt)}</textarea></div></div>
+      <div class="row"><button class="btn" type="button" data-infact="ia" ${B.ia==='…'?'disabled':''}>${B.ia==='…'?'Pensando…':'Marcar con la IA'}</button></div>${B.ia&&B.ia!=='…'?`<div class="note" style="text-transform:none">${esc(B.ia)}</div>`:''}`:''}
+    <div class="lbl">Apartados</div><div class="infck">${INF_SEC.map(([k,t])=>ck('sec',k,B.sec.includes(k),t)).join('')}</div>
+    <div class="lbl">Cabezales <small>(ninguno marcado = todos)</small></div><div class="infck">${cabs.map(c=>ck('cabs',c.id,B.cabs.includes(c.id),c.nombre)).join('')}</div>
+    <div class="lbl">Productos <small>(ninguno marcado = todos)</small></div><div class="infck">${ps.map(p=>ck('prods',p,B.prods.includes(p),pn(p))).join('')}</div>
+    ${ed?`<div class="row"><button class="btn pri" type="button" data-infact="guardar">Guardar lo que sale</button><button class="btn" type="button" data-infact="todo">Todo</button><button class="btn" type="button" data-infact="defecto">Lo de siempre</button></div>`:'<div class="note">Solo el encargado o el administrador pueden cambiarlo.</div>'}</details></section>`}
+async function infIA(){const B=infBorr(),txt=(($('#inf_ia')||{}).value||'').trim();B.txt=txt;if(!txt){toast('Escribe qué quieres que salga');return}B.ia='…';renderMain();
+  const cabs=cabsVis(),ps=Object.keys(st.cfg.productos);
+  const pr=`Eres el asistente de una app de fertirrigación. El usuario quiere configurar qué sale en su informe mensual. Opciones:
+APARTADOS: ${INF_SEC.map(([k,t])=>k+' = '+t).join('; ')}.
+CABEZALES: ${cabs.map(c=>c.id+' = '+c.nombre).join('; ')}.
+PRODUCTOS: ${ps.map(p=>p+' = '+pn(p)).join('; ')}.
+Ahora están marcados: apartados [${B.sec.join(', ')}], cabezales [${B.cabs.join(', ')||'todos'}], productos [${B.prods.join(', ')||'todos'}].
+Lo que pide el usuario: «${txt}»
+Si pide añadir o quitar algo, parte de lo marcado ahora; si describe el informe entero, sustitúyelo. Lista vacía de cabezales o productos = todos.
+Responde SOLO con JSON: {"sec":["ids"],"cabs":["ids"],"prods":["ids"],"mes":"AAAA-MM o null si no dice mes","explica":"una frase en español de lo que has marcado"}`;
+  try{const r=await iaFotoJson(pr,[]),f=(a,ok)=>(Array.isArray(a)?a:[]).map(String).filter(x=>ok.includes(x));const sec=f(r&&r.sec,INF_SEC.map(x=>x[0]));
+    B.sec=sec.length?sec:B.sec;B.cabs=f(r&&r.cabs,cabs.map(c=>c.id));B.prods=f(r&&r.prods,ps);if(r&&/^\d{4}-\d{2}$/.test(r.mes||''))st.mes=r.mes;
+    B.ia=(r&&r.explica?String(r.explica):'Marcado.')+' Revisa las casillas y pulsa «Guardar lo que sale».'}
+  catch(e){B.ia=e&&e.code==='sin_ia'?'La IA no está activada: actívala en Ajustes.':'No he podido entenderlo. Prueba otra vez o marca las casillas a mano.'}renderMain()}
+function infGuardar(){if(!esGestor())return;const B=infBorr();if(!B.sec.length){toast('Marca al menos un apartado');return}
+  st.cfg.informe={sec:[...B.sec],cabs:[...B.cabs],prods:[...B.prods]};st.infB=null;
+  if(st.dirtyCfg){renderSave();toast('Pulsa «Guardar» abajo para que quede');renderMain()}else{st.dirtyCfg=true;renderMain();saveCfg().then(()=>{if(!st.dirtyCfg)toast('Informe guardado: así saldrá para todos')})}}
+document.addEventListener('change',e=>{if(st.tab!=='informe')return;const t=e.target;if(!t.dataset||!t.dataset.infsel)return;const B=infBorr(),g=t.dataset.infsel;
+  B[g]=t.checked?[...new Set([...B[g],t.value])]:B[g].filter(x=>x!==t.value);st.infAbierto=true;renderMain()});
+document.addEventListener('toggle',e=>{if(st.tab==='informe'&&e.target&&e.target.dataset&&e.target.dataset.infdet)st.infAbierto=e.target.open},true);
+document.addEventListener('click',e=>{if(st.tab!=='informe')return;const b=e.target.closest&&e.target.closest('[data-infact]');if(!b)return;const a=b.dataset.infact,B=infBorr();st.infAbierto=true;
+  if(a==='ia')infIA();else if(a==='guardar')infGuardar();else if(a==='todo'){B.sec=INF_SEC.map(x=>x[0]);B.cabs=[];B.prods=[];renderMain()}else if(a==='defecto'){B.sec=[...INF_DEF];B.cabs=[];B.prods=[];renderMain()}});
+/* Clima de las naves del mes, desde el controlador (para el informe) */
+function climaMesFilas(mes){const M=ucComp(),cab=M.cab;if(!st.lec||!cabById(cab)||!infCab(cab))return [];const U=esU(),nv=((MAPAS[cab]||{}).naves||[]).length||6,fin=+finMes(mes).slice(8),dias=[];
+  for(let i=1;i<=fin;i++)dias.push(mes+'-'+String(i).padStart(2,'0'));
+  const comps=[...new Set(st.lec.filter(d=>d.nodo==='UC'&&d.cab===cab&&d.comp&&(d.fecha||'').slice(0,7)===mes).map(d=>+d.comp))],out=[];
+  for(const n of comps){const rs=dias.map(f=>ucDiaRes(ucPuntos(cab,n,f).filter(p=>typeof p.v.ta==='number'),U)).filter(Boolean);if(!rs.length)continue;const av=a=>{a=a.filter(v=>v!=null);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
+    out.push({nave:M.inv?nv+1-n:n,f:[cabNombre(cab),'Nave '+(M.inv?nv+1-n:n),rs.length,rN(Math.max(...rs.map(r=>r.max)),1),rN(Math.min(...rs.map(r=>r.min)),1),rN(av(rs.map(r=>r.max)),1),rN(av(rs.map(r=>r.min)),1),rN(av(rs.map(r=>r.hr)),0),rN(rs.reduce((a,r)=>a+r.hc,0),1),rN(rs.reduce((a,r)=>a+r.hh,0),1),rN(av(rs.map(r=>r.v1)),0)]})}
+  return out.sort((a,b)=>a.nave-b.nave).map(x=>x.f)}
+function infTablaHTML(t){const v=x=>typeof x==='number'?x.toLocaleString('es-ES',{maximumFractionDigits:2}):esc(String(x??''));
+  return `<section class="card"><details><summary><b>${esc(t.titulo)}</b> <small class="sub">${t.filas.length} fila${t.filas.length===1?'':'s'}</small></summary>${t.filas.length?`<div class="tbl" style="overflow-x:auto"><table><thead><tr>${t.cab.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${t.filas.map(r=>`<tr>${r.map(x=>`<td>${v(x)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`:'<div class="note">Nada este mes.</div>'}</details></section>`}
 const nomMes=m=>new Date(m+'-15T12:00:00').toLocaleDateString('es-ES',{month:'long',year:'numeric'});
 /* Balance del almacén en el mes: stock al empezar + entradas − salidas ± ajustes = stock al acabar (o hoy, si es el mes en curso).
    Al lado, lo gastado según las cuentas del día de los cabezales de ese almacén, para ver si cuadra con lo que ha salido. */
@@ -1837,18 +1890,19 @@ function vInforme(){if(st.hist===null||st.alm===null){if(st.hist===null)loadHist
   const d=informeData(st.mes);
   let h=`<section class="card"><div class="tank-h"><div><h3>Informe de ${nomMes(st.mes)}</h3><div class="sub">Agua, abonos, drenaje y almacén${st.mes===hoy().slice(0,7)?' · se va rellenando cada día con las cuentas, los llenados y las entradas':''}</div></div>
     <div class="field"><label for="inf_mes">Mes</label><div class="inp"><input type="month" id="inf_mes" data-inf="mes" value="${st.mes}"></div></div></div>
-    <div class="row"><button class="btn pri" data-act="inf-pdf" ${d.regs.length?'':'disabled'}>Descargar PDF</button><button class="btn" data-act="inf-xlsx" ${d.regs.length?'':'disabled'}>Descargar Excel</button></div></section>`;
+    <div class="row"><button class="btn pri" data-act="inf-pdf" ${d.regs.length?'':'disabled'}>Descargar PDF</button><button class="btn" data-act="inf-xlsx" ${d.regs.length?'':'disabled'}>Descargar Excel</button></div></section>${infPanelHTML()}`;
   if(!d.regs.length)return h+`<section class="card"><div class="note">Sin días guardados en este mes.</div></section>`;
   const cu=d.cabs.filter(x=>x.dias),ps=Object.keys(d.tot).filter(p=>d.tot[p]>0.0001),pa=[...new Set([...Object.keys(d.ent),...Object.keys(d.sal)])];
-  h+=`<section class="summary"><div class="stat"><span>Días guardados</span><b>${d.regs.length}</b><small>${nomMes(st.mes)}</small></div><div class="stat"><span>Agua regada</span><b>${fmt(cu.reduce((a,x)=>a+x.m3,0),0)} m³</b><small>toda la finca</small></div><div class="stat"><span>Abono aplicado</span><b>${fmt(ps.reduce((a,p)=>a+d.tot[p],0),0)}</b><small>kg + L en total</small></div></section>`;
-  h+=`<section class="card"><div><h3>Por cabezal</h3><div class="sub">Medias del mes</div></div><div class="tbl"><table><thead><tr><th>Cabezal</th><th>Días</th><th>m³</th><th>Dren. %</th><th>CE dren. µS</th><th>pH dren.</th></tr></thead><tbody>${cu.map(x=>`<tr><td>${esc(x.c.nombre)}</td><td>${x.dias}</td><td>${fmt(x.m3,0)}</td><td>${fmt(x.dren,1)}</td><td>${fUS(x.ceD)}</td><td>${fmt(x.phD,1)}</td></tr>`).join('')}</tbody></table></div></section>`;
-  h+=`<section class="card"><div><h3>Abono aplicado</h3><div class="sub">Kg o litros por cabezal</div></div><div class="tbl"><table><thead><tr><th>Producto</th>${cu.map(x=>`<th>${esc(x.c.nombre)}</th>`).join('')}<th>Total</th></tr></thead><tbody>${ps.map(p=>`<tr><td>${esc(prod(p).n)}</td>${cu.map(x=>`<td>${fmt(x.kg[p]||0,1)}</td>`).join('')}<td><b>${fmt(d.tot[p],1)} ${uCant(p)}</b></td></tr>`).join('')}</tbody></table></div></section>`;
+  if(infSec('resumen'))h+=`<section class="summary"><div class="stat"><span>Días guardados</span><b>${d.regs.length}</b><small>${nomMes(st.mes)}</small></div><div class="stat"><span>Agua regada</span><b>${fmt(cu.reduce((a,x)=>a+x.m3,0),0)} m³</b><small>toda la finca</small></div><div class="stat"><span>Abono aplicado</span><b>${fmt(ps.reduce((a,p)=>a+d.tot[p],0),0)}</b><small>kg + L en total</small></div></section>`;
+  if(infSec('cabezal'))h+=`<section class="card"><div><h3>Por cabezal</h3><div class="sub">Medias del mes</div></div><div class="tbl"><table><thead><tr><th>Cabezal</th><th>Días</th><th>m³</th><th>Dren. %</th><th>CE dren. µS</th><th>pH dren.</th></tr></thead><tbody>${cu.map(x=>`<tr><td>${esc(x.c.nombre)}</td><td>${x.dias}</td><td>${fmt(x.m3,0)}</td><td>${fmt(x.dren,1)}</td><td>${fUS(x.ceD)}</td><td>${fmt(x.phD,1)}</td></tr>`).join('')}</tbody></table></div></section>`;
+  if(infSec('abonos'))h+=`<section class="card"><div><h3>Abono aplicado</h3><div class="sub">Kg o litros por cabezal</div></div><div class="tbl"><table><thead><tr><th>Producto</th>${cu.map(x=>`<th>${esc(x.c.nombre)}</th>`).join('')}<th>Total</th></tr></thead><tbody>${ps.map(p=>`<tr><td>${esc(prod(p).n)}</td>${cu.map(x=>`<td>${fmt(x.kg[p]||0,1)}</td>`).join('')}<td><b>${fmt(d.tot[p],1)} ${uCant(p)}</b></td></tr>`).join('')}</tbody></table></div></section>`;
   const enCurso=st.mes===hoy().slice(0,7);
-  h+=d.alms.length?d.alms.map(({a,b})=>`<section class="card"><div><h3>Almacén ${esc(a.nombre)} · balance del mes</h3><div class="sub">${esc(a.cabezales.map(cabNombre).join(', '))} · stock al empezar + entradas − salidas ± ajustes = stock ${enCurso?'hoy':'al acabar el mes'}</div></div>
+  if(infSec('almacen'))h+=d.alms.length?d.alms.map(({a,b})=>`<section class="card"><div><h3>Almacén ${esc(a.nombre)} · balance del mes</h3><div class="sub">${esc(a.cabezales.map(cabNombre).join(', '))} · stock al empezar + entradas − salidas ± ajustes = stock ${enCurso?'hoy':'al acabar el mes'}</div></div>
     <div class="tbl"><table class="balt"><thead><tr><th>Inicio</th><th>Entradas</th><th>Salidas</th><th>Ajustes</th><th>${enCurso?'Hoy':'Final'}</th></tr></thead><tbody>${b.map(x=>{const dif=x.g-x.s,mal=x.g>0.5&&Math.abs(dif)>Math.max(2,x.g*0.1);
       return `<tr class="balp"><td colspan="5"><b>${esc(prod(x.p).n)}</b> <small>${uCant(x.p)} · gastado según las cuentas ${fmt(x.g,1)}</small>${mal?` <span class="pill warn" title="Lo gastado según las cuentas no cuadra con lo salido del almacén">no cuadra: ${dif>0?'+':'−'}${fmt(Math.abs(dif),1)}</span>`:''}</td></tr>
         <tr><td>${fmt(x.s0,1)}</td><td>${x.e?'+'+fmt(x.e,1):'—'}</td><td>${x.s?'−'+fmt(x.s,1):'—'}</td><td>${Math.abs(x.a)>0.001?(x.a>0?'+':'−')+fmt(Math.abs(x.a),1):'—'}</td><td><b class="${x.s1<-0.001?'bad':''}">${fmt(x.s1,1)}</b></td></tr>`}).join('')}</tbody></table></div>
     <div class="note">«Salidas» son los abonos descontados al registrar los llenados de depósito; «Gastado» es lo que sale de las cuentas del día de sus cabezales. Si no cuadran (aviso naranja), falta apuntar algún llenado o alguna entrada.</div></section>`).join(''):`<section class="card"><div><h3>Almacén</h3></div><div class="note">Sin movimientos este mes.</div></section>`;
+  for(const t of informeTablas(d))if(['movs','diario','salida','bandejas','clima'].includes(HOJA_SEC[t.hoja]))h+=infTablaHTML(t);
   return h}
 const rN=(v,d)=>v==null||!isFinite(v)?'':+v.toFixed(d);
 const fD=f=>f.split('-').reverse().join('/');
@@ -1861,7 +1915,8 @@ function informeTablas(d){const cu=d.cabs.filter(x=>x.dias),ps=Object.keys(d.tot
       if([b,g('phB'),i,g('phS')].every(v=>v==null)&&!rg.length)return null;return[fD(r.fecha),x.c.nombre,rN(b,2),rN(g('phB'),1),rN(i,2),rN(b!=null&&i!=null?b+i:null,2),rN(g('phS'),1),rg.length?rg.join(' / '):'']}).filter(Boolean))},
     {hoja:'Bandejas',titulo:'Drenaje por bandeja',cab:['Día','Cabezal','Sector','Bandeja','Minutos','Volumen total L','Drenaje ml','Drenaje %','CE drenaje µS/cm','pH drenaje'],filas:d.regs.flatMap(r=>cu.flatMap(x=>x.c.sectores.flatMap(s=>s.bandejas.map(bj=>{const ml=(r.dren||{})[bj.id],min=(r.min||{})[s.id],ce=(r.ceD||{})[bj.id],ph=(r.phD||{})[bj.id];
       if(ml==null&&ce==null&&ph==null)return null;return[fD(r.fecha),x.c.nombre,s.nombre,bj.nombre.replace('Bandeja ',''),rN(min,0),rN(min&&bj.caudal?min*bj.caudal/1000:null,2),rN(ml,0),rN(ml!=null&&min&&bj.caudal?ml*100/(min*bj.caudal):null,1),uS(ce),rN(ph,1)]}).filter(Boolean))))},
-    {hoja:'Movimientos',titulo:'Movimientos de almacén',cab:['Día','Tipo','Producto','Cantidad','Proveedor','Albarán'],filas:d.alm.slice().sort((a,b)=>a.ts<b.ts?-1:1).map(m=>[fD(m.fecha),m.tipo,pn(m.p),rN(m.qty,2),m.prov||'',m.alb||''])}]}
+    {hoja:'Movimientos',titulo:'Movimientos de almacén',cab:['Día','Tipo','Producto','Cantidad','Proveedor','Albarán'],filas:d.alm.slice().sort((a,b)=>a.ts<b.ts?-1:1).map(m=>[fD(m.fecha),m.tipo,pn(m.p),rN(m.qty,2),m.prov||'',m.alb||''])},
+    {hoja:'Clima',titulo:'Clima de las naves (controlador)',cab:['Cabezal','Nave','Días','Máx. del mes','Mín. del mes','Media máx.','Media mín.','Humedad media %','Horas de calor','Horas hum.>90','Ventana 1 media %'],filas:climaMesFilas(d.mes)}].filter(t=>infSec(HOJA_SEC[t.hoja]))}
 async function saveBlob(blob,name){if(Store.mode==='db'){if(!Adj.downloads){toast('Descarga no disponible aquí');return}try{await Adj.downloads.save({filename:name,data:blob})}catch(e){if(!e||e.code!=='declined')toast('No se pudo descargar')}return}
   const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000)}
 // Excel (.xlsx) sin librerías: XML + zip sin compresión
@@ -3253,7 +3308,7 @@ async function pdfLib(){if(window.PDFLib)return window.PDFLib;const cdn='https:/
   try{await loadScript(window.claude?cdn:'pdf-lib.min.js')}catch(e){await loadScript(cdn)}return window.PDFLib}
 const pdfTxt=s=>String(s??'').replace(/­/g,'').replace(/[−–—]/g,'-').replace(/≈/g,'~').replace(/[^\x20-\x7E\xA0-\xFF]/g,'?');
 async function exportPdf(){let L;try{L=await pdfLib()}catch(e){toast('Hace falta conexión a internet para crear el PDF');return}
-  const d=informeData(st.mes),ts=informeTablas(d).filter(t=>['Resumen','Abonos','Almacén','Diario','Salida'].includes(t.hoja)),{PDFDocument,StandardFonts,rgb}=L;const doc=await PDFDocument.create();
+  const d=informeData(st.mes),ts=informeTablas(d),{PDFDocument,StandardFonts,rgb}=L;const doc=await PDFDocument.create();
   const f=await doc.embedFont(StandardFonts.Helvetica),fb=await doc.embedFont(StandardFonts.HelveticaBold);
   const PW=595.28,PH=841.89,M=40,IW=PW-2*M,ink=rgb(.082,.133,.173),mut=rgb(.35,.42,.44),navy=rgb(.106,.184,.29),lin=rgb(.84,.87,.85),bg=rgb(.933,.949,.937);
   let page=doc.addPage([PW,PH]),y=PH-M;
