@@ -557,6 +557,7 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .ucley{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:12.5px;text-transform:none}.ucley i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
 .balt .balp td{padding-top:10px;border-bottom:0;text-align:left;text-transform:none}.balt .balp small{color:var(--muted)}
 .infck{display:flex;flex-wrap:wrap;gap:4px 14px;margin:4px 0 8px}.infck .chk{text-transform:none}
+.topr{display:flex;align-items:center;gap:8px;margin-left:auto}.frec{display:inline-grid;place-items:center;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--navy);cursor:pointer;padding:0;flex:none}.frec svg{width:20px;height:20px}.frec.gira svg{animation:frg .8s linear infinite}@keyframes frg{to{transform:rotate(360deg)}}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -567,7 +568,7 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
   <div class="wrap">
     <div class="brandrow">
       <div class="brandl"><button class="fback" data-act="areas" aria-label="Volver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="fbackT">Menú</span></button><div><div class="eyebrow" id="eyeb">Fertirrigación · cabezales de riego</div><h1 id="h1">Abonado Pinta Santos</h1></div></div>
-      <label class="date" id="fechaL"><span>Día</span><input type="date" id="fecha"></label>
+      <div class="topr"><label class="date" id="fechaL"><span>Día</span><input type="date" id="fecha"></label><button class="frec" type="button" id="recargar" aria-label="Recargar la app" title="Recargar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     </div>
     <nav class="scroller" id="cabs" aria-label="Cabezal"></nav>
     <nav class="grupos" id="grupos" aria-label="Apartados"></nav>
@@ -4081,6 +4082,12 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   b.setAttribute('aria-expanded',ab);const body=b.nextElementSibling;if(body)body.hidden=!ab;try{localStorage.setItem('abono.ajAb',JSON.stringify([...st.ajAb]))}catch(_){}});
 function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=vistaTab();if(st.tab==='ajustes')ajAgrupar(tmp);const n=tmp.querySelectorAll('[data-out]'),o=$('#main').querySelectorAll('[data-out]');
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
+/* Botón de recargar (la flecha de arriba): busca versión nueva de la app y vuelve a cargarla con los datos al día.
+   Si hay cambios sin guardar, avisa antes para no perderlos. */
+async function recargarApp(){const b=$('#recargar');if((st.dirtyReg||st.dirtyCfg)&&!confirm('Tienes cambios sin guardar. Si recargas se pierden. ¿Recargar igualmente?'))return;
+  if(b)b.classList.add('gira');try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await Promise.race([r.update(),new Promise(z=>setTimeout(z,2500))])}catch(e){}
+  st.dirtyReg=false;st.dirtyCfg=false;location.reload()}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#recargar');if(b)recargarApp()});
 function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCfg;bar.hidden=!show;if(!show)return;
   $('#savemsg').textContent=st.saving?'Guardando…':'Cambios sin guardar';
   $('#savebtns').innerHTML=(st.dirtyCfg?`<button class="btn" data-act="save-cfg" ${st.saving?'disabled':''}>Guardar receta y ajustes</button>`:'')+(st.dirtyReg?`<button class="btn pri" data-act="save-reg" ${st.saving?'disabled':''}>Guardar día ${fCorta(st.fecha)}</button>`:'')}
