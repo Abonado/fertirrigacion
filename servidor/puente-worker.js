@@ -3,6 +3,10 @@
 // Qué hace:
 //   · /p    → recibe lo que manda la pasarela casera (diseño P del Taller): {"raw":"N4;id=1A2B3C;ta=24.1;…","rssi":-87,"snr":7.5,"gw":"…"}
 //   · /ttn  → recibe los sensores LoRaWAN comprados desde The Things Network (webhook «Uplink message»)
+//   · /clima → recibe lo que lee del controlador de clima el «Lector del clima» (extensión de Edge en el PC de la oficina):
+//            {"cab":"gas","comp":[{"n":1,"ta":27.5,"hr":68,"vent":[98,98,100]},…]}. Se guarda como una placa por compartimento
+//            (UC-GAS-1, UC-GAS-2…) y en UC-ESTADO la hora de la última lectura. Si en horario de trabajo lleva más de 90 min sin
+//            llegar nada, avisa una vez al administrador.
 //   Con cada dato: lo guarda en abonado_lecturas (un documento por placa y día, con todos los puntos) y pone el «último dato»
 //   y la batería en su aparato de «Mis aparatos» (el que tenga ese número de placa).
 //   · Cada 30 minutos (Cron): si un aparato con placa lleva más de 2 horas sin mandar nada, avisa al administrador
@@ -93,6 +97,33 @@ async function registrar(env, { nodo, id, v, bat, rssi, snr, gw }) {
   return { ok: true, aparato: ap || null };
 }
 
+/* ---------- controlador de clima: lo manda el lector del PC ---------- */
+const numR = (x, a, b) => typeof x === 'number' && isFinite(x) && x >= a && x <= b ? Math.round(x * 10) / 10 : null;
+const docFS = d => `projects/${PROYECTO}/databases/(default)/documents/abonado_lecturas/${d}`;
+async function registrarClima(env, b) {
+  const cab = corto(b.cab, 12).replace(/[^a-z0-9]/gi, '').toLowerCase(); if (!cab) return { error: 'cab' };
+  const C = (Array.isArray(b.comp) ? b.comp : []).slice(0, 20).map(c => ({ n: Math.round(+(c && c.n)), ta: numR(c && c.ta, -20, 60), hr: numR(c && c.hr, 0, 100),
+    vent: (Array.isArray(c && c.vent) ? c.vent : []).slice(0, 6).map(v => numR(v, 0, 100)).filter(v => v != null) })).filter(c => c.n >= 1 && c.n <= 20 && (c.ta != null || c.hr != null));
+  if (!C.length) return { error: 'sin_datos' };
+  const t = Date.now(), fecha = hoyMadrid(t), iso = new Date(t).toISOString(), writes = [];
+  for (const c of C) { const dev = `UC-${cab.toUpperCase()}-${c.n}`, v = { ...(c.ta != null ? { ta: c.ta } : {}), ...(c.hr != null ? { hr: c.hr } : {}), ...(c.vent.length ? { vent: c.vent } : {}) };
+    writes.push({ update: { name: docFS(`${dev}_${fecha}`), fields: { dev: aFS(dev), nodo: aFS('UC'), cab: aFS(cab), comp: aFS(c.n), fecha: aFS(fecha), ts: aFS(iso) } },
+      updateMask: { fieldPaths: ['dev', 'nodo', 'cab', 'comp', 'fecha', 'ts'] }, updateTransforms: [{ fieldPath: 'p', appendMissingElements: { values: [aFS({ t, v })] } }] }); }
+  writes.push({ update: { name: docFS('UC-ESTADO'), fields: { dev: aFS('UC-ESTADO'), nodo: aFS('UC'), cab: aFS(cab), ts: aFS(iso), n: aFS(C.length), avisado: aFS(false) } } });
+  await fs(env, 'POST', ':commit', { writes });
+  return { ok: true, n: C.length };
+}
+async function revisarClima(env) {
+  if (!env.AVISOS_URL || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;
+  let d; try { d = await fs(env, 'GET', '/abonado_lecturas/UC-ESTADO'); } catch (e) { return; }
+  const f = d.fields || {}, ts = Date.parse(deFS(f.ts) || ''); if (!ts || deFS(f.avisado)) return;
+  const h = +new Date().toLocaleString('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', hour12: false }); if (h < 8 || h >= 20) return;
+  const min = (Date.now() - ts) / 60000; if (min < 90) return;
+  await fetch(env.AVISOS_URL + '/interno', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
+    body: JSON.stringify({ para: [env.ADMIN_EMAIL], titulo: 'El lector del clima no manda', cuerpo: `Lleva ${Math.round(min / 60 * 10) / 10} h sin leer el controlador. Mira que el ordenador esté encendido con Edge abierto.`, tag: 'clima-lector', tab: 'estres' }) }).catch(() => {});
+  await fs(env, 'PATCH', '/abonado_lecturas/UC-ESTADO?updateMask.fieldPaths=avisado', { fields: { avisado: aFS(true) } });
+}
+
 /* ---------- aviso de aparatos que dejan de mandar ---------- */
 async function revisar(env) {
   if (!env.AVISOS_URL || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;
@@ -120,6 +151,10 @@ export default {
         const L = leerRaw(b.raw); if (!L.id) return json({ error: 'sin_id' }, 400);
         return json(await registrar(env, { ...L, rssi: typeof b.rssi === 'number' ? b.rssi : null, snr: typeof b.snr === 'number' ? b.snr : null, gw: corto(b.gw, 20) }));
       }
+      if (ruta === 'clima') {
+        if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
+        return json(await registrarClima(env, b));
+      }
       if (ruta === 'ttn') {
         if (!env.TTN_TOKEN || !igual(tk, env.TTN_TOKEN)) return json({ error: 'clave' }, 401);
         const u = b.uplink_message || {}, dev = corto((b.end_device_ids || {}).dev_eui, 20).toUpperCase(); if (!dev) return json({ ok: true, ignorado: true });
@@ -131,5 +166,5 @@ export default {
     } catch (e) { return json({ error: 'servidor', detalle: corto(e.message, 200) }, 500); }
     return json({ error: 'ruta' }, 404);
   },
-  async scheduled(event, env, ctx) { ctx.waitUntil(revisar(env).catch(() => {})); }
+  async scheduled(event, env, ctx) { ctx.waitUntil(Promise.all([revisar(env).catch(() => {}), revisarClima(env).catch(() => {})])); }
 };

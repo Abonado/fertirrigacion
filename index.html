@@ -961,7 +961,7 @@ const inSecCol=(cab,sid)=>{const i=(cabById(cab)||{sectores:[]}).sectores.findIn
 const inSid=(I,nave,pas)=>{if(nave==null)return null;const k=nave+':'+pas;if(pas!=null&&Object.prototype.hasOwnProperty.call(I.pas,k))return I.pas[k]||null;return I.naves[nave]||null};
 const inBj=(cab,id)=>{for(const s of (cabById(cab)||{sectores:[]}).sectores)for(const bj of s.bandejas)if(bj.id===id)return{s,bj};return null};
 /* Franjas de cada pasillo de una nave (para pintarlas del color de su sector) */
-function inFranjas(cab,nv){const[a,b,c,d]=nv.q||nv.p,{n,inv}=pasCfg(cab,nv),L=[];
+function inFranjas(cab,nv){const[a,b,c,d]=navQ(nv),{n,inv}=pasCfg(cab,nv),L=[];
   for(let k=1;k<=n;k++){const t0=k===1?0:(k-.5)/(n+1),t1=k===n?1:(k+.5)/(n+1);L.push({num:inv?n+1-k:k,p:[lerp(d,a,t0),lerp(c,b,t0),lerp(c,b,t1),lerp(d,a,t1)]})}return L}
 /* Zonas que se pueden tocar: las naves del plano o, sin plano, un rectángulo por sector */
 function inZonas(cab){const c=cabById(cab),M=MAPAS[cab],I=inCfg(cab);
@@ -2760,9 +2760,9 @@ async function migNavesGas(){try{if(!esAdminU()||!cabById('gas')||(st.cfg.mig||{
     c.mig={...(c.mig||{}),gasNaves:1}};
   if(st.dirtyCfg)return;f(st.cfg);f(st.savedCfg);await Store.setConfig(clone(st.savedCfg));if(['mapa','instal'].includes(st.tab))renderMain()}
   catch(e){console.warn('naves de Gasolinera',e)}}
-/* Gasolinera: 6 naves numeradas de abajo (1) arriba (6), trazadas sobre la foto aérea */
+/* Gasolinera: 6 naves trazadas sobre la foto aérea, la 1 arriba y la 6 abajo; los pasillos van en vertical (de arriba abajo de cada nave) */
 const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633],[275,775],[213,905]],Q=[[826,152],[757,290],[690,438],[622,582],[556,727],[432,852],[335,948]];
-  const naves=[];for(let i=0;i<6;i++){const k=5-i;naves.push({n:6-i,p:[P[k+1],Q[k+1],Q[k],P[k]]})}naves.sort((a,b)=>a.n-b.n);   // la 6 abajo y la 1 arriba
+  const naves=[];for(let i=0;i<6;i++){const k=5-i;naves.push({n:6-i,p:[P[k+1],Q[k+1],Q[k],P[k]],vert:true})}naves.sort((a,b)=>a.n-b.n);   // la 6 abajo y la 1 arriba
   return{titulo:'Gasolinera',finca:'Pinta Santos',vb:[150,20,930,985],naves,ang:24,nota:'6 naves · la 1 arriba y la 6 abajo',fondo(){let s='';
   // parcelas vecinas (solo contorno)
   s+=`<g fill="none" stroke="#cbbf9f" stroke-width="1.5" stroke-dasharray="6 5"><path d="M160 470L330 330L450 400L320 540Z"/><path d="M160 640L300 560L320 690L170 800Z"/><path d="M160 880L240 800L250 900L160 980Z"/></g>`;
@@ -2839,7 +2839,9 @@ const incVisible=i=>!restringido()||fincasVis().some(f=>f.cabezales.includes(i.c
 const incAbiertas=()=>(st.inc||[]).filter(i=>i.estado!=='resuelta'&&incVisible(i));
 /* Pasillos de cada nave: cuántos hay y desde qué lado se cuentan (lo ajusta el encargado o el administrador) */
 function pasCfg(cab,nv){const M=MAPAS[cab],c=((st.cfg.mapas||{})[cab]||{})[nv.n]||{};return{n:c.n>0?c.n:nv.pas||(M.rayas||12)-1,inv:!!M.pasInv!==!!c.inv,otro:!!c.inv}}
-function pasLineas(cab,nv){const[a,b,c,d]=nv.q||nv.p,{n,inv}=pasCfg(cab,nv),L=[];for(let k=1;k<=n;k++){const t=k/(n+1),p1=lerp(d,a,t),p2=lerp(c,b,t);L.push({num:inv?n+1-k:k,p1,p2})}return L}
+/* Lados de la nave que dan la dirección de los pasillos: vert = pasillos de arriba abajo (cruzan la nave a lo corto) */
+const navQ=nv=>{const q=nv.q||nv.p;return nv.vert?[q[1],q[2],q[3],q[0]]:q};
+function pasLineas(cab,nv){const[a,b,c,d]=navQ(nv),{n,inv}=pasCfg(cab,nv),L=[];for(let k=1;k<=n;k++){const t=k/(n+1),p1=lerp(d,a,t),p2=lerp(c,b,t);L.push({num:inv?n+1-k:k,p1,p2})}return L}
 function pasDe(cab,nv,pt){let best=null,bd=1e9;for(const l of pasLineas(cab,nv)){const[x1,y1]=l.p1,[x2,y2]=l.p2,dx=x2-x1,dy=y2-y1,t=Math.max(0,Math.min(1,((pt[0]-x1)*dx+(pt[1]-y1)*dy)/(dx*dx+dy*dy))),q=[x1+t*dx,y1+t*dy],dd=Math.hypot(pt[0]-q[0],pt[1]-q[1]);if(dd<bd){bd=dd;best=l.num}}return best}
 const lugar=i=>`Nave ${i.nave}${i.pasillo?' · pasillo '+i.pasillo:''}`;
 function dentro(pt,poly){let c=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const[xi,yi]=poly[i],[xj,yj]=poly[j];if(((yi>pt[1])!==(yj>pt[1]))&&(pt[0]<(xj-xi)*(pt[1]-yi)/(yj-yi)+xi))c=!c}return c}
@@ -5859,7 +5861,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v151';
+window.APP_V='abonado-v152';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
