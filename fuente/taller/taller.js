@@ -795,10 +795,10 @@ const CSS=`.tl-tabs{display:flex;gap:6px;flex-wrap:wrap}.tl-avisos{display:grid;
 .tl-nom .inp{width:100%}#tl_nom.wide{width:100%;min-width:0}.tl-ck{display:grid;gap:6px}.tl-ck label{display:flex;gap:8px;align-items:flex-start;text-transform:none}.tl-ck input{margin-top:3px;width:18px;height:18px}.tl-ck label.hecho span{text-decoration:line-through;color:var(--muted)}
 .tl-lst{display:grid;gap:6px}.tl-lst .r{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-transform:none}
 .tl-q{display:grid;gap:6px}.tl-q .row{flex-wrap:wrap}.tl-dim{font-size:13px;color:var(--muted);text-transform:none}`;
-function estilos(){if(document.getElementById('tl_css'))return;const e=document.createElement('style');e.id='tl_css';e.textContent=CSS+CSS_EN+CSS_PL;document.head.appendChild(e)}
+function estilos(){if(document.getElementById('tl_css'))return;const e=document.createElement('style');e.id='tl_css';e.textContent=CSS+CSS_EN+CSS_PL+CSS_AS;document.head.appendChild(e)}
 
 function vAsistente(s){const q=s.q,listo=PREG.every(p=>q[p.k]),lista=cargar();if(!NB.ok)sincroniza();
-  return `<section class="card"><div><h3>Taller de sensores</h3><div class="sub">Dime qué quieres medir y te doy las piezas, el esquema de cables, la caja para imprimir en 3D y la ficha de montaje. Solo lo ves tú.</div></div><div class="row"><button class="btn" data-tab="catalogo">Ver todo en el catálogo</button></div>
+  return `${vHablar()}<section class="card"><div><h3>Taller de sensores</h3><div class="sub">Dime qué quieres medir y te doy las piezas, el esquema de cables, la caja para imprimir en 3D y la ficha de montaje. Solo lo ves tú.</div></div><div class="row"><button class="btn" data-tab="catalogo">Ver todo en el catálogo</button></div>
     ${PREG.map(p=>`<div class="tl-q"><b>${p.t}</b><div class="row">${p.ops.map(([k,t])=>`<button class="chip" data-tl="q" data-k="${p.k}" data-v="${k}" aria-pressed="${q[p.k]===k}">${t}</button>`).join('')}</div></div>`).join('')}
     <div class="row"><button class="btn pri" data-tl="crear" ${listo?'':'disabled'}>Diseñar el sensor</button></div></section>
   ${lista.length?`<section class="card"><div><h3>Mis diseños</h3><div class="sub">${NB.ok?'Guardados en la nube: los ves en cualquier móvil y en el ordenador':'Guardados en este móvil · conectando con la nube…'}</div></div><div class="tl-lst">${lista.map(d=>`<div class="r"><span><b>${e_(d.nombre)}</b><br><small>${e_(NODOS[d.nodo].n)}</small></span><span class="row"><button class="btn" data-tl="abrir" data-id="${d.id}">Abrir</button><button class="btn" data-tl="borrar" data-id="${d.id}">Borrar</button></span></div>`).join('')}</div></section>`:''}
@@ -857,13 +857,120 @@ function vFicha(d){const F=FICHA[d.nodo],cod=COD[d.nodo];
 const codigo=d=>(COD[d.nodo]||'').replace(/\{(\w+)\}/g,(m,k)=>d.pines[k]!=null?d.pines[k]:m);
 
 function vDiseno(s){const d=s.d,N=NODOS[d.nodo],err=hayError(d);
-  const tabs=[['piezas','Piezas'],['esquema','Esquema'+(err?' ✗':'')],['caja','Caja 3D'],['energia','Batería'],['placa','Instalar y probar'],['ficha','Ficha']];
-  const cuerpo={piezas:vPiezas,esquema:vEsquema,caja:x=>vCaja(x,s),energia:vEnergia,placa:vPlaca,ficha:vFicha}[s.v](d);
+  const tabs=[...(d.spec?[['spec','Especificación']]:[]),['piezas','Piezas'],['esquema','Esquema'+(err?' ✗':'')],['caja','Caja 3D'],['energia','Batería'],['placa','Instalar y probar'],['ficha','Ficha']];
+  if(s.v==='spec'&&!d.spec)s.v='piezas';
+  const cuerpo={spec:vSpec,piezas:vPiezas,esquema:vEsquema,caja:x=>vCaja(x,s),energia:vEnergia,placa:vPlaca,ficha:vFicha}[s.v](d);
   return `<section class="card"><div class="row" style="justify-content:space-between"><button class="btn" data-tl="volver">‹ Mis diseños</button><span class="row"><button class="btn" data-tlinst="${e_(d.id)}">Lo he instalado</button><button class="btn" data-tl="guardar">Guardar</button></span></div>
     <div class="field tl-nom"><label for="tl_nom">Nombre del diseño</label><div class="inp"><input id="tl_nom" class="wide" data-tln="1" value="${e_(d.nombre)}" style="text-transform:none"></div></div>
-    <div class="sub">${e_(N.n)} · ${d.energia==='solar'?'batería y placa solar':'enchufe'} · ${d.lugar==='fuera'?'al aire libre':'dentro del invernadero'}</div>
+    <div class="sub">${e_(N.n)}${d.unidades>1?' · '+d.unidades+' unidades':''} · ${d.energia==='solar'?'batería y placa solar':'enchufe'} · ${d.lugar==='fuera'?'al aire libre':'dentro del invernadero'}</div>
     <div class="tl-tabs">${tabs.map(([k,t])=>`<button class="chip" data-tl="v" data-v="${k}" aria-pressed="${s.v===k}">${t}</button>`).join('')}</div></section>
   <section class="card">${cuerpo}</section>`}
+
+/* ---------- Diseñar hablando ----------
+   Un asistente que pregunta como un ingeniero (qué medir y para qué, dónde, distancia, corriente, cada cuánto) y, cuando lo tiene claro,
+   escribe la especificación del prototipo y monta los diseños con los nodos del Taller. Solo elige nodos que existen: lo que no esté en el
+   catálogo lo dice en «Lo que falta». La conversación se recuerda en este móvil hasta que se crea el diseño o se empieza de nuevo. */
+const LSA='abono.tlasis';
+const asCargar=()=>{try{const a=JSON.parse(localStorage.getItem(LSA)||'null');return a&&Array.isArray(a.msgs)?a:{msgs:[]}}catch(e){return {msgs:[]}}};
+const asGuardar=a=>{try{localStorage.setItem(LSA,JSON.stringify({msgs:a.msgs.slice(-40),res:a.res||null}))}catch(e){}};
+const AS=()=>{const s=S();if(!s.as)s.as={...asCargar(),busy:false,err:'',sel:{}};return s.as};
+const IDEAS=['Un sensor de humedad del suelo para la finca','Saber el nivel del depósito desde el móvil','Que me avise si la bomba se para','La temperatura de la hoja en el invernadero'];
+const conSol=n=>NODOS[n].piezas.includes('panel');
+const SPEC=[['objetivo','Objetivo'],['alcance','Alcance de la primera versión'],['arquitectura','Arquitectura funcional'],['parametros','Parámetros'],['interfaz','Interfaz con la aplicación'],
+  ['comportamiento','Comportamiento de la aplicación'],['ambiente','Requisitos ambientales'],['validacion','Criterios de validación'],['riesgos','Riesgos y dudas'],['supuestos','Lo que he supuesto'],['fuera','Fuera de alcance en esta versión']];
+T.promptAsis=msgs=>`Eres el ingeniero de electrónica del Taller de sensores de la app Agro FLY (fertirrigación). Hablas con un agricultor de Murcia (invernaderos de tomate en sustrato de coco y también parcelas al aire libre) que quiere montar su propio sensor. Tu trabajo: entender qué necesita y diseñárselo con los nodos que el Taller ya sabe montar.
+
+CÓMO FUNCIONA EL SISTEMA (no lo cambies):
+- Todos los nodos llevan una placa Heltec WiFi LoRa 32 V3 (ESP32-S3 con radio LoRa de 868 MHz y pantalla).
+- Los nodos mandan por radio a una PASARELA (nodo P), enchufada y con WiFi. La pasarela lo sube a un servidor y el dato aparece en la app (Taller → Mis aparatos) en el móvil y en el ordenador: gráficas, batería y aviso si deja de mandar. Nada se conecta al PC por cable.
+- Alcance orientativo de la radio: 1–3 km en campo abierto con vista directa; 200–800 m entre invernaderos, naves o arbolado. Si queda más lejos: pasarela más cerca o antena exterior en alto.
+- Los nodos con batería llevan una pila 18650 de 3000 mAh y una placa solar de 2 W. Mandan cada 10 min por defecto (se puede de 1 a 60 min).
+- Caja impresa en 3D (PETG o ASA) con junta y prensaestopas.
+
+CATÁLOGO DE NODOS (usa SOLO estos códigos):
+${Object.entries(NODOS).map(([k,N])=>`- ${k}: ${N.n}. Piezas: ${N.piezas.map(p=>PIEZAS[p].n).join('; ')}. ${conSol(k)?'Batería y placa solar.':'Enchufado por USB (necesita corriente a menos de 3 m).'}${N.borrador?' BORRADOR: aún sin código; evítalo si otro sirve.':''}`).join('\n')}
+
+CONVERSACIÓN HASTA AHORA:
+${msgs.map(m=>(m.r==='yo'?'Agricultor: ':'Tú: ')+m.t+(m.preg&&m.preg.length?' ['+m.preg.map(p=>p.t+' ('+p.ops.join(' / ')+')').join(' · ')+']':'')).join('\n')}
+
+INSTRUCCIONES:
+1. Español de España, tuteo, frases cortas y claras. Nada de jerga si no hace falta.
+2. Lo que necesitas saber: qué quiere medir y PARA QUÉ decisión; dónde va (invernadero o aire libre; suelo o sustrato y a qué profundidad, si aplica; cultivo); a qué distancia queda la pasarela o la caseta con WiFi; si hay enchufe a menos de 3 m; cada cuánto quiere el dato; cuántos puntos; si ya tiene pasarela.
+3. Como mucho 2 preguntas por turno, cada una con 2 a 5 opciones cortas para pulsar. No preguntes lo que ya ha dicho. Lo que se pueda suponer con sentido, supónlo y apúntalo en «supuestos».
+4. Cuando lo tengas claro (normalmente 2–4 turnos) o te pida que lo hagas ya, responde con listo:true.
+5. Si lo que pide no lo cubre ningún nodo, usa el más cercano solo si de verdad sirve y explica en «falta» qué pieza o nodo haría falta. Si no sirve ninguno, «nodos» vacío.
+6. Si no tiene pasarela o no lo ha dicho, añade un nodo P.
+7. Sé sincero: si la idea tiene un problema (alcance, poco sol, precisión del sensor, sustrato salino que engaña al capacitivo, etc.), dilo en «riesgos».
+
+Responde SOLO con JSON, de una de estas dos formas:
+{"listo":false,"mensaje":"frase corta","preguntas":[{"t":"pregunta","ops":["opción","opción"]}]}
+{"listo":true,"mensaje":"frase corta","nodos":[{"nodo":"N2","nombre":"nombre corto del aparato","min":10,"lugar":"inv|fuera","unidades":1}],"spec":{"objetivo":"un párrafo","alcance":["…"],"arquitectura":["…"],"interfaz":["…"],"comportamiento":["…"],"ambiente":["…"],"validacion":["…"],"fuera":["…"],"riesgos":["…"],"supuestos":["…"]},"falta":""}`;
+const lst=x=>(Array.isArray(x)?x:x?[x]:[]).map(v=>String(v).trim()).filter(Boolean).slice(0,12);
+T.asNorm=r=>{r=r&&typeof r==='object'?r:{};const preg=(Array.isArray(r.preguntas)?r.preguntas:[]).map(p=>({t:String(p&&p.t||'').trim(),ops:lst(p&&p.ops).slice(0,6)})).filter(p=>p.t).slice(0,3);
+  const out={mensaje:String(r.mensaje||'').trim(),preg,listo:!!r.listo};if(!out.listo)return out;
+  const MINS=[1,5,10,15,30,60];
+  out.nodos=(Array.isArray(r.nodos)?r.nodos:[]).filter(x=>x&&NODOS[x.nodo]).map(x=>{const m=+x.min||10;return {nodo:x.nodo,nombre:String(x.nombre||NODOS[x.nodo].corto).trim().slice(0,60),
+    min:MINS.reduce((a,b)=>Math.abs(b-m)<Math.abs(a-m)?b:a),lugar:x.lugar==='fuera'?'fuera':'inv',unidades:Math.max(1,Math.min(50,Math.round(+x.unidades||1)))}}).slice(0,6);
+  const sp=r.spec&&typeof r.spec==='object'?r.spec:{};out.spec={objetivo:String(sp.objetivo||'').trim()};for(const [k] of SPEC)if(k!=='objetivo'&&k!=='parametros')out.spec[k]=lst(sp[k]);
+  out.falta=String(r.falta||'').trim();return out};
+const dEn=x=>({nodo:x.nodo,lugar:x.lugar,energia:conSol(x.nodo)?'solar':'enchufe',en:{min:x.min}});
+function autonomia(x){const E=T.energia(dEn(x));if(!conSol(x.nodo))return x.nodo==='P'?'Enchufada siempre':'Enchufado';const ok=E.peor>=E.dia*1.5;return `${ok?'Aguanta todo el año':'Justo en invierno'} · ${Math.round(E.dias)} días sin sol`}
+/* La especificación: lo que ha escrito la IA más lo que sale del propio Taller (piezas, cadena de datos, batería), que no se inventa */
+function specHTML(sp,nodos){const ul=a=>a&&a.length?`<ul>${a.map(v=>`<li>${e_(v)}</li>`).join('')}</ul>`:'';const sens=nodos.filter(x=>x.nodo!=='P'),hayP=nodos.some(x=>x.nodo==='P');
+  const fijo={arquitectura:[`${sens.map(x=>NODOS[x.nodo].corto).join(' + ')||'Nodo'} con placa Heltec V3 → radio LoRa 868 MHz → pasarela con WiFi${hayP?' (incluida)':' (la que ya tienes)'} → servidor puente → app.`],
+    interfaz:['Los datos salen en Taller → Mis aparatos: última lectura, gráfica, batería y aviso al móvil si deja de mandar. Para enlazarlo: «Lo he instalado» y el número de la placa.'],
+    ambiente:['Caja impresa en PETG o ASA (no PLA al sol), junta de goma en la tapa y prensaestopas hacia abajo.']};
+  let h=sp.objetivo?`<h4>Objetivo</h4><p>${e_(sp.objetivo)}</p>`:'';
+  for(const [k,t] of SPEC){if(k==='objetivo')continue;
+    if(k==='parametros'){h+=`<h4>${t}</h4><table class="tl-spt"><tr><th>Aparato</th><th>Nodo</th><th>Uds.</th><th>Corriente</th><th>Dato cada</th></tr>${nodos.map(x=>`<tr><td>${e_(x.nombre)}</td><td>${e_(NODOS[x.nodo].corto)}</td><td>${x.unidades}</td><td>${e_(autonomia(x))}</td><td>${x.nodo==='P'?'—':x.min+' min'}</td></tr>`).join('')}</table>
+      ${nodos.map(x=>`<div class="tl-dim"><b>${e_(NODOS[x.nodo].corto)}:</b> ${NODOS[x.nodo].piezas.map(p=>e_(PIEZAS[p].n)).join(' · ')}</div>`).join('')}`;continue}
+    const a=[...(fijo[k]||[]),...(sp[k]||[])];if(a.length)h+=`<h4>${t}</h4>${k==='riesgos'?`<div class="tl-av warn">${ul(a)}</div>`:ul(a)}`}
+  return h}
+const specTexto=(sp,nodos)=>{const d=document.createElement('div');d.innerHTML=specHTML(sp,nodos);return [...d.querySelectorAll('h4,p,li,tr,div.tl-dim')].map(n=>n.tagName==='H4'?'\n'+n.textContent.toUpperCase():n.tagName==='LI'?'- '+n.textContent:n.tagName==='TR'?[...n.children].map(c=>c.textContent).join(' | '):n.textContent).join('\n').trim()};
+function vHablar(){const a=AS(),ia=typeof iaModo==='function'&&!!iaModo(),ult=a.msgs[a.msgs.length-1],preg=!a.busy&&!a.res&&ult&&ult.r==='ia'?ult.preg||[]:[];
+  let h=`<section class="card tl-as"><div><h3>Diseña hablando</h3><div class="sub">Cuéntame qué quieres medir y para qué. Te pregunto lo que haga falta y te monto el diseño completo: especificación, piezas, cables, caja, batería y código.</div></div>`;
+  if(!ia)return h+`<div class="note" style="text-transform:none">Para diseñar hablando hace falta la IA: actívala en Ajustes. Mientras tanto puedes usar las preguntas rápidas de abajo.</div></section>`;
+  if(a.msgs.length)h+=`<div class="tl-chat">${a.msgs.map(m=>`<div class="tl-msg ${m.r==='yo'?'yo':'ia'}">${e_(m.t)}</div>`).join('')}${a.busy?'<div class="tl-msg ia tl-pens">Pensando…</div>':''}</div>`;
+  else h+=`<div class="tl-q"><b>Por ejemplo</b><div class="row">${IDEAS.map(t=>`<button class="chip" data-tlas="di" data-t="${e_(t)}">${e_(t)}</button>`).join('')}</div></div>`;
+  if(a.err)h+=`<div class="tl-av bad">${e_(a.err)}</div>`;
+  if(preg.length)h+=preg.map((p,i)=>`<div class="tl-q"><b>${e_(p.t)}</b><div class="row">${p.ops.map(o=>`<button class="chip" data-tlas="op" data-i="${i}" data-t="${e_(o)}" aria-pressed="${a.sel[i]===o}">${e_(o)}</button>`).join('')}</div></div>`).join('');
+  if(a.res){const R=a.res;h+=`<div class="tl-spec"><h3>Especificación del prototipo</h3>${specHTML(R.spec,R.nodos)}${R.falta?`<h4>Lo que falta en el Taller</h4><div class="tl-av warn">${e_(R.falta)}</div>`:''}</div>
+    <div class="row">${R.nodos.length?`<button class="btn pri" data-tlas="crear">Crear ${R.nodos.length>1?'los '+R.nodos.length+' diseños':'el diseño'}</button>`:''}<button class="btn" data-tlas="copiar">Copiar especificación</button><button class="btn" data-tlas="seguir">Cambiar algo</button></div>`}
+  if(!a.res||a.seguir)h+=`<div class="field"><label for="tl_asin">${a.msgs.length?'Tu respuesta (o pulsa las opciones)':'Qué quieres montar'}</label><div class="inp"><textarea id="tl_asin" rows="2" style="text-transform:none;width:100%" placeholder="${a.msgs.length?'Escribe aquí si quieres matizar…':'Ej.: un sensor de humedad del suelo para una parcela a 400 m de la caseta'}" ${a.busy?'disabled':''}></textarea></div></div>`;
+  h+=`<div class="row">${!a.res||a.seguir?`<button class="btn ${a.res?'':'pri'}" data-tlas="env" ${a.busy?'disabled':''}>${preg.length>1?'Enviar respuestas':'Enviar'}</button>`:''}${a.msgs.length&&!a.busy?`${a.res?'':'<button class="btn" data-tlas="hazlo">Hazlo ya con lo que sabes</button>'}<button class="btn" data-tlas="reset">Empezar de nuevo</button>`:''}</div></section>`;
+  return h}
+async function asEnviar(t){const a=AS();t=String(t||'').trim();if(!t||a.busy)return;a.msgs.push({r:'yo',t});a.sel={};a.err='';a.busy=true;a.seguir=false;if(a.res)a.res=null;asGuardar(a);repinta();
+  try{const r=T.asNorm(await iaFotoJson(T.promptAsis(a.msgs),[]));a.msgs.push({r:'ia',t:r.mensaje||(r.listo?'Hecho: aquí tienes la especificación.':'Necesito saber un poco más.'),preg:r.preg});if(r.listo)a.res={nodos:r.nodos,spec:r.spec,falta:r.falta}}
+  catch(e){a.msgs.pop();a.err=e&&e.code==='sin_ia'?'La IA no está activada: actívala en Ajustes.':'No he podido contestar. Revisa la conexión y prueba otra vez.';a.borr=t}
+  a.busy=false;asGuardar(a);repinta();if(a.borr){const i=document.getElementById('tl_asin');if(i)i.value=a.borr;a.borr=''}
+  const c=document.querySelector('.tl-as');if(c&&c.scrollIntoView)c.scrollIntoView({block:'end',behavior:'smooth'})}
+T.asEnviar=asEnviar;
+function asCrear(){const s=S(),a=AS(),R=a.res;if(!R||!R.nodos.length)return;const g='g'+Date.now().toString(36),spec={...R.spec,nodos:R.nodos,falta:R.falta,grupo:g,charla:a.msgs.map(m=>({r:m.r,t:m.t}))};
+  const ds=R.nodos.map((x,i)=>{const d=nuevo({nodo:x.nodo,energia:conSol(x.nodo)?'solar':'enchufe',lugar:x.lugar});d.id+=i;d.nombre=x.nombre;d.en={...EN0,min:x.min};d.unidades=x.unidades;d.spec=spec;return d});
+  Promise.all(ds.map(guardar)).then(r=>toast(r.every(Boolean)?(ds.length>1?ds.length+' diseños guardados en la nube':'Diseño guardado en la nube'):'Guardado en este móvil: se subirá a la nube al volver la conexión'));
+  s.d=ds.find(d=>d.nodo!=='P')||ds[0];s.v='spec';s.m=null;s.as={msgs:[],busy:false,err:'',sel:{}};asGuardar(s.as);repinta();window.scrollTo&&window.scrollTo(0,0)}
+function vSpec(d){const sp=d.spec,otros=cargar().filter(x=>x.id!==d.id&&x.spec&&x.spec.grupo===sp.grupo);
+  return `<div class="tl-spec"><h3>Especificación del prototipo</h3>${specHTML(sp,sp.nodos||[])}${sp.falta?`<h4>Lo que falta en el Taller</h4><div class="tl-av warn">${e_(sp.falta)}</div>`:''}
+    ${otros.length?`<h4>Del mismo proyecto</h4><div class="row">${otros.map(x=>`<button class="btn" data-tl="abrir" data-id="${e_(x.id)}">${e_(x.nombre)}</button>`).join('')}</div>`:''}
+    ${sp.charla&&sp.charla.length?`<details><summary>La conversación</summary><div class="tl-chat">${sp.charla.map(m=>`<div class="tl-msg ${m.r==='yo'?'yo':'ia'}">${e_(m.t)}</div>`).join('')}</div></details>`:''}</div>
+    <div class="row"><button class="btn" data-tlas="copiard">Copiar especificación</button></div>`}
+T.specTexto=specTexto;
+document.addEventListener('click',async e=>{if(st.tab!=='taller')return;const b=e.target.closest&&e.target.closest('[data-tlas]');if(!b)return;const a=AS(),k=b.dataset.tlas,inp=()=>{const i=document.getElementById('tl_asin');return i?i.value.trim():''};
+  if(k==='di')asEnviar(b.dataset.t);
+  else if(k==='op'){const ult=a.msgs[a.msgs.length-1],P=(ult&&ult.preg)||[],i=+b.dataset.i;a.sel[i]=b.dataset.t;
+    if(P.length===1||P.every((_,j)=>a.sel[j]))asEnviar(P.map((p,j)=>P.length>1?p.t+' → '+a.sel[j]:a.sel[j]).join('. ')+(inp()?'. '+inp():''));else repinta()}
+  else if(k==='env'){const ult=a.msgs[a.msgs.length-1],P=(ult&&ult.preg)||[],sel=P.map((p,j)=>a.sel[j]?p.t+' → '+a.sel[j]:'').filter(Boolean);const t=[...sel,inp()].filter(Boolean).join('. ');if(!t){toast('Escribe algo o pulsa una opción');return}asEnviar(t)}
+  else if(k==='hazlo')asEnviar('Con lo que sabes, házmelo ya: supón lo que falte y dímelo.');
+  else if(k==='reset'){if(a.msgs.length>2&&!confirm('¿Borrar esta conversación y empezar de nuevo?'))return;S().as={msgs:[],busy:false,err:'',sel:{}};asGuardar(S().as);repinta()}
+  else if(k==='seguir'){a.seguir=true;repinta();const i=document.getElementById('tl_asin');if(i)i.focus()}
+  else if(k==='crear')asCrear();
+  else if(k==='copiar'||k==='copiard'){const sp=k==='copiar'?a.res&&a.res.spec:S().d&&S().d.spec,nd=k==='copiar'?a.res&&a.res.nodos:sp&&sp.nodos;if(!sp)return;
+    try{await navigator.clipboard.writeText('ESPECIFICACIÓN DEL PROTOTIPO\n'+specTexto(sp,nd||[]));toast('Especificación copiada')}catch(_){toast('No se ha podido copiar')}}});
+document.addEventListener('keydown',e=>{if(st.tab!=='taller'||e.key!=='Enter'||e.shiftKey||!(e.target&&e.target.id==='tl_asin'))return;e.preventDefault();const b=document.querySelector('[data-tlas="env"]');if(b)b.click()});
+const CSS_AS=`.tl-chat{display:grid;gap:6px;margin:4px 0}.tl-msg{max-width:88%;padding:8px 11px;border-radius:12px;font-size:14px;line-height:1.4;text-transform:none;white-space:pre-wrap}
+.tl-msg.ia{justify-self:start;background:var(--surface-2,var(--line));border-bottom-left-radius:4px}.tl-msg.yo{justify-self:end;background:var(--ok-bg);color:var(--ink);border-bottom-right-radius:4px}
+.tl-pens{opacity:.7;font-style:italic}.tl-spec{display:grid;gap:6px;text-transform:none;border-top:1px solid var(--line);padding-top:10px}.tl-spec h3,.tl-spec h4{text-transform:uppercase}.tl-spec h4{margin:8px 0 0;font-size:14.5px}.tl-spec p{margin:0}.tl-spec ul{margin:0;padding-left:20px}.tl-spec li{margin:2px 0}
+.tl-spec .tl-av ul{padding-left:16px}.tl-spt{width:100%;border-collapse:collapse;font-size:13px}.tl-spt th,.tl-spt td{border-bottom:1px solid var(--line);padding:5px 4px;text-align:left;vertical-align:top}.tl-spec details summary{cursor:pointer;font-weight:600;margin-top:6px}`;
 
 /* Desde el catálogo: abre directamente el diseño de un nodo */
 T.crearNodo=n=>{if(!NODOS[n])return;const s=S();s.d=nuevo({nodo:n,energia:NODOS[n].solar?'solar':'enchufe',lugar:'inv'});s.v='piezas';s.m=null};
@@ -878,7 +985,7 @@ function bajar(blob,nombre){const a=document.createElement('a');a.href=URL.creat
 const archivo=d=>d.nombre.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'').toLowerCase()||'sensor';
 function imprimir(d){const N=NODOS[d.nodo],F=FICHA[d.nodo],w=window.open('','_blank');if(!w){toast('Deja que la app abra ventanas para imprimir');return}
   w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>${e_(d.nombre)}</title><style>body{font:14px/1.5 system-ui,sans-serif;margin:24px;color:#15222c}h1{font-size:20px}h2{font-size:16px;margin-top:20px}li{margin:4px 0}.ck{list-style:none;padding:0}.ck li:before{content:"☐ ";font-size:16px}pre{font-size:10.5px;white-space:pre-wrap;border:1px solid #ccc;padding:8px}svg{max-width:100%;height:auto}</style></head><body>
-    <h1>${e_(d.nombre)}</h1><div>${e_(N.n)} · ${new Date().toLocaleDateString('es-ES')}</div>
+    <h1>${e_(d.nombre)}</h1><div>${e_(N.n)} · ${new Date().toLocaleDateString('es-ES')}</div>${d.spec?`<h2>Especificación del prototipo</h2>${specHTML(d.spec,d.spec.nodos||[])}`:''}
     <h2>Piezas</h2><ul>${N.piezas.map(p=>`<li>${e_(PIEZAS[p].n)}</li>`).join('')}${N.glands.map(k=>`<li>Prensaestopas ${PIEZAS[k].cable}</li>`).join('')}<li>Cordón de junta Ø 2 mm y 4 tornillos M3 × 12</li></ul>
     <h2>Esquema</h2>${esquema(d)}<ul>${T.validar(d).map(([k,t])=>`<li>${k==='bad'?'✗':'!'} ${e_(t)}</li>`).join('')}</ul>
     <h2>Montaje</h2><ul class="ck">${F.pasos.map(p=>`<li>${e_(p)}</li>`).join('')}</ul><h2>Uso</h2><ul>${F.uso.map(u=>`<li>${e_(u)}</li>`).join('')}</ul>
@@ -888,7 +995,7 @@ const repinta=()=>renderMain();
 document.addEventListener('click',async e=>{if(st.tab!=='taller')return;const b=e.target.closest&&e.target.closest('[data-tl]');if(!b)return;const s=S(),a=b.dataset.tl;
   if(a==='q'){s.q[b.dataset.k]=b.dataset.v;if(b.dataset.k==='medir'&&!s.q.energia)s.q.energia=(NODOS[nodoDe({medir:b.dataset.v})]||{}).solar?'solar':'enchufe';repinta()}
   else if(a==='crear'){s.d=nuevo(s.q);s.v='piezas';s.m=null;repinta()}
-  else if(a==='abrir'){const d=cargar().find(x=>x.id===b.dataset.id);if(d){s.d={...d,caja:{...CAJA0,...d.caja},hecho:d.hecho||[]};s.v='piezas';s.m=null;repinta()}}
+  else if(a==='abrir'){const d=cargar().find(x=>x.id===b.dataset.id);if(d){s.d={...d,caja:{...CAJA0,...d.caja},hecho:d.hecho||[]};s.v=d.spec?'spec':'piezas';s.m=null;repinta()}}
   else if(a==='borrar'){if(!confirm('¿Borrar este diseño?'))return;const id=b.dataset.id;guardarTodo(cargar().filter(x=>x.id!==id));repinta();if(typeof Store!=='undefined'&&Store.delCol)Store.delCol(COL,id).catch(()=>toast('Borrado en este móvil; en la nube se borrará al volver la conexión'))}
   else if(a==='volver'){s.d=null;s.m=null;repinta()}
   else if(a==='guardar'){guardar(s.d).then(ok=>toast(ok?'Diseño guardado en la nube':'Guardado en este móvil: se subirá a la nube al volver la conexión'))}
