@@ -50,5 +50,8 @@ async def main():
         await pg.screenshot(path='pruebas/salida/t123-lectura.png', full_page=True)
         await pg.evaluate("saveReg()"); await pg.wait_for_timeout(1500)
         g = await pg.evaluate("Store.getReg(st.fecha)"); assert g['vac'][i] == 40 and g['hA'][i] == 130 and g['hT'][i] == 'hora' and g['cm'][i] == 83
+        # todos los bidones pasan a «se llena cuando hace falta» (una sola vez)
+        await pg.evaluate("(async()=>{for(const c of [st.cfg,st.savedCfg]){for(const b of c.bidones)b.modo='diario';c.mig={...(c.mig||{}),modoManual:0}}await migModoManual()})()"); await pg.wait_for_timeout(800)
+        assert await pg.evaluate("st.cfg.bidones.every(b=>modoDep(b)==='manual')&&st.savedCfg.mig.modoManual===1")
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

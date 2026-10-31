@@ -3067,6 +3067,9 @@ document.addEventListener('click',e=>{if(st.tab!=='aparatos')return;const b=e.ta
 /* Gasolinera tenía las naves numeradas al revés en el plano (la 1 abajo). Lo apuntado tocando el plano guardó ese número:
    se pasa a la numeración buena (nave n → 7 − n) una sola vez, cuando entra un administrador. Cada incidencia queda marcada
    (navMig) para no cambiarla dos veces aunque se corte a medias. Las tareas no se tocan: su nave se elegía de una lista. */
+/* Todos los bidones de la finca se llenan cuando hace falta (no a diario): se pasan una sola vez a ese modo cuando entra un administrador */
+async function migModoManual(){try{if(!esAdminU()||(st.cfg.mig||{}).modoManual||st.dirtyCfg)return;const f=c=>{for(const b of c.bidones||[])if(b.modo&&b.modo!=='manual')b.modo='manual';c.mig={...(c.mig||{}),modoManual:1}};
+  f(st.cfg);f(st.savedCfg);await Store.setConfig(clone(st.savedCfg));if(['cuentas','cmbid','rellenar','hoy'].includes(st.tab))renderMain()}catch(e){console.warn('modo de los bidones',e)}}
 async function migNavesGas(){try{if(!esAdminU()||!cabById('gas')||(st.cfg.mig||{}).gasNaves||st.dirtyCfg)return;
   const l=await Store.listCol('incidencias',0),hechos={};for(const i of l)if(i.cab==='gas'&&!i.navMig&&i.nave>=1&&i.nave<=6){await Store.updCol('incidencias',i.id,{nave:7-i.nave,navMig:1});hechos[i.id]=7-i.nave}
   const enMem=()=>{for(const x of st.inc||[])if(hechos[x.id]!=null&&!x.navMig){x.nave=hechos[x.id];x.navMig=1}};enMem();setTimeout(enMem,4000);
@@ -3303,7 +3306,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-ed]');if(!
   else if(a==='add-dep'){st.edNuevoDep={cab:id,nombre:'Depósito '};renderMain();return}
   else if(a==='add-dep-no'){st.edNuevoDep=null;renderMain();return}
   else if(a==='add-dep-ok'){const n=val('#ed_dn'),p=val('#ed_dp'),cap=num(val('#ed_dc')),l=num(val('#ed_dl'));if(!n||n==='Depósito')return toast('Escribe el nombre del depósito');if(!(cap>0)||!(l>0))return toast('Pon la capacidad y los litros por cm');
-    cfg.bidones.push({id:uid('d'),nombre:n,cabezales:[id],lpcm:l,capacidad:cap,principal:p,kgPrincipal:null,venturis:1,reparto:true,cmHabitual:null,modo:'diario',productos:[{p,dosis:0}]});st.edNuevoDep=null}
+    cfg.bidones.push({id:uid('d'),nombre:n,cabezales:[id],lpcm:l,capacidad:cap,principal:p,kgPrincipal:null,venturis:1,reparto:true,cmHabitual:null,modo:'manual',productos:[{p,dosis:0}]});st.edNuevoDep=null}
   else if(a==='del-prod'){const d=bid(id);d.productos=d.productos.filter(x=>x.p!==b.dataset.p);if(d.principal===b.dataset.p)d.principal=d.productos[0].p}
   else if(a==='add-alm'){const n=val('#ed_na');if(!n)return toast('Escribe el nombre del almacén');cfg.almacenes=[...almacenes(),{id:uid('a'),nombre:n,cabezales:[]}]}
   else if(a==='add-prod'){const n=val('#ed_np');if(!n)return toast('Escribe el nombre del producto');cfg.productos[uid('p')]={n,liq:!!($('#ed_npl')||{}).checked,ce:0,un:0}}
@@ -6171,7 +6174,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c);splashLogo()}}catch(e){}
-  st.ready=true;loadFich();migNavesGas();if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
+  st.ready=true;loadFich();migNavesGas().then(migModoManual);if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}
   const ap=/[#&]ap=([\w-]+)/.exec(location.hash);if(ap){history.replaceState(null,'',location.pathname+location.search);if(esAdminU()){cerrarSplash();st.tab='aparatos';st.apSel=ap[1];renderAll()}else toast('Este aparato solo lo ve el administrador')}})();
@@ -6182,7 +6185,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v166';
+window.APP_V='abonado-v167';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
