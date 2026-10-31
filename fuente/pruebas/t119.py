@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 MOCK = open('mock-firebase.js').read()
 DATOS = r"""(async()=>{const ahora=Date.now();
   for(let d=0;d<4;d++){const f0=new Date(st.fecha+'T12:00:00');f0.setDate(f0.getDate()-d);const f=isoD(f0),ini=new Date(f+'T00:00:00').getTime();
-    for(let n=1;n<=6;n++){const p=[];for(let t=ini+6*3600e3;t<=Math.min(ahora,ini+23*3600e3);t+=15*60e3){const h=(t-ini)/3600e3;p.push({t,v:{ta:+(18+n*0.5-d+10*Math.max(0,Math.sin((h-8)/12*Math.PI))).toFixed(1),hr:60+n+d,vent:[h>10&&h<17?80+n:0,100]}})}
+    for(let n=1;n<=6;n++){const p=[];for(let t=ini+6*3600e3;t<=ini+23*3600e3;t+=15*60e3){const h=(t-ini)/3600e3;p.push({t,v:{ta:+(18+n*0.5-d+10*Math.max(0,Math.sin((h-8)/12*Math.PI))).toFixed(1),hr:60+n+d,vent:[h>10&&h<17?80+n:0,100]}})}
       if(p.length)await Store.setCol('lecturas','UC-GAS-'+n+'_'+f,{dev:'UC-GAS-'+n,nodo:'UC',cab:'gas',comp:n,fecha:f,ts:new Date(p[p.length-1].t).toISOString(),p})}}
   await Store.setCol('lecturas','UC-ESTADO',{dev:'UC-ESTADO',nodo:'UC',cab:'gas',ts:new Date(ahora-4*60e3).toISOString(),n:6,avisado:false})})()"""
 async def main():
@@ -23,8 +23,8 @@ async def main():
         await pg.click('#grupos [data-grupo="datos"]'); await pg.wait_for_timeout(500)
         assert 'CLIMA DE LAS NAVES' in (await pg.text_content('#tabs')).upper()
         await pg.evaluate("st.tab='climanv';renderAll()"); await pg.wait_for_timeout(1500)
-        t = (await pg.text_content('#main')).upper(); print(t[:400])
-        assert 'CLIMA DE LAS NAVES · GASOLINERA' in t and 'ÚLTIMA LECTURA HACE 4 MIN' in t and 'VENTANAS Y CLIMA DE LAS NAVES' in t and 'RESUMEN DEL DÍA' in t and 'ÚLTIMOS DÍAS' in t
+        t = (await pg.text_content('#main')).upper(); print(t[:400]); import re as _r; print('FUENTE:', [t[m.start()-60:m.end()+40] for m in _r.finditer('UCROP|ORDENADOR|CONTROLADOR', t)])
+        assert 'CLIMA DE LAS NAVES · GASOLINERA' in t and 'ACTUALIZADO HACE 4 MIN' in t and 'VENTANAS Y CLIMA DE LAS NAVES' in t and 'UCROP' not in t and 'ORDENADOR' not in t and 'CONTROLADOR' not in t and 'RESUMEN DEL DÍA' in t and 'ÚLTIMOS DÍAS' in t
         assert await pg.locator('[data-esuc]').count() == 0, 'aquí no se rellena el registro'
         assert await pg.locator('.uct').count() == 2 and await pg.locator('.ucvg').count() == 2
         rows = await pg.locator('.uct').nth(1).locator('tr').all_inner_texts(); print(rows[:3]); assert rows[1].startswith('Nave 1') and len(rows) == 7
@@ -34,7 +34,7 @@ async def main():
         await pg.screenshot(path='pruebas/salida/t119-clima-naves.png', full_page=True)
         # otro cabezal: aviso y botón
         await pg.evaluate("st.cab='pla';renderAll()"); await pg.wait_for_timeout(400)
-        t = (await pg.text_content('#main')).upper(); assert 'AÚN NO TIENE EL CONTROLADOR' in t
+        t = (await pg.text_content('#main')).upper(); assert 'AÚN NO TIENE DATOS DE CLIMA' in t
         await pg.click('[data-cnv="cab"][data-v="gas"]'); await pg.wait_for_timeout(400); assert await pg.evaluate("st.cab") == 'gas' and 'RESUMEN DEL DÍA' in (await pg.text_content('#main')).upper()
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

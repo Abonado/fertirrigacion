@@ -2917,11 +2917,11 @@ function ucVentHTML(cab){if(ucComp().cab!==cab||!st.lec)return '';const M=ucComp
   C.forEach((c,i)=>{const pts=c.P.map(p=>[p.t,ucVal(p,k)]).filter(x=>x[1]!=null);if(pts.length)g+=`<polyline fill="none" stroke="${UC_COL[i%UC_COL.length]}" stroke-width="1.8" stroke-linejoin="round" points="${pts.map(([t,v])=>X(t).toFixed(1)+','+Y(v).toFixed(1)).join(' ')}"/>`});
   g+='</svg>';
   const hora=new Date(Math.max(...C.map(c=>c.u.t))).toTimeString().slice(0,5),nV=Math.max(...C.map(c=>(c.u.v.vent||[]).length));
-  return `<section class="ucv"><div class="row" style="justify-content:space-between;align-items:baseline"><b>Ventanas y clima de las naves</b><small class="sub">del controlador · ${esc(hora)}</small></div>
+  return `<section class="ucv"><div class="row" style="justify-content:space-between;align-items:baseline"><b>Ventanas y clima de las naves</b><small class="sub">${esc(hora)}</small></div>
     <table class="uct"><tr><th>Nave</th>${Array.from({length:nV},(_,i)=>`<th>V${i+1}</th>`).join('')}<th>Aire</th><th>Hum.</th></tr>
     ${C.slice().sort((a,b)=>a.nave-b.nave).map(c=>{const i=C.indexOf(c),ve=c.u.v.vent||[];return `<tr><td><i style="background:${UC_COL[i%UC_COL.length]}"></i><b>Nave ${c.nave}</b><br><small>comp. ${c.n}</small></td>${Array.from({length:nV},(_,j)=>`<td>${ve[j]!=null?`${fmt(ve[j],0)}%<span class="ucbar"><span style="width:${Math.max(0,Math.min(100,ve[j]))}%"></span></span>`:'—'}</td>`).join('')}<td>${c.u.v.ta!=null?fmt(c.u.v.ta,1)+' °C':'—'}</td><td>${c.u.v.hr!=null?fmt(c.u.v.hr,0)+' %':'—'}</td></tr>`}).join('')}</table>
     <div class="pick">${Object.entries(UC_VAR).filter(([q])=>q[0]!=='v'||+q[1]<=nV).map(([q,[t]])=>`<button class="chip" type="button" data-esact="uvar" data-v="${q}" aria-pressed="${q===k}">${t}</button>`).join('')}</div>${g}
-    <div class="note" style="text-transform:none">${esc(tit)} de cada compartimento durante el día, con una lectura cada pocos minutos. Las ventanas son la apertura real que da el controlador (0 % cerrada, 100 % abierta del todo).</div></section>`}
+    <div class="note" style="text-transform:none">${esc(tit)} de cada compartimento durante el día, con una lectura cada pocos minutos. Las ventanas son la apertura real (0 % cerrada, 100 % abierta del todo).</div></section>`}
 /* En Clima y estrés se vuelven a pedir las lecturas cada 5 minutos para ver las ventanas al día (sin repintar si estás escribiendo) */
 setInterval(()=>{if(!['estres','climanv'].includes(st.tab)||document.hidden||!st.lec||st.lecVa)return;st.lecVa=1;Store.listCol('lecturas',200).then(l=>{st.lecVa=0;st.lec=l;st.lecT=Date.now();const a=document.activeElement;if(['estres','climanv'].includes(st.tab)&&!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)))renderMain()},()=>{st.lecVa=0})},5*60e3);
 /* ---------- Datos → Clima de las naves ----------
@@ -2934,10 +2934,10 @@ function ucDiaRes(P,U){const ta=P.map(p=>p.v.ta).filter(v=>typeof v==='number'),
 const CNV_D={max:['Máxima','°C'],min:['Mínima','°C'],hr:['Humedad media','%'],v1:['Ventana 1 media','%'],hc:['Horas de calor','h']};
 function vClimaNaves(){lecCargar();const cab=st.cab,M=ucComp(),U=esU();
   const cabs=[...new Set((st.lec||[]).filter(d=>d.nodo==='UC'&&d.cab&&d.dev!=='UC-ESTADO').map(d=>d.cab))];
-  let h=`<section class="card"><div><h3>Clima de las naves · ${esc(cabNombre(cab))}</h3><div class="sub">Del controlador de clima (uCrop), leído cada pocos minutos desde el ordenador de la oficina</div></div>`;
+  let h=`<section class="card"><div><h3>Clima de las naves · ${esc(cabNombre(cab))}</h3>${(()=>{const E=ucEstado();if(!E)return '';const m=Math.round((Date.now()-E.t)/60000);return `<div class="sub">Actualizado ${m<1?'ahora mismo':m<60?'hace '+m+' min':m<1440?'hace '+fmt(m/60,1)+' h':'el '+new Date(E.t).toLocaleDateString('es-ES')}</div>`})()}</div>`;
   if(st.lec==null)return h+'<div class="note">Cargando lecturas…</div></section>';
-  if(!cabs.includes(cab)||M.cab!==cab)return h+`<div class="note" style="text-transform:none">Este cabezal aún no tiene el controlador conectado.${cabs.length?' Ahora llega el de:':' Cuando el «Lector del clima» empiece a mandar, saldrá aquí.'}</div>${cabs.length?`<div class="row">${cabs.filter(c=>cabById(c)).map(c=>`<button class="btn pri" type="button" data-cnv="cab" data-v="${esc(c)}">Ver ${esc(cabNombre(c))}</button>`).join('')}</div>`:''}</section>`;
-  h+=ucCtrlHTML(cab).replace(/<button[^>]*data-esuc[^>]*>[^<]*<\/button>/,'')+`</section>`;
+  if(!cabs.includes(cab)||M.cab!==cab)return h+`<div class="note" style="text-transform:none">Este cabezal aún no tiene datos de clima.${cabs.length?' Los hay de:':''}</div>${cabs.length?`<div class="row">${cabs.filter(c=>cabById(c)).map(c=>`<button class="btn pri" type="button" data-cnv="cab" data-v="${esc(c)}">Ver ${esc(cabNombre(c))}</button>`).join('')}</div>`:''}</section>`;
+  h+=`</section>`;
   const vent=ucVentHTML(cab);h+=vent?`<section class="card">${vent}</section>`:`<section class="card"><div class="note">No hay lecturas del ${new Date(st.fecha+'T12:00:00').toLocaleDateString('es-ES')}. Cambia el día arriba.</div></section>`;
   const nv=((MAPAS[cab]||{}).naves||[]).length||6,comps=[...new Set((st.lec||[]).filter(d=>d.nodo==='UC'&&d.cab===cab&&d.comp).map(d=>+d.comp))].sort((a,b)=>a-b);
   const naveDe=n=>M.inv?nv+1-n:n,orden=comps.slice().sort((a,b)=>naveDe(a)-naveDe(b));
@@ -2961,7 +2961,7 @@ function vClimaNaves(){lecCargar();const cab=st.cab,M=ucComp(),U=esU();
     h+=`<section class="card"><div><h3>Últimos días</h3><div class="sub">${CNV_D[k][0]} de cada nave (${CNV_D[k][1]})</div></div>
       <div class="pick">${Object.entries(CNV_D).map(([q,[t]])=>`<button class="chip" type="button" data-cnv="dvar" data-v="${q}" aria-pressed="${q===k}">${t}</button>`).join('')}</div>${g}
       <div class="ucley">${S.map(x=>`<span><i style="background:${UC_COL[comps.indexOf(x.n)%UC_COL.length]}"></i>Nave ${x.nave}</span>`).join('')}</div></section>`}
-  return h+`<div class="note" style="text-transform:none;margin:0 4px">El reparto de compartimentos a naves es el de Clima y estrés (ahora: compartimento 1 = nave ${naveDe(1)}). Para apuntar estos datos en el registro del día: Mapa de la finca → Clima y estrés → «Rellenar las naves».</div>`}
+  return h}
 /* Estado del lector: cuándo llegó lo último */
 function ucEstado(){const d=(st.lec||[]).find(x=>x.dev==='UC-ESTADO');return d&&d.ts?{t:Date.parse(d.ts),cab:d.cab,n:d.n}:null}
 function ucCtrlHTML(cab){lecCargar();if(ucComp().cab!==cab)return '';const E=ucEstado(),zs=esZonas(cab).zs,hay=zs.filter(x=>ucCtrlDe(cab,x.k)).length;if(!E&&!hay)return '';

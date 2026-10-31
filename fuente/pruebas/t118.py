@@ -5,7 +5,7 @@ import asyncio, sys
 from playwright.async_api import async_playwright
 MOCK = open('mock-firebase.js').read()
 DATOS = r"""(async()=>{const ini=new Date(st.fecha+'T00:00:00').getTime(),ahora=Date.now(),f=st.fecha;
-  for(let n=1;n<=6;n++){const p=[];for(let t=ini+6*3600e3;t<=Math.min(ahora,ini+23*3600e3);t+=15*60e3){const h=(t-ini)/3600e3;p.push({t,v:{ta:+(20+n*0.5+10*Math.max(0,Math.sin((h-8)/12*Math.PI))).toFixed(1),hr:60+n,vent:[90+n,100]}})}
+  for(let n=1;n<=6;n++){const p=[];for(let t=ini+6*3600e3;t<=ini+23*3600e3;t+=15*60e3){const h=(t-ini)/3600e3;p.push({t,v:{ta:+(20+n*0.5+10*Math.max(0,Math.sin((h-8)/12*Math.PI))).toFixed(1),hr:60+n,vent:[90+n,100]}})}
     await Store.setCol('lecturas','UC-GAS-'+n+'_'+f,{dev:'UC-GAS-'+n,nodo:'UC',cab:'gas',comp:n,fecha:f,ts:new Date(p[p.length-1].t).toISOString(),p})}
   await Store.setCol('lecturas','UC-ESTADO',{dev:'UC-ESTADO',nodo:'UC',cab:'gas',ts:new Date(ahora-5*60e3).toISOString(),n:6,avisado:false})})()"""
 async def main():
