@@ -642,6 +642,23 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .mezt thead th{vertical-align:bottom;height:120px;padding:2px}.mezt thead th span{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-weight:600;text-transform:none}
 .mezt td.ok{background:#7cc06a;color:#123}.mezt td.warn{background:#f4d64a;color:#123}.mezt td.bad{background:#d9534f;color:#fff}.mzk{display:inline-block;padding:0 5px;border-radius:4px;font-weight:700}.mzk.ok{background:#7cc06a}.mzk.warn{background:#f4d64a}.mzk.bad{background:#d9534f;color:#fff}
 .mezty{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 12px}.mezty .field span{font-size:12.5px;text-transform:none;color:var(--muted)}
+.agbtn{position:fixed;right:max(14px,env(safe-area-inset-right,0px));bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:8;width:58px;height:58px;border-radius:50%;border:0;display:grid;place-items:center;align-content:center;gap:0;color:#fff;background:radial-gradient(circle at 30% 25%,#2fa36b,#1b5e3f 70%);box-shadow:0 6px 18px rgba(16,60,40,.35);cursor:pointer;padding:0}
+.agbtn svg{width:24px;height:24px}.agbtn span{font:800 9px var(--f-display);letter-spacing:.12em;margin-top:1px}.agbtn[hidden]{display:none}
+.agbtn.oye,.agbtn.manos{animation:agpul 1.6s ease-out infinite}@keyframes agpul{0%{box-shadow:0 0 0 0 rgba(47,163,107,.55),0 6px 18px rgba(16,60,40,.35)}100%{box-shadow:0 0 0 18px rgba(47,163,107,0),0 6px 18px rgba(16,60,40,.35)}}
+@media (min-width:900px){.agbtn{bottom:24px;right:24px}}
+.agp{position:fixed;left:0;right:0;bottom:0;z-index:25;max-height:78vh;display:flex;flex-direction:column;background:var(--surface);border-radius:20px 20px 0 0;box-shadow:0 -10px 30px rgba(10,25,35,.25);padding:12px max(16px,env(safe-area-inset-left,0px)) calc(12px + env(safe-area-inset-bottom,0px))}
+.agp[hidden]{display:none}@media (min-width:700px){.agp{left:auto;right:16px;bottom:16px;width:420px;border-radius:20px}}
+.agph{display:flex;align-items:center;gap:10px}.agph div{flex:1;display:grid}.agph b{font:800 18px var(--f-display);letter-spacing:.14em;color:var(--navy)}.agph small{color:var(--muted);font-size:12.5px;text-transform:none}
+.aglogo{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;background:radial-gradient(circle at 30% 25%,#2fa36b,#1b5e3f 70%)}.aglogo svg{width:20px;height:20px}
+.agx{border:0;background:var(--surface-2,#eef1ee);width:34px;height:34px;border-radius:50%;font-size:15px;cursor:pointer;color:var(--ink)}
+.agcv{flex:1;overflow:auto;display:grid;gap:8px;align-content:start;margin:10px 0;min-height:90px}
+.agm{max-width:86%;padding:9px 12px;border-radius:14px;font-size:15px;line-height:1.35;text-transform:none}.agm.yo{justify-self:end;background:var(--navy);color:#fff;border-bottom-right-radius:4px}.agm.ag{justify-self:start;background:var(--surface-2,#eef1ee);color:var(--ink);border-bottom-left-radius:4px}
+.agm.oyendo{opacity:.65;font-style:italic}.agm.pens{letter-spacing:.2em}
+.agej{display:grid;gap:4px;font-size:13.5px;color:var(--muted);text-transform:none}.agej b{color:var(--ink)}
+.aghe{display:grid;gap:3px;font-size:13px;color:var(--ok);text-transform:none}
+.agpie{display:flex;align-items:center;gap:10px}.agmic{flex:none;width:58px;height:58px;border-radius:50%;border:0;color:#fff;background:radial-gradient(circle at 30% 25%,#2fa36b,#1b5e3f 70%);display:grid;place-items:center;cursor:pointer}.agmic svg{width:26px;height:26px}.agmic.on{background:#c0392b;animation:agpul 1.2s ease-out infinite}.agmic[disabled]{opacity:.4}
+.agtx{flex:1;display:flex;gap:6px;min-width:0}.agtx input{flex:1;min-width:0;font:inherit;font-size:15px;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
+.agman{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:12.5px;color:var(--muted);text-transform:none}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -665,6 +682,8 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 </header>
 <main class="wrap" id="main"></main>
 <nav class="bnav" id="grupos" aria-label="Apartados"></nav>
+<button class="agbtn" id="agbtn" type="button" aria-label="AGRO, asistente de voz" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg><span>AGRO</span></button>
+<section class="agp" id="agp" hidden aria-label="AGRO, asistente de voz"></section>
 <div class="savebar" id="savebar" hidden><div class="wrap"><span class="msg" id="savemsg"></span><div class="row" id="savebtns"></div></div></div>
 <div class="toast" id="toast" hidden></div>
 <div class="lb" id="lb" hidden><img id="lbimg" alt="Foto del mensaje"><button class="btn" data-act="lb-close">Cerrar</button></div>
@@ -1020,6 +1039,111 @@ function vCmBid(){const c=cabById(st.cab);if(!c)return '';if(st.hist===null)load
     <div class="note">Se guarda con «Guardar» abajo, igual que las Cuentas del día (son los mismos cm).</div></section>`;
   return h+cmbHist(bs)}
 document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-cmbd]');if(!b||st.tab!=='cmbid')return;const f=b.dataset.cmbd;if(f===st.fecha)return;if(st.dirtyReg)await saveReg();await loadFecha(f)});
+/* ---------- AGRO: el asistente de voz de la app ----------
+   Botón redondo abajo a la derecha (o «Oye Agro» con manos libres mientras la app está abierta). Escucha con el reconocimiento de voz del
+   móvil, manda lo que has dicho y los datos de ahora (bidones, niveles, avisos, almacén, clima de las naves, pantallas) a la IA de la app,
+   y responde en voz alta. Además de contestar, HACE cosas: abrir pantallas, apuntar la lectura de la regla, los cm gastados, una pérdida,
+   que se ha hecho el bidón, los m³ del día o una nota/recordatorio. Lo que apunta lo guarda en el día de hoy y lo dice. */
+const AG={ab:false,est:'',oye:'',hist:[],manos:false,rec:null,busy:false,hecho:[]};
+const agSR=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
+function agVoz(){try{const v=speechSynthesis.getVoices();return v.find(x=>/^es[-_]ES/i.test(x.lang))||v.find(x=>/^es/i.test(x.lang))||null}catch(e){return null}}
+function agHabla(t){try{if(!window.speechSynthesis||!t)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(t).replace(/[·•]/g,',').replace(/\bcm\b/g,'centímetros').replace(/\bm³/g,'metros cúbicos').replace(/\bL\b/g,'litros'));u.lang='es-ES';u.rate=1.03;const v=agVoz();if(v)u.voice=v;
+  u.onend=()=>{if(AG.manos)agManosSigue()};speechSynthesis.speak(u)}catch(e){}}
+const AG_MIC='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>';
+function agPinta(){const p=$('#agp'),b=$('#agbtn');if(b){b.classList.toggle('oye',!!AG.rec);b.classList.toggle('manos',AG.manos)}if(!p)return;p.hidden=!AG.ab;if(!AG.ab)return;
+  const ia=typeof iaModo==='function'&&!!iaModo(),sr=!!agSR();
+  p.innerHTML=`<div class="agph"><span class="aglogo">${AG_MIC}</span><div><b>AGRO</b><small>${AG.rec?'Te escucho…':AG.busy?'Pensando…':'Tu asistente de la finca'}</small></div><button class="agx" type="button" data-ag="cerrar" aria-label="Cerrar">✕</button></div>
+    <div class="agcv">${!ia?'<div class="mezav warn">Para que AGRO entienda lo que dices hace falta la IA de la app: actívala en Ajustes.</div>':''}
+      ${AG.hist.length?AG.hist.slice(-6).map(m=>`<div class="agm ${m.r}">${esc(m.t)}</div>`).join(''):`<div class="agej"><b>Prueba a decir:</b><span>«¿Cuánto queda en el potásico de Franco?»</span><span>«Apunta 125 en el potásico de Gasolinera»</span><span>«Se ha hecho el bidón del calcio a las nueve y media, marcaba 130»</span><span>«¿Qué tengo para mirar?»</span><span>«¿Qué temperatura hay en la nave 3?»</span><span>«Recuérdame mañana a las 8 pedir nitrato»</span><span>«Abre rellenar depósito»</span></div>`}
+      ${AG.rec&&AG.oye?`<div class="agm yo oyendo">${esc(AG.oye)}</div>`:''}${AG.busy?'<div class="agm ag pens">…</div>':''}
+      ${AG.hecho.length?`<div class="aghe">${AG.hecho.map(x=>`<span>✓ ${esc(x)}</span>`).join('')}</div>`:''}
+      ${AG.est?`<div class="note" style="text-transform:none">${esc(AG.est)}</div>`:''}</div>
+    <div class="agpie"><button class="agmic ${AG.rec?'on':''}" type="button" data-ag="mic" ${sr?'':'disabled'} aria-label="${AG.rec?'Parar':'Hablar'}">${AG_MIC}</button>
+      <div class="agtx"><input id="agtxt" placeholder="${sr?'O escríbelo aquí…':'Escribe lo que quieras…'}" autocomplete="off" style="text-transform:none"><button class="btn" type="button" data-ag="enviar">Enviar</button></div></div>
+    ${sr?`<label class="agman"><input type="checkbox" data-ag="manos" ${AG.manos?'checked':''}> Manos libres: escuchar «Oye Agro» mientras la app está abierta</label>`:''}`;
+  const c=p.querySelector('.agcv');if(c)c.scrollTop=c.scrollHeight}
+function agAbre(){AG.ab=true;AG.est='';agPinta()}
+function agCierra(){AG.ab=false;try{AG.rec&&!AG.manos&&AG.rec.stop()}catch(e){}try{speechSynthesis.cancel()}catch(e){}agPinta()}
+function agEscucha(){const SR=agSR();if(!SR){AG.est='Este móvil no deja que la app escuche: escríbelo abajo.';agPinta();return}
+  if(AG.rec){try{AG.rec.stop()}catch(e){}return}if(AG.manos){agManos(false)}
+  try{speechSynthesis.cancel()}catch(e){}const r=new SR();r.lang='es-ES';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;AG.rec=r;AG.oye='';AG.est='';AG.hecho=[];agPinta();
+  r.onresult=e=>{let t='';for(const x of e.results)t+=x[0].transcript;AG.oye=t;agPinta()};
+  r.onerror=e=>{AG.est=e.error==='not-allowed'||e.error==='service-not-allowed'?'No tengo permiso para el micrófono: dalo en los ajustes del navegador y vuelve a tocar el micro.':e.error==='no-speech'?'No te he oído. Toca el micro y habla.':'No he podido escuchar. Prueba otra vez o escríbelo.'};
+  r.onend=()=>{AG.rec=null;const t=AG.oye.trim();AG.oye='';if(t)agPide(t);else agPinta()};
+  try{r.start()}catch(e){AG.rec=null;AG.est='No he podido abrir el micrófono.';agPinta()}}
+/* Manos libres: escucha seguido y solo hace caso a lo que empieza por «Agro» u «Oye Agro» */
+let agMR=null;
+function agManos(on){AG.manos=on;try{localStorage.setItem('abono.agmanos',on?'1':'')}catch(e){}if(on)agManosSigue();else{try{agMR&&agMR.stop()}catch(e){}agMR=null}agPinta()}
+function agManosSigue(){const SR=agSR();if(!SR||!AG.manos||agMR||AG.rec||AG.busy||document.hidden)return;try{if(speechSynthesis.speaking)return}catch(e){}
+  const r=new SR();r.lang='es-ES';r.continuous=true;r.interimResults=false;agMR=r;
+  r.onresult=e=>{const x=e.results[e.results.length-1];if(!x.isFinal)return;const t=x[0].transcript.trim(),m=/^(?:oye\s+|hola\s+|ey\s+)?a\s?gro\b[\s,.:]*(.*)$/i.exec(t);if(!m)return;
+    const q=m[1].trim();try{r.stop()}catch(_){}AG.ab=true;if(q)agPide(q);else{agHabla('Dime');agPinta()}};
+  r.onerror=e=>{if(e.error==='not-allowed'||e.error==='service-not-allowed'){AG.manos=false;AG.est='Sin permiso del micrófono para manos libres.';agPinta()}};
+  r.onend=()=>{agMR=null;if(AG.manos)setTimeout(agManosSigue,400)};
+  try{r.start()}catch(e){agMR=null}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AG.manos)agManosSigue()});
+/* Lo que AGRO sabe en este momento */
+function agContexto(){const L=[],f=fincaAct(),n1=(v,d)=>v==null?'—':fmt(v,d??1);
+  L.push(`Ahora: ${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}, ${horaAhora()}. Usuario: ${yoNombre()||'—'}. Finca: ${f?f.nombre:'—'}. Cabezal que tiene abierto: ${cabNombre(st.cab)} (${st.cab}). Pantalla abierta: ${(TABS.find(t=>t[0]===st.tab)||[])[1]||st.tab}.`);
+  L.push('CABEZALES: '+cabsVis().map(c=>`${c.id} = ${c.nombre}`).join('; '));
+  const vis=new Set(cabsVis().map(c=>c.id));L.push('BIDONES (id: nombre · cabezales · litros por cm · productos de la receta · nivel · lo apuntado hoy):');
+  for(const b of st.cfg.bidones.filter(b=>b.cabezales.some(c=>vis.has(c)))){let n=null;try{n=nivel(b)}catch(e){}const R=st.fecha===hoy()?st.reg:null;
+    L.push(`- ${b.id}: ${b.nombre} · ${b.cabezales.map(cabNombre).join(' + ')} · ${b.lpcm} L/cm · ${b.productos.filter(x=>x.dosis>0).map(x=>pn(x.p)).join(', ')} · ${n?`quedan ${n1(Math.max(0,n.rest))} cm (${Math.round(Math.max(0,n.rest)*b.lpcm)} L)${n.dias!=null?', para '+n1(n.dias)+' días':''}`:'nivel sin datos'}${R?` · hoy: regla ${n1((R.vac||{})[b.id])} cm, gastados ${n1(R.cm[b.id])} cm, pérdida ${n1((R.perd||{})[b.id])} cm`:''}`)}
+  try{const av=hoyAvisos();L.push('AVISOS PARA MIRAR: '+(av.length?av.map(a=>a[1]).join('; '):'ninguno'))}catch(e){}
+  try{for(const a of almsVis())L.push(`ALMACÉN ${a.nombre}: `+Object.keys(st.cfg.productos).map(p=>{const s=stockDe(p,a.id),m=minStock(p,a.id);return Math.abs(s)>0.01||m!=null?`${pn(p)} ${n1(s)} ${uCant(p)}${m!=null?' (mínimo '+n1(m,0)+')':''}`:''}).filter(Boolean).join('; '))}catch(e){}
+  try{if(st.lec){const M=ucComp(),nv=((MAPAS[M.cab]||{}).naves||[]).length||6,X=[];for(let n=1;n<=20;n++){const P=ucPuntos(M.cab,n,hoy());if(!P.length)continue;const u=P[P.length-1];X.push(`nave ${M.inv?nv+1-n:n}: ${n1(u.v.ta)} °C, ${n1(u.v.hr,0)} % humedad, ventanas ${(u.v.vent||[]).join('/')} % (a las ${new Date(u.t).toTimeString().slice(0,5)})`)}if(X.length)L.push(`CLIMA AHORA EN ${cabNombre(M.cab).toUpperCase()}: `+X.join('; '))}}catch(e){}
+  try{const P=[];const ps=Object.keys(st.cfg.productos);for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){const r=mezDe(mezTipo(ps[i]),mezTipo(ps[j]));if(r==='I'||r==='R')P.push(`${pn(ps[i])} + ${pn(ps[j])}: ${r==='I'?'incompatibles':'se reduce la solubilidad'}`)}if(P.length)L.push('MEZCLAS QUE NO VAN BIEN (lo demás es compatible): '+P.join('; '))}catch(e){}
+  L.push('PANTALLAS: '+TABS.filter(([k])=>VIEWS[k]&&tabPermitida(k)&&!['mas'].includes(k)).map(([k,t])=>`${k} = ${t}`).join('; '));
+  return L.join('\n')}
+function agPrompt(t){return `Eres AGRO, el asistente de voz de la app de fertirrigación de una finca de tomate en Murcia. Te hablan por voz en el campo, a veces con las manos ocupadas.
+Contesta en español de España, MUY breve (una o dos frases, se va a leer en voz alta), sin listas, sin emojis, con números redondeados y sus unidades.
+
+DATOS DE AHORA:
+${agContexto()}
+
+ACCIONES QUE PUEDES HACER (en "acciones"; solo si te lo piden claramente):
+- {"tipo":"ir","tab":"id de pantalla","cab":"id de cabezal o null"} → abrir una pantalla
+- {"tipo":"lectura","bidon":"id","cm":125} → apuntar hoy lo que marca la regla del bidón (la app resta la lectura anterior y saca los cm gastados)
+- {"tipo":"gastados","bidon":"id","cm":38} → apuntar hoy los cm gastados directamente
+- {"tipo":"perdida","bidon":"id","cm":2,"motivo":"Fuga|Rebose|Limpieza|Vaciado|Otro"} → pérdida del bidón hoy
+- {"tipo":"hecho","bidon":"id","cuando":"ayer|antes|hora","hora":"HH:MM o null","cm":130} → se ha hecho el bidón (ayer después de leer, hoy antes de regar o hoy a una hora) y lo que marcaba la regla al hacerlo
+- {"tipo":"m3","cab":"id","m3":205} → agua regada hoy en un cabezal
+- {"tipo":"nota","texto":"…","fecha":"AAAA-MM-DD o null","hora":"HH:MM o null"} → nota o recordatorio (si dice una hora o un día, ponlos)
+Reglas: usa SOLO ids de los datos de arriba. Si falta algo para hacer la acción (qué bidón, cuántos cm…), pregúntalo en "decir" y no la hagas. Si te preguntan algo, contesta con los datos de arriba; si no está, dilo claro y no inventes. «El potásico», «el calcio», «el hierro», «el nítrico» son los bidones de ese nombre; si no dice cabezal y hay varios, usa el que tiene abierto (${cabNombre(st.cab)}).
+
+CONVERSACIÓN RECIENTE:
+${AG.hist.slice(-6).map(m=>(m.r==='yo'?'Usuario: ':'AGRO: ')+m.t).join('\n')||'(ninguna)'}
+Usuario: ${t}
+
+Responde SOLO con JSON: {"decir":"lo que vas a decir en voz alta","acciones":[]}`}
+async function agPide(t){t=String(t||'').trim();if(!t||AG.busy)return;AG.ab=true;AG.hist.push({r:'yo',t});AG.busy=true;AG.est='';AG.hecho=[];agPinta();let r=null;
+  try{r=await iaFotoJson(agPrompt(t),[])}catch(e){AG.busy=false;const m=e&&e.code==='sin_ia'?'Para entenderte necesito la IA de la app: actívala en Ajustes.':'No he podido pensar la respuesta. Mira la conexión y prueba otra vez.';AG.hist.push({r:'ag',t:m});agHabla(m);agPinta();return}
+  AG.busy=false;const decir=String(r&&r.decir||'').trim()||'Hecho.',acc=Array.isArray(r&&r.acciones)?r.acciones.slice(0,6):[];
+  let extra='';try{const h=await agHaz(acc);AG.hecho=h.ok;if(h.mal.length)extra=' Pero no he podido: '+h.mal.join('; ')+'.'}catch(e){extra=' No he podido apuntarlo.'}
+  AG.hist.push({r:'ag',t:decir+extra});agPinta();agHabla(decir+extra)}
+/* Hacer lo que ha pedido: todo en el día de hoy y guardado */
+async function agHaz(acc){const ok=[],mal=[];let dia=false,ir=null;const nb=b=>`${b.nombre} (${b.cabezales.map(cabNombre).join(' + ')})`,vis=new Set(cabsVis().map(c=>c.id));
+  const hoyAbierto=async()=>{if(st.fecha!==hoy()){if(st.dirtyReg)await saveReg();await loadFecha(hoy())}};
+  for(const a of acc){if(!a||typeof a!=='object')continue;const b=a.bidon?bid(a.bidon):null,v=typeof a.cm==='number'?a.cm:num(String(a.cm??''));
+    if(['lectura','gastados','perdida','hecho'].includes(a.tipo)&&(!b||!b.cabezales.some(c=>vis.has(c)))){mal.push('no sé qué bidón es');continue}
+    if(a.tipo==='ir'){if(VIEWS[a.tab]&&tabPermitida(a.tab)){ir={tab:a.tab,cab:cabById(a.cab)&&vis.has(a.cab)?a.cab:null};ok.push('Abro '+((TABS.find(x=>x[0]===a.tab)||[])[1]||a.tab))}else mal.push('esa pantalla no la tengo')}
+    else if(a.tipo==='lectura'){if(v==null||v<0){mal.push('los cm de la regla');continue}await hoyAbierto();st.reg.vac=st.reg.vac||{};st.reg.vac[b.id]=v;marcaReg('vac.'+b.id);cmbRecalc(b.id);dia=true;const c=cmbCalc(b);ok.push(`Regla ${fmt(v,1)} cm en ${nb(b)}${c&&c.g!=null?' → '+fmt(c.g,1)+' cm gastados':''}`)}
+    else if(a.tipo==='gastados'){if(v==null||v<0){mal.push('los cm gastados');continue}await hoyAbierto();st.reg.cm[b.id]=v;marcaReg('cm.'+b.id);dia=true;ok.push(`${fmt(v,1)} cm gastados en ${nb(b)}`)}
+    else if(a.tipo==='perdida'){if(v==null||v<0){mal.push('los cm perdidos');continue}await hoyAbierto();st.reg.perd=st.reg.perd||{};st.reg.perdM=st.reg.perdM||{};st.reg.perd[b.id]=v;marcaReg('perd.'+b.id);const m=PERD_M.find(x=>x.toLowerCase()===String(a.motivo||'').toLowerCase())||'';if(m){st.reg.perdM[b.id]=m;marcaReg('perdM.'+b.id)}dia=true;ok.push(`Pérdida de ${fmt(v,1)} cm en ${nb(b)}${m?' ('+m+')':''}`)}
+    else if(a.tipo==='hecho'){const cu=HT[a.cuando]?a.cuando:'antes';if(v==null){mal.push('lo que marcaba al hacerlo');continue}await hoyAbierto();for(const g of ['hT','hH','hA'])st.reg[g]=st.reg[g]||{};st.reg.hT[b.id]=cu;marcaReg('hT.'+b.id);if(cu==='hora'&&/^\d{1,2}:\d{2}$/.test(a.hora||'')){st.reg.hH[b.id]=a.hora.padStart(5,'0');marcaReg('hH.'+b.id)}st.reg.hA[b.id]=v;marcaReg('hA.'+b.id);cmbRecalc(b.id);dia=true;ok.push(`Bidón hecho: ${nb(b)}, marcaba ${fmt(v,1)} cm`)}
+    else if(a.tipo==='m3'){const c=cabById(a.cab),m=typeof a.m3==='number'?a.m3:num(String(a.m3??''));if(!c||!vis.has(c.id)||m==null||m<0){mal.push('los metros cúbicos');continue}await hoyAbierto();st.reg.m3[c.id]=m;marcaReg('m3.'+c.id);dia=true;ok.push(`${fmt(m,0)} m³ en ${c.nombre}`)}
+    else if(a.tipo==='nota'){const tx=String(a.texto||'').trim();if(!tx){mal.push('el texto de la nota');continue}const cuando=/^\d{4}-\d{2}-\d{2}$/.test(a.fecha||'')?a.fecha+'T'+(/^\d{1,2}:\d{2}$/.test(a.hora||'')?a.hora.padStart(5,'0'):'08:00'):(/^\d{1,2}:\d{2}$/.test(a.hora||'')?hoy()+'T'+a.hora.padStart(5,'0'):null),d=cuando?ntDate(cuando):null;
+      const n={id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),email:miEmail()||'',texto:tx.slice(0,140),det:'Apuntada con AGRO',cuando,rep:'',n:null,dm:d?d.getDate():null,hecha:false,hechaTs:null,ts:ahoraISO(),area:'riego'};
+      try{if(!st.notas)await loadNotas();await ntGuardarDoc(n);ok.push('Nota: '+tx.slice(0,60)+(cuando?' · '+cuando.replace('T',' a las '):''))}catch(e){mal.push('guardar la nota')}}}
+  if(dia){try{await saveReg()}catch(e){mal.push('guardar el día')}}
+  if(ir){if(ir.cab){st.cab=ir.cab;const f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(ir.cab));if(f)st.finca=f.id}st.tab=ir.tab;renderCabs();renderTabs();renderMain();window.scrollTo(0,0)}
+  else if(dia&&['cmbid','cuentas','hoy','rellenar'].includes(st.tab))renderMain();
+  return {ok,mal}}
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('#agbtn,[data-ag]');if(!t)return;if(t.id==='agbtn'){if(AG.ab&&!AG.rec)agEscucha();else{agAbre();agEscucha()}return}
+  const a=t.dataset.ag;if(a==='cerrar')agCierra();else if(a==='mic')agEscucha();else if(a==='enviar'){const i=$('#agtxt');const v=i&&i.value.trim();if(v){i.value='';agPide(v)}}});
+document.addEventListener('change',e=>{const t=e.target;if(t&&t.dataset&&t.dataset.ag==='manos')agManos(t.checked)});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='agtxt'){e.preventDefault();const v=e.target.value.trim();if(v){e.target.value='';agPide(v)}}});
+try{if(window.speechSynthesis)speechSynthesis.onvoiceschanged=()=>{}}catch(e){}
 /* ---------- Hoy: lo que hay que mirar y lo de todos los días, de un vistazo ---------- */
 const HOY_T=[['cuentas','Cuentas del día','<path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>'],['rellenar','Rellenar depósito','<path d="M6 8h12l-1 12H7z"/><path d="M9 8V5h6v3"/>'],['drenaje','Drenaje','<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/><path d="M9 14h6"/>'],
   ['parte','Parte diario','<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 12l2 2 3.5-4"/>'],['mapa','Mapa de la finca','<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>'],['climanv','Clima de las naves','<path d="M10 14V5a2 2 0 1 1 4 0v9a4 4 0 1 1-4 0z"/>'],
@@ -1055,7 +1179,7 @@ function vMas(){const G=gruposAct().filter(g=>MAS_G.includes(g.id)),ins=insignia
 const MAS_G=['equipo','notas','lab','ajustes'];
 function bnItems(){const G=gruposAct();if(areaDe(st.tab)==='campo')return G;return G.filter(g=>!MAS_G.includes(g.id))}
 function renderGrupos(){const g0=grupoDe(st.tab),g={id:MAS_G.includes(g0.id)&&areaDe(st.tab)!=='campo'?'mas':g0.id},ins0=insignias(),ins={...ins0,mas:MAS_G.reduce((a,k)=>a+(gruposAct().some(x=>x.id===k)?ins0[k]||0:0),0)},L=bnItems();
-  $('#grupos').style.gridTemplateColumns=`repeat(${L.length},minmax(0,1fr))`;$('#grupos').innerHTML=L.map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('');document.body.classList.add('conbn')}
+  $('#grupos').style.gridTemplateColumns=`repeat(${L.length},minmax(0,1fr))`;$('#grupos').innerHTML=L.map(x=>`<button class="grp" data-grupo="${x.id}" aria-pressed="${x.id===g.id}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${x.ic}</svg><span>${x.n}</span>${ins[x.id]?`<i class="bdg">${ins[x.id]>9?'9+':ins[x.id]}</i>`:''}</button>`).join('');document.body.classList.add('conbn');{const ab=$('#agbtn');if(ab)ab.hidden=areaDe(st.tab)==='campo'||!veRiego()}}
 function renderTabs(){renderGrupos();const g=grupoDe(st.tab);st.ultTab[g.id]=st.tab;$('#tabs').hidden=g.tabs.length<2;if(MF_VISTAS.includes(st.tab))st.mfUlt=st.tab;$('#tabs').innerHTML=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k)&&(k==='instal'||!MF_VISTAS.includes(k))).map(([k,t])=>{const mf=k==='instal',d=mf?(st.mfUlt&&tabPermitida(st.mfUlt)?st.mfUlt:'mapa'):k;
     return `<button class="tab" role="tab" data-tab="${d}" aria-selected="${mf?MF_VISTAS.includes(st.tab):k===st.tab}">${t}</button>`}).join('');const sel=$('#tabs .tab[aria-selected="true"]');if(sel&&$('#tabs').scrollWidth>$('#tabs').clientWidth)$('#tabs').scrollLeft=Math.max(0,sel.offsetLeft-$('#tabs').clientWidth/2+sel.offsetWidth/2)}
 /* Menús desplazables con ratón: rueda y arrastrar */
@@ -6222,7 +6346,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v168';
+window.APP_V='abonado-v169';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
