@@ -1027,8 +1027,8 @@ document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.c
 const AG={ab:false,est:'',oye:'',hist:[],manos:false,rec:null,busy:false,hecho:[]};
 const agSR=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
 function agVoz(){try{const v=speechSynthesis.getVoices();return v.find(x=>/^es[-_]ES/i.test(x.lang))||v.find(x=>/^es/i.test(x.lang))||null}catch(e){return null}}
-function agHabla(t){try{if(!window.speechSynthesis||!t)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(t).replace(/[·•]/g,',').replace(/\bcm\b/g,'centímetros').replace(/\bm³/g,'metros cúbicos').replace(/\bL\b/g,'litros'));u.lang='es-ES';u.rate=1.03;const v=agVoz();if(v)u.voice=v;
-  u.onend=()=>{if(AG.manos)agManosSigue()};speechSynthesis.speak(u)}catch(e){}}
+function agHabla(t,escuchar){try{if(!window.speechSynthesis||!t)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(t).replace(/[·•]/g,',').replace(/\bcm\b/g,'centímetros').replace(/\bm³/g,'metros cúbicos').replace(/\bL\b/g,'litros'));u.lang='es-ES';u.rate=1.03;const v=agVoz();if(v)u.voice=v;
+  u.onend=()=>{if(escuchar&&AG.ab&&!AG.rec&&!AG.busy)setTimeout(agEscucha,250);else if(AG.manos)agManosSigue()};speechSynthesis.speak(u)}catch(e){}}
 const AG_MIC='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>';
 function agPinta(){const p=$('#agp'),b=$('#agbtn');if(b){b.classList.toggle('oye',!!AG.rec);b.classList.toggle('manos',AG.manos)}if(!p)return;p.hidden=!AG.ab;if(!AG.ab)return;
   const ia=typeof iaModo==='function'&&!!iaModo(),sr=!!agSR();
@@ -1042,7 +1042,7 @@ function agPinta(){const p=$('#agp'),b=$('#agbtn');if(b){b.classList.toggle('oye
       <div class="agtx"><input id="agtxt" placeholder="${sr?'O escríbelo aquí…':'Escribe lo que quieras…'}" autocomplete="off" style="text-transform:none"><button class="btn" type="button" data-ag="enviar">Enviar</button></div></div>
     ${sr?`<label class="agman"><input type="checkbox" data-ag="manos" ${AG.manos?'checked':''}> Manos libres: escuchar «Oye Agro» mientras la app está abierta</label>`:''}`;
   const c=p.querySelector('.agcv');if(c)c.scrollTop=c.scrollHeight}
-function agAbre(){AG.ab=true;AG.est='';agPinta()}
+function agAbre(){AG.ab=true;AG.est='';agPinta();try{if(!st.splashWx&&typeof loadSplashWx==='function')loadSplashWx();if(!st.wx&&typeof loadWx==='function'&&typeof ubicOk==='function'&&ubicOk())loadWx()}catch(e){}}
 function agCierra(){AG.ab=false;try{AG.rec&&!AG.manos&&AG.rec.stop()}catch(e){}try{speechSynthesis.cancel()}catch(e){}agPinta()}
 function agEscucha(){const SR=agSR();if(!SR){AG.est='Este móvil no deja que la app escuche: escríbelo abajo.';agPinta();return}
   if(AG.rec){try{AG.rec.stop()}catch(e){}return}if(AG.manos){agManos(false)}
@@ -1067,19 +1067,23 @@ function agContexto(){const L=[],f=fincaAct(),n1=(v,d)=>v==null?'—':fmt(v,d??1
   L.push(`Ahora: ${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}, ${horaAhora()}. Usuario: ${yoNombre()||'—'}. Finca: ${f?f.nombre:'—'}. Cabezal que tiene abierto: ${cabNombre(st.cab)} (${st.cab}). Pantalla abierta: ${(TABS.find(t=>t[0]===st.tab)||[])[1]||st.tab}.`);
   L.push('CABEZALES: '+cabsVis().map(c=>`${c.id} = ${c.nombre}`).join('; '));
   const vis=new Set(cabsVis().map(c=>c.id));L.push('BIDONES (id: nombre · cabezales · litros por cm · productos de la receta · nivel · lo apuntado hoy):');
-  for(const b of st.cfg.bidones.filter(b=>b.cabezales.some(c=>vis.has(c)))){let n=null;try{n=nivel(b)}catch(e){}const R=st.fecha===hoy()?st.reg:null;
-    L.push(`- ${b.id}: ${b.nombre} · ${b.cabezales.map(cabNombre).join(' + ')} · ${b.lpcm} L/cm · ${b.productos.filter(x=>x.dosis>0).map(x=>pn(x.p)).join(', ')} · ${n?`quedan ${n1(Math.max(0,n.rest))} cm (${Math.round(Math.max(0,n.rest)*b.lpcm)} L)${n.dias!=null?', para '+n1(n.dias)+' días':''}`:'nivel sin datos'}${R?` · hoy: regla ${n1((R.vac||{})[b.id])} cm, gastados ${n1(R.cm[b.id])} cm, pérdida ${n1((R.perd||{})[b.id])} cm`:''}`)}
+  for(const b of st.cfg.bidones.filter(b=>b.cabezales.some(c=>vis.has(c))))try{let n=null;try{n=nivel(b)}catch(e){}const R=st.fecha===hoy()?st.reg:null;
+    L.push(`- ${b.id}: ${b.nombre} · ${b.cabezales.map(cabNombre).join(' + ')} · ${b.lpcm} L/cm · ${b.productos.filter(x=>x.dosis>0).map(x=>pn(x.p)).join(', ')} · ${n?`quedan ${n1(Math.max(0,n.rest))} cm (${Math.round(Math.max(0,n.rest)*b.lpcm)} L)${n.dias!=null?', para '+n1(n.dias)+' días':''}`:'nivel sin datos'}${R?` · hoy: regla ${n1((R.vac||{})[b.id])} cm, gastados ${n1((R.cm||{})[b.id])} cm, pérdida ${n1((R.perd||{})[b.id])} cm`:''}`)}catch(e){L.push(`- ${b.id}: ${b.nombre}`)}
+  try{const w=st.splashWx,c=w&&w.current,d=w&&w.daily,W=st.wx&&st.wx.daily;const T=[];
+    if(c)T.push(`ahora ${n1(c.temperature_2m)} °C, ${n1(c.relative_humidity_2m,0)} % de humedad, viento ${n1(c.wind_speed_10m,0)} km/h (rachas ${n1(c.wind_gusts_10m,0)}), ${typeof WX_TXT!=='undefined'?WX_TXT[c.weather_code]||'':''}`);
+    const dd=W||d;if(dd&&dd.time)dd.time.slice(0,3).forEach((f,i)=>T.push(`${i===0?'hoy':i===1?'mañana':'pasado mañana'}: máxima ${n1(dd.temperature_2m_max[i],0)} °C, mínima ${n1(dd.temperature_2m_min[i],0)} °C, ${typeof WX_TXT!=='undefined'?WX_TXT[dd.weather_code[i]]||'':''}${dd.precipitation_probability_max?', probabilidad de lluvia '+n1(dd.precipitation_probability_max[i],0)+' %':''}${dd.precipitation_sum?', '+n1(dd.precipitation_sum[i])+' mm':''}${dd.wind_gusts_10m_max?', rachas de '+n1(dd.wind_gusts_10m_max[i],0)+' km/h':''}`));
+    L.push('TIEMPO (previsión de la finca): '+(T.length?T.join('; '):'sin datos de previsión ahora'))}catch(e){}
   try{const av=hoyAvisos();L.push('AVISOS PARA MIRAR: '+(av.length?av.map(a=>a[1]).join('; '):'ninguno'))}catch(e){}
   try{for(const a of almsVis())L.push(`ALMACÉN ${a.nombre}: `+Object.keys(st.cfg.productos).map(p=>{const s=stockDe(p,a.id),m=minStock(p,a.id);return Math.abs(s)>0.01||m!=null?`${pn(p)} ${n1(s)} ${uCant(p)}${m!=null?' (mínimo '+n1(m,0)+')':''}`:''}).filter(Boolean).join('; '))}catch(e){}
   try{if(st.lec){const M=ucComp(),nv=((MAPAS[M.cab]||{}).naves||[]).length||6,X=[];for(let n=1;n<=20;n++){const P=ucPuntos(M.cab,n,hoy());if(!P.length)continue;const u=P[P.length-1];X.push(`nave ${M.inv?nv+1-n:n}: ${n1(u.v.ta)} °C, ${n1(u.v.hr,0)} % humedad, ventanas ${(u.v.vent||[]).join('/')} % (a las ${new Date(u.t).toTimeString().slice(0,5)})`)}if(X.length)L.push(`CLIMA AHORA EN ${cabNombre(M.cab).toUpperCase()}: `+X.join('; '))}}catch(e){}
   try{const P=[];const ps=Object.keys(st.cfg.productos);for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){const r=mezDe(mezTipo(ps[i]),mezTipo(ps[j]));if(r==='I'||r==='R')P.push(`${pn(ps[i])} + ${pn(ps[j])}: ${r==='I'?'incompatibles':'se reduce la solubilidad'}`)}if(P.length)L.push('MEZCLAS QUE NO VAN BIEN (lo demás es compatible): '+P.join('; '))}catch(e){}
   L.push('PANTALLAS: '+TABS.filter(([k])=>VIEWS[k]&&tabPermitida(k)&&!['mas'].includes(k)).map(([k,t])=>`${k} = ${t}`).join('; '));
   return L.join('\n')}
-function agPrompt(t){return `Eres AGRO, el asistente de voz de la app de fertirrigación de una finca de tomate en Murcia. Te hablan por voz en el campo, a veces con las manos ocupadas.
+function agPrompt(t){let ctx='';try{ctx=agContexto()}catch(e){console.error('AGRO contexto',e);ctx='(no se han podido leer los datos de la app)'}return `Eres AGRO, el asistente de voz de la app de fertirrigación de una finca de tomate en Murcia. Te hablan por voz en el campo, a veces con las manos ocupadas.
 Contesta en español de España, MUY breve (una o dos frases, se va a leer en voz alta), sin listas, sin emojis, con números redondeados y sus unidades.
 
 DATOS DE AHORA:
-${agContexto()}
+${ctx}
 
 ACCIONES QUE PUEDES HACER (en "acciones"; solo si te lo piden claramente):
 - {"tipo":"ir","tab":"id de pantalla","cab":"id de cabezal o null"} → abrir una pantalla
@@ -1089,18 +1093,20 @@ ACCIONES QUE PUEDES HACER (en "acciones"; solo si te lo piden claramente):
 - {"tipo":"hecho","bidon":"id","cuando":"ayer|antes|hora","hora":"HH:MM o null","cm":130} → se ha hecho el bidón (ayer después de leer, hoy antes de regar o hoy a una hora) y lo que marcaba la regla al hacerlo
 - {"tipo":"m3","cab":"id","m3":205} → agua regada hoy en un cabezal
 - {"tipo":"nota","texto":"…","fecha":"AAAA-MM-DD o null","hora":"HH:MM o null"} → nota o recordatorio (si dice una hora o un día, ponlos)
-Reglas: usa SOLO ids de los datos de arriba. Si falta algo para hacer la acción (qué bidón, cuántos cm…), pregúntalo en "decir" y no la hagas. Si te preguntan algo, contesta con los datos de arriba; si no está, dilo claro y no inventes. «El potásico», «el calcio», «el hierro», «el nítrico» son los bidones de ese nombre; si no dice cabezal y hay varios, usa el que tiene abierto (${cabNombre(st.cab)}).
+Reglas: usa SOLO ids de los datos de arriba. Si falta algo para hacer la acción (qué bidón, cuántos cm…), pregúntalo en "decir" y no la hagas. Si te preguntan algo, contesta con los datos de arriba; si no está, dilo claro y no inventes. Para el tiempo usa la previsión de arriba. Si solo te saludan o te llaman, contesta «Dime». «El potásico», «el calcio», «el hierro», «el nítrico» son los bidones de ese nombre; si no dice cabezal y hay varios, usa el que tiene abierto (${cabNombre(st.cab)}).
 
 CONVERSACIÓN RECIENTE:
 ${AG.hist.slice(-6).map(m=>(m.r==='yo'?'Usuario: ':'AGRO: ')+m.t).join('\n')||'(ninguna)'}
 Usuario: ${t}
 
 Responde SOLO con JSON: {"decir":"lo que vas a decir en voz alta","acciones":[]}`}
-async function agPide(t){t=String(t||'').trim();if(!t||AG.busy)return;AG.ab=true;AG.hist.push({r:'yo',t});AG.busy=true;AG.est='';AG.hecho=[];agPinta();let r=null;
-  try{r=await iaFotoJson(agPrompt(t),[])}catch(e){AG.busy=false;const m=e&&e.code==='sin_ia'?'Para entenderte necesito la IA de la app: actívala en Ajustes.':'No he podido pensar la respuesta. Mira la conexión y prueba otra vez.';AG.hist.push({r:'ag',t:m});agHabla(m);agPinta();return}
+const AG_ERR={sin_ia:'Para entenderte necesito la IA de la app: actívala en Ajustes.',red:'No tengo conexión con la IA. Mira la cobertura y prueba otra vez.',ia_clave:'La clave de Claude del servidor no es válida.',ia_creditos:'La cuenta de Claude no tiene saldo.',ia_cuota:'La IA está saturada ahora mismo. Prueba en un minuto.',ia_ocupada:'La IA está saturada ahora mismo. Prueba en un minuto.',ia_sesion:'Tu sesión ha caducado: sal y vuelve a entrar.',ia_sinacceso:'Tu usuario no tiene acceso a la IA.',ia_origen:'El servidor de IA no acepta esta dirección.',ia_appcheck:'La IA de Google ha rechazado la petición (comprobación de la app).',ia_noactiva:'La IA de Google no está activada en el proyecto.',ia_modelo:'El modelo de IA no está disponible.',ia_bloqueo:'La IA no ha querido contestar a eso.'};
+const agSoloLlamada=t=>/^\s*(?:oye|hola|ey|eh)?\s*a\s?gro\s*[.,!¡?¿]*\s*$/i.test(t);
+async function agPide(t){t=String(t||'').trim();if(!t||AG.busy)return;AG.ab=true;t=t.replace(/^\s*(?:oye|hola|ey)\s+a\s?gro\b[\s,.:]*/i,'')||t;if(agSoloLlamada(t)){AG.hist.push({r:'yo',t},{r:'ag',t:'Dime.'});agPinta();agHabla('Dime',true);return}AG.hist.push({r:'yo',t});AG.busy=true;AG.est='';AG.hecho=[];agPinta();let r=null;
+  try{r=await iaFotoJson(agPrompt(t),[],{rapido:true});if(!r||typeof r!=='object')throw{code:'vacia'}}catch(e){AG.busy=false;console.error('AGRO',e);const m=(e&&AG_ERR[e.code])||('No he podido pensar la respuesta'+(e&&e.code?' ('+e.code+(e.detail?': '+String(e.detail).slice(0,80):'')+')':'')+'. Prueba otra vez.');AG.hist.push({r:'ag',t:m});agHabla(m);agPinta();return}
   AG.busy=false;const decir=String(r&&r.decir||'').trim()||'Hecho.',acc=Array.isArray(r&&r.acciones)?r.acciones.slice(0,6):[];
   let extra='';try{const h=await agHaz(acc);AG.hecho=h.ok;if(h.mal.length)extra=' Pero no he podido: '+h.mal.join('; ')+'.'}catch(e){extra=' No he podido apuntarlo.'}
-  AG.hist.push({r:'ag',t:decir+extra});agPinta();agHabla(decir+extra)}
+  AG.hist.push({r:'ag',t:decir+extra});agPinta();agHabla(decir+extra,/\?\s*$/.test(decir))}
 /* Hacer lo que ha pedido: todo en el día de hoy y guardado */
 async function agHaz(acc){const ok=[],mal=[];let dia=false,ir=null;const nb=b=>`${b.nombre} (${b.cabezales.map(cabNombre).join(' + ')})`,vis=new Set(cabsVis().map(c=>c.id));
   const hoyAbierto=async()=>{if(st.fecha!==hoy()){if(st.dirtyReg)await saveReg();await loadFecha(hoy())}};
@@ -2677,8 +2683,8 @@ const ucComp=()=>({cab:'gas',inv:true,modo:'media',...((st.cfg&&st.cfg.climaComp
 /* Media de los compartimentos leídos (temperatura, humedad, máxima, mínima y apertura media de ventanas) */
 function ucMedia(res){const C=res.filter(x=>x.comp),m=f=>esMedia(C.map(x=>x[f])),v=esMedia(C.flatMap(x=>x.vent||[]));return{n:C.length,ta:m('ta'),hr:m('hr'),tmax:m('tmax'),tmin:m('tmin'),vent:v==null?[]:[Math.round(v)]}}
 const ucCompK=n=>{const M=ucComp(),nv=((MAPAS[M.cab]||{}).naves||[]).length||6;return 'n'+(M.inv?nv+1-n:n)};
-async function iaFotoJson(prompt,blobs){const modo=iaModo();if(!modo)throw{code:'sin_ia'};if(modo==='claude')return await SM.json(prompt,{modelTier:'default',cache:false,images:blobs});
-  if(modo==='gemini')return jsonSuelto(await NUBE.ia.json(prompt,blobs));return await iaServidor(prompt,blobs)}
+async function iaFotoJson(prompt,blobs,opts){const modo=iaModo();if(!modo)throw{code:'sin_ia'};if(modo==='claude')return await SM.json(prompt,{modelTier:'default',cache:false,images:blobs});
+  if(modo==='gemini')return jsonSuelto(await NUBE.ia.json(prompt,blobs,opts));return await iaServidor(prompt,blobs)}
 const ucNum=v=>{if(v==null||v==='')return null;const n=typeof v==='number'?v:num(String(v));return n==null||!isFinite(n)?null:n};
 async function ucLeer(file){const zs=esZonas(st.cab).zs;let b=file;try{b=await compressImg(file)}catch(e){}st.es.uc={busy:true};renderMain();
   try{const r=await iaFotoJson(UC_PROMPT,[b]);const L=(r&&Array.isArray(r.lecturas)?r.lecturas:[]).map(x=>({zona:String(x&&x.zona||''),nave:ucNum(x&&x.nave),ta:ucNum(x&&x.ta),hr:ucNum(x&&x.hr),tmax:ucNum(x&&x.tmax),tmin:ucNum(x&&x.tmin),vent:(Array.isArray(x&&x.vent)?x.vent:x&&x.vent!=null?[x.vent]:[]).map(ucNum).filter(v=>v!=null),comp:+((/compart\w*\s*(\d+)/i.exec(String(x&&x.zona||''))||[])[1]||0)||null})).filter(x=>x.ta!=null||x.hr!=null||x.tmax!=null);

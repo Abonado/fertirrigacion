@@ -3,12 +3,14 @@
 //   OPENAI_API_KEY     →  clave de la API de OpenAI (platform.openai.com → API keys)
 //   ANTHROPIC_API_KEY  →  clave de la API de Claude (platform.claude.com → API keys)
 // Si están las dos, se usa Claude (salvo que pongas PROVEEDOR = openai).
-// Opcionales: OPENAI_MODEL (por defecto gpt-6-sol; gpt-6-luna es mucho más barato) y MODEL (modelo de Claude).
+// Opcionales: OPENAI_MODEL (por defecto gpt-6-sol; gpt-6-luna es mucho más barato), MODEL (modelo de Claude) y MODEL_RAPIDO
+// (el de AGRO, el asistente de voz, que tiene que contestar rápido; por defecto claude-haiku-5-5).
 // Solo responde a personas que han entrado en la app y que el administrador ha dado de alta.
 
 const PROYECTO = 'fertirrigacion-cabezales';           // proyecto de Firebase
 const ORIGENES = ['https://abonado.github.io'];          // desde dónde se puede usar
 const MODELO = 'claude-sonnet-5-5';
+const MODELO_RAPIDO = 'claude-haiku-5-5';
 const MODELO_OPENAI = 'gpt-6-sol';
 const JWK_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 // Instrucciones del asistente agrícola (no las puede cambiar la app ni quien pregunta)
@@ -94,7 +96,8 @@ export default {
     const esChat = Array.isArray(body.chat);
     const chat = esChat ? body.chat.slice(-20).map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', text: String(m.text || '').slice(0, 4000) })).filter(m => m.text) : [];
     if (esChat && (!chat.length || chat[chat.length - 1].role !== 'user')) return json({ error: 'peticion' }, 400);
-    const prompt = esChat ? '' : String(body.prompt || '').slice(0, 20000);
+    const prompt = esChat ? '' : String(body.prompt || '').slice(0, 30000);
+    const rapido = !esChat && body.rapido === true;
     if (!esChat && !prompt) return json({ error: 'peticion' }, 400);
     const tipos = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     const images = (Array.isArray(body.images) ? body.images : [])
@@ -127,12 +130,12 @@ export default {
     // 3b. Claude
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2026-10-21', 'content-type': 'application/json' },
+      headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify(esChat ? {
         model: env.MODEL || MODELO, max_tokens: 1500,
         system: SISTEMA_CHAT + (body.contexto ? '\n\nDatos de la finca de quien pregunta (úsalos solo si vienen al caso):\n' + String(body.contexto).slice(0, 6000) : ''),
         messages: chat.map((m, i) => ({ role: m.role, content: i === chat.length - 1 ? [...images, { type: 'text', text: m.text }] : m.text }))
-      } : { model: env.MODEL || MODELO, max_tokens: 2000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
+      } : { model: rapido ? (env.MODEL_RAPIDO || MODELO_RAPIDO) : (env.MODEL || MODELO), max_tokens: rapido ? 700 : 2000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
     });
     const j = await r.json().catch(() => null);
     if (!r.ok) {

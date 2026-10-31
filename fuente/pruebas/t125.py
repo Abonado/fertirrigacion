@@ -8,7 +8,7 @@ VOZ = r"""window._dicho=[];Object.defineProperty(window,'speechSynthesis',{confi
 window.SpeechSynthesisUtterance=function(t){this.text=t};
 window._oir='';window.SpeechRecognition=function(){const r=this;this.start=()=>{setTimeout(()=>{r.onresult&&r.onresult({results:[Object.assign([{transcript:window._oir}],{isFinal:true})]});setTimeout(()=>r.onend&&r.onend(),20)},50)};this.stop=()=>{r.onend&&r.onend()}};
 """
-IA = "window._prs=[];window._resp=[];window.iaFotoJson=async(pr)=>{window._prs.push(pr);return window._resp.shift()};"
+IA = "window._prs=[];window._opts=[];window._resp=[];window.iaFotoJson=async(pr,b,o)=>{window._prs.push(pr);window._opts.push(o);const r=window._resp.shift();if(r&&r.error)throw r.error;return r};0"
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); ctx = await b.new_context(service_workers='block', viewport={'width': 390, 'height': 844}, locale='es-ES', timezone_id='Europe/Madrid', is_mobile=True, has_touch=True)
@@ -41,6 +41,15 @@ async def main():
         await pg.fill('#agtxt', 'recuérdame pedir nitrato'); await pg.press('#agtxt', 'Enter'); await pg.wait_for_timeout(1200)
         n = await pg.evaluate("(st.notas||[]).find(x=>x.texto==='Pedir nitrato')"); assert n and n['cuando'] == '2099-01-02T08:00', n
         assert 'NO HE PODIDO' in (await pg.evaluate("window._dicho"))[-1].upper()
+        assert await pg.evaluate("window._opts.every(o=>o&&o.rapido===true)"), 'AGRO pide el modelo rápido'
+        # «Oye Agro» solo: contesta «Dime» sin gastar IA
+        await pg.evaluate("window._oir=''"); n0 = await pg.evaluate("window._prs.length"); await pg.fill('#agtxt', 'Oye Agro'); await pg.press('#agtxt', 'Enter'); await pg.wait_for_timeout(500)
+        assert await pg.evaluate("window._prs.length") == n0 and (await pg.evaluate("window._dicho"))[-1] == 'Dime'
+        await pg.wait_for_timeout(500)   # después de «Dime» vuelve a escuchar solo
+        # si la IA falla, dice por qué
+        await pg.evaluate("window._resp.push({error:{code:'ia_creditos'}})"); await pg.fill('#agtxt', 'qué tiempo hace hoy'); await pg.press('#agtxt', 'Enter'); await pg.wait_for_timeout(600)
+        assert 'NO TIENE SALDO' in (await pg.evaluate("window._dicho"))[-1].upper()
+        assert 'TIEMPO (previsión de la finca)' in await pg.evaluate("window._prs[window._prs.length-1]")
         # cerrar
         await pg.click('[data-ag="cerrar"]'); await pg.wait_for_timeout(200); assert await pg.locator('#agp').is_hidden()
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)

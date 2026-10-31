@@ -221,8 +221,8 @@ let iaSondeado=false;
 function iaSondear(){if(iaSondeado||!iaUrl())return;iaSondeado=true;fetch(iaUrl()).then(r=>r.json()).then(j=>{if(j&&j.proveedor)iaProvPon(j.proveedor)}).catch(()=>{})}
 const iaUrl=()=>{try{return (st.cfg&&st.cfg.iaUrl)||''}catch(e){return ''}};
 const CL_ERR={sesion:'ia_sesion',sin_acceso:'ia_sinacceso',creditos:'ia_creditos',limite:'ia_cuota',ocupada:'ia_ocupada',clave:'ia_clave',sin_clave:'ia_clave',origen:'ia_origen'};
-async function iaClaude(prompt,blobs){const tk=await N.auth.currentUser.getIdToken();const images=[];for(const b of blobs||[])images.push({data:await aB64(b),type:b.type||'image/jpeg'});
-  let r;try{r=await fetch(iaUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({prompt,images})})}catch(e){throw{code:'red'}}
+async function iaClaude(prompt,blobs,opts){const tk=await N.auth.currentUser.getIdToken();const images=[];for(const b of blobs||[])images.push({data:await aB64(b),type:b.type||'image/jpeg'});
+  let r;try{r=await fetch(iaUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({prompt,images,...(opts&&opts.rapido?{rapido:true}:{})})})}catch(e){throw{code:'red'}}
   const j=await r.json().catch(()=>null);if(!r.ok||!j||!j.text){console.error('IA Claude',r.status,j);throw{code:(j&&CL_ERR[j.error])||'ia_error'}}iaProvPon(j.proveedor);N.ia.ultimo=j.proveedor||iaProv()||'IA';return j.text}
 /* Chat agrícola: con Claude (servidor propio, que pone las instrucciones) o, si no hay servidor, con Gemini */
 const SISTEMA_CHAT=`Eres el asistente agronómico de Agro FLY, una app de fertirrigación y gestión de fincas (sobre todo tomate en invernadero en la Región de Murcia, también árboles al aire libre).
@@ -240,7 +240,7 @@ async function chatGemini(chat,contexto,blob){let I;try{I=await iaInit()}catch(e
   let ult=null;for(const m of IA_MODELOS){try{const model=I.AI.getGenerativeModel(I.ai,{model:m,systemInstruction:SISTEMA_CHAT+(contexto?'\n\nDatos de la finca de quien pregunta (úsalos solo si vienen al caso):\n'+contexto:''),generationConfig:{temperature:0.4}});
       const r=await model.generateContent({contents});return r.response.text()}catch(e){console.error('Chat',m,e);ult=iaCode(e);if(ult!=='ia_modelo')throw{code:ult}}}
   throw{code:ult||'ia_error'}}
-N.ia={nombre:()=>{if(!iaUrl())return 'Gemini';iaSondear();return iaProv()||'la IA del servidor'},async chat(chat,contexto,blob){if(!navigator.onLine)throw{code:'red'};chat=chat.slice(-20);return iaUrl()?chatClaude(chat,contexto,blob):chatGemini(chat,contexto,blob)},async json(prompt,blobs){if(!navigator.onLine)throw{code:'red'};if(iaUrl())return iaClaude(prompt,blobs);let I;try{I=await iaInit()}catch(e){console.error(e);throw{code:'red'}}
+N.ia={nombre:()=>{if(!iaUrl())return 'Gemini';iaSondear();return iaProv()||'la IA del servidor'},async chat(chat,contexto,blob){if(!navigator.onLine)throw{code:'red'};chat=chat.slice(-20);return iaUrl()?chatClaude(chat,contexto,blob):chatGemini(chat,contexto,blob)},async json(prompt,blobs,opts){if(!navigator.onLine)throw{code:'red'};if(iaUrl())return iaClaude(prompt,blobs,opts);let I;try{I=await iaInit()}catch(e){console.error(e);throw{code:'red'}}
   const parts=[prompt];for(const b of blobs||[])parts.push({inlineData:{data:await aB64(b),mimeType:b.type||'image/jpeg'}});
   let ult=null;for(const m of IA_MODELOS){try{const model=I.AI.getGenerativeModel(I.ai,{model:m,generationConfig:{responseMimeType:'application/json',temperature:0.3}});
       const r=await model.generateContent(parts);return r.response.text()}
