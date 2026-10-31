@@ -619,6 +619,8 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .cmbf{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cmbf .field:nth-child(3){grid-column:1/-1}.cmbf .field{min-width:0}.cmbf .inp{min-width:0}.cmbf input,.cmbf select{min-width:0;width:100%}
 .cmbres{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;text-transform:none;color:var(--muted)}.cmbres b{color:var(--ink)}.cmbres .perd,.cmbres .perd b,.cmbt .perd,.perdn{color:var(--bad)}.cmbres .alc b{color:var(--ok)}
 .cmbt th small{display:block;font-weight:500;color:var(--muted)}.cmbt td,.cmbt th{text-align:right;white-space:nowrap}.cmbt td:first-child,.cmbt th:first-child{text-align:left}.cmbt tr.hoyf td{background:var(--ok-bg,#e6f2ea)}.cmbt tr.tot td{border-top:2px solid var(--line)}
+.cmbf .cmbw{grid-column:1/-1}.cmbant{display:grid;align-content:center;min-height:42px}.cmbant b{font-size:16px}.cmbant small{color:var(--muted);text-transform:none}
+.cmbcu{font-size:13px;text-transform:none;background:var(--surface-2,#eef1ee);border-radius:8px;padding:7px 9px;color:var(--ink)}.cmbcu.bad{background:#fbeceb;color:var(--bad)}.cmbt small.lec{display:block;color:var(--muted);font-size:10.5px}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -756,13 +758,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{tipo:'planta',cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},perd:{},perdM:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},trampa:{},meteo:{},sug:null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},perd:{},perdM:{},vac:{},hT:{},hH:{},hA:{},hD:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},trampa:{},meteo:{},sug:null}}
 /* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
 const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
 const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
 st.regMod=new Set();
 const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
-function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},perd:{...(r.perd||{})},perdM:{...(r.perdM||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},meteo:{...(r.meteo||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},perd:{...(r.perd||{})},perdM:{...(r.perdM||{})},vac:{...(r.vac||{})},hT:{...(r.hT||{})},hH:{...(r.hH||{})},hA:{...(r.hA||{})},hD:{...(r.hD||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},meteo:{...(r.meteo||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -955,24 +957,41 @@ function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(
    Los cm gastados de cada bidón del cabezal en una sola pantalla (son los mismos de Cuentas del día) y, aparte, la pérdida del
    bidón (fuga, rebose, limpieza…) con su motivo. Lo perdido baja el nivel y sale del almacén, pero no cuenta como abono aplicado. */
 const PERD_M=['Fuga','Rebose','Limpieza','Vaciado','Otro'];
+/* Lectura de la regla (cm que marca, «vacío»): hoy menos la anterior = cm gastados. Si entre medias se hizo el bidón:
+   (lo que marcaba al hacerlo − la anterior) + (hoy − lo que marcaba recién hecho, 0 si se llenó hasta arriba). */
+const HT={ayer:'Ayer, después de la lectura',antes:'Hoy, antes de regar',hora:'Hoy, a una hora'};
+function vacPrev(b){let best=null;for(const r of st.hist||[]){if(r.fecha>=st.fecha)continue;const v=(r.vac||{})[b.id];if(v!=null&&(!best||r.fecha>best.fecha))best={fecha:r.fecha,v}}return best}
+function cmbCalc(b){const R=st.reg,h=(R.vac||{})[b.id];if(h==null)return null;const p=vacPrev(b),t=(R.hT||{})[b.id],a=(R.hA||{})[b.id],d=(R.hD||{})[b.id]||0;
+  if(t&&a!=null){if(!p)return {g:+(h-d).toFixed(1),txt:`${fmt(h,1)} − ${fmt(d,1)} (desde que se hizo; sin lectura anterior)`,p,t};const g1=+(a-p.v).toFixed(1),g2=+(h-d).toFixed(1);return {g:+(g1+g2).toFixed(1),g1,g2,p,t,txt:`(${fmt(a,1)} − ${fmt(p.v,1)}) + (${fmt(h,1)} − ${fmt(d,1)}) = ${fmt(g1,1)} + ${fmt(g2,1)}`}}
+  if(!p)return {g:null,p:null};return {g:+(h-p.v).toFixed(1),p,txt:`${fmt(h,1)} − ${fmt(p.v,1)}`}}
+function cmbRecalc(id){const b=bid(id),c=b&&cmbCalc(b);if(!c||c.g==null)return;st.reg.cm[id]=c.g;marcaReg('cm.'+id);document.querySelectorAll(`[data-k="reg.cm.${id}"]`).forEach(i=>{i.value=inVal(c.g)})}
+function cmbCuenta(b){const c=cmbCalc(b);if(!c)return '';if(c.g==null)return `<div class="note">Primera lectura de este bidón: hoy escribe los cm gastados a mano. Desde mañana se restan solos.</div>`;
+  const hecho=c.t?`Bidón hecho ${c.t==='ayer'?'ayer, después de la lectura':c.t==='antes'?'hoy antes de regar':'hoy a las '+esc((st.reg.hH||{})[b.id]||'¿?')} cuando marcaba ${fmt((st.reg.hA||{})[b.id],1)} cm. `:'';
+  return `<div class="cmbcu ${c.g<0?'bad':''}">${hecho}${c.p?`Lectura anterior ${fmt(c.p.v,1)} cm (${esc(fCorta(c.p.fecha))}). `:''}<b>${c.txt} = ${fmt(c.g,1)} cm gastados</b>${c.g<0?' · la de hoy es menor que la anterior: ¿se hizo el bidón? Márcalo abajo.':''}</div>`}
 function cmbRes(b){const cm=st.reg.cm[b.id],p=(st.reg.perd||{})[b.id]||0,m=(st.reg.perdM||{})[b.id];if(cm==null&&!p)return '<small>Sin apuntar</small>';const ap=cm!=null?Math.max(0,cm-p):null;
   return `${cm!=null?`<span>Gastado <b>${fmt(cm,1)} cm</b> · ${fmt(cm*b.lpcm,0)} L</span>`:''}${p?`<span class="perd">Perdido <b>${fmt(p,1)} cm</b> · ${fmt(p*b.lpcm,0)} L${m?' · '+esc(m):''}</span>`:''}${ap!=null&&p?`<span class="alc">Al cultivo <b>${fmt(ap,1)} cm</b> · ${fmt(ap*b.lpcm,0)} L</span>`:''}${p&&cm!=null&&p>cm?'<span class="perd">La pérdida es mayor que lo gastado: revisa</span>':''}${p&&cm==null?'<span class="perd">Apunta también los cm gastados</span>':''}`}
 function cmbHist(bs){const H=(st.hist||[]).filter(r=>r.fecha!==st.fecha&&r.fecha<st.fecha&&bs.some(b=>(r.cm||{})[b.id]!=null||(r.perd||{})[b.id]>0)).sort((a,b)=>a.fecha<b.fecha?1:-1).slice(0,13);
-  const filas=[{fecha:st.fecha,cm:st.reg.cm,perd:st.reg.perd||{},hoy:true},...H];if(!filas.some(r=>bs.some(b=>(r.cm||{})[b.id]!=null)))return '';
+  const filas=[{fecha:st.fecha,cm:st.reg.cm,perd:st.reg.perd||{},vac:st.reg.vac||{},hT:st.reg.hT||{},hoy:true},...H];if(!filas.some(r=>bs.some(b=>(r.cm||{})[b.id]!=null)))return '';
   const tot=b=>filas.reduce((a,r)=>a+((r.cm||{})[b.id]||0),0),totP=b=>filas.reduce((a,r)=>a+((r.perd||{})[b.id]||0),0);
-  return `<section class="card" data-out="cmbh"><div><h3>Hoja de los últimos días</h3><div class="sub">cm gastados de cada bidón · en rojo, lo perdido · toca un día para cambiarlo</div></div>
+  return `<section class="card" data-out="cmbh"><div><h3>Hoja de los últimos días</h3><div class="sub">cm gastados de cada bidón (debajo, lo que marcaba la regla; ⟲ = se hizo el bidón) · en rojo, lo perdido · toca un día para cambiarlo</div></div>
     <div class="tbl" style="overflow-x:auto"><table class="cmbt"><thead><tr><th>Día</th>${bs.map(b=>`<th>${esc(b.nombre.replace(/^Depósito\s+/i,''))}<small>×${fmt(b.lpcm,1)}</small></th>`).join('')}</tr></thead><tbody>
-    ${filas.map(r=>`<tr class="${r.hoy?'hoyf':''}"><td><button class="lnk" type="button" data-cmbd="${r.fecha}">${r.hoy?'<b>'+esc(fCorta(r.fecha))+'</b>':esc(fCorta(r.fecha))}</button></td>${bs.map(b=>{const v=(r.cm||{})[b.id],p=(r.perd||{})[b.id];return `<td>${v!=null?fmt(v,1):'—'}${p>0?`<small class="perd"> −${fmt(p,1)}</small>`:''}</td>`}).join('')}</tr>`).join('')}
+    ${filas.map(r=>`<tr class="${r.hoy?'hoyf':''}"><td><button class="lnk" type="button" data-cmbd="${r.fecha}">${r.hoy?'<b>'+esc(fCorta(r.fecha))+'</b>':esc(fCorta(r.fecha))}</button></td>${bs.map(b=>{const v=(r.cm||{})[b.id],p=(r.perd||{})[b.id];const L=(r.vac||{})[b.id],H=(r.hT||{})[b.id];return `<td>${v!=null?fmt(v,1):'—'}${p>0?`<small class="perd"> −${fmt(p,1)}</small>`:''}${L!=null?`<small class="lec">${H?'⟲ ':''}marca ${fmt(L,1)}</small>`:''}</td>`}).join('')}</tr>`).join('')}
     <tr class="tot"><td>Total</td>${bs.map(b=>`<td><b>${fmt(tot(b)*b.lpcm,0)} L</b>${totP(b)>0?`<small class="perd"> −${fmt(totP(b)*b.lpcm,0)} L</small>`:''}</td>`).join('')}</tr></tbody></table></div></section>`}
 function vCmBid(){const c=cabById(st.cab);if(!c)return '';if(st.hist===null)loadHist();const bs=bidonesDe(st.cab);
-  let h=`<section class="card"><div><h3>CM de bidones · ${esc(c.nombre)}</h3><div class="sub">${esc(fFecha(st.fecha))} · los cm gastados de cada bidón y, si se ha perdido algo, la pérdida aparte</div></div>`;
+  let h=`<section class="card"><div><h3>CM de bidones · ${esc(c.nombre)}</h3><div class="sub">${esc(fFecha(st.fecha))} · apunta lo que marca la regla de cada bidón y se resta solo con la de la lectura anterior</div></div>`;
   if(!bs.length)return h+'<div class="note">Este cabezal no tiene depósitos.</div></section>';
-  h+=`<div class="cmb">${bs.map(b=>{const g=esGaste(b),m=(st.reg.perdM||{})[b.id]||'';
+  h+=`<div class="cmb">${bs.map(b=>{const m=(st.reg.perdM||{})[b.id]||'',p=vacPrev(b),t=(st.reg.hT||{})[b.id]||'';
     return `<div class="cmbr"><div class="cmbh"><b>${esc(b.nombre)}</b><small>×${fmt(b.lpcm,1)} L/cm${b.cabezales.length>1?' · '+esc(b.cabezales.map(cabNombre).join(' + ')):''}</small></div>
-      <div class="cmbf"><div class="field"><label for="cb_${b.id}">${g?'Vacío hoy':'cm gastados'}</label><div class="inp"><input id="cb_${b.id}" data-k="reg.${g?'niv':'cm'}.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(g?(st.reg.niv||{})[b.id]:st.reg.cm[b.id])}"><span class="u">cm</span></div></div>
+      <div class="cmbf"><div class="field"><label>Lectura anterior</label><div class="cmbant">${p?`<b>${fmt(p.v,1)} cm</b><small>${esc(fFecha(p.fecha))}</small>`:'<small>Sin lectura</small>'}</div></div>
+      <div class="field"><label for="cv_${b.id}">Lectura hoy</label><div class="inp"><input id="cv_${b.id}" data-k="reg.vac.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg.vac||{})[b.id])}"><span class="u">cm</span></div></div>
+      <div class="field cmbw"><label for="ch_${b.id}">¿Se ha hecho el bidón?</label><div class="inp"><select id="ch_${b.id}" data-k="reg.hT.${b.id}" data-text="1"><option value="">No</option>${Object.entries(HT).map(([k,x])=>`<option value="${k}" ${t===k?'selected':''}>${x}</option>`).join('')}</select></div></div>
+      ${t?`${t==='hora'?`<div class="field"><label for="chh_${b.id}">Hora</label><div class="inp"><input id="chh_${b.id}" type="time" data-k="reg.hH.${b.id}" data-text="1" value="${esc((st.reg.hH||{})[b.id]||'')}"></div></div>`:''}
+        <div class="field"><label for="cha_${b.id}">Marcaba al hacerlo</label><div class="inp"><input id="cha_${b.id}" data-k="reg.hA.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg.hA||{})[b.id])}"><span class="u">cm</span></div></div>
+        <div class="field"><label for="chd_${b.id}">Recién hecho marcaba</label><div class="inp"><input id="chd_${b.id}" data-k="reg.hD.${b.id}" inputmode="decimal" autocomplete="off" placeholder="0" value="${inVal((st.reg.hD||{})[b.id])}"><span class="u">cm</span></div></div>`:''}
+      <div class="field"><label for="cb_${b.id}">cm gastados</label><div class="inp"><input id="cb_${b.id}" data-k="reg.cm.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.cm[b.id])}"><span class="u">cm</span></div></div>
       <div class="field"><label for="cp_${b.id}">Pérdida</label><div class="inp"><input id="cp_${b.id}" data-k="reg.perd.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg.perd||{})[b.id])}"><span class="u">cm</span></div></div>
-      <div class="field"><label for="cpm_${b.id}">Motivo</label><div class="inp"><select id="cpm_${b.id}" data-k="reg.perdM.${b.id}" data-text="1"><option value="">—</option>${PERD_M.map(x=>`<option ${m===x?'selected':''}>${x}</option>`).join('')}</select></div></div></div>
-      <div class="cmbres" data-out="cmb_${b.id}">${cmbRes(b)}</div></div>`}).join('')}</div>
+      <div class="field cmbw"><label for="cpm_${b.id}">Motivo de la pérdida</label><div class="inp"><select id="cpm_${b.id}" data-k="reg.perdM.${b.id}" data-text="1"><option value="">—</option>${PERD_M.map(x=>`<option ${m===x?'selected':''}>${x}</option>`).join('')}</select></div></div></div>
+      <div data-out="cmbc_${b.id}">${cmbCuenta(b)}</div><div class="cmbres" data-out="cmb_${b.id}">${cmbRes(b)}</div></div>`}).join('')}</div>
     <div class="note">Se guarda con «Guardar» abajo, igual que las Cuentas del día (son los mismos cm).</div></section>`;
   return h+cmbHist(bs)}
 document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-cmbd]');if(!b||st.tab!=='cmbid')return;const f=b.dataset.cmbd;if(f===st.fecha)return;if(st.dirtyReg)await saveReg();await loadFecha(f)});
@@ -4237,7 +4256,7 @@ function applyCfg(p,v){const b=bid(p[2]);switch(p[1]){
   case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'avisos':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.avisosUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.avisosUrl=u;break}case 'sat':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.satUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.satUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'modo':if(MODOS[v])b.modo=v;break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
 function onInput(e){const t=e.target,k=t.dataset.k;if(!k)return;const p=k.split('.');let v=t.type==='checkbox'?t.checked:(t.dataset.text?t.value.trim():num(t.value));
   if(p[0]==='reg'){if(p[1]==='ceD'&&v!=null&&v>=50)v=v/1000;   // 4400 µS → 4,4 mS (4,4 también vale)
-    if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);if(p[1]==='mue'){const s=((cabById(st.cab)||{}).sectores||[]).find(x=>x.bandejas.some(bj=>bj.id===p[2])),o=s&&$('#mu_'+s.id);if(o)o.outerHTML=muHTML(s)}for(const o of document.querySelectorAll('#main [data-k]'))if(o!==t&&o.dataset.k===k&&o.type!=='checkbox')o.value=t.value;if(p[1]==='niv')autoCm(p[2])}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
+    if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);if(p[1]==='mue'){const s=((cabById(st.cab)||{}).sectores||[]).find(x=>x.bandejas.some(bj=>bj.id===p[2])),o=s&&$('#mu_'+s.id);if(o)o.outerHTML=muHTML(s)}for(const o of document.querySelectorAll('#main [data-k]'))if(o!==t&&o.dataset.k===k&&o.type!=='checkbox')o.value=t.value;if(p[1]==='niv')autoCm(p[2]);if(['vac','hA','hD','hT'].includes(p[1])){cmbRecalc(p[2]);if(p[1]==='hT'){softUpdate();renderSave();renderMain();return}}}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
   softUpdate();renderSave()}
 $('#main').addEventListener('input',onInput);
 $('#main').addEventListener('change',e=>{if(e.target.type==='checkbox')onInput(e)});
@@ -4254,7 +4273,7 @@ function diffCfg(a,b){const L=[];for(const nb of b.bidones){const ob=a.bidones.f
   return L}
 function errMsg(e){return e&&e.code==='quota_exceeded'?'No queda espacio en la base de datos de la página.':'No se pudo guardar'+(e&&e.code?' ('+e.code+')':'')+'. Prueba otra vez.'}
 /* Qué cabezales se ven afectados por un campo del día */
-function cabsDeCampo(k){const[g,id]=k.split('.');if(['m3','ceB','phB','ceR','inc','phS','incR','m3R','rad','obs'].includes(g))return [id];if(g==='cm'||g==='niv'||g==='perd'||g==='perdM'){const b=bid(id);return b?b.cabezales:[]}
+function cabsDeCampo(k){const[g,id]=k.split('.');if(['m3','ceB','phB','ceR','inc','phS','incR','m3R','rad','obs'].includes(g))return [id];if(['cm','niv','perd','perdM','vac','hT','hH','hA','hD'].includes(g)){const b=bid(id);return b?b.cabezales:[]}
   for(const c of st.cfg.cabezales)for(const s of c.sectores){if(s.id===id)return [c.id];if(s.bandejas.some(bj=>bj.id===id))return [c.id]}return []}
 async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{const f=st.fecha,mods=[...st.regMod],ahora=new Date().toISOString(),R0=st.reg,vals={};for(const k of mods){const[g,id]=k.split('.');vals[k]=(R0[g]||{})[id]??null}
   let srv=null;try{srv=await Store.getReg(f)}catch(e){}

@@ -36,5 +36,19 @@ async def main():
         assert '−1,0' in rows[2] and (str(round((20+15+10)*info['lpcm'])) in rows[-1].replace('.', ''))
         # tocar un día lo abre aquí mismo
         await pg.click('[data-cmbd]:not(:has(b))'); await pg.wait_for_timeout(800); assert await pg.evaluate("st.tab") == 'cmbid' and await pg.evaluate("st.fecha") != await pg.evaluate("hoy()")
+        # lectura de la regla: hoy − la anterior; y con el bidón hecho a una hora
+        await pg.evaluate(f"""(async()=>{{await loadFecha(hoy());const d=new Date(hoy()+'T12:00:00');d.setDate(d.getDate()-1);st.hist=[{{fecha:isoD(d),cm:{{}},vac:{{'{i}':87}}}}];st.reg.vac={{}};st.reg.hT={{}};st.reg.hA={{}};st.reg.hD={{}};st.tab='cmbid';renderAll()}})()""")
+        await pg.wait_for_timeout(800)
+        assert '87,0 CM' in (await pg.text_content('.cmbr')).upper()
+        await pg.fill(f'#cv_{i}', '125'); await pg.wait_for_timeout(300)
+        assert await pg.evaluate(f"st.reg.cm['{i}']") == 38 and await pg.input_value(f'#cb_{i}') == '38'
+        c = (await pg.text_content(f'[data-out="cmbc_{i}"]')).upper(); print(c); assert '125,0 − 87,0 = 38,0 CM GASTADOS' in c
+        await pg.select_option(f'#ch_{i}', 'hora'); await pg.wait_for_timeout(300)
+        await pg.fill(f'#chh_{i}', '09:30'); await pg.fill(f'#cha_{i}', '130'); await pg.fill(f'#cv_{i}', '40'); await pg.wait_for_timeout(300)
+        assert await pg.evaluate(f"st.reg.cm['{i}']") == 83
+        c = (await pg.text_content(f'[data-out="cmbc_{i}"]')).upper(); print(c); assert 'HOY A LAS 09:30' in c and '(130,0 − 87,0) + (40,0 − 0,0) = 43,0 + 40,0 = 83,0 CM GASTADOS' in c
+        await pg.screenshot(path='pruebas/salida/t123-lectura.png', full_page=True)
+        await pg.evaluate("saveReg()"); await pg.wait_for_timeout(1500)
+        g = await pg.evaluate("Store.getReg(st.fecha)"); assert g['vac'][i] == 40 and g['hA'][i] == 130 and g['hT'][i] == 'hora' and g['cm'][i] == 83
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())
