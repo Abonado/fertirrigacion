@@ -637,6 +637,11 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .cmbt th small{display:block;font-weight:500;color:var(--muted)}.cmbt td,.cmbt th{text-align:right;white-space:nowrap}.cmbt td:first-child,.cmbt th:first-child{text-align:left}.cmbt tr.hoyf td{background:var(--ok-bg,#e6f2ea)}.cmbt tr.tot td{border-top:2px solid var(--line)}
 .cmbf .cmbw{grid-column:1/-1}.cmbant{display:grid;align-content:center;min-height:42px}.cmbant b{font-size:16px}.cmbant small{color:var(--muted);text-transform:none}
 .cmbcu{font-size:13px;text-transform:none;background:var(--surface-2,#eef1ee);border-radius:8px;padding:7px 9px;color:var(--ink)}.cmbcu.bad{background:#fbeceb;color:var(--bad)}.cmbt small.lec{display:block;color:var(--muted);font-size:10.5px}
+.mezav{border-radius:10px;padding:9px 11px;font-size:13.5px;text-transform:none;margin-top:8px}.mezav ul{margin:4px 0 0;padding-left:18px}.mezav.bad{background:#fbeceb;color:var(--bad)}.mezav.warn{background:#fdf5e6;color:#8a5a00}.mezav.ok{background:var(--ok-bg,#e6f2ea);color:var(--ok)}
+.mezt{border-collapse:collapse;font-size:11.5px}.mezt th,.mezt td{border:1px solid #fff;padding:3px 5px;text-align:center}.mezt tbody th{text-align:left;white-space:nowrap;font-weight:600;text-transform:none}
+.mezt thead th{vertical-align:bottom;height:120px;padding:2px}.mezt thead th span{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;font-weight:600;text-transform:none}
+.mezt td.ok{background:#7cc06a;color:#123}.mezt td.warn{background:#f4d64a;color:#123}.mezt td.bad{background:#d9534f;color:#fff}.mzk{display:inline-block;padding:0 5px;border-radius:4px;font-weight:700}.mzk.ok{background:#7cc06a}.mzk.warn{background:#f4d64a}.mzk.bad{background:#d9534f;color:#fff}
+.mezty{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px 12px}.mezty .field span{font-size:12.5px;text-transform:none;color:var(--muted)}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -1342,7 +1347,7 @@ function vRellenar(){const bs=bidonesDe(st.cab);if(!bs.length)return `<section c
     <div class="field gd"><label for="gd_${x.id}">Gasto diario</label><div class="inp sm"><input id="gd_${x.id}" data-k="cfg.cons.${x.id}" inputmode="decimal" autocomplete="off" placeholder="${g.med!=null?inVal(+g.med.toFixed(1)):g.teo!=null?inVal(+g.teo.toFixed(1)):''}" value="${inVal(x.consumoDia)}"><span class="u">cm/día</span></div></div>
     <small data-out="gdn_${x.id}">${gdNota(x)}</small></div><div data-out="lvl_${x.id}">${nivelHTML(x)}</div></div>`}).join('')}</div></section>`;
   h+=`<div class="pick">${bs.map(x=>`<button class="chip" data-fill="${x.id}" aria-pressed="${x.id===sel}">${esc(x.nombre)}</button>`).join('')}</div>`;
-  h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${fmt(b.lpcm,1)} L/cm · capacidad ${fmt(b.capacidad,0)} L</div></div>
+  h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${fmt(b.lpcm,1)} L/cm · capacidad ${fmt(b.capacidad,0)} L</div></div>${mezAvisoHTML(b)}
     <div class="field big"><label for="fill_${b.id}">cm a llenar</label><div class="inp"><input id="fill_${b.id}" data-k="fill.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(cm)}"><span class="u">cm</span></div></div></div>
     <div data-out="fill">${fillOut(b)}</div>`;
   const L=st.lf&&st.lf.bidon===b.id?st.lf:null;
@@ -1386,8 +1391,40 @@ function vReceta(){const c=cabById(st.cab);let h=`<section class="summary" data-
       <div class="tbl"><table><thead><tr><th>Producto</th><th>Salida deseada</th><th>Por 1000 L</th><th>Por ${fmt(b.capacidad,0)} L</th><th>Constante</th></tr></thead><tbody>`;
     b.productos.forEach((x,i)=>{h+=`<tr><td>${esc(prod(x.p).n)}</td><td><div class="inp sm" style="display:inline-flex"><input id="ds_${b.id}_${i}" data-k="cfg.dosis.${b.id}.${i}" inputmode="decimal" autocomplete="off" value="${inVal(x.dosis)}"><span class="u">${uDosis(x.p)}</span></div></td>
       <td data-out="c1_${b.id}_${i}">${x.dosis?fmt(conc(b,x),2)+' '+uCant(x.p):'—'}</td><td data-out="c2_${b.id}_${i}">${x.dosis?fmt(conc(b,x)*b.capacidad/1000,1)+' '+uCant(x.p):'—'}</td><td data-out="c3_${b.id}_${i}">${x.dosis&&conc(b,x)?fmt(1000/conc(b,x),1):'—'}</td></tr>`});
-    h+=`</tbody></table></div>${b.principal==='kno3'?`<div data-out="suma_${b.id}">${sumaPotHTML(b)}</div>`:''}</section>`}
+    h+=`</tbody></table></div><div data-out="mez_${b.id}">${mezAvisoHTML(b)}</div>${b.principal==='kno3'?`<div data-out="suma_${b.id}">${sumaPotHTML(b)}</div>`:''}</section>`}
+  h+=mezTablaHTML();
   return h+`<div class="note">Cada receta que se guarda queda apuntada en la hoja mensual «Cambios de receta» (Riego → Parte diario).</div>`}
+/* ---------- Mezclas: qué abonos se pueden echar juntos en el mismo bidón ----------
+   Tabla de compatibilidad de fertilizantes (la del tablón de la finca, de Paloma Grupo Hortofrutícola): C compatibles,
+   R se reduce la solubilidad, I incompatibles. Cada producto de la app tiene su tipo en la tabla (se cambia en Receta → Tabla de mezclas).
+   Avisa en la receta y al rellenar si en un mismo bidón hay dos productos que no van juntos. */
+const MEZ_T=[['urea','Urea'],['nam','Nitrato de amonio'],['sam','Sulfato de amonio'],['nca','Nitrato de calcio'],['nmg','Nitrato de magnesio'],['map','Fosfato monoamónico'],['mkp','Fosfato monopotásico'],['nk','Nitrato de potasio'],
+  ['sk','Sulfato de potasio'],['clk','Cloruro de potasio'],['afo','Ácido fosfórico'],['ani','Ácido nítrico'],['asu','Ácido sulfúrico'],['smi','Sulfatos de Fe, Cu, Mn y Zn'],['que','Quelatos'],['smg','Sulfato de magnesio']];
+const MEZ_F={nam:'C',sam:'IC',nca:'CCI',nmg:'CCCC',map:'CCCII',mkp:'CCCIIC',nk:'CCRCCCC',sk:'CCRIICCC',clk:'CCCICCCCR',afo:'CCCIICCCCC',ani:'CCCCCCCCCCC',asu:'CCCIICCCRCCC',smi:'CCCIIICCRCCCC',que:'CCCRRRCCCCRICC',smg:'CCCIIICCRCCCCCC'};
+const MEZ=(()=>{const o={},col=MEZ_T.map(x=>x[0]);for(const[f,v]of Object.entries(MEZ_F))[...v].forEach((c,i)=>{o[f+'|'+col[i]]=c;o[col[i]+'|'+f]=c});return o})();
+const mezDe=(a,b)=>!a||!b?null:a===b?'C':MEZ[a+'|'+b]||null;
+const MEZ_DEF={kno3:'nk',k2so4:'sk',kcl:'clk',mkp:'mkp',zn:'smi',mn:'smi',h3po4:'afo',ca:'nca',trad:'que',fe:'que',hno3:'ani'};
+const mezTipo=p=>{const c=st.cfg.mezTipo||{};return p in c?c[p]:(MEZ_DEF[p]||'')};
+const MEZ_N={C:['ok','Compatibles'],R:['warn','Se reduce la solubilidad'],I:['bad','Incompatibles']};
+function mezBidon(b){const ps=b.productos.filter(x=>x.dosis>0).map(x=>x.p),out=[];
+  for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){const r=mezDe(mezTipo(ps[i]),mezTipo(ps[j]));if(r==='I'||r==='R')out.push({a:ps[i],b:ps[j],r})}
+  return out.sort((x,y)=>x.r===y.r?0:x.r==='I'?-1:1)}
+function mezAvisoHTML(b){const L=mezBidon(b);if(!L.length)return '';const malo=L.some(x=>x.r==='I');
+  return `<div class="mezav ${malo?'bad':'warn'}"><b>${malo?'⚠ No se pueden mezclar en este bidón':'Ojo al mezclar en este bidón'}</b><ul>${L.map(x=>`<li><b>${esc(pn(x.a))}</b> + <b>${esc(pn(x.b))}</b>: ${x.r==='I'?'incompatibles (precipitan)':'se reduce la solubilidad (disolver bien, por separado y con agua suficiente)'}</li>`).join('')}</ul></div>`}
+function mezTablaHTML(){const ps=Object.keys(st.cfg.productos),ed=esGestor(),M=st.mezC||{},ra=mezDe(mezTipo(M.a),mezTipo(M.b));
+  const col=MEZ_T.slice(0,15),fil=MEZ_T.slice(1);
+  return `<section class="card"><details ${st.mezAb?'open':''} data-mezdet="1"><summary><b>Tabla de mezclas</b> <small class="sub">qué abonos se pueden echar juntos</small></summary>
+    <div class="lbl">Comprobar dos productos</div><div class="row" style="flex-wrap:wrap">${['a','b'].map(k=>`<div class="inp"><select data-mezc="${k}"><option value="">Elige…</option>${ps.map(p=>`<option value="${p}" ${M[k]===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div>`).join('')}</div>
+    ${M.a&&M.b?(ra?`<div class="mezav ${MEZ_N[ra][0]}"><b>${MEZ_N[ra][1]}</b></div>`:`<div class="note">Alguno de los dos no tiene tipo en la tabla: pónselo abajo.</div>`):''}
+    <div class="lbl">Tabla completa · <span class="mzk ok">C</span> compatibles · <span class="mzk warn">R</span> se reduce la solubilidad · <span class="mzk bad">I</span> incompatibles</div>
+    <div style="overflow-x:auto"><table class="mezt"><thead><tr><th></th>${col.map(([,n])=>`<th><span>${esc(n)}</span></th>`).join('')}</tr></thead><tbody>
+    ${fil.map(([f,n],i)=>`<tr><th>${esc(n)}</th>${col.map(([c],j)=>j<=i?`<td class="${MEZ_N[mezDe(f,c)][0]}">${mezDe(f,c)}</td>`:'<td></td>').join('')}</tr>`).join('')}</tbody></table></div>
+    <div class="lbl">Tipo de cada producto de la app en la tabla</div><div class="mezty">${ps.map(p=>`<label class="field"><span>${esc(pn(p))}</span><div class="inp"><select data-mezt="${p}" ${ed?'':'disabled'}><option value="">No está en la tabla</option>${MEZ_T.map(([k,n])=>`<option value="${k}" ${mezTipo(p)===k?'selected':''}>${esc(n)}</option>`).join('')}</select></div></label>`).join('')}</div>
+    <div class="note">Tabla del tablón de la finca. Tradecorp calcio y Microstep van como «Quelatos»: si alguno no lo es, cámbialo aquí. ${ed?'Los cambios se guardan con «Guardar» abajo.':''}</div></details></section>`}
+document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='receta'||!t.dataset)return;
+  if(t.dataset.mezc){st.mezC={...(st.mezC||{}),[t.dataset.mezc]:t.value};st.mezAb=true;renderMain()}
+  else if(t.dataset.mezt&&esGestor()){st.cfg.mezTipo={...(st.cfg.mezTipo||{}),[t.dataset.mezt]:t.value};st.dirtyCfg=true;st.mezAb=true;renderSave();renderMain()}});
+document.addEventListener('toggle',e=>{if(st.tab==='receta'&&e.target&&e.target.dataset&&e.target.dataset.mezdet)st.mezAb=e.target.open},true);
 const SUMA_MIN=505,SUMA_MAX=515;
 function sumaPotHTML(b){const pp=b.productos.find(x=>x.p===b.principal);if(!pp||!pp.dosis)return '';let r=0;for(const x of b.productos)if(x.dosis&&!prod(x.p).liq)r+=x.dosis/pp.dosis;
   const k=r*b.capacidad/1000;if(!k)return '';const s=(b.kgPrincipal||0)*k,ok=s>=SUMA_MIN&&s<=SUMA_MAX,rec=Math.round((SUMA_MIN+SUMA_MAX)/2/k),sr=rec*k;
@@ -6185,7 +6222,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v167';
+window.APP_V='abonado-v168';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
