@@ -630,6 +630,11 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .date input{position:absolute;inset:0;width:100%;max-width:none;height:100%;opacity:0;border:0;padding:0;cursor:pointer}
 .date input::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .date.otro{background:var(--navy);border-color:var(--navy);color:#fff}
+.cmb{display:grid;gap:10px}.cmbr{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
+.cmbh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.cmbh b{font:700 15px var(--f-display);letter-spacing:.04em;text-transform:uppercase}.cmbh small{color:var(--muted);text-transform:none}
+.cmbf{display:grid;grid-template-columns:1fr 1fr;gap:8px}.cmbf .field:nth-child(3){grid-column:1/-1}.cmbf .field{min-width:0}.cmbf .inp{min-width:0}.cmbf input,.cmbf select{min-width:0;width:100%}
+.cmbres{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;text-transform:none;color:var(--muted)}.cmbres b{color:var(--ink)}.cmbres .perd,.cmbres .perd b,.cmbt .perd,.perdn{color:var(--bad)}.cmbres .alc b{color:var(--ok)}
+.cmbt th small{display:block;font-weight:500;color:var(--muted)}.cmbt td,.cmbt th{text-align:right;white-space:nowrap}.cmbt td:first-child,.cmbt th:first-child{text-align:left}.cmbt tr.hoyf td{background:var(--ok-bg,#e6f2ea)}.cmbt tr.tot td{border-top:2px solid var(--line)}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -771,13 +776,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{tipo:'planta',cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},trampa:{},meteo:{},sug:null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},perd:{},perdM:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},trampa:{},meteo:{},sug:null}}
 /* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
 const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
 const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
 st.regMod=new Set();
 const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
-function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},meteo:{...(r.meteo||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},perd:{...(r.perd||{})},perdM:{...(r.perdM||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},meteo:{...(r.meteo||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -796,7 +801,7 @@ const conc=(b,x)=>(x.dosis||0)*factor(b);                     // kg o L por 1000
 function m3Total(b){let s=0;for(const c of b.cabezales){const v=st.reg.m3[c];if(v==null)return null;s+=v}return s}
 // Depósito compartido: a cada cabezal le toca lo esperado por sus m³ y la receta,
 // y la diferencia con lo gastado de verdad se reparte a partes iguales
-function cmCab(b,cab){const cm=st.reg.cm[b.id];if(cm==null)return null;if(b.cabezales.length<2)return cm;
+function cmCab(b,cab){const cm0=st.reg.cm[b.id];if(cm0==null)return null;const cm=Math.max(0,cm0-((st.reg.perd||{})[b.id]||0));if(b.cabezales.length<2)return cm;
   const pp=b.productos.find(x=>x.p===b.principal);if(!pp||!pp.dosis||!b.kgPrincipal||!b.lpcm)return null;
   const esp=c=>{const m=st.reg.m3[c];return m==null?null:pp.dosis*(1000/b.kgPrincipal)*m/100/b.lpcm};
   const es=b.cabezales.map(esp);if(es.some(v=>v==null))return null;
@@ -825,7 +830,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
+const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -939,7 +944,7 @@ function renderCabs(){renderSaludo();fechaTxt();const campo=areaDe(st.tab)==='ca
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
 const IC_HOY='<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',IC_MAS='<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>';
-const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','cmbid','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['climanv','cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
@@ -966,6 +971,31 @@ function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(
   try{n.riego=(n.riego||0)+(st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0)}catch(e){}try{n.equipo=(st.tareas?tareasMias().length:0)+(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0)}catch(e){}try{n.cpersonal=campoInsignia();n.cmsg=cmTotalNo()}catch(e){}try{n.notas=n.cnotasg=ntTocan().length}catch(e){}try{if(esAdminU()&&Store.db){apCargar();n.lab=apPendTotal()+(st.ap||[]).filter(apSinDatos).length}}catch(e){}
   try{let a=0;if(st.mat&&miEmail())a+=matPend().filter(esGestor()?mVisible:mAmi).length;if(st.alm)for(const al of almsVis())for(const p of Object.keys(st.cfg.productos)){const m=minStock(p,al.id);if(m!=null&&stockDe(p,al.id)<=m)a++}n.almacen=a}catch(e){}
   return n}
+/* ---------- CM de bidones: la hoja diaria («CM BIDONES DIARIO») ----------
+   Los cm gastados de cada bidón del cabezal en una sola pantalla (son los mismos de Cuentas del día) y, aparte, la pérdida del
+   bidón (fuga, rebose, limpieza…) con su motivo. Lo perdido baja el nivel y sale del almacén, pero no cuenta como abono aplicado. */
+const PERD_M=['Fuga','Rebose','Limpieza','Vaciado','Otro'];
+function cmbRes(b){const cm=st.reg.cm[b.id],p=(st.reg.perd||{})[b.id]||0,m=(st.reg.perdM||{})[b.id];if(cm==null&&!p)return '<small>Sin apuntar</small>';const ap=cm!=null?Math.max(0,cm-p):null;
+  return `${cm!=null?`<span>Gastado <b>${fmt(cm,1)} cm</b> · ${fmt(cm*b.lpcm,0)} L</span>`:''}${p?`<span class="perd">Perdido <b>${fmt(p,1)} cm</b> · ${fmt(p*b.lpcm,0)} L${m?' · '+esc(m):''}</span>`:''}${ap!=null&&p?`<span class="alc">Al cultivo <b>${fmt(ap,1)} cm</b> · ${fmt(ap*b.lpcm,0)} L</span>`:''}${p&&cm!=null&&p>cm?'<span class="perd">La pérdida es mayor que lo gastado: revisa</span>':''}${p&&cm==null?'<span class="perd">Apunta también los cm gastados</span>':''}`}
+function cmbHist(bs){const H=(st.hist||[]).filter(r=>r.fecha!==st.fecha&&r.fecha<st.fecha&&bs.some(b=>(r.cm||{})[b.id]!=null||(r.perd||{})[b.id]>0)).sort((a,b)=>a.fecha<b.fecha?1:-1).slice(0,13);
+  const filas=[{fecha:st.fecha,cm:st.reg.cm,perd:st.reg.perd||{},hoy:true},...H];if(!filas.some(r=>bs.some(b=>(r.cm||{})[b.id]!=null)))return '';
+  const tot=b=>filas.reduce((a,r)=>a+((r.cm||{})[b.id]||0),0),totP=b=>filas.reduce((a,r)=>a+((r.perd||{})[b.id]||0),0);
+  return `<section class="card" data-out="cmbh"><div><h3>Hoja de los últimos días</h3><div class="sub">cm gastados de cada bidón · en rojo, lo perdido · toca un día para cambiarlo</div></div>
+    <div class="tbl" style="overflow-x:auto"><table class="cmbt"><thead><tr><th>Día</th>${bs.map(b=>`<th>${esc(b.nombre.replace(/^Depósito\s+/i,''))}<small>×${fmt(b.lpcm,1)}</small></th>`).join('')}</tr></thead><tbody>
+    ${filas.map(r=>`<tr class="${r.hoy?'hoyf':''}"><td><button class="lnk" type="button" data-cmbd="${r.fecha}">${r.hoy?'<b>'+esc(fCorta(r.fecha))+'</b>':esc(fCorta(r.fecha))}</button></td>${bs.map(b=>{const v=(r.cm||{})[b.id],p=(r.perd||{})[b.id];return `<td>${v!=null?fmt(v,1):'—'}${p>0?`<small class="perd"> −${fmt(p,1)}</small>`:''}</td>`}).join('')}</tr>`).join('')}
+    <tr class="tot"><td>Total</td>${bs.map(b=>`<td><b>${fmt(tot(b)*b.lpcm,0)} L</b>${totP(b)>0?`<small class="perd"> −${fmt(totP(b)*b.lpcm,0)} L</small>`:''}</td>`).join('')}</tr></tbody></table></div></section>`}
+function vCmBid(){const c=cabById(st.cab);if(!c)return '';if(st.hist===null)loadHist();const bs=bidonesDe(st.cab);
+  let h=`<section class="card"><div><h3>CM de bidones · ${esc(c.nombre)}</h3><div class="sub">${esc(fFecha(st.fecha))} · los cm gastados de cada bidón y, si se ha perdido algo, la pérdida aparte</div></div>`;
+  if(!bs.length)return h+'<div class="note">Este cabezal no tiene depósitos.</div></section>';
+  h+=`<div class="cmb">${bs.map(b=>{const g=esGaste(b),m=(st.reg.perdM||{})[b.id]||'';
+    return `<div class="cmbr"><div class="cmbh"><b>${esc(b.nombre)}</b><small>×${fmt(b.lpcm,1)} L/cm${b.cabezales.length>1?' · '+esc(b.cabezales.map(cabNombre).join(' + ')):''}</small></div>
+      <div class="cmbf"><div class="field"><label for="cb_${b.id}">${g?'Vacío hoy':'cm gastados'}</label><div class="inp"><input id="cb_${b.id}" data-k="reg.${g?'niv':'cm'}.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(g?(st.reg.niv||{})[b.id]:st.reg.cm[b.id])}"><span class="u">cm</span></div></div>
+      <div class="field"><label for="cp_${b.id}">Pérdida</label><div class="inp"><input id="cp_${b.id}" data-k="reg.perd.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg.perd||{})[b.id])}"><span class="u">cm</span></div></div>
+      <div class="field"><label for="cpm_${b.id}">Motivo</label><div class="inp"><select id="cpm_${b.id}" data-k="reg.perdM.${b.id}" data-text="1"><option value="">—</option>${PERD_M.map(x=>`<option ${m===x?'selected':''}>${x}</option>`).join('')}</select></div></div></div>
+      <div class="cmbres" data-out="cmb_${b.id}">${cmbRes(b)}</div></div>`}).join('')}</div>
+    <div class="note">Se guarda con «Guardar» abajo, igual que las Cuentas del día (son los mismos cm).</div></section>`;
+  return h+cmbHist(bs)}
+document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-cmbd]');if(!b||st.tab!=='cmbid')return;const f=b.dataset.cmbd;if(f===st.fecha)return;if(st.dirtyReg)await saveReg();await loadFecha(f)});
 /* ---------- Hoy: lo que hay que mirar y lo de todos los días, de un vistazo ---------- */
 const HOY_T=[['cuentas','Cuentas del día','<path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>'],['rellenar','Rellenar depósito','<path d="M6 8h12l-1 12H7z"/><path d="M9 8V5h6v3"/>'],['drenaje','Drenaje','<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/><path d="M9 14h6"/>'],
   ['parte','Parte diario','<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 12l2 2 3.5-4"/>'],['mapa','Mapa de la finca','<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>'],['climanv','Clima de las naves','<path d="M10 14V5a2 2 0 1 1 4 0v9a4 4 0 1 1-4 0z"/>'],
@@ -1719,7 +1749,8 @@ function cmAuto(b){const p=lecturaAnt(b,false),hr=st.reg.niv&&st.reg.niv[b.id];i
   let g=+(base.v-h).toFixed(1),relleno=false;if(g<0){relleno=true;g=+Math.max(0,maxCm(b)-h).toFixed(1)}
   return{prev:base,add:0,g,relleno}}
 function autoCm(id){const b=bid(id),a=b&&cmAuto(b);if(!a){if(b&&lecturaAnt(b,false)){st.reg.cm[id]=null;marcaReg('cm.'+id)}return}st.reg.cm[id]=a.g;marcaReg('cm.'+id);document.querySelectorAll(`[data-k="reg.cm.${id}"]`).forEach(i=>{i.value=inVal(a.g)})}
-function lecturaBoxes(b,c){if(esDirecto(b))return `<div class="lect lsim"><div class="field"><label for="cm_${b.id}_${c.id}">cm gastados</label><div class="inp"><input id="cm_${b.id}_${c.id}" data-k="reg.cm.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.cm[b.id])}"><span class="u">cm</span></div></div><div class="lbox res" data-out="res_${b.id}"><span>Son</span><b>${st.reg.cm[b.id]!=null?fmt(st.reg.cm[b.id]*b.lpcm,0):'—'} <small>L</small></b><small>${fmt(b.lpcm,1)} L por cm</small></div></div>`;
+function perdNota(b){const p=(st.reg.perd||{})[b.id];if(!(p>0))return '';const m=(st.reg.perdM||{})[b.id];return `<div class="note perdn">Pérdida apuntada: ${fmt(p,1)} cm = ${fmt(p*b.lpcm,0)} L${m?' ('+esc(m)+')':''}. No cuenta como abono aplicado. Se cambia en «CM de bidones».</div>`}
+function lecturaBoxes(b,c){if(esDirecto(b))return perdNota(b)+`<div class="lect lsim"><div class="field"><label for="cm_${b.id}_${c.id}">cm gastados</label><div class="inp"><input id="cm_${b.id}_${c.id}" data-k="reg.cm.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.cm[b.id])}"><span class="u">cm</span></div></div><div class="lbox res" data-out="res_${b.id}"><span>Son</span><b>${st.reg.cm[b.id]!=null?fmt(st.reg.cm[b.id]*b.lpcm,0):'—'} <small>L</small></b><small>${fmt(b.lpcm,1)} L por cm</small></div></div>`;
   const prev=lecturaAnt(b,false);
   const ant=`<div class="lbox"><span>${txtMed(b)} anterior</span><b>${prev?fmt(prev.raw,1):'—'} <small>cm</small></b><small>${prev?fFecha(prev.fecha):'sin lectura'}</small></div>`;
   const hoyF=`<div class="field"><label for="nv_${b.id}_${c.id}">${txtMed(b)} hoy</label><div class="inp"><input id="nv_${b.id}_${c.id}" data-k="reg.niv.${b.id}" inputmode="decimal" autocomplete="off" value="${inVal(st.reg.niv[b.id])}"><span class="u">cm</span></div></div>`;
@@ -4180,7 +4211,7 @@ async function tlPoner(){if(!esAdminU())return;const a=($('#tlk_n1')||{}).value|
 document.addEventListener('click',e=>{if(!TL_TABS.includes(st.tab))return;const b=e.target.closest&&e.target.closest('[data-tlk]');if(!b)return;const a=b.dataset.tlk;
   if(a==='abrir')tlAbrir();else if(a==='poner')tlPoner();else if(a==='cerrar'){tlRecordar('');renderMain();window.scrollTo(0,0);toast('Taller cerrado con llave')}});
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!e.target||e.target.id!=='tlk_pw')return;e.preventDefault();tlAbrir()});
-const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
 for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
@@ -4244,7 +4275,7 @@ function diffCfg(a,b){const L=[];for(const nb of b.bidones){const ob=a.bidones.f
   return L}
 function errMsg(e){return e&&e.code==='quota_exceeded'?'No queda espacio en la base de datos de la página.':'No se pudo guardar'+(e&&e.code?' ('+e.code+')':'')+'. Prueba otra vez.'}
 /* Qué cabezales se ven afectados por un campo del día */
-function cabsDeCampo(k){const[g,id]=k.split('.');if(['m3','ceB','phB','ceR','inc','phS','incR','m3R','rad','obs'].includes(g))return [id];if(g==='cm'||g==='niv'){const b=bid(id);return b?b.cabezales:[]}
+function cabsDeCampo(k){const[g,id]=k.split('.');if(['m3','ceB','phB','ceR','inc','phS','incR','m3R','rad','obs'].includes(g))return [id];if(g==='cm'||g==='niv'||g==='perd'||g==='perdM'){const b=bid(id);return b?b.cabezales:[]}
   for(const c of st.cfg.cabezales)for(const s of c.sectores){if(s.id===id)return [c.id];if(s.bandejas.some(bj=>bj.id===id))return [c.id]}return []}
 async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{const f=st.fecha,mods=[...st.regMod],ahora=new Date().toISOString(),R0=st.reg,vals={};for(const k of mods){const[g,id]=k.split('.');vals[k]=(R0[g]||{})[id]??null}
   let srv=null;try{srv=await Store.getReg(f)}catch(e){}
@@ -6132,7 +6163,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v164';
+window.APP_V='abonado-v165';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
