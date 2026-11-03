@@ -41,7 +41,14 @@ async def main():
         assert t.count('RADIACIÓN DE CONTROL') >= 2 and 'UN 32 % MÁS' in t and 'DRENÓ 25 %' in t and 'DRENÓ 40 %' in t and '+ 17 POR RADIACIÓN' in t and '+ 12 POR RADIACIÓN' in t
         assert 'LA VUELTA DURA 14 MIN' in t and 'LOS RIEGOS SE PISAN' not in t
         await pg.screenshot(path='pruebas/salida/t128.png', full_page=True)
-        # botones de lo que se busca en el sector 1
+        # banda baja / alta (la máquina cambia según la bandeja): con todos los días iguales sale de ±5 puntos de drenaje
+        B = await pg.evaluate("ajrCalc('gas',cabById('gas').sectores[0]).banda()"); print('banda', B); assert B['rb'] == 115 and B['ra'] == 145 and B['rc'] == 130, B
+        assert '115 / 145' in t
+        # lo que tiene la máquina: 150 / 300 → con la baja drenaría ≈ 13 % y con la alta nada: la baja está demasiado alta
+        await pg.fill('[data-ajr="rb"]:not([data-sec])', '150'); await pg.locator('[data-ajr="rb"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(200)
+        await pg.fill('[data-ajr="ra"]:not([data-sec])', '300'); await pg.locator('[data-ajr="ra"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(300)
+        q = (await pg.locator('.ajr-sec').first.inner_text()).upper(); print(q[:900])
+        assert 'CON LO QUE TIENE LA MÁQUINA (150 / 300)' in q and 'DRENARÍA ≈ 13 %' in q and 'LA BAJA ESTÁ DEMASIADO ALTA' in q, q
         s1 = await pg.evaluate("cabById('gas').sectores[0].id")
         await pg.click(f'[data-ajo="ce+"][data-sec="{s1}"]'); await pg.wait_for_timeout(300)
         p = (await pg.locator('.ajo-p').first.inner_text()).upper(); print(p)
@@ -50,6 +57,8 @@ async def main():
         X = await pg.evaluate(f"(()=>{{const X=ajrObjetivo(ajrCalc('gas',cabById('gas').sectores[0]),'ce+');return [X.dren,X.Q.rc,X.Q.N]}})()"); print('ce+', X)
         assert X[0] == 20 and X[2] < 18 and X[1] > 130, 'para subir la CE: drenar menos → menos riegos, radiación más alta'
         await pg.screenshot(path='pruebas/salida/t128-ce.png', full_page=True)
+        anc = await pg.evaluate("[document.documentElement.scrollWidth,[...document.querySelectorAll('#main *')].filter(e=>e.getBoundingClientRect().right>392).slice(0,5).map(e=>e.tagName+'.'+e.className+' '+Math.round(e.getBoundingClientRect().right))]"); print('ancho', anc)
+        assert anc[0] <= 390, 'no se sale de la pantalla del móvil'
         await pg.click(f'[data-ajo="rie+"][data-sec="{s1}"]'); await pg.wait_for_timeout(300)
         X = await pg.evaluate("(()=>{const X=ajrObjetivo(ajrCalc('gas',cabById('gas').sectores[0]),'rie+');return [X.Q.N,X.pulso,X.Q.rc,Math.round(X.Q.Dreal)]})()"); print('rie+', X)
         assert X[0] > 18 and X[1] < 6 and X[2] < 130 and 21 <= X[3] <= 25, 'más riegos con la misma agua'

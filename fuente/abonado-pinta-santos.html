@@ -673,7 +673,7 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 }
 .ajr-big{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:6px 0 4px}.ajr-big>div{border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:grid;gap:2px;background:var(--surface)}
 .ajr-big>div:first-child{background:#0e2851;color:#fff;border-color:#0e2851}.ajr-big>div:first-child span,.ajr-big>div:first-child small{color:#cfd8e6}.ajr-big span{font-size:12px;color:var(--muted)}.ajr-big b{font:700 30px/1.1 var(--f-display)}.ajr-big small{font-size:12px;color:var(--muted)}
-.ajr-p{margin:6px 0;line-height:1.5}.ajr-det summary{cursor:pointer;font-weight:600;padding:6px 0}.ajr-ol{margin:4px 0 0 18px;padding:0;display:grid;gap:4px}.ajr-t td,.ajr-t th{text-align:center}.ajr-sec h3{font-size:19px}
+.ajr-p{margin:6px 0;line-height:1.5}.ajr-det summary{cursor:pointer;font-weight:600;padding:6px 0}.ajr-ol{margin:4px 0 0 18px;padding:0;display:grid;gap:4px}.ajr-t td,.ajr-t th{text-align:center}.ajr-sec h3{font-size:19px}.ajr-pill{white-space:normal;display:inline;line-height:1.7;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 .ajo{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}.ajo .chip{font-size:13px}.ajo .chip.on{background:#0e2851;color:#fff;border-color:#0e2851}
 .ajo-p{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:6px 0 8px;background:#f6f9fc}.ajo-t{display:block;margin-bottom:6px}
 .ajo-tb{width:100%;border-collapse:collapse;font-size:14px}.ajo-tb th,.ajo-tb td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right}.ajo-tb th:first-child,.ajo-tb td:first-child{text-align:left;color:var(--muted)}.ajo-tb th{font-size:12px;color:var(--muted)}
@@ -1064,7 +1064,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.c
 st.ajrW={};
 const AJR_DEF={dren:25,kT:0.02,kV:0.004,tRef:25,vRef:15,pulso:null,pulsoDef:8,hIni:'08:00',ini:true,mismoDia:false,sec:{}};
 const ajrCfg=cab=>({...AJR_DEF,...((st.cfg.ajr||{})[cab]||{})});
-const ajrSecCfg=(C,sid)=>{const x=(C.sec||{})[sid]||{};return{...C,dren:x.dren??C.dren,pulso:x.pulso??C.pulso}};
+const ajrSecCfg=(C,sid)=>{const x=(C.sec||{})[sid]||{};return{...C,dren:x.dren??C.dren,pulso:x.pulso??C.pulso,rb:x.rb??C.rb??null,ra:x.ra??C.ra??null}};
 const ajrKey=cab=>radKey(cab);
 async function ajrCargar(cab,force){if(enClaude())return;const k=ajrKey(cab),c=st.ajrW[k];if(!force&&c&&(c.cargando||Date.now()-c.t<30*60e3))return;
   st.ajrW[k]={...(c||{}),cargando:true,t:Date.now()};const[lat,lon]=k.split(',');
@@ -1096,12 +1096,21 @@ function ajrCalc(cab,s){const c=cabById(cab);s=s||c.sectores[0];const C=ajrSecCf
   const ult=ok.slice(-7);let sw=0,sa=0;ult.forEach((x,i)=>{const w=Math.pow(0.75,ult.length-1-i);sw+=w;sa+=w*x.a});const a=sa/sw;
   const ay=ok[ok.length-1],nRad=n=>C.ini?Math.max(0,n-1):n;
   const ks=D.filter(x=>x.w&&x.w.R>=200&&(x.Rm||(x.rc&&nRad(x.N)>0))).map(x=>(x.Rm||x.rc*nRad(x.N))/x.w.R).sort((a,b)=>a-b),k=ks.length?ks[Math.floor(ks.length/2)]:1;
-  const pre=(f,o={})=>{const w=W[f];if(!w)return null;const dr=o.dren??C.dren,pu=o.pulso??pulso,F=ajrFac(w,C),dem=w.R*F.f,U=a*dem/1000,M=U/(1-dr/100),N=o.N??(pu?Math.max(1,Math.round(M/pu)):null),Rmq=k*w.R;
+  const pre=(f,o={})=>{const w=W[f];if(!w)return null;const dr=o.dren??C.dren,pu=o.pulso??pulso,F=ajrFac(w,C),dem=w.R*F.f,U=(o.a??a)*dem/1000,M=U/(1-dr/100),N=o.N??(pu?Math.max(1,Math.round(M/pu)):null),Rmq=k*w.R;
     const nr=N?nRad(N):0,rc=nr>0?Math.max(5,Math.round(Rmq/nr/5)*5):null;
     // a mediodía la hora de más sol se lleva ≈ 12 % del día: minutos que tarda la máquina en juntar la radiación de control
     return{f,w,F,dem,U,M,N,nr,rc,Rmq,pulso:pu,dren:dr,minEntre:rc?rc/(Rmq*0.12)*60:null,Mreal:N&&pu?N*pu:null,Dreal:N&&pu?(1-U/(N*pu))*100:null}};
   const ce=D.filter(x=>x.ceI&&x.ceD&&x.D>0).pop()||null;
-  return{s,D,C,ok,a,ay,pulso,k,kN:ks.length,ce,plan:o=>pre(hoy(),o),hoy:pre(hoy()),man:pre(isoD(new Date(Date.now()+864e5)))}}
+  /* Banda baja / alta para la máquina que cambia según la bandeja (drena poco → baja, drena → alta). La baja es la que haría falta un día
+     en que la planta se lleve tanto como el que más de la semana y con 5 puntos más de drenaje; la alta, el día que menos y 5 puntos menos.
+     Así la máquina se mueve alrededor del drenaje que buscas sin pasarse. */
+  const as=ult.map(x=>x.a),aMin=Math.min(...as)*(as.length>1?1:0.9),aMax=Math.max(...as)*(as.length>1?1:1.1);
+  const r5=x=>Math.max(5,Math.round(x/5)*5);
+  const banda=(o={})=>{const dr=o.dren??C.dren,pu=o.pulso??pulso,m=pre(hoy(),{dren:dr,pulso:pu}),lo=pre(hoy(),{dren:Math.min(60,dr+5),pulso:pu,a:aMax}),hi=pre(hoy(),{dren:Math.max(3,dr-5),pulso:pu,a:aMin});
+    if(!m||m.rc==null)return null;const rb=Math.min(lo&&lo.rc!=null?lo.rc:m.rc,r5(m.rc*0.9)),ra=Math.max(hi&&hi.rc!=null?hi.rc:m.rc,r5(m.rc*1.1));return{rb,ra,rc:m.rc}};
+  // lo que drenaría si la máquina se quedara todo el día con una radiación fija
+  const conRc=X=>{const P=pre(hoy());if(!P||!X||!pulso)return null;const N=(C.ini?1:0)+Math.max(0,Math.round(P.Rmq/X));return{N,D:N?(1-P.U/(N*pulso))*100:null}};
+  return{s,D,C,ok,a,aMin,aMax,ay,pulso,k,kN:ks.length,ce,banda,conRc,plan:o=>pre(hoy(),o),hoy:pre(hoy()),man:pre(isoD(new Date(Date.now()+864e5)))}}
 /* Lo que se busca en un sector → lo que hay que poner en la máquina.
    CE del drenaje por balance de sales: CEd = CEr × (1 − (1−d)·u) ÷ d, con d = drenaje (tanto por uno), CEr = CE del riego y u = lo que se
    lleva la planta de sales respecto al agua (sale de lo medido en el sector). */
@@ -1125,7 +1134,8 @@ function ajrObjHTML(R){const sid=R.s.id,o=st.ajrObj[sid],g=esGestor();let h=`<di
   if(!o)return h;const X=ajrObjetivo(R,o);if(!X)return h;if(X.err)return h+`<div class="note tbad">${X.err}</div>`;
   const P=R.hoy,Q=X.Q,fila=(n,a,b,u)=>`<tr><td>${n}</td><td>${a}</td><td><b>${b}</b>${u?' '+u:''}</td></tr>`;
   h+=`<div class="ajo-p"><b class="ajo-t">${esc(X.tit)}</b><table class="ajo-tb"><thead><tr><th></th><th>Ahora</th><th>Pon en la máquina</th></tr></thead><tbody>
-    ${fila('Radiación de control',P.rc!=null?fmt(P.rc,0):'—',Q.rc!=null?fmt(Q.rc,0):'—','J/cm²')}
+    ${(()=>{const b0=R.banda(),b1=R.banda({dren:X.dren??undefined,pulso:X.pulso??undefined}),cur=R.C.rb&&R.C.ra?fmt(R.C.rb,0)+' / '+fmt(R.C.ra,0):b0?fmt(b0.rb,0)+' / '+fmt(b0.ra,0):'—';return b1?fila('Radiación baja / alta',cur,fmt(b1.rb,0)+' / '+fmt(b1.ra,0),'J/cm²'):''})()}
+    ${fila('Radiación de control (media)',P.rc!=null?fmt(P.rc,0):'—',Q.rc!=null?fmt(Q.rc,0):'—','J/cm²')}
     ${fila('Tiempo de cada riego',fmt(P.pulso,P.pulso%1?1:0),fmt(Q.pulso,Q.pulso%1?1:0),'min')}
     ${fila('Riegos',P.N,Q.N,'')}
     ${X.ce?fila('CE del riego (salida)',fmt(X.ce.c.ceI,2),fmt(X.ce.c.ceI,2),'mS/cm'):''}
@@ -1151,15 +1161,20 @@ function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)r
     h+=`<section class="card ajr-sec"><div><h3>${esc(s.nombre)}</h3><div class="sub">${s.bandejas.length} bandeja${s.bandejas.length>1?'s':''} de drenaje · buscas ${fmt(Cs.dren,0)} % de drenaje</div></div>`;
     if(R.poco||!P)h+=`<div class="note">${R.poco?'Sin días con minutos, riegos y drenaje de este sector apuntados en Drenaje.':'Sin previsión para hoy.'}</div>`;
     else{const ay=R.ay;
-      h+=`<div class="ajr-big"><div><span>Radiación de control</span><b>${P.rc!=null?fmt(P.rc,0):'—'}</b><small>J/cm² por riego</small></div>
+      const B=R.banda(),cb=Cs.rb&&Cs.ra?{b:R.conRc(Cs.rb),a:R.conRc(Cs.ra)}:null;
+      h+=`<div class="ajr-big"><div><span>Pon baja / alta</span><b>${B?fmt(B.rb,0)+' / '+fmt(B.ra,0):'—'}</b><small>J/cm² · media ${P.rc!=null?fmt(P.rc,0):'—'}</small></div>
         <div><span>Tiempo de cada riego</span><b>${R.pulso?fmt(R.pulso,R.pulso%1?1:0):'—'}</b><small>min${Cs.pulso?' (fijado)':R.D.some(x=>x.p)?' (como ayer)':''}</small></div>
         <div><span>Riegos</span><b>${P.N??'—'}</b><small>${C.ini&&P.N?'1 a las '+esc(C.hIni)+' + '+P.nr+' por radiación':''}${P.Mreal!=null?' · '+fmt(P.Mreal,0)+' min':''}</small></div>
         <div><span>Drenaje esperado</span><b>${P.Dreal!=null?fmt(Math.max(0,P.Dreal),0)+' %':'—'}</b><small>buscas ${fmt(Cs.dren,0)} %</small></div></div>
+        ${cb&&cb.b&&cb.a?(()=>{const lo=Math.max(0,cb.a.D),hi=Math.max(0,cb.b.D),dentro=B&&Cs.rb<=P.rc&&P.rc<=Cs.ra,ancha=hi-lo>15,txt=!dentro?(P.rc<Cs.rb?'la baja está demasiado alta: no llega al drenaje que buscas':'la alta está demasiado baja: drenará de más'):ancha?'la banda es muy ancha: el drenaje bailará':'la banda está bien';
+          return `<p class="ajr-p">Con lo que tiene la máquina (<b>${fmt(Cs.rb,0)} / ${fmt(Cs.ra,0)}</b>): si se quedara todo el día en la baja daría ${cb.b.N} riegos y drenaría ≈ ${fmt(hi,0)} %; en la alta, ${cb.a.N} riegos y ≈ ${fmt(lo,0)} %. <span class="pill ajr-pill ${!dentro?'bad':ancha?'warn':'ok'}">${txt}</span></p>`})():''}
         <p class="ajr-p">Ayer (${esc(fdia(ay.f))}): ${ay.N!=null?`<b>${fmt(ay.N,0)} riegos</b> · `:''}<b>${fmt(ay.M,0)} min</b>${ay.rc?` con la radiación de control a ${fmt(ay.rc,0)}`:''} y drenó <b class="${Math.abs(ay.D-Cs.dren)>8?'tbad':''}">${fmt(ay.D,0)} %</b> → la planta se llevó ≈ ${fmt(ay.U,0)} min de riego.</p>
         ${P.N!=null&&(P.N>30||P.N<3)?`<div class="note tbad">Salen ${P.N} riegos: ${P.N>30?'conviene alargar cada riego':'conviene acortar cada riego'}.</div>`:''}
         ${ajrObjHTML(R)}
         ${R.man&&R.man.rc!=null?`<div class="note">Mañana: radiación de control ≈ ${fmt(R.man.rc,0)} con ${R.man.N} riegos (${fmt(R.man.w.R,0)} J/cm², máxima de ${fmt(R.man.w.Tx,0)} °C).</div>`:''}`}
-    h+=`<div class="frm"><div class="field"><label>Radiación de control que tenía ayer</label><div class="inp"><input data-k="reg.rcs.${s.id}" inputmode="decimal" autocomplete="off" aria-label="Radiación de control de ayer en ${esc(s.nombre)}" value="${inVal((st.reg.rcs||{})[s.id])}" placeholder="${inVal((st.reg.rcon||{})[c.id])}"><span class="u nt">J/cm²</span></div></div>
+    h+=`<div class="frm"><div class="field"><label>En la máquina: radiación baja</label><div class="inp"><input data-ajr="rb" data-sec="${s.id}" inputmode="decimal" value="${inVal(sc.rb)}" placeholder="${inVal(C.rb)}" ${dis}><span class="u nt">J/cm²</span></div></div>
+      <div class="field"><label>En la máquina: radiación alta</label><div class="inp"><input data-ajr="ra" data-sec="${s.id}" inputmode="decimal" value="${inVal(sc.ra)}" placeholder="${inVal(C.ra)}" ${dis}><span class="u nt">J/cm²</span></div></div>
+      <div class="field"><label>Radiación de control fija que tenía ayer (si no va por bandeja)</label><div class="inp"><input data-k="reg.rcs.${s.id}" inputmode="decimal" autocomplete="off" aria-label="Radiación de control de ayer en ${esc(s.nombre)}" value="${inVal((st.reg.rcs||{})[s.id])}" placeholder="${inVal((st.reg.rcon||{})[c.id])}"><span class="u nt">J/cm²</span></div></div>
       <div class="field"><label>Drenaje que buscas en este sector</label><div class="inp"><input data-ajr="dren" data-sec="${s.id}" inputmode="decimal" value="${inVal(sc.dren)}" placeholder="${fmt(C.dren,0)}" ${dis}><span class="u">%</span></div></div></div>`;
     if(R.D.length){const fi=R.D.slice(-10).reverse();h+=`<details class="ajr-det"><summary>Días de riego de ${esc(s.nombre)}</summary><div style="overflow-x:auto"><table class="m3t ajr-t"><thead><tr><th>Día</th><th>Sol J/cm²</th><th>Máx °C</th><th>Viento</th><th>Riegos</th><th>Min</th><th>Rad. ctrl</th><th>Drenaje</th><th>Se llevó</th><th>Por 1.000 J</th></tr></thead><tbody>
       ${fi.map(x=>`<tr><td>${esc(fdia(x.f))}</td><td>${x.w?fmt(x.w.R,0):'—'}</td><td>${x.w?fmt(x.w.Tx,0):'—'}</td><td>${x.w?fmt(x.w.V,0):'—'}</td><td>${x.N!=null?fmt(x.N,0):'—'}</td><td>${x.M!=null?fmt(x.M,0):'—'}</td><td>${x.rc!=null?fmt(x.rc,0):'—'}</td><td class="${x.D!=null&&Math.abs(x.D-Cs.dren)>8?'tbad':''}">${x.D!=null?fmt(x.D,0)+' %':'—'}</td><td>${x.U!=null?fmt(x.U,0)+' min':'—'}</td><td>${x.a!=null?fmt(x.a,1):'—'}</td></tr>`).join('')}</tbody></table></div>
@@ -1168,6 +1183,8 @@ function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)r
   const kTaj=ajrKT(st.cab);
   h+=`<section class="card"><div><h3>Para todo el cabezal</h3><div class="sub">Los minutos, el nº de riegos y el drenaje de cada sector se apuntan en Drenaje</div></div><div class="frm">
     <div class="field"><label for="ajr_rc">Radiación de control de ayer (si es igual en todos los sectores)</label><div class="inp"><input id="ajr_rc" data-k="reg.rcon.${c.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg.rcon||{})[c.id])}"><span class="u nt">J/cm²</span></div></div>
+    <div class="field"><label>Radiación baja en todos los sectores</label><div class="inp"><input data-ajr="rb" inputmode="decimal" value="${inVal(C.rb)}" ${dis}><span class="u nt">J/cm²</span></div></div>
+    <div class="field"><label>Radiación alta en todos los sectores</label><div class="inp"><input data-ajr="ra" inputmode="decimal" value="${inVal(C.ra)}" ${dis}><span class="u nt">J/cm²</span></div></div>
     <div class="field"><label for="ajr_dr">Drenaje que buscas</label><div class="inp"><input id="ajr_dr" data-ajr="dren" inputmode="decimal" value="${inVal(C.dren)}" ${dis}><span class="u">%</span></div></div></div>
     <details class="ajr-det"><summary>Ajustes del cálculo</summary><div class="frm">
       <div class="field"><label>Primer riego por hora</label><div class="inp"><input data-ajr="hIni" type="time" value="${esc(C.hIni)}" ${dis}></div></div>
@@ -1180,8 +1197,9 @@ function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)r
   h+=`<section class="card"><div><h3>Cómo se calcula (en cada sector)</h3></div><ol class="ajr-ol">
     <li>Lo que se llevó la planta ayer = minutos regados × (1 − drenaje).</li><li>Demanda del día = sol × calor × viento (del servicio del tiempo de la finca).</li>
     <li>Lo que se lleva por cada 1.000 J/cm² = lo del paso 1 ÷ lo del paso 2 (media de la última semana; pesa más lo reciente).</li><li>Hoy: minutos a regar = demanda de hoy × lo del paso 3 ÷ (1 − drenaje que buscas).</li>
-    <li>Riegos = minutos ÷ tiempo de cada riego. El primero va por hora; radiación de control = sol que mide la máquina hoy ÷ los riegos que quedan.</li></ol>
-    <div class="note">Orientativo; se afina solo cada día que apuntáis el drenaje. La radiación que mide la máquina se ajusta con la radiación de control y los riegos de días anteriores.</div></section>`;
+    <li>Riegos = minutos ÷ tiempo de cada riego. El primero va por hora; radiación de control = sol que mide la máquina hoy ÷ los riegos que quedan.</li>
+    <li>Baja / alta: la máquina usa la baja cuando la bandeja drena poco y la alta cuando drena. La baja es la que haría falta el día que más se lleva la planta de la semana y con 5 puntos más de drenaje; la alta, el día que menos y 5 puntos menos. Así se mueve alrededor de lo que buscas.</li></ol>
+    <div class="note">Orientativo; se afina solo cada día que apuntáis el drenaje. Para que la radiación cuadre con la de la máquina, apunta en Drenaje la «Radiación» del día que marca la máquina.</div></section>`;
   return h}
 document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!t.dataset||!t.dataset.ajr||!esGestor())return;const k=t.dataset.ajr,cab=st.cab,sid=t.dataset.sec;
   const A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[cab]={...(A[cab]||{})};
