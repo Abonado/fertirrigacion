@@ -40,6 +40,7 @@ async def main():
         t = (await pg.locator('#main').inner_text()).upper(); print(t[:900])
         assert t.count('RADIACIÓN DE CONTROL') >= 2 and 'UN 32 % MÁS' in t and 'DRENÓ 25 %' in t and 'DRENÓ 40 %' in t and '+ 17 POR RADIACIÓN' in t and '+ 12 POR RADIACIÓN' in t
         assert 'LA VUELTA DURA 14 MIN' in t and 'LOS RIEGOS SE PISAN' not in t
+        assert 'CÓMO SE CALCULA' not in t, 'sin la explicación del cálculo'
         await pg.screenshot(path='pruebas/salida/t128.png', full_page=True)
         # banda baja / alta (la máquina cambia según la bandeja): con todos los días iguales sale de ±5 puntos de drenaje
         B = await pg.evaluate("ajrCalc('gas',cabById('gas').sectores[0]).banda()"); print('banda', B); assert B['rb'] == 115 and B['ra'] == 145 and B['rc'] == 130, B

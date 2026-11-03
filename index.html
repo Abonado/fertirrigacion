@@ -1214,12 +1214,6 @@ function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)r
       <label class="chk"><input type="checkbox" data-ajr="ini" ${C.ini?'checked':''} ${dis}> El primer riego del día va por hora (no cuenta para la radiación)</label>
       <label class="chk"><input type="checkbox" data-ajr="mismoDia" ${C.mismoDia?'checked':''} ${dis}> Lo que se apunta en Drenaje es del mismo día (no del día anterior)</label></div>
       ${kTaj!=null&&g?`<div class="row"><button class="btn sm" data-ajr="usarkT">Usar ${fmt(kTaj*100,1)} %/°C (sale de la finca)</button></div>`:''}</details></section>`;
-  h+=`<section class="card"><div><h3>Cómo se calcula (en cada sector)</h3></div><ol class="ajr-ol">
-    <li>Lo que se llevó la planta ayer = minutos regados × (1 − drenaje).</li><li>Demanda del día = sol × calor × viento (del servicio del tiempo de la finca).</li>
-    <li>Lo que se lleva por cada 1.000 J/cm² = lo del paso 1 ÷ lo del paso 2 (media de la última semana; pesa más lo reciente).</li><li>Hoy: minutos a regar = demanda de hoy × lo del paso 3 ÷ (1 − drenaje que buscas).</li>
-    <li>Riegos = minutos ÷ tiempo de cada riego. El primero va por hora; radiación de control = sol que mide la máquina hoy ÷ los riegos que quedan.</li>
-    <li>Baja / alta: la máquina usa la baja cuando la bandeja drena poco y la alta cuando drena. La baja es la que haría falta el día que más se lleva la planta de la semana y con 5 puntos más de drenaje; la alta, el día que menos y 5 puntos menos. Así se mueve alrededor de lo que buscas.</li></ol>
-    <div class="note">Orientativo; se afina solo cada día que apuntáis el drenaje. Para que la radiación cuadre con la de la máquina, apunta en Drenaje la «Radiación» del día que marca la máquina.</div></section>`;
   return h}
 document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!t.dataset||!t.dataset.ajr||!esGestor())return;const k=t.dataset.ajr,cab=st.cab,sid=t.dataset.sec;
   const A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[cab]={...(A[cab]||{})};
@@ -6600,7 +6594,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v178';
+window.APP_V='abonado-v179';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
