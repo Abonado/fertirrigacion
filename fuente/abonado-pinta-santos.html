@@ -443,7 +443,7 @@ table.rendt td:first-child{min-width:150px;white-space:normal}table.rendt td:fir
 .fcard .avs h4{margin:0;font-size:11px;letter-spacing:.12em;color:var(--muted)}
 .fcard .av,.acard .av{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.35}
 .fcard .av .dot,.acard .av .dot{margin-top:4px}
-.fcard .go{margin-top:auto;justify-content:center;width:100%}
+.fcard .go{margin:0;justify-content:center;width:100%;min-height:50px;font-size:16px}
 .fcard .lnk.fu{background:none;border:0;padding:0;color:var(--muted);text-decoration:underline;font:600 12px var(--f-body);cursor:pointer;justify-self:start;text-transform:uppercase}
 .fcard .fubic{display:grid;gap:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:10px}
 .fcard.off .ph>*:not(.ttl):not(.nfin):not(.cam){filter:grayscale(.55)}
@@ -585,7 +585,15 @@ body.consave.conbn .agbtn{bottom:calc(var(--sbh,120px) + 74px + env(safe-area-in
 .hoynot{display:inline-flex;width:auto;max-width:max-content;align-items:center;gap:8px;margin:2px 0 10px;padding:8px 14px 8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font:inherit;color:var(--ink);cursor:pointer}
 .hoynot b{font:700 13px var(--f-display);letter-spacing:.06em;text-transform:uppercase}.hoynot i{font-style:normal;font:700 12px/18px var(--f-body);min-width:20px;height:20px;border-radius:10px;padding:0 6px;color:#fff;background:var(--warn);text-align:center}.hoynot.bad i{background:var(--bad)}
 .hoydot{width:9px;height:9px;border-radius:50%;background:var(--ok)}.hoynot.warn .hoydot{background:var(--warn)}.hoynot.bad .hoydot{background:var(--bad)}.hoynot[disabled]{cursor:default;opacity:.85}.hoych{color:var(--muted);font-size:12px}
-.hoyav{margin:0 0 10px}.hoyfich{display:flex;justify-content:center;margin:2px 0 14px}.hoyfich .lnk{font:700 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--accent,#1a7f4b);background:none;border:0;padding:8px 12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+/* 4) Fichar hoy: botón verde con letras blancas */
+.hoyfich{display:flex;justify-content:center;margin:4px 0 16px}.hoyfich .btn{width:100%;max-width:420px;min-height:50px;justify-content:center;font:700 16px var(--f-display);letter-spacing:.08em;text-transform:uppercase;background:var(--accent);border-color:var(--accent);color:#fff;border-radius:14px;box-shadow:0 4px 12px -4px rgba(29,107,71,.55)}
+/* 3) Hoy: una fila por apartado (Riego, Equipo…) con sus cuadros que se desplazan a lo ancho */
+.hoyfila{margin:6px 0 14px;min-width:0;max-width:100%}.hoyfh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 2px 8px}.hoyfh h3{margin:0;font:700 17px var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--navy)}.hoyfh small{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hoyrow{contain:inline-size;min-width:0;display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 2px 6px;margin:0 -16px;padding-inline:16px;scroll-padding-inline:16px}
+.hoyrow::-webkit-scrollbar{display:none}.hoyrow .hoyt{flex:0 0 calc((100% - 16px)/3.35);scroll-snap-align:start;position:relative}
+@media (min-width:700px){.hoyrow .hoyt{flex-basis:150px}}
+.hoyt .bdg{position:absolute;top:6px;right:6px;font-style:normal}
+.hoyav{margin:0 0 10px}.hoyfich .lnk{font:700 14px var(--f-display);letter-spacing:.06em;text-transform:uppercase;color:var(--accent,#1a7f4b);background:none;border:0;padding:8px 12px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 /* ---- cabecera más limpia: una sola fila arriba, sin raya; las zonas como un selector; sombra suave solo al bajar ---- */
 .top{border-bottom:0;transition:box-shadow .2s}
 body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
@@ -607,6 +615,17 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .hoysal{border-bottom:0;padding-bottom:0;margin:2px 0 0;gap:2px 8px}.hoysal b{font-size:18px}
 #cabs:not([hidden]){display:inline-flex;flex-wrap:nowrap;gap:2px;padding:3px;margin:0;width:max-content;max-width:100%;overflow-x:auto;background:var(--surface-2,#e8ece8);border:1px solid var(--line);border-radius:999px;box-sizing:border-box}
 #cabs .chip{border:0;background:none;color:var(--muted);padding:7px 15px;font-weight:700;letter-spacing:.02em}
+/* 2) La zona en la que estás, grande y con su color; solo se cambia a propósito */
+#cabs.zbar:not([hidden]){display:flex;align-items:center;gap:10px;width:100%;max-width:none;padding:8px 8px 8px 12px;background:color-mix(in srgb,var(--zc) 12%,var(--surface));border:2px solid var(--zc);border-radius:14px;overflow:visible}
+#cabs .zdot{width:12px;height:12px;border-radius:50%;background:var(--zc);flex:none}#cabs .zn{display:grid;flex:1;min-width:0;line-height:1.1}#cabs .zn small{font-size:10.5px;font-weight:700;letter-spacing:.12em;color:var(--muted)}#cabs .zn b{font:700 20px var(--f-display);letter-spacing:.04em;color:var(--zc);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cabs .zcam{flex:none;border:1px solid var(--zc);background:var(--surface);color:var(--zc);border-radius:999px;padding:8px 12px;font:700 12px var(--f-display);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.zsub{margin:6px 0 0;color:var(--muted);font-size:14px;text-transform:none;max-width:520px}
+.zgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:6px}
+.zcard{all:unset;box-sizing:border-box;cursor:pointer;display:grid;gap:10px;background:var(--surface);border:1px solid var(--line);border-left:8px solid var(--zc);border-radius:16px;padding:16px 16px 16px 14px;box-shadow:0 1px 2px rgba(20,30,40,.04),0 8px 24px rgba(20,30,40,.06);position:relative}
+.zcard:focus-visible{outline:3px solid var(--zc);outline-offset:2px}.zcard .zt{display:grid}.zcard .zt small{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.1em}.zcard .zt b{font:700 28px/1.1 var(--f-display);color:var(--zc)}
+.zcard .avs{display:grid;gap:6px}.zcard .av{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.35}.zcard .av .dot{margin-top:4px}
+.zcard .zgo{justify-self:stretch;justify-content:center;min-height:46px;background:var(--zc);border-color:var(--zc);color:#fff;font-size:15px}
+.zcard .zact{position:absolute;top:14px;right:14px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#fff;background:var(--zc);border-radius:999px;padding:4px 9px}
 #cabs .chip[aria-pressed="true"]{background:var(--surface);color:var(--navy);box-shadow:0 1px 4px rgba(15,30,40,.16)}
 .hoynot{display:flex;width:100%;max-width:none;align-items:center;gap:12px;margin:4px 0 10px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:var(--surface);text-align:left}
 .hoynot.warn{background:#fdf5e6;border-color:#f1dcb3}.hoynot.bad{background:#fbeceb;border-color:#f0c9c6}.hoynot.ok{background:var(--ok-bg,#e6f2ea);border-color:transparent}
@@ -931,7 +950,7 @@ function fincaAvisos(f){const out=[],cabs=f.cabezales||[];if(!cabs.length)return
 const FOTO_DEF={pinta:'fincas/pinta-santos.jpg',palacias:'fincas/las-palacias.jpg',fuente:'fincas/la-fuente.jpg'};
 function fotoFinca(f,i){const ft=f.foto||FOTO_DEF[f.id];if(!ft)return paisaje(f,i);if(typeof ft==='string')return paisaje(f,i)+`<img src="${esc(ft)}" alt="" onerror="this.remove()">`;
   return (ft.local||ft.fb)?`<img alt="" data-local="${ft.id}">`:`<img alt="" src="${esc(Adj.src(ft))}">`}
-function renderFincas(){const fs=fincasVis(),admin=!window.NUBE||(NUBE.user&&NUBE.user.admin),hoyTxt=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
+function renderFincas(){st.ov='fincas';const fs=fincasVis(),admin=!window.NUBE||(NUBE.user&&NUBE.user.admin),hoyTxt=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long'});
   $('#fincas').innerHTML=`<div class="in"><div class="fhead"><div><div class="eyebrow">Fertirrigación · cabezales de riego</div><h2>Fincas</h2></div><div class="fecha">${esc(hoyTxt)}</div></div>
   ${esGestor()&&veRiego()&&cabsVis().length?'<div class="row glrow"><button class="btn pri" data-act="gl-abrir">Datos totales: cuentas y drenaje de todas las fincas</button></div>':''}${fs.length?'':'<div class="banner">No tienes ninguna finca asignada. Habla con el administrador.</div>'}<div class="fgrid">${fs.map((f,i)=>{const cabs=(f.cabezales||[]).map(cabNombre),w=fwxDe(f),c=w&&w.current,dd=w&&w.daily,sinCab=!cabs.length,off=!((veRiego()&&!sinCab)||campoEnFinca(f)),av=avisosFinca(f),mx=4,u=f.ubic||AGUILAS;
     const vto=c&&c.wind_direction_10m!=null?VIENTOS[Math.round(((c.wind_direction_10m%360)+360)%360/45)%8]:null;
@@ -939,14 +958,13 @@ function renderFincas(){const fs=fincasVis(),admin=!window.NUBE||(NUBE.user&&NUB
       ${c?`<span class="wxc">${wxIcon(c.weather_code)}${fmt(c.temperature_2m,0)}°</span>`:''}${off?'<span class="ribbon">'+(veRiego()?'Sin datos todavía':'Sin collas tuyas')+'</span>':sinCab&&veRiego()?'<span class="ribbon">Solo personal de campo</span>':''}
       <div class="ttl"><small>Finca</small><h3>${esc(f.nombre)}</h3></div>
       ${admin&&Adj.can()?`<label class="btn cam" for="ff_${f.id}">Cambiar foto</label><input type="file" id="ff_${f.id}" data-ffoto="${f.id}" accept="image/*" hidden>`:''}</div>
-      <div class="bd">${cabs.length?`<div class="cabs">${cabs.map(n=>`<span>${esc(n)}</span>`).join('')}</div>`:''}
+      <div class="bd"><button class="btn pri go" data-act="finca-go" data-id="${f.id}" ${off?'disabled':''}>${off?(veRiego()?'Sin datos todavía':'Sin collas tuyas aquí'):'Entrar en '+esc(f.nombre)}</button>${cabs.length?`<div class="cabs">${cabs.map(n=>`<span>${esc(n)}</span>`).join('')}</div>`:''}
       ${enClaude()?'':c&&dd?`<div class="wxl"><div><span>Cielo</span><b>${esc(WX_TXT[c.weather_code]||'—')}</b></div><div><span>Máx / mín</span><b>${fmt(dd.temperature_2m_max[0],0)}° / ${fmt(dd.temperature_2m_min[0],0)}°</b></div><div><span>Viento</span><b>${fmt(c.wind_speed_10m,0)} km/h${vto?' '+vto[0]:''}</b></div></div>`:`<div class="note">${w&&w.fallo?'Sin datos del tiempo':'Cargando el tiempo…'}</div>`}
       ${f.ubic?'':`<div class="note">Tiempo de Águilas por defecto${admin?': fija la ubicación de la finca':''}</div>`}
       ${admin?(st.fUbic===f.id?`<div class="fubic"><div class="field"><label for="fu_${f.id}">Coordenadas o enlace largo de Google Maps</label><div class="inp"><input id="fu_${f.id}" placeholder="37.4334, -1.6304" style="width:100%;text-align:left;text-transform:none" autocomplete="off"></div></div>
         <div class="row"><button class="btn pri" data-act="fu-save" data-id="${f.id}">Guardar</button><button class="btn" data-act="fu-gps" data-id="${f.id}">Estoy en la finca: usar mi ubicación</button><button class="btn" data-act="fu-no">Cancelar</button></div></div>`
         :`<button class="lnk fu" data-act="fu-open" data-id="${f.id}">${f.ubic?`Ubicación: ${f.ubic.lat.toFixed(4)}, ${f.ubic.lon.toFixed(4)} · cambiar`:'Fijar ubicación de la finca'}</button>`):''}
-      <div class="avs"><h4>Avisos</h4>${av.slice(0,mx).map(([k,t,det])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span><span class="at">${esc(t)}</span>${det||''}</span></div>`).join('')}${av.length>mx?`<div class="av note">y ${av.length-mx} más</div>`:''}</div>
-      <button class="btn pri go" data-act="finca-go" data-id="${f.id}" ${off?'disabled':''}>${off?(veRiego()?'Sin datos todavía':'Sin collas tuyas aquí'):'Entrar en '+esc(f.nombre)}</button></div></article>`}).join('')}</div></div>`;
+      <div class="avs"><h4>Avisos</h4>${av.slice(0,mx).map(([k,t,det])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span><span class="at">${esc(t)}</span>${det||''}</span></div>`).join('')}${av.length>mx?`<div class="av note">y ${av.length-mx} más</div>`:''}</div></div></article>`}).join('')}</div></div>`;
   hydrate()}
 function abrirFincas(){if(veRiego()){if(st.tareas===null)loadTareas();if(st.mat===null)loadMat()}renderFincas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';for(const f of st.cfg.fincas||[])loadFincaWx(f);if(veRiego()){if(st.hist===null)loadHist();if(st.llen===null)loadOps();if(st.msgs===null)loadMsgs();if(st.sat===null&&Store.mode==='fb')loadSat()}if(st.collas===null)loadCollas();else if(st.collas.length&&!st.jorDias)loadJor(esGestor()?0:2)}
 function coordsDe(t){t=String(t||'');let m=/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/.exec(t)||/@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(t)||/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/.exec(t);
@@ -959,21 +977,38 @@ function elegirFinca(id){const f=fincasVis().find(x=>x.id===id);if(!f||!((veRieg
   if(f.cabezales.length&&!f.cabezales.includes(st.cab))st.cab=f.cabezales[0];const ar=areasDisp(f);if(ar.length===1){entrarArea(ar[0]);return}abrirAreas()}
 function areasDisp(f){f=f||fincaAct();if(!f)return [];return [...(veRiego()&&f.cabezales.length?['riego']:[]),...(campoEnFinca(f)&&puedeCollas()?['campo']:[])]}
 /* Tras elegir la finca: personal de riego o personal de campo */
-function abrirAreas(){const f=fincaAct();if(!f){abrirFincas();return}if(st.collas===null)loadCollas();else if(esGestor()&&!st.jorDias)loadJor();renderAreas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';window.scrollTo(0,0)}
+function abrirAreas(){const f=fincaAct();if(!f){abrirFincas();return}if(st.collas===null)loadCollas();else if(esGestor()&&!st.jorDias)loadJor();renderAreas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';window.scrollTo(0,0);navGuarda()}
 function areaResumen(){const f=fincaAct(),r=[];if(!f)return{riego:r,campo:[]};if(veRiego())for(const a of fincaAvisos(f).slice(0,3))r.push(a);
   const c=[];if(st.collas===null)c.push(['nd','Cargando…']);else if(!veCampo())c.push(['nd','No tienes acceso a campo']);else if(!puedeCollas())c.push(['nd','Sin collas tuyas en esta finca']);else{const cs=collasVis();
     if(!cs.length)c.push(['warn',esGestor()?'Todavía no hay collas: créalas dentro':'Sin collas en esta finca']);
     else{const hechos=cs.filter(x=>st.jor[jorKey(x.id,hoy())]);c.push([hechos.length===cs.length?'ok':'warn',cs.length===1?(hechos.length?'Parte de hoy guardado':'Parte de hoy sin guardar'):`Partes de hoy: ${hechos.length} de ${cs.length} collas`]);
       const gente=cs.reduce((s,x)=>s+(x.miembros||[]).filter(m=>m.activo!==false).length,0);c.push(['nd',`${cs.length} ${cs.length===1?'colla':'collas'} · ${gente} personas`])}}
   return{riego:r,campo:c}}
-function renderAreas(){const f=fincaAct(),R=areaResumen(),pc=puedeCollas(),av=l=>`<div class="avs">${l.map(([k,t])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span>${esc(t)}</span></div>`).join('')}</div>`;
+function renderAreas(){st.ov='areas';const f=fincaAct(),R=areaResumen(),pc=puedeCollas(),av=l=>`<div class="avs">${l.map(([k,t])=>`<div class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span>${esc(t)}</span></div>`).join('')}</div>`;
   $('#fincas').innerHTML=`<div class="in"><div class="fhead"><div><button class="fback" data-act="fincas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Fincas</button>
     <div class="eyebrow" style="margin-top:14px">Finca</div><h2>${esc(f.nombre)}</h2></div></div>
     <div class="agrid"><button class="acard riego" data-act="area-go" data-a="riego" ${f.cabezales.length&&veRiego()?'':'disabled'}><span class="aic"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 8c8 11 16 19 16 28a16 16 0 0 1-32 0c0-9 8-17 16-28z" fill="#3a7bd5"/><path d="M25 38a8 8 0 0 0 8 8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></svg></span>
       <span class="at"><small>Personal de</small><b>Riego</b></span><span class="ad">Cuentas del día, drenaje, depósitos, receta, partes, mapa, tareas, almacén y datos</span>${veRiego()?av(R.riego):''}<span class="btn pri">${!veRiego()?'Sin acceso':f.cabezales.length?'Entrar':'Sin cabezales todavía'}</span></button>
     <button class="acard campo" data-act="area-go" data-a="campo" ${pc?'':'disabled'}><span class="aic"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 56V22" stroke="#4f7a3a" stroke-width="3.5" stroke-linecap="round"/><path d="M32 40c-10 0-15-6-16-14 9 0 15 5 16 14zM32 32c9 0 14-6 15-13-8 0-14 4-15 13z" fill="#6b9e4a"/><circle cx="24" cy="46" r="4" fill="#d9493b"/><circle cx="40" cy="49" r="4.5" fill="#d9493b"/><path d="M14 56h36" stroke="#8a7a52" stroke-width="3" stroke-linecap="round"/></svg></span>
       <span class="at"><small>Personal de</small><b>Campo</b></span><span class="ad">Asistencia con foto, incidencias, tareas, rendimiento, parte del día y mensajes de las collas</span>${av(R.campo)}<span class="btn pri">${pc?'Entrar':'Sin acceso'}</span></button></div></div>`}
-function entrarArea(a){if(a==='campo'&&!puedeCollas())return;if(a==='riego'&&(!veRiego()||!(fincaAct()||{cabezales:[]}).cabezales.length))return;const G=a==='campo'?GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida)):GRUPOS_RIEGO;st.co.ficha=null;
+/* Zonas (cabezales): al entrar en Riego se elige la zona en un submenú, para no apuntar sin querer en otra.
+   Dentro, la zona se ve grande arriba con su color y solo se cambia con «Cambiar zona» (vuelve aquí). */
+const ZONA_COL=['#2f6fb5','#b7700b','#2e7d4f','#7b4fa8','#b5432f','#0f7c86'];
+function zonaCol(id){const f=fincaAct(),l=(f&&f.cabezales.length?f.cabezales:cabsVis().map(c=>c.id)),i=Math.max(0,l.indexOf(id));return ZONA_COL[i%ZONA_COL.length]}
+function zonasFinca(){return cabsFinca()}
+function zonaAvisos(id){const out=[];if(st.hist===null||st.llen===null)return [['nd','Cargando avisos…']];
+  const d=new Date();d.setDate(d.getDate()-1);const ra=(st.hist||[]).find(r=>r.fecha===isoD(d));if(!ra||!ra.m3||ra.m3[id]==null)out.push(['bad','Faltan las cuentas de ayer']);
+  const deps=st.cfg.bidones.filter(b=>b.cabezales.includes(id)&&bajoUmbral(nivel(b)));if(deps.length)out.push(['warn',deps.length===1?'1 depósito para rellenar':deps.length+' depósitos para rellenar',depsDet(deps)]);
+  if(!out.length)out.push(['ok','Todo en orden']);return out}
+function abrirZonas(volver){const f=fincaAct();if(!f){abrirFincas();return}st.zVolver=volver||null;renderZonas();$('#fincas').hidden=false;document.documentElement.style.overflow='hidden';window.scrollTo(0,0);navGuarda()}
+function renderZonas(){st.ov='zonas';const f=fincaAct(),Z=zonasFinca(),dos=areasDisp(f).length>1;
+  $('#fincas').innerHTML=`<div class="in"><div class="fhead"><div><button class="fback" data-act="${st.zVolver?'zona-vuelve':dos?'areas':'fincas'}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>${st.zVolver?'Volver':dos?'Menú':'Fincas'}</button>
+    <div class="eyebrow" style="margin-top:14px">${esc(f.nombre)} · Personal de riego</div><h2>Elige la zona</h2><p class="zsub">Todo lo que apuntes dentro irá a la zona que elijas. Para pasar a otra, vuelve aquí.</p></div></div>
+    <div class="zgrid">${Z.map(c=>{const av=zonaAvisos(c.id),act=st.zVolver&&c.id===st.cab;return `<button class="zcard" data-act="zona-go" data-z="${c.id}" style="--zc:${zonaCol(c.id)}"><span class="zt"><small>Zona</small><b>${esc(c.nombre)}</b></span>${act?'<span class="zact">Estás aquí</span>':''}
+      <span class="avs">${av.slice(0,3).map(([k,t,det])=>`<span class="av"><i class="dot ${k==='nd'?'':k}" ${k==='nd'?'style="background:var(--line)"':''}></i><span><span class="at">${esc(t)}</span>${det||''}</span></span>`).join('')}</span><span class="btn zgo">Entrar en ${esc(c.nombre)}</span></button>`}).join('')}</div></div>`}
+function entrarZona(id){if(!zonasFinca().some(c=>c.id===id))return;st.cab=id;const t=st.zVolver&&tabPermitida(st.zVolver)?st.zVolver:'hoy';st.zVolver=null;st.tab=t;st.confirmReset=false;st.ov=null;
+  $('#fincas').hidden=true;document.documentElement.style.overflow='';renderAll();window.scrollTo(0,0)}
+function entrarArea(a){if(a==='campo'&&!puedeCollas())return;if(a==='riego'&&(!veRiego()||!(fincaAct()||{cabezales:[]}).cabezales.length))return;if(a==='riego'&&zonasFinca().length>1){st.co.ficha=null;abrirZonas();return}if(a==='riego'){st.co.ficha=null;st.tab='hoy';$('#fincas').hidden=true;document.documentElement.style.overflow='';renderAll();window.scrollTo(0,0);return}const G=a==='campo'?GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida)):GRUPOS_RIEGO;st.co.ficha=null;
   let t=st.ultArea&&st.ultArea[a];if(!t||areaDe(t)!==a||!tabPermitida(t))t=G[0].tabs[0];st.tab=t;
   $('#fincas').hidden=true;document.documentElement.style.overflow='';renderAll();window.scrollTo(0,0)}
 document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset||!t.dataset.ffoto||!t.files[0])return;const id=t.dataset.ffoto,file=t.files[0];t.value='';
@@ -985,7 +1020,22 @@ function renderSaludo(){const e=$('#hoysal');if(!e)return;const on=st.tab==='hoy
 /* El día de arriba: corto («30 oct»); si no es hoy, se marca para que se vea que estás en otro día */
 function fechaTxt(){const e=$('#fechaTxt');if(!e)return;const d=new Date(st.fecha+'T12:00:00'),h=st.fecha===hoy();e.textContent=h?'Hoy':d.toLocaleDateString('es-ES',{day:'numeric',month:'short'}).replace('.','');$('#fechaL').classList.toggle('otro',!h)}
 function renderCabs(){renderSaludo();fechaTxt();const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['mas','estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic'].includes(st.tab);
-  $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
+  $('#fechaL').hidden=campo;{const b=$('header .fback');if(b){b.dataset.act='volver';const v=volverTxt();$('#fbackT').textContent=v;b.setAttribute('aria-label','Volver a '+v)}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}{const Z=cabsFinca(),c=Z.find(x=>x.id===st.cab)||Z[0];$('#cabs').classList.add('zbar');$('#cabs').style.setProperty('--zc',c?zonaCol(c.id):'var(--accent)');
+    $('#cabs').innerHTML=c?`<span class="zdot" aria-hidden="true"></span><span class="zn"><small>Zona</small><b>${esc(c.nombre)}</b></span>${Z.length>1?'<button class="zcam" type="button" data-act="zonas">Cambiar zona</button>':''}`:''}
+  navGuarda()}
+/* ---------- Botón de atrás (el de la app y el del móvil) ---------- */
+function volverTxt(){const campo=areaDe(st.tab)==='campo';if(!campo&&st.tab!=='hoy')return 'Hoy';if(!campo&&zonasFinca().length>1)return 'Zonas';return areasDisp().length>1?'Menú':'Fincas'}
+function volver(){const ov=!$('#fincas').hidden;
+  if(ov){if(st.ov==='zonas'){if(st.zVolver){const t=st.zVolver;st.zVolver=null;st.ov=null;$('#fincas').hidden=true;document.documentElement.style.overflow='';st.tab=t;renderAll();return true}if(areasDisp().length>1){abrirAreas();return true}abrirFincas();return true}
+    if(st.ov==='areas'){abrirFincas();return true}return false}
+  if(!$('#splash').hidden)return false;
+  const campo=areaDe(st.tab)==='campo';if(!campo&&st.tab!=='hoy'){rvStop();st.tab='hoy';st.confirmReset=false;renderAll();window.scrollTo(0,0);return true}
+  if(!campo&&zonasFinca().length>1){abrirZonas();return true}
+  st.ultArea=st.ultArea||{};st.ultArea[areaDe(st.tab)]=st.tab;if(areasDisp().length>1)abrirAreas();else abrirFincas();return true}
+/* El atrás del móvil: se deja siempre una entrada de más en el historial; al usarla se hace lo mismo que el botón de la app.
+   En la lista de fincas no se pone, así el siguiente atrás sale de la app como siempre. */
+function navGuarda(){try{const raiz=!$('#fincas').hidden&&st.ov==='fincas';if(raiz||!$('#splash').hidden)return;if(!(history.state&&history.state.ag))history.pushState({ag:1},'')}catch(e){}}
+window.addEventListener('popstate',()=>{try{if(volver())navGuarda()}catch(e){console.warn('atrás',e)}});
 /* Menú en 5 apartados */
 const IC_HOY='<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',IC_MAS='<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>';
 const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','cmbid','drenaje','ajriego','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
@@ -1414,6 +1464,24 @@ const HOY_T=[['cuentas','Cuentas del día','<path d="M5 4h14v16H5z"/><path d="M8
   ['parte','Parte diario','<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 12l2 2 3.5-4"/>'],['mapa','Mapa de la finca','<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>'],['climanv','Clima de las naves','<path d="M10 14V5a2 2 0 1 1 4 0v9a4 4 0 1 1-4 0z"/>'],
   ['receta','Receta','<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/>'],['tareas','Tareas','<path d="M4 6h3M4 12h3M4 18h3"/><path d="M10 6h10M10 12h10M10 18h10"/>'],['almacen','Almacén','<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6"/>'],['informe','Informe del mes','<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'],
   ['global','Datos totales','<path d="M4 19h16"/><path d="M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/>'],['taller','Taller','<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>']];
+const HOY_IC={cmbid:'<path d="M7 3h10v18H7z"/><path d="M7 7h3M7 11h4M7 15h3M7 19h4"/>',ajriego:'<circle cx="12" cy="12" r="8"/><path d="M12 12l4-3"/><path d="M12 4v2M20 12h-2M4 12h2"/>',
+  aforo:'<path d="M5 4h14l-2 6H7z"/><path d="M12 10v4"/><path d="M9 20c0-2 1.5-3.5 3-6 1.5 2.5 3 4 3 6a3 3 0 0 1-6 0z"/>',instal:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
+  solucion:'<circle cx="8" cy="8" r="3"/><circle cx="16" cy="9" r="2.4"/><circle cx="11" cy="16" r="3.4"/>',partes:'<path d="M4 7h16v12H4z"/><path d="M4 7l8 6 8-6"/>',
+  mensajes:'<path d="M4 5h16v11H9l-5 4z"/>',ubic:'<path d="M12 21s-6-6-6-11a6 6 0 1 1 12 0c0 5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',material:'<path d="M4 8l8-4 8 4-8 4z"/><path d="M4 8v8l8 4 8-4V8M12 12v8"/>',
+  montaje:'<path d="M4 12h6M14 12h6M10 9v6h4V9z"/>',m3mes:'<path d="M5 20V8h14v12z"/><path d="M5 12h14M9 4v4M15 4v4"/>',cultivo:'<path d="M12 21V9"/><path d="M12 13c-4 0-6-3-6-6 4 0 6 3 6 6zM12 11c4 0 6-3 6-6-4 0-6 3-6 6z"/>',
+  historial:'<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',graficas:'<path d="M4 20h16"/><path d="M5 16l4-5 4 3 6-8"/>',cuaderno:'<path d="M6 3.5h11v17H6z"/><path d="M9 3.5v17M11.5 8h3.5M11.5 11.5h3.5"/>',
+  diagnostico:'<circle cx="10" cy="10" r="5"/><path d="M14 14l6 6M8 10h4M10 8v4"/>',chatia:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/>',
+  tiempo:'<path d="M7 18a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.3 3.3 0 0 1 17 18z"/>',satelite:'<path d="M5 19l4-4M9 9l6 6M7 7l3-3 4 4-3 3zM14 14l3-3 4 4-3 3z"/>',
+  catalogo:'<path d="M4 5h7v14H4zM13 5h7v14h-7z"/>',aparatos:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 17h4"/>',cajon:'<path d="M4 9h16v10H4z"/><path d="M4 9l2-4h12l2 4M10 13h4"/>'};
+/* Orden de los cuadros: primero lo de todos los días */
+const HOY_ORD={riego:['cuentas','rellenar','drenaje','cmbid','parte','ajriego','receta','aforo','instal','solucion','partes','global'],equipo:['tareas','mensajes'],almacen:['almacen','material','montaje'],
+  datos:['informe','climanv','m3mes','historial','graficas','cultivo','cuaderno','tiempo','satelite','diagnostico','chatia'],lab:['catalogo','taller','aparatos','cajon']};
+const HOY_FILAS=[['riego','Riego'],['equipo','Equipo'],['almacen','Almacén'],['datos','Datos'],['lab','Taller']];
+function hoyFilas(cl){const G=gruposAct(),ic=k=>(HOY_T.find(x=>x[0]===k)||[])[2]||HOY_IC[k]||IC_MAS,nom=k=>k==='instal'?'Mapa de la finca':k==='mapa'?'Mapa de la finca':((HOY_T.find(x=>x[0]===k)||[])[1]||(TABS.find(x=>x[0]===k)||[])[1]||k);
+  let nb=0;try{nb=depsBajos().length}catch(e){}
+  return HOY_FILAS.map(([gid,gn])=>{const g=G.find(x=>x.id===gid);if(!g)return '';const ks=HOY_ORD[gid].filter(k=>g.tabs.includes(k)&&VIEWS[k]&&tabPermitida(k));if(!ks.length)return '';
+    return `<section class="hoyfila" data-fila="${gid}"><div class="hoyfh"><h3>${gn}</h3>${ks.length>3?'<small>Desliza ›</small>':''}</div><div class="hoyrow">${ks.map(k=>{const d=k==='instal'?(st.mfUlt&&tabPermitida(st.mfUlt)?st.mfUlt:'mapa'):k;
+      return `<button class="hoyt" type="button" data-tab="${d}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ic(k)}</svg><b>${esc(nom(k))}</b>${k==='climanv'&&cl?`<small>${esc(cl)}</small>`:''}${k==='rellenar'&&nb?`<i class="bdg">${nb}</i>`:''}</button>`}).join('')}</div></section>`}).join('')}
 function hoyAvisos(){const av=[],n=(k,a,b)=>k+' '+(k===1?a:b);
   try{for(const b of depsBajos())av.push(['bad',`Depósito bajo: ${b.nombre} · ${b.cabezales.map(cabNombre).join(' + ')}`,'rellenar'])}catch(e){}
   try{const k=st.inc?incAbiertas().filter(i=>i.prio==='alta').length:0;if(k)av.push(['bad',n(k,'incidencia','incidencias')+' de prioridad alta','mapa'])}catch(e){}
@@ -1431,9 +1499,10 @@ function vHoy(){lecCargar();const av=hoyAvisos(),cl=hoyClima(),ab=!!st.hoyAv,mal
   const urg=av.filter(a=>a[0]==='bad').length,BELL='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
   return `<button class="hoynot ${av.length?(urg?'bad':'warn'):'ok'}" type="button" data-hoyav="1" aria-expanded="${ab}" ${av.length?'':'disabled'}><span class="hoyic">${BELL}</span><span class="hoytx"><b>${av.length?'Para mirar':'Todo en orden'}</b><small>${av.length?`${av.length} aviso${av.length>1?'s':''}${urg?` · ${urg} urgente${urg>1?'s':''}`:''}`:'Nada pendiente por ahora'}</small></span>${av.length?'<span class="hoych" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>':''}</button>
   ${ab&&av.length?`<div class="hoyav">${av.map(([k,t,tab])=>`<button class="hoyai ${k}" type="button" data-tab="${tab}"><i></i><span>${esc(t)}</span><b>›</b></button>`).join('')}</div>`:''}
-  <section class="hoyg">${HOY_T.filter(([k])=>VIEWS[k]&&tabPermitida(k)).map(([k,t,ic])=>`<button class="hoyt" type="button" data-tab="${k==='taller'?((st.ultTab||{}).lab&&tabPermitida(st.ultTab.lab)?st.ultTab.lab:'catalogo'):k}"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ic}</svg><b>${t}</b>${k==='climanv'&&cl?`<small>${esc(cl)}</small>`:''}</button>`).join('')}</section>
-  ${fich?`<div class="hoyfich"><button class="lnk" type="button" data-tab="${fich}">Fichar hoy ›</button></div>`:''}`}
+  ${fich?`<div class="hoyfich"><button class="btn pri" type="button" data-tab="${fich}">Fichar hoy</button></div>`:''}
+  ${hoyFilas(cl)}`}
 window.addEventListener('scroll',()=>document.body.classList.toggle('scrolled',window.scrollY>4),{passive:true});
+new MutationObserver(()=>{for(const r of document.querySelectorAll('.hoyrow:not([data-sr])')){r.dataset.sr=1;scrollRaton(r)}}).observe(document.getElementById('main')||document.body,{childList:true,subtree:true});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-hoyav]');if(!b||st.tab!=='hoy')return;st.hoyAv=!st.hoyAv;renderMain()});
 /* ---------- Más: Equipo, Notas, Taller y Ajustes ---------- */
 function vMas(){const G=gruposAct().filter(g=>MAS_G.includes(g.id)),ins=insignias();
@@ -4871,6 +4940,10 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='fincas')abrirFincas();
   else if(t.dataset.act==='areas'){st.ultArea=st.ultArea||{};st.ultArea[areaDe(st.tab)]=st.tab;abrirAreas()}
   else if(t.dataset.act==='area-go')entrarArea(t.dataset.a);
+  else if(t.dataset.act==='volver')volver();
+  else if(t.dataset.act==='zonas')abrirZonas(st.tab);
+  else if(t.dataset.act==='zona-go')entrarZona(t.dataset.z);
+  else if(t.dataset.act==='zona-vuelve')volver();
   else if(t.dataset.act==='finca-go')elegirFinca(t.dataset.id);
   else if(t.dataset.act==='fu-open'){st.fUbic=t.dataset.id;renderFincas();const i=$('#fu_'+t.dataset.id);if(i)i.focus()}
   else if(t.dataset.act==='fu-no'){st.fUbic=null;renderFincas()}

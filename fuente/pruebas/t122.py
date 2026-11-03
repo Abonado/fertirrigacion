@@ -13,13 +13,13 @@ async def main():
         await pg.evaluate("localStorage.setItem('mockfb',JSON.stringify({docs:{},users:{'juanjo.serrano3@gmail.com':'admin123'},cur:null}))")
         await pg.reload(); await pg.wait_for_timeout(600)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
-        await pg.evaluate("cerrarSplash();st.finca='pinta';st.cab='gas';st.ultArea={};entrarArea('riego')"); await pg.wait_for_timeout(800)
+        await pg.evaluate("cerrarSplash();st.finca='pinta';st.cab='gas';st.ultArea={};entrarArea('riego');entrarZona('gas')"); await pg.wait_for_timeout(800)
         assert await pg.evaluate("st.tab") == 'hoy', 'al entrar, Hoy'
         nav = await pg.locator('#grupos .grp span').all_inner_texts(); print(nav); assert [x.upper() for x in nav] == ['HOY', 'RIEGO', 'ALMACÉN', 'DATOS', 'MÁS']
         bb = await pg.locator('#grupos').bounding_box(); assert bb['y'] + bb['height'] >= 840, 'abajo del todo'
         assert await pg.locator('#tabs').is_hidden()
         t = (await pg.text_content('#main')).upper(); assert 'CUENTAS DEL DÍA' in t and 'INFORME DEL MES' in t and 'FICHAR HOY' in t
-        assert all(x in t for x in ['RECETA', 'DATOS TOTALES', 'TALLER']) and await pg.locator('.hoyt').count() == 12
+        assert all(x in t for x in ['RECETA', 'DATOS TOTALES', 'TALLER']) and await pg.locator('.hoyfila[data-fila="riego"] .hoyt').count() >= 10
         sal = (await pg.text_content('#hoysal')).upper(); assert await pg.locator('#hoysal').is_visible() and ('BUENAS' in sal or 'BUENOS' in sal) and 'JUANJO' not in t.split('CUENTAS')[0].replace('PARA MIRAR','')
         hb, cb = await pg.locator('#hoysal').bounding_box(), await pg.locator('#cabs').bounding_box(); assert hb['y'] + hb['height'] <= cb['y'] + 1, 'el saludo va encima de las zonas'
         # un aviso: cosas del almacén para pedir → lleva al Almacén (y la insignia sale en la barra)
@@ -36,7 +36,7 @@ async def main():
         # acceso grande
         await pg.click('#grupos [data-grupo="hoy"]'); await pg.wait_for_timeout(300); await pg.click('.hoyt[data-tab="informe"]'); await pg.wait_for_timeout(400)
         assert await pg.evaluate("st.tab") == 'informe' and await pg.locator('#grupos [data-grupo="datos"][aria-pressed="true"]').count() == 1
-        await pg.click('#grupos [data-grupo="hoy"]'); await pg.wait_for_timeout(300); await pg.click('.hoyt:has-text("Taller")'); await pg.wait_for_timeout(500); assert await pg.evaluate("['catalogo','taller','aparatos','cajon'].includes(st.tab)")
+        await pg.click('#grupos [data-grupo="hoy"]'); await pg.wait_for_timeout(300); await pg.click('.hoyfila[data-fila="lab"] .hoyt[data-tab="catalogo"]'); await pg.wait_for_timeout(500); assert await pg.evaluate("['catalogo','taller','aparatos','cajon'].includes(st.tab)")
         await pg.click('#grupos [data-grupo="hoy"]'); await pg.wait_for_timeout(300); await pg.click('.hoyt[data-tab="global"]'); await pg.wait_for_timeout(500); assert await pg.evaluate("st.tab") == 'global'
         # Más
         await pg.click('#grupos [data-grupo="mas"]'); await pg.wait_for_timeout(300)
