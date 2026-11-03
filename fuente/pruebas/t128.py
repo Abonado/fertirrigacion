@@ -28,6 +28,7 @@ async def main():
           for(let i=1;i<=7;i++){const f=isoD(new Date(Date.now()-(i-1)*864e5)),r={fecha:f,min:{},rie:{},dren:{},rcs:{}};
             r.min[s1.id]=84;r.rie[s1.id]=14;for(const bj of s1.bandejas)r.dren[bj.id]=0.25*84*bj.caudal;
             r.min[s2.id]=96;r.rie[s2.id]=12;for(const bj of s2.bandejas)r.dren[bj.id]=0.40*96*bj.caudal;
+            r.ceB={gas:1.5};r.inc={gas:0.9};r.ceD={};for(const bj of s1.bandejas)r.ceD[bj.id]=4.0;
             if(i===1){r.rcs[s1.id]=140;r.rcs[s2.id]=160}H.push(r)}
           st.hist=H.slice(1);st.reg=normReg(H[0],H[0].fecha);st.fecha=H[0].fecha;st.tab='ajriego';renderAll()})()""")
         await pg.wait_for_timeout(1200)
@@ -40,6 +41,23 @@ async def main():
         assert t.count('RADIACIÓN DE CONTROL') >= 2 and 'UN 32 % MÁS' in t and 'DRENÓ 25 %' in t and 'DRENÓ 40 %' in t and '+ 17 POR RADIACIÓN' in t and '+ 12 POR RADIACIÓN' in t
         assert 'LA VUELTA DURA 14 MIN' in t and 'LOS RIEGOS SE PISAN' not in t
         await pg.screenshot(path='pruebas/salida/t128.png', full_page=True)
+        # botones de lo que se busca en el sector 1
+        s1 = await pg.evaluate("cabById('gas').sectores[0].id")
+        await pg.click(f'[data-ajo="ce+"][data-sec="{s1}"]'); await pg.wait_for_timeout(300)
+        p = (await pg.locator('.ajo-p').first.inner_text()).upper(); print(p)
+        assert 'DE 4000 A 4500' in p and '2,70' in p and '1,20' in p and '0,90' in p, p
+        assert await pg.locator('.ajo-t .nt').first.inner_text() == 'µS/cm', 'la unidad no sale en mayúsculas (µS no es MS)'
+        X = await pg.evaluate(f"(()=>{{const X=ajrObjetivo(ajrCalc('gas',cabById('gas').sectores[0]),'ce+');return [X.dren,X.Q.rc,X.Q.N]}})()"); print('ce+', X)
+        assert X[0] == 20 and X[2] < 18 and X[1] > 130, 'para subir la CE: drenar menos → menos riegos, radiación más alta'
+        await pg.screenshot(path='pruebas/salida/t128-ce.png', full_page=True)
+        await pg.click(f'[data-ajo="rie+"][data-sec="{s1}"]'); await pg.wait_for_timeout(300)
+        X = await pg.evaluate("(()=>{const X=ajrObjetivo(ajrCalc('gas',cabById('gas').sectores[0]),'rie+');return [X.Q.N,X.pulso,X.Q.rc,Math.round(X.Q.Dreal)]})()"); print('rie+', X)
+        assert X[0] > 18 and X[1] < 6 and X[2] < 130 and 21 <= X[3] <= 25, 'más riegos con la misma agua'
+        await pg.click(f'[data-ajo="dren+"][data-sec="{s1}"]'); await pg.wait_for_timeout(300)
+        assert 'DRENAJE DEL 25 % AL 30 %' in (await pg.locator('.ajo-p').first.inner_text()).upper()
+        await pg.click(f'[data-ajap="dren+"][data-sec="{s1}"]'); await pg.wait_for_timeout(300)
+        assert await pg.evaluate(f"st.cfg.ajr.gas.sec['{s1}'].dren") == 30 and await pg.evaluate("ajrCalc('gas',cabById('gas').sectores[0]).hoy.N") > 18
+        await pg.evaluate(f"st.cfg.ajr.gas.sec['{s1}']={{}};renderMain()")
         # drenaje objetivo solo del sector 2: más bajo → menos riegos en ese sector, el 1 igual
         s2 = await pg.evaluate("cabById('gas').sectores[1].id")
         await pg.fill(f'[data-ajr="dren"][data-sec="{s2}"]', '15'); await pg.locator(f'[data-ajr="dren"][data-sec="{s2}"]').dispatch_event('change'); await pg.wait_for_timeout(300)

@@ -674,6 +674,9 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .ajr-big{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:6px 0 4px}.ajr-big>div{border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:grid;gap:2px;background:var(--surface)}
 .ajr-big>div:first-child{background:#0e2851;color:#fff;border-color:#0e2851}.ajr-big>div:first-child span,.ajr-big>div:first-child small{color:#cfd8e6}.ajr-big span{font-size:12px;color:var(--muted)}.ajr-big b{font:700 30px/1.1 var(--f-display)}.ajr-big small{font-size:12px;color:var(--muted)}
 .ajr-p{margin:6px 0;line-height:1.5}.ajr-det summary{cursor:pointer;font-weight:600;padding:6px 0}.ajr-ol{margin:4px 0 0 18px;padding:0;display:grid;gap:4px}.ajr-t td,.ajr-t th{text-align:center}.ajr-sec h3{font-size:19px}
+.ajo{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}.ajo .chip{font-size:13px}.ajo .chip.on{background:#0e2851;color:#fff;border-color:#0e2851}
+.ajo-p{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin:6px 0 8px;background:#f6f9fc}.ajo-t{display:block;margin-bottom:6px}
+.ajo-tb{width:100%;border-collapse:collapse;font-size:14px}.ajo-tb th,.ajo-tb td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right}.ajo-tb th:first-child,.ajo-tb td:first-child{text-align:left;color:var(--muted)}.ajo-tb th{font-size:12px;color:var(--muted)}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -1076,7 +1079,7 @@ function ajrDias(cab,s){const C=ajrCfg(cab),W=(st.ajrW[ajrKey(cab)]||{}).dias||{
   for(const r of st.hist||[])regs[r.fecha]=r;if(st.reg&&st.fecha)regs[st.fecha]=st.reg;
   const out=[];for(const r of Object.values(regs)){const f=C.mismoDia?r.fecha:diaRiego(r.fecha);if(!f||f>=hoy())continue;
     const M=(r.min||{})[s.id]>0?r.min[s.id]:null,N=(r.rie||{})[s.id]>0?r.rie[s.id]:null,D=ajrDrenSec(r,s),w=W[f],Rm=(r.rad||{})[cab]??null,rc=(r.rcs||{})[s.id]??(r.rcon||{})[cab]??null;
-    if(M==null&&D==null)continue;const x={f,reg:r.fecha,M,N,D,w,Rm,rc,p:M&&N?M/N:null};
+    if(M==null&&D==null)continue;const ceB=(r.ceB||{})[cab]??null,inc=(r.inc||{})[cab]??null,x={f,reg:r.fecha,M,N,D,w,Rm,rc,p:M&&N?M/N:null,ceB,inc,ceI:ceB!=null&&inc!=null?ceB+inc:null,ceD:valSect(r,s,'ceD')};
     if(M!=null&&D!=null&&w&&w.R>=200){x.U=M*(1-D/100);x.F=ajrFac(w,C);x.dem=w.R*x.F.f;x.a=x.U/x.dem*1000}out.push(x)}
   return out.sort((a,b)=>a.f<b.f?-1:1)}
 // el calor: con 10 días o más (de todos los sectores) se ajusta con lo de la finca, si sale algo razonable
@@ -1093,11 +1096,44 @@ function ajrCalc(cab,s){const c=cabById(cab);s=s||c.sectores[0];const C=ajrSecCf
   const ult=ok.slice(-7);let sw=0,sa=0;ult.forEach((x,i)=>{const w=Math.pow(0.75,ult.length-1-i);sw+=w;sa+=w*x.a});const a=sa/sw;
   const ay=ok[ok.length-1],nRad=n=>C.ini?Math.max(0,n-1):n;
   const ks=D.filter(x=>x.w&&x.w.R>=200&&(x.Rm||(x.rc&&nRad(x.N)>0))).map(x=>(x.Rm||x.rc*nRad(x.N))/x.w.R).sort((a,b)=>a-b),k=ks.length?ks[Math.floor(ks.length/2)]:1;
-  const pre=f=>{const w=W[f];if(!w)return null;const F=ajrFac(w,C),dem=w.R*F.f,U=a*dem/1000,M=U/(1-C.dren/100),N=pulso?Math.max(1,Math.round(M/pulso)):null,Rmq=k*w.R;
+  const pre=(f,o={})=>{const w=W[f];if(!w)return null;const dr=o.dren??C.dren,pu=o.pulso??pulso,F=ajrFac(w,C),dem=w.R*F.f,U=a*dem/1000,M=U/(1-dr/100),N=o.N??(pu?Math.max(1,Math.round(M/pu)):null),Rmq=k*w.R;
     const nr=N?nRad(N):0,rc=nr>0?Math.max(5,Math.round(Rmq/nr/5)*5):null;
     // a mediodía la hora de más sol se lleva ≈ 12 % del día: minutos que tarda la máquina en juntar la radiación de control
-    return{f,w,F,dem,U,M,N,nr,rc,Rmq,minEntre:rc?rc/(Rmq*0.12)*60:null,Mreal:N&&pulso?N*pulso:null,Dreal:N&&pulso?(1-U/(N*pulso))*100:null}};
-  return{s,D,C,ok,a,ay,pulso,k,kN:ks.length,hoy:pre(hoy()),man:pre(isoD(new Date(Date.now()+864e5)))}}
+    return{f,w,F,dem,U,M,N,nr,rc,Rmq,pulso:pu,dren:dr,minEntre:rc?rc/(Rmq*0.12)*60:null,Mreal:N&&pu?N*pu:null,Dreal:N&&pu?(1-U/(N*pu))*100:null}};
+  const ce=D.filter(x=>x.ceI&&x.ceD&&x.D>0).pop()||null;
+  return{s,D,C,ok,a,ay,pulso,k,kN:ks.length,ce,plan:o=>pre(hoy(),o),hoy:pre(hoy()),man:pre(isoD(new Date(Date.now()+864e5)))}}
+/* Lo que se busca en un sector → lo que hay que poner en la máquina.
+   CE del drenaje por balance de sales: CEd = CEr × (1 − (1−d)·u) ÷ d, con d = drenaje (tanto por uno), CEr = CE del riego y u = lo que se
+   lleva la planta de sales respecto al agua (sale de lo medido en el sector). */
+const AJO=[['dren+','Más drenaje'],['dren-','Menos drenaje'],['ce+','Más CE'],['ce-','Menos CE'],['rie+','Más riegos'],['rie-','Menos riegos']];
+st.ajrObj={};
+function ajrObjetivo(R,obj){const P=R.hoy;if(!P||!R.pulso)return{err:'Hace falta un día con minutos, riegos y drenaje del sector.'};const C=R.C,r1=x=>Math.round(x*2)/2;
+  if(obj==='dren+'||obj==='dren-'){const d=Math.min(60,Math.max(5,C.dren+(obj==='dren+'?5:-5))),Q=R.plan({dren:d});
+    return{tit:`Drenaje del ${fmt(C.dren,0)} % al ${fmt(d,0)} %`,Q,dren:d,txt:obj==='dren+'?'Más riegos con la radiación de control más baja: entra más agua de la que se lleva la planta.':'Menos riegos con la radiación de control más alta: entra el agua justa y drena menos.'}}
+  if(obj==='rie+'||obj==='rie-'){const N=Math.max(2,Math.round(P.N*(obj==='rie+'?1.25:0.8))),pu=r1(P.Mreal/N);if(pu<2)return{err:'Saldrían riegos de menos de 2 minutos: no conviene dar más.'};const Q=R.plan({N:Math.max(2,Math.round(P.Mreal/pu)),pulso:pu});
+    return{tit:`De ${P.N} a ${Q.N} riegos con la misma agua`,Q,pulso:pu,txt:obj==='rie+'?'Riegos más cortos y más seguidos: el sustrato se mantiene más húmedo y parejo; el drenaje casi no cambia.':'Riegos más largos y más espaciados: el sustrato se seca más entre riegos; el drenaje casi no cambia.'}}
+  if(obj==='ce+'||obj==='ce-'){const c=R.ce;if(!c)return{err:'Para la CE hace falta un día con CE de balsa, incremento y CE de las bandejas de este sector (en Drenaje).'};
+    const d=c.D/100,u=Math.min(0.95,Math.max(0,(1-c.ceD*d/c.ceI)/(1-d))),obj2=c.ceD+(obj==='ce+'?0.5:-0.5);if(obj2<=c.ceI*u+0.05)return{err:'No se puede bajar tanto: la CE del drenaje ya está cerca de la del riego.'};
+    // a) cambiando el drenaje con la misma CE de riego
+    const dN=Math.min(0.6,Math.max(0.05,c.ceI*(1-u)/(obj2-c.ceI*u))),Q=R.plan({dren:dN*100});
+    // b) cambiando la CE del riego con el mismo drenaje
+    const ceI2=obj2*d/(1-(1-d)*u);
+    return{tit:`CE del drenaje de ${fUS(c.ceD)} a ${fUS(obj2)} µS/cm`,Q,dren:+(dN*100).toFixed(0),ce:{c,u,obj2,ceI2,inc2:c.inc+(ceI2-c.ceI)},
+      txt:obj==='ce+'?'Dos caminos: drenar menos (lava menos el sustrato) o subir la CE del riego. Lo más rápido es subir el incremento; lo más barato, drenar menos.':'Dos caminos: drenar más (lava el sustrato) o bajar la CE del riego.'}}
+  return null}
+function ajrObjHTML(R){const sid=R.s.id,o=st.ajrObj[sid],g=esGestor();let h=`<div class="ajo" role="group" aria-label="Lo que buscas en ${esc(R.s.nombre)}">${AJO.map(([k,n])=>`<button type="button" class="chip${o===k?' on':''}" data-ajo="${k}" data-sec="${sid}" aria-pressed="${o===k}">${n}</button>`).join('')}</div>`;
+  if(!o)return h;const X=ajrObjetivo(R,o);if(!X)return h;if(X.err)return h+`<div class="note tbad">${X.err}</div>`;
+  const P=R.hoy,Q=X.Q,fila=(n,a,b,u)=>`<tr><td>${n}</td><td>${a}</td><td><b>${b}</b>${u?' '+u:''}</td></tr>`;
+  h+=`<div class="ajo-p"><b class="ajo-t">${esc(X.tit)}</b><table class="ajo-tb"><thead><tr><th></th><th>Ahora</th><th>Pon en la máquina</th></tr></thead><tbody>
+    ${fila('Radiación de control',P.rc!=null?fmt(P.rc,0):'—',Q.rc!=null?fmt(Q.rc,0):'—','J/cm²')}
+    ${fila('Tiempo de cada riego',fmt(P.pulso,P.pulso%1?1:0),fmt(Q.pulso,Q.pulso%1?1:0),'min')}
+    ${fila('Riegos',P.N,Q.N,'')}
+    ${X.ce?fila('CE del riego (salida)',fmt(X.ce.c.ceI,2),fmt(X.ce.c.ceI,2),'mS/cm'):''}
+    ${fila('Drenaje esperado',P.Dreal!=null?fmt(Math.max(0,P.Dreal),0)+' %':'—',Q.Dreal!=null?fmt(Math.max(0,Q.Dreal),0)+' %':'—','')}</tbody></table>`;
+  if(X.ce)h+=`<p class="ajr-p">O sin tocar los riegos: sube${X.ce.ceI2<X.ce.c.ceI?' (baja)':''} la CE del riego de <b>${fmt(X.ce.c.ceI,2)}</b> a <b>${fmt(X.ce.ceI2,2)} mS/cm</b>: el incremento de la máquina de ${fmt(X.ce.c.inc,2)} a <b>${fmt(X.ce.inc2,2)}</b>.</p>`.replace('sube (baja)','baja');
+  h+=`<div class="note">${esc(X.txt)}${X.ce?` Calculado con el ${esc(fFecha(X.ce.c.f))}: riego ${fmt(X.ce.c.ceI,2)} mS/cm, drenaje ${fmt(X.ce.c.D,0)} % a ${fUS(X.ce.c.ceD)} µS/cm.`:''} Tarda 2 o 3 días en notarse en el drenaje.</div>`;
+  if(g&&(X.dren!=null||X.pulso!=null))h+=`<div class="row"><button class="btn sm pri" type="button" data-ajap="${o}" data-sec="${sid}">Usar esto en el cálculo de ${esc(R.s.nombre)}</button></div>`;
+  return (h+`</div>`).replace(/(µS\/cm|mS\/cm)/g,'<span class="nt">$1</span>')}
 function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)return '';const k=ajrKey(st.cab),Wc=st.ajrW[k];if(!Wc||(!Wc.dias&&!Wc.fallo&&!Wc.cargando))ajrCargar(st.cab);
   const C=ajrCfg(st.cab),RS=c.sectores.map(s=>ajrCalc(st.cab,s)),g=esGestor(),dis=g?'':'disabled',fdia=f=>fFecha(f).replace(/^\w/,x=>x.toUpperCase()),W=(Wc&&Wc.dias)||{};
   const wh=W[hoy()],ok=RS.filter(R=>!R.poco&&R.hoy),vuelta=RS.reduce((a,R)=>a+(R.pulso||0),0);
@@ -1121,6 +1157,7 @@ function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)r
         <div><span>Drenaje esperado</span><b>${P.Dreal!=null?fmt(Math.max(0,P.Dreal),0)+' %':'—'}</b><small>buscas ${fmt(Cs.dren,0)} %</small></div></div>
         <p class="ajr-p">Ayer (${esc(fdia(ay.f))}): ${ay.N!=null?`<b>${fmt(ay.N,0)} riegos</b> · `:''}<b>${fmt(ay.M,0)} min</b>${ay.rc?` con la radiación de control a ${fmt(ay.rc,0)}`:''} y drenó <b class="${Math.abs(ay.D-Cs.dren)>8?'tbad':''}">${fmt(ay.D,0)} %</b> → la planta se llevó ≈ ${fmt(ay.U,0)} min de riego.</p>
         ${P.N!=null&&(P.N>30||P.N<3)?`<div class="note tbad">Salen ${P.N} riegos: ${P.N>30?'conviene alargar cada riego':'conviene acortar cada riego'}.</div>`:''}
+        ${ajrObjHTML(R)}
         ${R.man&&R.man.rc!=null?`<div class="note">Mañana: radiación de control ≈ ${fmt(R.man.rc,0)} con ${R.man.N} riegos (${fmt(R.man.w.R,0)} J/cm², máxima de ${fmt(R.man.w.Tx,0)} °C).</div>`:''}`}
     h+=`<div class="frm"><div class="field"><label>Radiación de control que tenía ayer</label><div class="inp"><input data-k="reg.rcs.${s.id}" inputmode="decimal" autocomplete="off" aria-label="Radiación de control de ayer en ${esc(s.nombre)}" value="${inVal((st.reg.rcs||{})[s.id])}" placeholder="${inVal((st.reg.rcon||{})[c.id])}"><span class="u nt">J/cm²</span></div></div>
       <div class="field"><label>Drenaje que buscas en este sector</label><div class="inp"><input data-ajr="dren" data-sec="${s.id}" inputmode="decimal" value="${inVal(sc.dren)}" placeholder="${fmt(C.dren,0)}" ${dis}><span class="u">%</span></div></div></div>`;
@@ -1151,6 +1188,11 @@ document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!
   if(sid){x.sec={...(x.sec||{})};x.sec[sid]={...(x.sec[sid]||{}),[k]:num(t.value)??undefined}}
   else if(k==='mismoDia'||k==='ini')x[k]=t.checked;else if(k==='hIni')x.hIni=/^\d{2}:\d{2}$/.test(t.value)?t.value:undefined;else{const v=num(t.value);if(k==='kT'||k==='kV')x[k]=v==null?undefined:v/100;else x[k]=v==null?undefined:v}
   st.dirtyCfg=true;renderSave();renderMain()});
+document.addEventListener('click',e=>{if(st.tab!=='ajriego'||!e.target.closest)return;const o=e.target.closest('[data-ajo]');
+  if(o){const sid=o.dataset.sec;st.ajrObj[sid]=st.ajrObj[sid]===o.dataset.ajo?null:o.dataset.ajo;renderMain();return}
+  const ap=e.target.closest('[data-ajap]');if(ap&&esGestor()){const sid=ap.dataset.sec,c=cabById(st.cab),s=c.sectores.find(x=>x.id===sid);if(!s)return;const X=ajrObjetivo(ajrCalc(st.cab,s),ap.dataset.ajap);if(!X||X.err)return;
+    const A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[st.cab]={...(A[st.cab]||{})};x.sec={...(x.sec||{})};x.sec[sid]={...(x.sec[sid]||{}),...(X.dren!=null?{dren:X.dren}:{}),...(X.pulso!=null?{pulso:X.pulso}:{})};
+    st.ajrObj[sid]=null;st.dirtyCfg=true;renderSave();renderMain();toast('Puesto en el cálculo de '+s.nombre+'. Guarda para que se quede.');return}});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ajr="recargar"],[data-ajr="usarkT"]');if(!b||st.tab!=='ajriego')return;
   if(b.dataset.ajr==='recargar')ajrCargar(st.cab,true);else{const k=ajrKT(st.cab);if(k==null)return;const A=st.cfg.ajr={...(st.cfg.ajr||{})};A[st.cab]={...(A[st.cab]||{}),kT:+k.toFixed(4)};st.dirtyCfg=true;renderSave();renderMain()}});
 /* ---------- M³ del mes: la hoja del contador ----------
