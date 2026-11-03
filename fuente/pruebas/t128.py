@@ -22,29 +22,34 @@ async def main():
         await pg.evaluate("localStorage.setItem('mockfb',JSON.stringify({docs:{},users:{'juanjo.serrano3@gmail.com':'admin123'},cur:null}))")
         await pg.reload(); await pg.wait_for_timeout(600)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
-        # 7 días de riego: 84 min en 14 riegos (6 min) y drenó un 25 %; la radiación de control de ayer, 140
-        await pg.evaluate("""(()=>{cerrarSplash();st.finca='pinta';st.cab='gas';const c=cabById('gas'),H=[];
-          for(let i=1;i<=7;i++){const f=isoD(new Date(Date.now()-(i-1)*864e5)),r={fecha:f,min:{},rie:{},dren:{},rcon:{}};
-            for(const s of c.sectores){r.min[s.id]=84;r.rie[s.id]=14;for(const bj of s.bandejas)r.dren[bj.id]=0.25*84*bj.caudal}if(i===1)r.rcon.gas=140;H.push(r)}
+        # 7 días de riego. Sector 1: 84 min en 14 riegos (6 min), drenó un 25 %, radiación de control 140.
+        # Sector 2: 96 min en 12 riegos (8 min), drenó un 40 %, radiación de control 160.
+        await pg.evaluate("""(()=>{cerrarSplash();st.finca='pinta';st.cab='gas';const c=cabById('gas'),[s1,s2]=c.sectores,H=[];
+          for(let i=1;i<=7;i++){const f=isoD(new Date(Date.now()-(i-1)*864e5)),r={fecha:f,min:{},rie:{},dren:{},rcs:{}};
+            r.min[s1.id]=84;r.rie[s1.id]=14;for(const bj of s1.bandejas)r.dren[bj.id]=0.25*84*bj.caudal;
+            r.min[s2.id]=96;r.rie[s2.id]=12;for(const bj of s2.bandejas)r.dren[bj.id]=0.40*96*bj.caudal;
+            if(i===1){r.rcs[s1.id]=140;r.rcs[s2.id]=160}H.push(r)}
           st.hist=H.slice(1);st.reg=normReg(H[0],H[0].fecha);st.fecha=H[0].fecha;st.tab='ajriego';renderAll()})()""")
         await pg.wait_for_timeout(1200)
-        R = await pg.evaluate("(()=>{const R=ajrCalc('gas');return {n:R.ok.length,a:R.a,pulso:R.pulso,k:R.k,N:R.hoy.N,rc:R.hoy.rc,D:R.hoy.Dreal}})()"); print(R)
-        assert R['n'] == 7 and abs(R['a'] - 31.5) < 0.01 and R['pulso'] == 6 and abs(R['k'] - 0.91) < 0.001
-        assert R['N'] == 18 and R['rc'] == 130 and 22 < R['D'] < 24, R
-        t = (await pg.locator('#main').inner_text()).upper(); print(t[:700])
-        assert 'RADIACIÓN DE CONTROL' in t and '130' in t and '18' in t and 'UN 32 % MÁS' in t and 'DRENÓ 25 %' in t
-        assert await pg.locator('.ajr-t tbody tr').count() == 7
-        assert 'PRIMER RIEGO POR HORA' in t and '+ 17 POR RADIACIÓN' in t, 'el de las 8:00 va por hora'
-        sol = await pg.evaluate("(()=>{const P=ajrCalc('gas').hoy;return [P.vuelta,Math.round(P.minEntre),P.solapa,cabById('gas').sectores.length]})()"); print('vuelta', sol)
-        assert sol[0] == 6 * sol[3] and sol[2] == (sol[1] < sol[0])
-        if sol[2]: assert 'LOS RIEGOS SE PISAN' in t
+        assert await pg.evaluate("cabById('gas').sectores.length") >= 2
+        R = await pg.evaluate("cabById('gas').sectores.slice(0,2).map(s=>{const R=ajrCalc('gas',s);return {n:R.ok.length,a:R.a,pulso:R.pulso,k:R.k,N:R.hoy.N,nr:R.hoy.nr,rc:R.hoy.rc,D:R.hoy.Dreal}})"); print(R)
+        a, b2 = R
+        assert a['n'] == 7 and abs(a['a'] - 31.5) < 0.01 and a['pulso'] == 6 and abs(a['k'] - 0.91) < 0.001 and a['N'] == 18 and a['nr'] == 17 and a['rc'] == 130 and 22 < a['D'] < 24, a
+        assert abs(b2['a'] - 28.8) < 0.01 and b2['pulso'] == 8 and abs(b2['k'] - 0.88) < 0.001 and b2['N'] == 13 and b2['rc'] == 175 and 26 < b2['D'] < 28, b2
+        t = (await pg.locator('#main').inner_text()).upper(); print(t[:900])
+        assert t.count('RADIACIÓN DE CONTROL') >= 2 and 'UN 32 % MÁS' in t and 'DRENÓ 25 %' in t and 'DRENÓ 40 %' in t and '+ 17 POR RADIACIÓN' in t and '+ 12 POR RADIACIÓN' in t
+        assert 'LA VUELTA DURA 14 MIN' in t and 'LOS RIEGOS SE PISAN' not in t
         await pg.screenshot(path='pruebas/salida/t128.png', full_page=True)
-        # buscar menos drenaje → menos riegos
-        await pg.fill('#ajr_dr', '15'); await pg.locator('#ajr_dr').dispatch_event('change'); await pg.wait_for_timeout(300)
-        n2 = await pg.evaluate("ajrCalc('gas').hoy.N"); assert n2 == 16, n2
+        # drenaje objetivo solo del sector 2: más bajo → menos riegos en ese sector, el 1 igual
+        s2 = await pg.evaluate("cabById('gas').sectores[1].id")
+        await pg.fill(f'[data-ajr="dren"][data-sec="{s2}"]', '15'); await pg.locator(f'[data-ajr="dren"][data-sec="{s2}"]').dispatch_event('change'); await pg.wait_for_timeout(300)
+        n = await pg.evaluate("cabById('gas').sectores.slice(0,2).map(s=>ajrCalc('gas',s).hoy.N)"); assert n == [18, 11], n
         assert await pg.locator('#savebar').is_visible()
-        # el campo de la radiación de control se guarda en el día
-        await pg.fill('#ajr_rc', '150'); await pg.locator('#ajr_rc').dispatch_event('input'); await pg.wait_for_timeout(200)
-        assert await pg.evaluate("st.reg.rcon.gas") == 150
+        # la radiación de control de ayer se guarda en el día, sector a sector
+        await pg.fill(f'[data-k="reg.rcs.{s2}"]', '170'); await pg.locator(f'[data-k="reg.rcs.{s2}"]').dispatch_event('input'); await pg.wait_for_timeout(200)
+        assert await pg.evaluate(f"st.reg.rcs['{s2}']") == 170
+        # si la vuelta es más larga que lo que tarda en juntar la radiación a mediodía, avisa
+        await pg.evaluate("(()=>{const [s1,s2]=cabById('gas').sectores;st.cfg.ajr.gas={...st.cfg.ajr.gas,sec:{[s1.id]:{pulso:2},[s2.id]:{pulso:30}}};renderMain()})()"); await pg.wait_for_timeout(200)
+        assert 'LOS RIEGOS SE PISAN' in (await pg.locator('#main').inner_text()).upper()
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())
