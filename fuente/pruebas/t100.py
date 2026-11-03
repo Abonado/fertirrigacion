@@ -13,7 +13,7 @@ SIM = """(()=>{const H=[];for(let i=1;i<=21;i++){const f=plAdd(st.fecha,-i),cl={
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); ctx = await b.new_context(service_workers='block', viewport={'width': 430, 'height': 1000}, locale='es-ES', timezone_id='Europe/Madrid')
-        pg = await ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
+        pg = await ctx.new_page(); await pg.clock.set_fixed_time('2026-10-28T10:00:00+01:00'); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
         await ctx.route('https://www.gstatic.com/**', lambda r: r.fulfill(content_type='application/javascript', body=MOCK if 'app-compat' in r.request.url else ''))
         await ctx.route('https://api.open-meteo.com/**', lambda r: r.abort())
         await pg.goto('http://localhost:8776/'); await pg.evaluate('localStorage.clear()')
