@@ -687,6 +687,9 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
   a{color:#000;text-decoration:none}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+.ajr-big{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:6px 0 4px}.ajr-big>div{border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:grid;gap:2px;background:var(--surface)}
+.ajr-big>div:first-child{background:#0e2851;color:#fff;border-color:#0e2851}.ajr-big>div:first-child span,.ajr-big>div:first-child small{color:#cfd8e6}.ajr-big span{font-size:12px;color:var(--muted)}.ajr-big b{font:700 30px/1.1 var(--f-display)}.ajr-big small{font-size:12px;color:var(--muted)}
+.ajr-p{margin:6px 0;line-height:1.5}.ajr-det summary{cursor:pointer;font-weight:600;padding:6px 0}.ajr-ol{margin:4px 0 0 18px;padding:0;display:grid;gap:4px}.ajr-t td,.ajr-t th{text-align:center}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -831,13 +834,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{tipo:'planta',cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},perd:{},perdM:{},vac:{},hT:{},hH:{},hA:{},hD:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},obs:{},afo:{},pre:{},clima:{},trampa:{},meteo:{},sug:null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},perd:{},perdM:{},vac:{},hT:{},hH:{},hA:{},hD:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},rcon:{},obs:{},afo:{},pre:{},clima:{},trampa:{},meteo:{},sug:null}}
 /* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
 const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
 const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
 st.regMod=new Set();
 const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
-function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},perd:{...(r.perd||{})},perdM:{...(r.perdM||{})},vac:{...(r.vac||{})},hT:{...(r.hT||{})},hH:{...(r.hH||{})},hA:{...(r.hA||{})},hD:{...(r.hD||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},meteo:{...(r.meteo||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},perd:{...(r.perd||{})},perdM:{...(r.perdM||{})},vac:{...(r.vac||{})},hT:{...(r.hT||{})},hH:{...(r.hH||{})},hA:{...(r.hA||{})},hD:{...(r.hD||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},rcon:{...(r.rcon||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},meteo:{...(r.meteo||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -885,7 +888,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
+const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -999,7 +1002,7 @@ function renderCabs(){renderSaludo();fechaTxt();const campo=areaDe(st.tab)==='ca
   $('#fechaL').hidden=campo;{const dos=areasDisp().length>1,b=$('header .fback');if(b){b.dataset.act=dos?'areas':'fincas';$('#fbackT').textContent=dos?'Menú':'Fincas'}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}$('#cabs').innerHTML=cabsFinca().map(c=>`<button class="chip" data-cab="${c.id}" aria-pressed="${c.id===st.cab}">${esc(c.nombre)}</button>`).join('')}
 /* Menú en 5 apartados */
 const IC_HOY='<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',IC_MAS='<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>';
-const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','cmbid','drenaje','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','cmbid','drenaje','ajriego','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['m3mes','climanv','cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
@@ -1068,6 +1071,87 @@ function vCmBid(){const c=cabById(st.cab);if(!c)return '';if(st.hist===null)load
     <div class="note">Se guarda con «Guardar» abajo, igual que las Cuentas del día (son los mismos cm).</div></section>`;
   return h+cmbHist(bs)}
 document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-cmbd]');if(!b||st.tab!=='cmbid')return;const f=b.dataset.cmbd;if(f===st.fecha)return;if(st.dirtyReg)await saveReg();await loadFecha(f)});
+/* ---------- Ajuste del riego: cómo poner la máquina hoy ----------
+   La máquina riega cada vez que junta la «radiación de control». Con lo apuntado en Drenaje (minutos del día, nº de riegos y lo que
+   drenó cada bandeja) se saca lo que se llevó la planta cada día: minutos regados × (1 − drenaje). Eso se compara con la demanda del
+   día (sol × calor × viento, del servicio del tiempo) y sale cuánto se lleva la planta por cada 1.000 J/cm². Con la previsión de hoy y el
+   drenaje que queremos: minutos que hay que regar → nº de riegos con el tiempo de cada riego → radiación de control que hay que poner.
+   Cada registro guarda el riego del día anterior (se apunta por la mañana), salvo que en el cálculo se diga que es del mismo día. */
+st.ajrW={};
+const AJR_DEF={dren:25,kT:0.02,kV:0.004,tRef:25,vRef:15,pulso:null,mismoDia:false};
+const ajrCfg=cab=>({...AJR_DEF,...((st.cfg.ajr||{})[cab]||{})});
+const ajrKey=cab=>radKey(cab);
+async function ajrCargar(cab,force){if(enClaude())return;const k=ajrKey(cab),c=st.ajrW[k];if(!force&&c&&(c.cargando||Date.now()-c.t<30*60e3))return;
+  st.ajrW[k]={...(c||{}),cargando:true,t:Date.now()};const[lat,lon]=k.split(',');
+  try{const j=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=shortwave_radiation_sum,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,et0_fao_evapotranspiration&timezone=Europe%2FMadrid&past_days=31&forecast_days=3`)).json();
+    const d=j.daily||{},dias={};(d.time||[]).forEach((f,i)=>{if(d.shortwave_radiation_sum[i]!=null)dias[f]={R:Math.round(d.shortwave_radiation_sum[i]*100),Tx:d.temperature_2m_max[i],Tn:d.temperature_2m_min[i],V:d.wind_speed_10m_max[i],et0:d.et0_fao_evapotranspiration[i]}});
+    if(!Object.keys(dias).length)throw new Error('vacio');st.ajrW[k]={t:Date.now(),dias}}
+  catch(e){st.ajrW[k]={t:Date.now(),fallo:true,dias:(c&&c.dias)||null}}
+  if(st.tab==='ajriego')renderMain()}
+const ajrFac=(w,C)=>{const fT=Math.min(1.6,Math.max(0.6,1+C.kT*((w.Tx??C.tRef)-C.tRef))),fV=Math.min(1.4,Math.max(0.8,1+C.kV*((w.V??C.vRef)-C.vRef)));return{fT,fV,f:fT*fV}};
+function ajrDrenRec(r,c){const ps=[];for(const s of c.sectores){const min=(r.min||{})[s.id];for(const bj of s.bandejas){const ml=(r.dren||{})[bj.id];if(min&&ml!=null&&bj.caudal){const p=ml*100/(min*bj.caudal);if(p>=0&&p<95)ps.push(p)}}}return ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null}
+function ajrDias(cab){const c=cabById(cab),C=ajrCfg(cab),W=(st.ajrW[ajrKey(cab)]||{}).dias||{},regs={};
+  for(const r of st.hist||[])regs[r.fecha]=r;if(st.reg&&st.fecha)regs[st.fecha]=st.reg;
+  const out=[];for(const r of Object.values(regs)){const f=C.mismoDia?r.fecha:diaRiego(r.fecha);if(!f||f>=hoy())continue;
+    const ss=c.sectores.filter(s=>(r.min||{})[s.id]>0),M=ss.length?ss.reduce((a,s)=>a+r.min[s.id],0)/ss.length:null,ns=ss.map(s=>(r.rie||{})[s.id]).filter(n=>n>0),N=ns.length?ns.reduce((a,b)=>a+b,0)/ns.length:null;
+    const D=ajrDrenRec(r,c),w=W[f],Rm=(r.rad||{})[cab]??null,rc=(r.rcon||{})[cab]??null;
+    if(M==null&&D==null)continue;const x={f,reg:r.fecha,M,N,D,w,Rm,rc,p:M&&N?M/N:null};
+    if(M!=null&&D!=null&&w&&w.R>=200){x.U=M*(1-D/100);x.F=ajrFac(w,C);x.dem=w.R*x.F.f;x.a=x.U/x.dem*1000}out.push(x)}
+  return out.sort((a,b)=>a.f<b.f?-1:1)}
+function ajrCalc(cab){const C=ajrCfg(cab),W=(st.ajrW[ajrKey(cab)]||{}).dias||{},D=ajrDias(cab),ok=D.filter(x=>x.a!=null);if(!ok.length)return{D,C,poco:true};
+  // cuánto se lleva la planta por cada 1.000 J/cm² de demanda: media de los últimos 7 días válidos, pesando más los recientes
+  const ult=ok.slice(-7);let sw=0,sa=0;ult.forEach((x,i)=>{const w=Math.pow(0.75,ult.length-1-i);sw+=w;sa+=w*x.a});const a=sa/sw;
+  // el calor: con 10 días o más se ajusta con lo de la finca (si sale algo razonable)
+  let kTaj=null;if(ok.length>=10){const C0={...C,kT:0},P=ok.filter(x=>x.w.Tx!=null).map(x=>({x:x.w.Tx-C.tRef,y:x.U/(x.w.R*ajrFac(x.w,C0).f)*1000}));
+    if(P.length>=10){const mx=P.reduce((s,p)=>s+p.x,0)/P.length,my=P.reduce((s,p)=>s+p.y,0)/P.length,sxx=P.reduce((s,p)=>s+(p.x-mx)**2,0);
+      if(sxx>20){const b=P.reduce((s,p)=>s+(p.x-mx)*(p.y-my),0)/sxx,al=my-b*mx;if(al>0){const k=b/al;if(k>=0&&k<=0.06)kTaj=k}}}}
+  const ay=ok[ok.length-1],ps=D.filter(x=>x.p).slice(-3).map(x=>x.p).sort((a,b)=>a-b),pulso=C.pulso||(ps.length?ps[Math.floor(ps.length/2)]:null);
+  const ks=D.filter(x=>x.w&&x.w.R>=200&&(x.Rm||(x.rc&&x.N))).map(x=>(x.Rm||x.rc*x.N)/x.w.R).sort((a,b)=>a-b),k=ks.length?ks[Math.floor(ks.length/2)]:1;
+  const pre=f=>{const w=W[f];if(!w)return null;const F=ajrFac(w,C),dem=w.R*F.f,U=a*dem/1000,M=U/(1-C.dren/100),N=pulso?Math.max(1,Math.round(M/pulso)):null,Rmq=k*w.R;
+    return{f,w,F,dem,U,M,N,rc:N?Math.max(5,Math.round(Rmq/N/5)*5):null,Rmq,Mreal:N&&pulso?N*pulso:null,Dreal:N&&pulso?(1-U/(N*pulso))*100:null}};
+  return{D,C,ok,a,ay,pulso,k,kN:ks.length,kTaj,hoy:pre(hoy()),man:pre(isoD(new Date(Date.now()+864e5)))}}
+function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)return '';const k=ajrKey(st.cab),Wc=st.ajrW[k];if(!Wc||(!Wc.dias&&!Wc.fallo&&!Wc.cargando))ajrCargar(st.cab);
+  const R=ajrCalc(st.cab),C=R.C,g=esGestor(),dis=g?'':'disabled',fdia=f=>fFecha(f).replace(/^\w/,x=>x.toUpperCase());
+  let h=`<section class="card"><div class="tank-h"><div><h3>Ajuste del riego · ${esc(c.nombre)}</h3><div class="sub">Lo que se llevó la planta ayer, el sol, el calor y el viento de hoy, y el drenaje que buscas: cómo poner la máquina</div></div></div>`;
+  if(Wc&&Wc.fallo&&!Wc.dias)h+=`<div class="note">No se pudo traer el tiempo. Comprueba la conexión.</div><div class="row"><button class="btn" data-ajr="recargar">Reintentar</button></div>`;
+  const P=R.hoy;
+  if(R.poco||!P){h+=`<div class="note">${!Wc||Wc.cargando?'Cargando el tiempo…':'Hace falta al menos un día con los minutos de riego, el nº de riegos y el drenaje apuntados en <b>Drenaje</b>. Con eso ya sale el ajuste; con una semana sale mucho más fino.'}</div></section>`}
+  else{const ay=R.ay,dAy=ay.w?ay.w.R*ay.F.f:null,cambio=dAy?(P.dem/dAy-1)*100:null;
+    h+=`<div class="ajr-big"><div><span>Radiación de control</span><b>${P.rc!=null?fmt(P.rc,0):'—'}</b><small>J/cm² por riego</small></div>
+      <div><span>Tiempo de cada riego</span><b>${R.pulso?fmt(R.pulso,R.pulso%1?1:0):'—'}</b><small>min${C.pulso?' (fijado en el cálculo)':' (como ayer)'}</small></div>
+      <div><span>Riegos que saldrán</span><b>${P.N??'—'}</b><small>${P.Mreal!=null?fmt(P.Mreal,0)+' min en el día':''}</small></div>
+      <div><span>Drenaje esperado</span><b>${P.Dreal!=null?fmt(Math.max(0,P.Dreal),0)+' %':'—'}</b><small>buscas ${fmt(C.dren,0)} %</small></div></div>
+      <p class="ajr-p">Hoy: <b>${fmt(P.w.R,0)} J/cm²</b> de sol, máxima de <b>${fmt(P.w.Tx,0)} °C</b> y viento de hasta <b>${fmt(P.w.V,0)} km/h</b>${cambio!=null?` → la planta pedirá <b>${cambio>=0?'un '+fmt(cambio,0)+' % más':'un '+fmt(-cambio,0)+' % menos'}</b> que ayer`:''}.</p>
+      <p class="ajr-p">Ayer (${esc(fdia(ay.f))}): ${ay.N!=null?`<b>${fmt(ay.N,0)} riegos</b> · `:''}<b>${fmt(ay.M,0)} min</b>${ay.rc?` con la radiación de control a ${fmt(ay.rc,0)}`:''} y drenó <b class="${Math.abs(ay.D-C.dren)>8?'tbad':''}">${fmt(ay.D,0)} %</b> → la planta se llevó ≈ ${fmt(ay.U,0)} min de riego.</p>
+      ${!R.pulso?'<div class="note">Apunta en Drenaje el nº de riegos de ayer (o fija el tiempo de cada riego abajo) para sacar los riegos y la radiación de control.</div>':''}
+      ${P.N!=null&&(P.N>30||P.N<3)?`<div class="note tbad">Salen ${P.N} riegos: ${P.N>30?'conviene alargar cada riego':'conviene acortar cada riego'} y volver a calcular.</div>`:''}
+      ${R.man&&R.man.rc!=null?`<div class="note">Mañana (${esc(fdia(R.man.f))}): ${fmt(R.man.w.R,0)} J/cm², máxima de ${fmt(R.man.w.Tx,0)} °C → radiación de control ≈ ${fmt(R.man.rc,0)} con ${R.man.N} riegos.</div>`:''}
+      <div class="note">Orientativo y se afina solo cada día que apuntáis el drenaje. Calculado con ${R.ok.length} día${R.ok.length>1?'s':''} de la finca${R.kN?'; la radiación de la máquina se ajusta con '+R.kN+' día'+(R.kN>1?'s':''):'; sin la radiación de control de otros días, se toma la radiación de la máquina igual a la del servicio del tiempo'}.</div></section>`}
+  // lo que hay que apuntar y lo que se busca
+  h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Los minutos, el nº de riegos y el drenaje se apuntan en Drenaje</div></div><div class="frm">
+    <div class="field"><label for="ajr_rc">Radiación de control que tenía ayer la máquina</label><div class="inp"><input id="ajr_rc" data-k="reg.rcon.${c.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg.rcon||{})[c.id])}"><span class="u nt">J/cm²</span></div></div>
+    <div class="field"><label for="ajr_dr">Drenaje que buscas</label><div class="inp"><input id="ajr_dr" data-ajr="dren" inputmode="decimal" value="${inVal(C.dren)}" ${dis}><span class="u">%</span></div></div></div>
+    <details class="ajr-det"><summary>Ajustes del cálculo</summary><div class="frm">
+      <div class="field"><label>Tiempo de cada riego (vacío = el de ayer)</label><div class="inp"><input data-ajr="pulso" inputmode="decimal" value="${inVal(C.pulso)}" ${dis}><span class="u">min</span></div></div>
+      <div class="field"><label>Calor: % más por cada °C por encima de ${fmt(C.tRef,0)}</label><div class="inp"><input data-ajr="kT" inputmode="decimal" value="${inVal(+(C.kT*100).toFixed(2))}" ${dis}><span class="u">%/°C</span></div>${R.kTaj!=null?`<small class="nt">Con lo de la finca sale ${fmt(R.kTaj*100,1)} %/°C</small>`:''}</div>
+      <div class="field"><label>Viento: % más por cada km/h por encima de ${fmt(C.vRef,0)}</label><div class="inp"><input data-ajr="kV" inputmode="decimal" value="${inVal(+(C.kV*100).toFixed(2))}" ${dis}><span class="u">%/(km/h)</span></div></div>
+      <label class="chk"><input type="checkbox" data-ajr="mismoDia" ${C.mismoDia?'checked':''} ${dis}> Lo que se apunta en Drenaje es del mismo día (no del día anterior)</label></div>
+      ${R.kTaj!=null&&g?`<div class="row"><button class="btn sm" data-ajr="usarkT">Usar ${fmt(R.kTaj*100,1)} %/°C (sale de la finca)</button></div>`:''}</details></section>`;
+  // los días
+  if(R.D.length){const fi=R.D.slice(-14).reverse();h+=`<section class="card"><div><h3>Días de riego</h3><div class="sub">Lo que se llevó la planta frente a la demanda del día</div></div><div style="overflow-x:auto"><table class="m3t ajr-t"><thead><tr><th>Día</th><th>Sol J/cm²</th><th>Máx °C</th><th>Viento</th><th>Riegos</th><th>Min</th><th>Rad. ctrl</th><th>Drenaje</th><th>Se llevó</th><th>Por 1.000 J</th></tr></thead><tbody>
+    ${fi.map(x=>`<tr><td>${esc(fdia(x.f).replace(/ de \d{4}$/,''))}</td><td>${x.w?fmt(x.w.R,0):'—'}</td><td>${x.w?fmt(x.w.Tx,0):'—'}</td><td>${x.w?fmt(x.w.V,0):'—'}</td><td>${x.N!=null?fmt(x.N,0):'—'}</td><td>${x.M!=null?fmt(x.M,0):'—'}</td><td>${x.rc!=null?fmt(x.rc,0):'—'}</td><td class="${x.D!=null&&Math.abs(x.D-C.dren)>8?'tbad':''}">${x.D!=null?fmt(x.D,0)+' %':'—'}</td><td>${x.U!=null?fmt(x.U,0)+' min':'—'}</td><td>${x.a!=null?fmt(x.a,1):'—'}</td></tr>`).join('')}</tbody></table></div>
+    <div class="note">«Se llevó» = minutos regados × (1 − drenaje). «Por 1.000 J» = lo que se llevó por cada 1.000 J/cm² de sol, corregido por calor y viento: si se mantiene parecido de un día a otro, el cálculo acierta.</div></section>`}
+  h+=`<section class="card"><div><h3>Cómo se calcula</h3></div><ol class="ajr-ol">
+    <li>Lo que se llevó la planta ayer = minutos regados × (1 − drenaje).</li><li>Demanda del día = sol × calor × viento (del servicio del tiempo de la finca).</li>
+    <li>Lo que se lleva por cada 1.000 J/cm² = lo del paso 1 ÷ lo del paso 2 (media de la última semana; pesa más lo reciente).</li><li>Hoy: minutos a regar = demanda de hoy × lo del paso 3 ÷ (1 − drenaje que buscas).</li>
+    <li>Riegos = minutos ÷ tiempo de cada riego. Radiación de control = sol que mide la máquina hoy ÷ riegos.</li></ol></section>`;
+  return h}
+document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!t.dataset||!t.dataset.ajr||!esGestor())return;const k=t.dataset.ajr,cab=st.cab;
+  const A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[cab]={...(A[cab]||{})};
+  if(k==='mismoDia')x.mismoDia=t.checked;else{const v=num(t.value);if(k==='kT'||k==='kV')x[k]=v==null?undefined:v/100;else x[k]=v==null?undefined:v}
+  st.dirtyCfg=true;renderSave();renderMain()});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ajr="recargar"],[data-ajr="usarkT"]');if(!b||st.tab!=='ajriego')return;
+  if(b.dataset.ajr==='recargar')ajrCargar(st.cab,true);else{const R=ajrCalc(st.cab);if(R.kTaj==null)return;const A=st.cfg.ajr={...(st.cfg.ajr||{})};A[st.cab]={...(A[st.cab]||{}),kT:+R.kTaj.toFixed(4)};st.dirtyCfg=true;renderSave();renderMain()}});
 /* ---------- M³ del mes: la hoja del contador ----------
    Día a día del mes, los m³ de cada zona (cabezal de la app) y lo que llevan acumulado, y la suma por cabezal de verdad
    (las zonas que comparten depósitos, como Planos y Gasolinera, van juntas). Con el contador del primer día se calcula el del final.
@@ -4472,7 +4556,7 @@ async function tlPoner(){if(!esAdminU())return;const a=($('#tlk_n1')||{}).value|
 document.addEventListener('click',e=>{if(!TL_TABS.includes(st.tab))return;const b=e.target.closest&&e.target.closest('[data-tlk]');if(!b)return;const a=b.dataset.tlk;
   if(a==='abrir')tlAbrir();else if(a==='poner')tlPoner();else if(a==='cerrar'){tlRecordar('');renderMain();window.scrollTo(0,0);toast('Taller cerrado con llave')}});
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!e.target||e.target.id!=='tlk_pw')return;e.preventDefault();tlAbrir()});
-const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
 for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
@@ -4498,7 +4582,7 @@ function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=vist
    Si hay cambios sin guardar, avisa antes para no perderlos. */
 /* ---------- Imprimir: las pantallas que son documentos (informe, cuaderno, M³ del mes, historial, receta…) se imprimen limpias,
    sin menús ni botones, con una cabecera de la finca, el apartado y la fecha. En el ordenador también sirve para guardar en PDF. */
-const TABS_DOC=new Set(['informe','cuaderno','m3mes','historial','receta','global','parte','partes','coparte','solucion','almacen','material','climanv','cultivo','graficas','cmbid','cuentas','corend','casist','drenaje','plagas','estres','tareas','ctareas','aforo','rellenar']);
+const TABS_DOC=new Set(['ajriego','informe','cuaderno','m3mes','historial','receta','global','parte','partes','coparte','solucion','almacen','material','climanv','cultivo','graficas','cmbid','cuentas','corend','casist','drenaje','plagas','estres','tareas','ctareas','aforo','rellenar']);
 function imprimirVista(){const f=fincaAct(),tn=(TABS.find(t=>t[0]===st.tab)||[,''])[1],cab=CAMPO.has(st.tab)||['global','almacen','material','informe','cuaderno','m3mes'].includes(st.tab)?'':cabNombre(st.cab);
   const cuando=new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}),dia=st.fecha&&!['m3mes','informe','cuaderno','global','almacen'].includes(st.tab)?fLarga(st.fecha):'';
   $('#printhead').innerHTML=`<div class="phm">Agro Fly Technology</div><div class="pht">${esc(tn)}</div><div class="phs">${esc([f&&f.nombre,cab,dia].filter(Boolean).join(' · '))}</div><div class="phd">Impreso el ${esc(cuando)}${st.autor?' · '+esc(st.autor):''}</div>`;
@@ -4547,7 +4631,7 @@ function diffCfg(a,b){const L=[];for(const nb of b.bidones){const ob=a.bidones.f
   return L}
 function errMsg(e){return e&&e.code==='quota_exceeded'?'No queda espacio en la base de datos de la página.':'No se pudo guardar'+(e&&e.code?' ('+e.code+')':'')+'. Prueba otra vez.'}
 /* Qué cabezales se ven afectados por un campo del día */
-function cabsDeCampo(k){const[g,id]=k.split('.');if(['m3','ceB','phB','ceR','inc','phS','incR','m3R','rad','obs'].includes(g))return [id];if(['cm','niv','perd','perdM','vac','hT','hH','hA','hD'].includes(g)){const b=bid(id);return b?b.cabezales:[]}
+function cabsDeCampo(k){const[g,id]=k.split('.');if(['m3','ceB','phB','ceR','inc','phS','incR','m3R','rad','rcon','obs'].includes(g))return [id];if(['cm','niv','perd','perdM','vac','hT','hH','hA','hD'].includes(g)){const b=bid(id);return b?b.cabezales:[]}
   for(const c of st.cfg.cabezales)for(const s of c.sectores){if(s.id===id)return [c.id];if(s.bandejas.some(bj=>bj.id===id))return [c.id]}return []}
 async function saveReg(){if(st.saving)return;st.saving=true;renderSave();try{const f=st.fecha,mods=[...st.regMod],ahora=new Date().toISOString(),R0=st.reg,vals={};for(const k of mods){const[g,id]=k.split('.');vals[k]=(R0[g]||{})[id]??null}
   let srv=null;try{srv=await Store.getReg(f)}catch(e){}
@@ -6435,7 +6519,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v173';
+window.APP_V='abonado-v174';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
