@@ -40,12 +40,13 @@ async def main():
             assert not solapa(btn, bn), 'el menú tapa el botón de guardar'; assert not solapa(btn, ag), 'AGRO tapa el botón de guardar'
             assert not solapa(sb, bn), 'el menú tapa la barra'; assert not solapa(sb, ag), 'AGRO encima de la barra'
             await pg.screenshot(path=f'pruebas/salida/t126-{vw}.png')
-            await pg.click('#savebar button >> nth=-1'); await pg.wait_for_timeout(1200)
+            await pg.click('#savebar button >> nth=-1'); await pg.wait_for_function("!document.body.classList.contains('consave')", timeout=20000)   # en GitHub va más lento
             assert await pg.evaluate("st.cfg.contador['gas+pla']['2026-09'].ini") == 545057
             assert await pg.evaluate("document.body.classList.contains('consave')") is False
             # Excel
-            async with pg.expect_download() as d: await pg.click('[data-m3="xlsx"]')
-            dl = await d.value; assert dl.suggested_filename.endswith('2026-09.xlsx'), dl.suggested_filename
+            await pg.evaluate("window._dl=null;window.saveBlob=async(b,n)=>{window._dl=[n,b.size]};0")
+            await pg.click('[data-m3="xlsx"]'); await pg.wait_for_function("window._dl", timeout=20000)
+            dl = await pg.evaluate("window._dl"); assert dl[0].endswith('2026-09.xlsx') and dl[1] > 1000, dl
             # octubre: Franco con 90, el 2 de octubre lleva lo de Planos del día 1
             await pg.evaluate("st.hist=[{fecha:'2026-10-02',m3:{pla:999}}];st.m3mes='2026-10';renderMain()"); await pg.wait_for_timeout(200)
             assert '999' in await pg.locator('.m3t tbody tr').nth(0).inner_text()
