@@ -33,7 +33,8 @@ async def main():
           st.hist=H.slice(1);st.reg=normReg(H[0],H[0].fecha);st.fecha=H[0].fecha;st.tab='ajriego';renderAll()})()""")
         await pg.wait_for_timeout(1200)
         assert await pg.evaluate("cabById('gas').sectores.length") >= 2
-        R = await pg.evaluate("cabById('gas').sectores.slice(0,2).map(s=>{const R=ajrCalc('gas',s);return {n:R.ok.length,a:R.a,pulso:R.pulso,k:R.k,N:R.hoy.N,nr:R.hoy.nr,rc:R.hoy.rc,D:R.hoy.Dreal}})"); print(R)
+        print('planta', await pg.evaluate("[st.crec&&st.crec.length,JSON.stringify(culDe('gas')),JSON.stringify(ajrPlanta('gas',hoy()))]"))
+        R = await pg.evaluate("cabById('gas').sectores.slice(0,2).map(s=>{const R=ajrCalc('gas',s);return {n:R.ok.length,a:R.a*ajrFP('gas',hoy()),pulso:R.pulso,k:R.k,N:R.hoy.N,nr:R.hoy.nr,rc:R.hoy.rc,D:R.hoy.Dreal}})"); print(R)
         a, b2 = R
         assert a['n'] == 7 and abs(a['a'] - 31.5) < 0.01 and a['pulso'] == 6 and abs(a['k'] - 0.91) < 0.001 and a['N'] == 18 and a['nr'] == 17 and a['rc'] == 130 and 22 < a['D'] < 24, a
         assert abs(b2['a'] - 28.8) < 0.01 and b2['pulso'] == 8 and abs(b2['k'] - 0.88) < 0.001 and b2['N'] == 13 and b2['rc'] == 175 and 26 < b2['D'] < 28, b2
@@ -50,7 +51,22 @@ async def main():
         await pg.fill('[data-ajr="ra"]:not([data-sec])', '300'); await pg.locator('[data-ajr="ra"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(300)
         q = (await pg.locator('.ajr-sec').first.inner_text()).upper(); print(q[:900])
         assert 'CON LO QUE TIENE LA MÁQUINA (150 / 300)' in q and 'DRENARÍA ≈ 13 %' in q and 'LA BAJA ESTÁ DEMASIADO ALTA' in q, q
+        # tiempo de riego: con 6 min está bien; con 3 min salen demasiados riegos → aconseja subir a 4
+        cp = (await pg.locator('.ajr-cp').first.inner_text()).upper(); print(cp); assert '6 MIN ESTÁ BIEN' in cp
         s1 = await pg.evaluate("cabById('gas').sectores[0].id")
+        await pg.fill(f'[data-ajr="pulso"][data-sec="{s1}"]', '3'); await pg.locator(f'[data-ajr="pulso"][data-sec="{s1}"]').dispatch_event('change'); await pg.wait_for_timeout(300)
+        cp = (await pg.locator('.ajr-cp').first.inner_text()).upper(); print(cp); assert 'ACONSEJO SUBIR EL TIEMPO DE RIEGO DE 3 A 5 MIN' in cp and 'DEMASIADOS RIEGOS' in cp
+        await pg.click(f'[data-ajpu="5"][data-sec="{s1}"]'); await pg.wait_for_timeout(300)
+        assert await pg.evaluate(f"st.cfg.ajr.gas.sec['{s1}'].pulso") == 5
+        await pg.evaluate(f"st.cfg.ajr.gas.sec['{s1}']={{}};renderMain()"); await pg.wait_for_timeout(200)
+        # la planta: si ha crecido de 1,0 a 1,2 m en la semana, hoy se lleva más que con lo de la semana pasada
+        n0 = await pg.evaluate("(()=>{st.crec=[];return ajrCalc('gas',cabById('gas').sectores[0]).hoy.U})()")
+        n1 = await pg.evaluate("""(()=>{const d=n=>isoD(new Date(Date.now()-n*864e5));st.cfg.cultivo={...(st.cfg.cultivo||{}),gas:{...(st.cfg.cultivo||{}).gas,plantacion:d(60),alambre:250}};
+          st.crec=[{cab:'gas',fecha:d(8),altura:100,ram:3,ts:1},{cab:'gas',fecha:d(0),altura:120,ram:4,ts:2}];return ajrCalc('gas',cabById('gas').sectores[0]).hoy.U})()""")
+        print('planta', n0, n1); assert n1 > n0 * 1.03, 'la planta más grande se lleva más'
+        await pg.evaluate("renderMain()"); await pg.wait_for_timeout(200)
+        tp = (await pg.locator('#main').inner_text()).upper(); assert 'PLANTA: 1,20 M' in tp and 'MÁS DE AGUA QUE HACE UNA SEMANA' in tp, tp[:600]
+        await pg.evaluate("st.crec=[];renderMain()"); await pg.wait_for_timeout(200)
         await pg.click(f'[data-ajo="ce+"][data-sec="{s1}"]'); await pg.wait_for_timeout(300)
         p = (await pg.locator('.ajo-p').first.inner_text()).upper(); print(p)
         assert 'DE 4000 A 4500' in p and '2,70' in p and '1,20' in p and '0,90' in p, p
