@@ -29,11 +29,15 @@ async def main():
           st.hist=H.slice(1);st.reg=normReg(H[0],H[0].fecha);st.fecha=H[0].fecha;st.tab='ajriego';renderAll()})()""")
         await pg.wait_for_timeout(1200)
         R = await pg.evaluate("(()=>{const R=ajrCalc('gas');return {n:R.ok.length,a:R.a,pulso:R.pulso,k:R.k,N:R.hoy.N,rc:R.hoy.rc,D:R.hoy.Dreal}})()"); print(R)
-        assert R['n'] == 7 and abs(R['a'] - 31.5) < 0.01 and R['pulso'] == 6 and abs(R['k'] - 0.98) < 0.001
+        assert R['n'] == 7 and abs(R['a'] - 31.5) < 0.01 and R['pulso'] == 6 and abs(R['k'] - 0.91) < 0.001
         assert R['N'] == 18 and R['rc'] == 130 and 22 < R['D'] < 24, R
         t = (await pg.locator('#main').inner_text()).upper(); print(t[:700])
         assert 'RADIACIÓN DE CONTROL' in t and '130' in t and '18' in t and 'UN 32 % MÁS' in t and 'DRENÓ 25 %' in t
         assert await pg.locator('.ajr-t tbody tr').count() == 7
+        assert 'PRIMER RIEGO POR HORA' in t and '+ 17 POR RADIACIÓN' in t, 'el de las 8:00 va por hora'
+        sol = await pg.evaluate("(()=>{const P=ajrCalc('gas').hoy;return [P.vuelta,Math.round(P.minEntre),P.solapa,cabById('gas').sectores.length]})()"); print('vuelta', sol)
+        assert sol[0] == 6 * sol[3] and sol[2] == (sol[1] < sol[0])
+        if sol[2]: assert 'LOS RIEGOS SE PISAN' in t
         await pg.screenshot(path='pruebas/salida/t128.png', full_page=True)
         # buscar menos drenaje → menos riegos
         await pg.fill('#ajr_dr', '15'); await pg.locator('#ajr_dr').dispatch_event('change'); await pg.wait_for_timeout(300)

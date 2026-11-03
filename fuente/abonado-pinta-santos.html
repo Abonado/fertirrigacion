@@ -1058,7 +1058,7 @@ document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.c
    drenaje que queremos: minutos que hay que regar → nº de riegos con el tiempo de cada riego → radiación de control que hay que poner.
    Cada registro guarda el riego del día anterior (se apunta por la mañana), salvo que en el cálculo se diga que es del mismo día. */
 st.ajrW={};
-const AJR_DEF={dren:25,kT:0.02,kV:0.004,tRef:25,vRef:15,pulso:null,mismoDia:false};
+const AJR_DEF={dren:25,kT:0.02,kV:0.004,tRef:25,vRef:15,pulso:null,pulsoDef:8,hIni:'08:00',ini:true,mismoDia:false};
 const ajrCfg=cab=>({...AJR_DEF,...((st.cfg.ajr||{})[cab]||{})});
 const ajrKey=cab=>radKey(cab);
 async function ajrCargar(cab,force){if(enClaude())return;const k=ajrKey(cab),c=st.ajrW[k];if(!force&&c&&(c.cargando||Date.now()-c.t<30*60e3))return;
@@ -1078,17 +1078,20 @@ function ajrDias(cab){const c=cabById(cab),C=ajrCfg(cab),W=(st.ajrW[ajrKey(cab)]
     if(M==null&&D==null)continue;const x={f,reg:r.fecha,M,N,D,w,Rm,rc,p:M&&N?M/N:null};
     if(M!=null&&D!=null&&w&&w.R>=200){x.U=M*(1-D/100);x.F=ajrFac(w,C);x.dem=w.R*x.F.f;x.a=x.U/x.dem*1000}out.push(x)}
   return out.sort((a,b)=>a.f<b.f?-1:1)}
-function ajrCalc(cab){const C=ajrCfg(cab),W=(st.ajrW[ajrKey(cab)]||{}).dias||{},D=ajrDias(cab),ok=D.filter(x=>x.a!=null);if(!ok.length)return{D,C,poco:true};
+function ajrCalc(cab){const c=cabById(cab),C=ajrCfg(cab),W=(st.ajrW[ajrKey(cab)]||{}).dias||{},D=ajrDias(cab),ok=D.filter(x=>x.a!=null);if(!ok.length)return{D,C,poco:true};
   // cuánto se lleva la planta por cada 1.000 J/cm² de demanda: media de los últimos 7 días válidos, pesando más los recientes
   const ult=ok.slice(-7);let sw=0,sa=0;ult.forEach((x,i)=>{const w=Math.pow(0.75,ult.length-1-i);sw+=w;sa+=w*x.a});const a=sa/sw;
   // el calor: con 10 días o más se ajusta con lo de la finca (si sale algo razonable)
   let kTaj=null;if(ok.length>=10){const C0={...C,kT:0},P=ok.filter(x=>x.w.Tx!=null).map(x=>({x:x.w.Tx-C.tRef,y:x.U/(x.w.R*ajrFac(x.w,C0).f)*1000}));
     if(P.length>=10){const mx=P.reduce((s,p)=>s+p.x,0)/P.length,my=P.reduce((s,p)=>s+p.y,0)/P.length,sxx=P.reduce((s,p)=>s+(p.x-mx)**2,0);
       if(sxx>20){const b=P.reduce((s,p)=>s+(p.x-mx)*(p.y-my),0)/sxx,al=my-b*mx;if(al>0){const k=b/al;if(k>=0&&k<=0.06)kTaj=k}}}}
-  const ay=ok[ok.length-1],ps=D.filter(x=>x.p).slice(-3).map(x=>x.p).sort((a,b)=>a-b),pulso=C.pulso||(ps.length?ps[Math.floor(ps.length/2)]:null);
-  const ks=D.filter(x=>x.w&&x.w.R>=200&&(x.Rm||(x.rc&&x.N))).map(x=>(x.Rm||x.rc*x.N)/x.w.R).sort((a,b)=>a-b),k=ks.length?ks[Math.floor(ks.length/2)]:1;
+  const ay=ok[ok.length-1],ps=D.filter(x=>x.p).slice(-3).map(x=>x.p).sort((a,b)=>a-b),pulso=C.pulso||(ps.length?ps[Math.floor(ps.length/2)]:C.pulsoDef||null);
+  const nRad=n=>C.ini?Math.max(0,n-1):n,ks=D.filter(x=>x.w&&x.w.R>=200&&(x.Rm||(x.rc&&nRad(x.N)>0))).map(x=>(x.Rm||x.rc*nRad(x.N))/x.w.R).sort((a,b)=>a-b),k=ks.length?ks[Math.floor(ks.length/2)]:1;
   const pre=f=>{const w=W[f];if(!w)return null;const F=ajrFac(w,C),dem=w.R*F.f,U=a*dem/1000,M=U/(1-C.dren/100),N=pulso?Math.max(1,Math.round(M/pulso)):null,Rmq=k*w.R;
-    return{f,w,F,dem,U,M,N,rc:N?Math.max(5,Math.round(Rmq/N/5)*5):null,Rmq,Mreal:N&&pulso?N*pulso:null,Dreal:N&&pulso?(1-U/(N*pulso))*100:null}};
+    const nr=N?nRad(N):0,rc=nr>0?Math.max(5,Math.round(Rmq/nr/5)*5):null;
+    // a mediodía (la hora de más sol se lleva ≈ 12 % del día) ¿junta la radiación antes de que acabe la vuelta a todos los sectores?
+    const vuelta=pulso?pulso*Math.max(1,c.sectores.length):null,minEntre=rc?rc/(Rmq*0.12)*60:null,solapa=vuelta&&minEntre!=null&&minEntre<vuelta;
+    return{f,w,F,dem,U,M,N,nr,rc,Rmq,vuelta,minEntre,solapa,Mreal:N&&pulso?N*pulso:null,Dreal:N&&pulso?(1-U/(N*pulso))*100:null}};
   return{D,C,ok,a,ay,pulso,k,kN:ks.length,kTaj,hoy:pre(hoy()),man:pre(isoD(new Date(Date.now()+864e5)))}}
 function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)return '';const k=ajrKey(st.cab),Wc=st.ajrW[k];if(!Wc||(!Wc.dias&&!Wc.fallo&&!Wc.cargando))ajrCargar(st.cab);
   const R=ajrCalc(st.cab),C=R.C,g=esGestor(),dis=g?'':'disabled',fdia=f=>fFecha(f).replace(/^\w/,x=>x.toUpperCase());
@@ -1098,11 +1101,13 @@ function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)r
   if(R.poco||!P){h+=`<div class="note">${!Wc||Wc.cargando?'Cargando el tiempo…':'Hace falta al menos un día con los minutos de riego, el nº de riegos y el drenaje apuntados en <b>Drenaje</b>. Con eso ya sale el ajuste; con una semana sale mucho más fino.'}</div></section>`}
   else{const ay=R.ay,dAy=ay.w?ay.w.R*ay.F.f:null,cambio=dAy?(P.dem/dAy-1)*100:null;
     h+=`<div class="ajr-big"><div><span>Radiación de control</span><b>${P.rc!=null?fmt(P.rc,0):'—'}</b><small>J/cm² por riego</small></div>
-      <div><span>Tiempo de cada riego</span><b>${R.pulso?fmt(R.pulso,R.pulso%1?1:0):'—'}</b><small>min${C.pulso?' (fijado en el cálculo)':' (como ayer)'}</small></div>
-      <div><span>Riegos que saldrán</span><b>${P.N??'—'}</b><small>${P.Mreal!=null?fmt(P.Mreal,0)+' min en el día':''}</small></div>
+      <div><span>Tiempo de cada riego</span><b>${R.pulso?fmt(R.pulso,R.pulso%1?1:0):'—'}</b><small>min por sector${C.pulso?' (fijado en el cálculo)':R.D.some(x=>x.p)?' (como ayer)':''}</small></div>
+      <div><span>Riegos que saldrán</span><b>${P.N??'—'}</b><small>${C.ini&&P.N?'1 a las '+esc(C.hIni)+' + '+P.nr+' por radiación':''}${P.Mreal!=null?' · '+fmt(P.Mreal,0)+' min':''}</small></div>
       <div><span>Drenaje esperado</span><b>${P.Dreal!=null?fmt(Math.max(0,P.Dreal),0)+' %':'—'}</b><small>buscas ${fmt(C.dren,0)} %</small></div></div>
       <p class="ajr-p">Hoy: <b>${fmt(P.w.R,0)} J/cm²</b> de sol, máxima de <b>${fmt(P.w.Tx,0)} °C</b> y viento de hasta <b>${fmt(P.w.V,0)} km/h</b>${cambio!=null?` → la planta pedirá <b>${cambio>=0?'un '+fmt(cambio,0)+' % más':'un '+fmt(-cambio,0)+' % menos'}</b> que ayer`:''}.</p>
       <p class="ajr-p">Ayer (${esc(fdia(ay.f))}): ${ay.N!=null?`<b>${fmt(ay.N,0)} riegos</b> · `:''}<b>${fmt(ay.M,0)} min</b>${ay.rc?` con la radiación de control a ${fmt(ay.rc,0)}`:''} y drenó <b class="${Math.abs(ay.D-C.dren)>8?'tbad':''}">${fmt(ay.D,0)} %</b> → la planta se llevó ≈ ${fmt(ay.U,0)} min de riego.</p>
+      ${C.ini&&P.rc!=null?`<p class="ajr-p">Programa: <b>${esc(C.hIni)}</b> primer riego por hora (${c.sectores.length} sector${c.sectores.length>1?'es':''} × ${fmt(R.pulso,R.pulso%1?1:0)} min = ${fmt(P.vuelta,0)} min la vuelta); después, un riego cada vez que la máquina junte <b>${fmt(P.rc,0)} J/cm²</b>.</p>`:''}
+      ${P.solapa?`<div class="note tbad">Ojo: a mediodía la máquina juntará ${fmt(P.rc,0)} J/cm² en unos ${fmt(P.minEntre,0)} min y la vuelta a los sectores dura ${fmt(P.vuelta,0)} min: los riegos se pisan y no dará todos. Sube la radiación de control y alarga cada riego (por ejemplo ${fmt(Math.ceil(R.pulso*P.vuelta/P.minEntre),0)} min y ${fmt(Math.round(P.rc*P.vuelta/P.minEntre/5)*5,0)} J/cm²).</div>`:''}
       ${!R.pulso?'<div class="note">Apunta en Drenaje el nº de riegos de ayer (o fija el tiempo de cada riego abajo) para sacar los riegos y la radiación de control.</div>':''}
       ${P.N!=null&&(P.N>30||P.N<3)?`<div class="note tbad">Salen ${P.N} riegos: ${P.N>30?'conviene alargar cada riego':'conviene acortar cada riego'} y volver a calcular.</div>`:''}
       ${R.man&&R.man.rc!=null?`<div class="note">Mañana (${esc(fdia(R.man.f))}): ${fmt(R.man.w.R,0)} J/cm², máxima de ${fmt(R.man.w.Tx,0)} °C → radiación de control ≈ ${fmt(R.man.rc,0)} con ${R.man.N} riegos.</div>`:''}
@@ -1112,6 +1117,8 @@ function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)r
     <div class="field"><label for="ajr_rc">Radiación de control que tenía ayer la máquina</label><div class="inp"><input id="ajr_rc" data-k="reg.rcon.${c.id}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg.rcon||{})[c.id])}"><span class="u nt">J/cm²</span></div></div>
     <div class="field"><label for="ajr_dr">Drenaje que buscas</label><div class="inp"><input id="ajr_dr" data-ajr="dren" inputmode="decimal" value="${inVal(C.dren)}" ${dis}><span class="u">%</span></div></div></div>
     <details class="ajr-det"><summary>Ajustes del cálculo</summary><div class="frm">
+      <div class="field"><label>Primer riego por hora</label><div class="inp"><input data-ajr="hIni" type="time" value="${esc(C.hIni)}" ${dis}></div></div>
+      <label class="chk"><input type="checkbox" data-ajr="ini" ${C.ini?'checked':''} ${dis}> El primer riego del día va por hora (no cuenta para la radiación)</label>
       <div class="field"><label>Tiempo de cada riego (vacío = el de ayer)</label><div class="inp"><input data-ajr="pulso" inputmode="decimal" value="${inVal(C.pulso)}" ${dis}><span class="u">min</span></div></div>
       <div class="field"><label>Calor: % más por cada °C por encima de ${fmt(C.tRef,0)}</label><div class="inp"><input data-ajr="kT" inputmode="decimal" value="${inVal(+(C.kT*100).toFixed(2))}" ${dis}><span class="u">%/°C</span></div>${R.kTaj!=null?`<small class="nt">Con lo de la finca sale ${fmt(R.kTaj*100,1)} %/°C</small>`:''}</div>
       <div class="field"><label>Viento: % más por cada km/h por encima de ${fmt(C.vRef,0)}</label><div class="inp"><input data-ajr="kV" inputmode="decimal" value="${inVal(+(C.kV*100).toFixed(2))}" ${dis}><span class="u">%/(km/h)</span></div></div>
@@ -1124,11 +1131,11 @@ function vAjRiego(){if(st.hist===null)loadHist();const c=cabById(st.cab);if(!c)r
   h+=`<section class="card"><div><h3>Cómo se calcula</h3></div><ol class="ajr-ol">
     <li>Lo que se llevó la planta ayer = minutos regados × (1 − drenaje).</li><li>Demanda del día = sol × calor × viento (del servicio del tiempo de la finca).</li>
     <li>Lo que se lleva por cada 1.000 J/cm² = lo del paso 1 ÷ lo del paso 2 (media de la última semana; pesa más lo reciente).</li><li>Hoy: minutos a regar = demanda de hoy × lo del paso 3 ÷ (1 − drenaje que buscas).</li>
-    <li>Riegos = minutos ÷ tiempo de cada riego. Radiación de control = sol que mide la máquina hoy ÷ riegos.</li></ol></section>`;
+    <li>Riegos = minutos ÷ tiempo de cada riego. El primero va por hora; radiación de control = sol que mide la máquina hoy ÷ los riegos que quedan.</li></ol></section>`;
   return h}
 document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!t.dataset||!t.dataset.ajr||!esGestor())return;const k=t.dataset.ajr,cab=st.cab;
   const A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[cab]={...(A[cab]||{})};
-  if(k==='mismoDia')x.mismoDia=t.checked;else{const v=num(t.value);if(k==='kT'||k==='kV')x[k]=v==null?undefined:v/100;else x[k]=v==null?undefined:v}
+  if(k==='mismoDia'||k==='ini')x[k]=t.checked;else if(k==='hIni')x.hIni=/^\d{2}:\d{2}$/.test(t.value)?t.value:undefined;else{const v=num(t.value);if(k==='kT'||k==='kV')x[k]=v==null?undefined:v/100;else x[k]=v==null?undefined:v}
   st.dirtyCfg=true;renderSave();renderMain()});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-ajr="recargar"],[data-ajr="usarkT"]');if(!b||st.tab!=='ajriego')return;
   if(b.dataset.ajr==='recargar')ajrCargar(st.cab,true);else{const R=ajrCalc(st.cab);if(R.kTaj==null)return;const A=st.cfg.ajr={...(st.cfg.ajr||{})};A[st.cab]={...(A[st.cab]||{}),kT:+R.kTaj.toFixed(4)};st.dirtyCfg=true;renderSave();renderMain()}});
