@@ -594,7 +594,8 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .brandrow{flex-wrap:nowrap;align-items:center;gap:10px}
 .brandl{flex:1;min-width:0;gap:10px}.brandl>div{min-width:0}
 #h1{font-size:24px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-@media (max-width:430px){#h1{font-size:21px}.brandrow,.brandl{gap:8px}.date{padding:0 10px 0 9px}}
+@media (max-width:430px){#h1{font-size:21px}.brandrow,.brandl{gap:8px}.date{padding:0 10px 0 9px}.topr{gap:5px}.topr .frec{width:34px;height:34px}.topr .frec svg{width:18px;height:18px}.date span{display:none}}
+@media (max-width:430px){body.conimp .date .dcal{display:none}body.conimp .date{padding:0 9px}}
 .top .eyebrow{font-size:10px;letter-spacing:.1em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fback{flex:none;width:38px;height:38px;padding:0;justify-content:center;border-radius:50%}
 .fback span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
@@ -651,6 +652,25 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .m3t thead th{font-size:11.5px;color:var(--muted);text-transform:none}.m3t thead tr:first-child th{color:var(--ink);font-weight:700;text-align:center;border-bottom:0}.m3t td.ac{color:var(--muted);font-size:12px}
 .m3t .g{background:#eef5f0}.m3t .f{background:#e8eef6}.m3t tr.hoyf td{background:var(--ok-bg,#e6f2ea)}.m3t tr.tot td{border-top:2px solid var(--line);text-align:center}
 .m3c{display:grid;gap:6px;padding:8px 0;border-top:1px solid var(--line)}.m3c:first-of-type{border-top:0}.m3cv{min-height:40px;display:flex;align-items:center;font-size:16px}
+.printhead{display:none}
+@media print{
+  @page{margin:12mm 10mm}
+  html,body{background:#fff!important;color:#000}
+  body{padding:0!important;font-size:11pt}
+  .top,.bnav,.savebar,.agbtn,.agp,.splash,.carga,.fincas,#toast,.toast,#main button,#main .btn,#main .tabs,.noprint{display:none!important}
+  .printhead{display:block!important;border-bottom:2px solid #0e2851;padding:0 0 6px;margin:0 0 10px}
+  .printhead .phm{font:700 9pt/1.2 var(--f-body);letter-spacing:.18em;color:#0e2851}.printhead .pht{font:700 17pt/1.15 var(--f-display);color:#000;margin:2px 0}
+  .printhead .phs{font-size:10.5pt}.printhead .phd{font-size:8.5pt;color:#555;margin-top:2px}
+  #main.wrap{max-width:none!important;padding:0!important;margin:0!important}
+  .card,.summary .stat{box-shadow:none!important;border:1px solid #bbb!important;background:#fff!important;break-inside:avoid;page-break-inside:avoid}
+  .card{margin:0 0 8px!important}
+  [style*="overflow-x:auto"],[style*="overflow:auto"],.tablewrap{overflow:visible!important}
+  table{width:100%!important}th,td{position:static!important}
+  .m3t{font-size:8.5pt}.m3t th,.m3t td{padding:2px 4px}
+  input,select,textarea{border:0!important;background:transparent!important;box-shadow:none!important;color:#000!important;-webkit-appearance:none;appearance:none}
+  a{color:#000;text-decoration:none}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -661,13 +681,14 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
   <div class="wrap">
     <div class="brandrow">
       <div class="brandl"><button class="fback" data-act="areas" aria-label="Volver"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="fbackT">Menú</span></button><div><div class="eyebrow" id="eyeb">Fertirrigación · cabezales de riego</div><h1 id="h1">Abonado Pinta Santos</h1></div></div>
-      <div class="topr"><label class="date" id="fechaL"><span>Día</span><svg class="dcal" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg><b id="fechaTxt"></b><input type="date" id="fecha" aria-label="Día"></label><button class="frec" type="button" id="recargar" aria-label="Recargar la app" title="Recargar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+      <div class="topr"><label class="date" id="fechaL"><span>Día</span><svg class="dcal" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></svg><b id="fechaTxt"></b><input type="date" id="fecha" aria-label="Día"></label><button class="frec" type="button" id="imprimir" aria-label="Imprimir" title="Imprimir" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/><path d="M17 12h.01"/></svg></button><button class="frec" type="button" id="recargar" aria-label="Recargar la app" title="Recargar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
     </div>
     <div class="hoysal" id="hoysal" hidden></div>
     <nav class="scroller" id="cabs" aria-label="Cabezal"></nav>
     <nav class="scroller tabs" id="tabs" role="tablist" aria-label="Secciones"></nav>
   </div>
 </header>
+<div class="printhead" id="printhead" aria-hidden="true"></div>
 <main class="wrap" id="main"></main>
 <nav class="bnav" id="grupos" aria-label="Apartados"></nav>
 <button class="agbtn" id="agbtn" type="button" aria-label="AGRO, asistente de voz" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg><span>AGRO</span></button>
@@ -4436,7 +4457,7 @@ for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);
 const vistaTab=()=>{const fn=VIEWS[st.tab];return st.reg&&st.reg.receta&&st.fecha<hoy()&&RECETA_DIA.has(st.tab)?conReceta(st.reg,fn):fn()};
-function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=vistaTab();if(st.tab==='ajustes')ajAgrupar($('#main'));if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar();if(st.tab==='taller'&&window.TALLER)TALLER.tras()}
+function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=vistaTab();if(st.tab==='ajustes')ajAgrupar($('#main'));if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar();if(st.tab==='taller'&&window.TALLER)TALLER.tras();const ib=$('#imprimir');if(ib)ib.hidden=!TABS_DOC.has(st.tab);document.body.classList.toggle('conimp',TABS_DOC.has(st.tab))}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
 /* Ajustes por apartados: cada tarjeta va a su grupo según su título; se abren y cierran tocando la cabecera */
@@ -4454,6 +4475,17 @@ function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=vist
   if(n.length!==o.length){renderMain();return}n.forEach((el,i)=>{if(o[i].innerHTML!==el.innerHTML)o[i].innerHTML=el.innerHTML})}
 /* Botón de recargar (la flecha de arriba): busca versión nueva de la app y vuelve a cargarla con los datos al día.
    Si hay cambios sin guardar, avisa antes para no perderlos. */
+/* ---------- Imprimir: las pantallas que son documentos (informe, cuaderno, M³ del mes, historial, receta…) se imprimen limpias,
+   sin menús ni botones, con una cabecera de la finca, el apartado y la fecha. En el ordenador también sirve para guardar en PDF. */
+const TABS_DOC=new Set(['informe','cuaderno','m3mes','historial','receta','global','parte','partes','coparte','solucion','almacen','material','climanv','cultivo','graficas','cmbid','cuentas','corend','casist','drenaje','plagas','estres','tareas','ctareas','aforo','rellenar']);
+function imprimirVista(){const f=fincaAct(),tn=(TABS.find(t=>t[0]===st.tab)||[,''])[1],cab=CAMPO.has(st.tab)||['global','almacen','material','informe','cuaderno','m3mes'].includes(st.tab)?'':cabNombre(st.cab);
+  const cuando=new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}),dia=st.fecha&&!['m3mes','informe','cuaderno','global','almacen'].includes(st.tab)?fLarga(st.fecha):'';
+  $('#printhead').innerHTML=`<div class="phm">Agro Fly Technology</div><div class="pht">${esc(tn)}</div><div class="phs">${esc([f&&f.nombre,cab,dia].filter(Boolean).join(' · '))}</div><div class="phd">Impreso el ${esc(cuando)}${st.autor?' · '+esc(st.autor):''}</div>`;
+  const t0=document.title;document.title=[tn,f&&f.nombre,cab].filter(Boolean).join(' - ');
+  const fin=()=>{document.title=t0;window.removeEventListener('afterprint',fin)};window.addEventListener('afterprint',fin);
+  if(st.tab==='graficas'||st.tab==='tiempo')try{drawCharts()}catch(e){}
+  try{window.print()}catch(e){toast('Aquí no se puede imprimir: ábrela en el navegador')}setTimeout(fin,4000)}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#imprimir');if(b)imprimirVista()});
 async function recargarApp(){const b=$('#recargar');if((st.dirtyReg||st.dirtyCfg)&&!confirm('Tienes cambios sin guardar. Si recargas se pierden. ¿Recargar igualmente?'))return;
   if(b)b.classList.add('gira');try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await Promise.race([r.update(),new Promise(z=>setTimeout(z,2500))])}catch(e){}
   st.dirtyReg=false;st.dirtyCfg=false;location.reload()}
