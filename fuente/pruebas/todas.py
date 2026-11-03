@@ -19,6 +19,9 @@ for t in PRUEBAS:
     ok = r.returncode == 0 and ult.startswith('errs []')
     print(f"{'✓' if ok else '✗'} {t} ({time.time()-t0:.0f} s)")
     if not ok: mal.append(t); print(r.stdout[-1500:], r.stderr[-1500:])
+    if not ok and os.environ.get('GITHUB_ACTIONS'):   # que el fallo se vea en «Annotations» de GitHub sin abrir el registro
+        txt = (r.stdout[-700:] + '\n' + r.stderr[-900:]).strip().replace('%', '%25').replace('\r', '').replace('\n', '%0A')
+        print(f'::error title=Falla la prueba {t}::{txt}')
 srv.shutdown()
 print('TODO BIEN' if not mal else 'FALLAN: ' + ', '.join(mal))
 sys.exit(1 if mal else 0)
