@@ -48,6 +48,7 @@ async def main():
             await pg.click('[data-m3="xlsx"]'); await pg.wait_for_function("window._dl", timeout=20000)
             dl = await pg.evaluate("window._dl"); assert dl[0].endswith('2026-09.xlsx') and dl[1] > 1000, dl
             # octubre: Franco con 90, el 2 de octubre lleva lo de Planos del día 1
+            await pg.wait_for_function("Array.isArray(st.hist)&&!st.saving", timeout=20000)   # al guardar se vuelve a cargar el historial: esperar a que acabe
             await pg.evaluate("st.hist=[{fecha:'2026-10-02',m3:{pla:999}}];st.m3mes='2026-10';renderMain()"); await pg.wait_for_timeout(200)
             assert '999' in await pg.locator('.m3t tbody tr').nth(0).inner_text()
             await ctx.close()
