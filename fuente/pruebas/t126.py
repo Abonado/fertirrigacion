@@ -10,6 +10,8 @@ async def main():
         b = await p.chromium.launch(); errs = []
         for vw, vh in ((1366, 768), (390, 844)):
             ctx = await b.new_context(service_workers='block', viewport={'width': vw, 'height': vh}, locale='es-ES', timezone_id='Europe/Madrid', accept_downloads=True)
+            if vw < 900:   # con la letra de verdad (en GitHub) el menú de abajo mide 1 px más: la barra de guardar tiene que ir encima igual
+                await ctx.add_init_script("document.addEventListener('DOMContentLoaded',()=>{const e=document.createElement('style');e.textContent='#grupos{box-sizing:border-box!important;height:63px!important}';document.head.appendChild(e)})")
             pg = await ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
             await ctx.route('https://www.gstatic.com/**', lambda r: r.fulfill(content_type='application/javascript', body=MOCK if 'app-compat' in r.request.url else ''))
             await ctx.route('https://api.open-meteo.com/**', lambda r: r.abort())

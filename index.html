@@ -581,12 +581,12 @@ button.tarea.satp-b{text-align:left;width:100%;font:inherit;color:inherit;backgr
 .bnav .grp .bdg{position:absolute;top:0;right:calc(50% - 26px)}
 @media (min-width:900px){.bnav{left:50%;right:auto;transform:translateX(-50%);width:min(560px,96vw);bottom:10px;border:1px solid var(--line);border-radius:18px;padding:5px 8px}}
 body.conbn{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
-body.conbn .savebar{bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+body.conbn .savebar{bottom:var(--bnh,calc(62px + env(safe-area-inset-bottom,0px)))}
 body.conbn .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 @media (min-width:900px){body.conbn .savebar{bottom:0;padding-bottom:80px}body.conbn .savebar .wrap{max-width:880px}}
 body.consave{padding-bottom:calc(140px + env(safe-area-inset-bottom,0px))}
 body.consave .agbtn{bottom:calc(var(--sbh,120px) + 12px + env(safe-area-inset-bottom,0px))}
-body.consave.conbn .agbtn{bottom:calc(var(--sbh,120px) + 74px + env(safe-area-inset-bottom,0px))}
+body.consave.conbn .agbtn{bottom:calc(var(--sbh,120px) + var(--bnh,calc(62px + env(safe-area-inset-bottom,0px))) + 12px)}
 @media (min-width:900px){body.consave.conbn .agbtn{bottom:calc(var(--sbh,150px) + 12px)}}
 .hoyh{margin:6px 4px 10px}.hoyh h2{margin:0}
 .hoyav,.masl{display:grid;gap:6px}
@@ -4787,7 +4787,7 @@ async function recargarApp(){const b=$('#recargar');if((st.dirtyReg||st.dirtyCfg
   if(b)b.classList.add('gira');try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await Promise.race([r.update(),new Promise(z=>setTimeout(z,2500))])}catch(e){}
   st.dirtyReg=false;st.dirtyCfg=false;location.reload()}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#recargar');if(b)recargarApp()});
-function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCfg;bar.hidden=!show;document.body.classList.toggle('consave',!!show);if(!show)return;requestAnimationFrame(()=>document.body.style.setProperty('--sbh',bar.offsetHeight+'px'));
+function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCfg;bar.hidden=!show;document.body.classList.toggle('consave',!!show);if(!show)return;requestAnimationFrame(()=>{const nb=$('#grupos'),bs=document.body.style;if(nb&&nb.offsetHeight&&getComputedStyle(nb).position==='fixed'&&!nb.hidden)bs.setProperty('--bnh',nb.offsetHeight+'px');bs.setProperty('--sbh',bar.offsetHeight+'px')});
   $('#savemsg').textContent=st.saving?'Guardando…':'Cambios sin guardar';
   $('#savebtns').innerHTML=(st.dirtyCfg?`<button class="btn" data-act="save-cfg" ${st.saving?'disabled':''}>Guardar receta y ajustes</button>`:'')+(st.dirtyReg?`<button class="btn pri" data-act="save-reg" ${st.saving?'disabled':''}>Guardar día ${fCorta(st.fecha)}</button>`:'')}
 function renderFoot(){}
@@ -6715,7 +6715,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v182';
+window.APP_V='abonado-v183';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
