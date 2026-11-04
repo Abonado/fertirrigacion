@@ -1127,9 +1127,9 @@ const ajrKey=cab=>radKey(cab);
 const r5=x=>Math.max(5,Math.round(x/5)*5);
 async function ajrCargar(cab,force){if(enClaude())return;const k=ajrKey(cab),c=st.ajrW[k];if(!force&&c&&(c.cargando||Date.now()-c.t<30*60e3))return;
   st.ajrW[k]={...(c||{}),cargando:true,t:Date.now()};const[lat,lon]=k.split(',');
-  try{const j=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=shortwave_radiation_sum,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,et0_fao_evapotranspiration&timezone=Europe%2FMadrid&past_days=31&forecast_days=3`)).json();
-    const d=j.daily||{},dias={};(d.time||[]).forEach((f,i)=>{if(d.shortwave_radiation_sum[i]!=null)dias[f]={R:Math.round(d.shortwave_radiation_sum[i]*100),Tx:d.temperature_2m_max[i],Tn:d.temperature_2m_min[i],V:d.wind_speed_10m_max[i],et0:d.et0_fao_evapotranspiration[i]}});
-    if(!Object.keys(dias).length)throw new Error('vacio');st.ajrW[k]={t:Date.now(),dias}}
+  try{const j=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=shortwave_radiation_sum,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,et0_fao_evapotranspiration&hourly=shortwave_radiation&timezone=Europe%2FMadrid&past_days=31&forecast_days=3`)).json();
+    const d=j.daily||{},dias={},hh=j.hourly||{},horas={};(hh.time||[]).forEach((t,i)=>{if(hh.shortwave_radiation[i]!=null&&t.slice(0,10)===hoy())horas[t]=hh.shortwave_radiation[i]});(d.time||[]).forEach((f,i)=>{if(d.shortwave_radiation_sum[i]!=null)dias[f]={R:Math.round(d.shortwave_radiation_sum[i]*100),Tx:d.temperature_2m_max[i],Tn:d.temperature_2m_min[i],V:d.wind_speed_10m_max[i],et0:d.et0_fao_evapotranspiration[i]}});
+    if(!Object.keys(dias).length)throw new Error('vacio');st.ajrW[k]={t:Date.now(),dias,horas}}
   catch(e){st.ajrW[k]={t:Date.now(),fallo:true,dias:(c&&c.dias)||null}}
   if(st.tab==='ajriego')renderMain()}
 const ajrFac=(w,C)=>{const fT=Math.min(1.6,Math.max(0.6,1+C.kT*((w.Tx??C.tRef)-C.tRef))),fV=Math.min(1.4,Math.max(0.8,1+C.kV*((w.V??C.vRef)-C.vRef)));return{fT,fV,f:fT*fV}};
@@ -1181,7 +1181,9 @@ function ajrCalc(cab,s,MOD){const c=cabById(cab);s=s||c.sectores[0];const C=ajrS
   // lo que mide el sensor de la máquina respecto al servicio del tiempo: con la «Radiación» de la máquina apuntada en Drenaje, exacto;
   // si no, con la radiación de control fija y los riegos que dio; si no hay nada, igual
   const kM=D.filter(x=>x.Rm&&x.w&&x.w.R>=200).map(x=>x.Rm/x.w.R),kF=D.filter(x=>!x.Rm&&x.rc&&x.N&&nRad(x.N)>0&&x.w&&x.w.R>=200).map(x=>x.rc*nRad(x.N)/x.w.R);
-  const med=L=>{const v=L.slice().sort((a,b)=>a-b);return v[Math.floor(v.length/2)]},k=kM.length?med(kM):kF.length?med(kF):1,kSrc=kM.length?'maquina':kF.length?'fija':'supuesto';
+  const uh=ucrDia(cab,hoy()),HR=(st.ajrW[ajrKey(cab)]||{}).horas||{};let kH=null;
+  if(uh&&uh.v.ext&&uh.v.ext.racc>50){const hs=new Date(uh.t).toLocaleString('sv-SE',{timeZone:'Europe/Madrid'}).slice(0,13);let sw=0;for(const[t,w]of Object.entries(HR))if(t.slice(0,13)<=hs.replace(' ','T'))sw+=w;if(sw>100)kH=uh.v.ext.racc/sw}
+  const med=L=>{const v=L.slice().sort((a,b)=>a-b);return v[Math.floor(v.length/2)]},k=kM.length?med(kM):kH!=null?kH:kF.length?med(kF):1,kSrc=kM.length?'maquina':kH!=null?'hoy':kF.length?'fija':'supuesto';
   for(const x of D){const nr=x.N?nRad(x.N):0,Rq=x.Rm??(x.w?k*x.w.R:null);x.rcEf=nr>0&&Rq?Rq/nr:null;x.rcExacta=!!x.Rm}
   const vivo=ucrSec(ucrDia(cab,hoy()),c,s),vivoT=(ucrDia(cab,hoy())||{}).t||null;
   const M=MOD||ajrModelo(cab),m=M.m,ok=D.filter(x=>x.U!=null&&ajrDem(m,x.w,C,x.fP));
@@ -1259,6 +1261,7 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
   const pis=ok.filter(R=>R.hoy.minEntre!=null&&R.hoy.minEntre<vuelta);
   if(pis.length)h+=`<div class="note ajr-cola">A mediodía ${pis.map(R=>esc(R.s.nombre)).join(', ')} ${pis.length>1?'juntan':'junta'} la radiación de un riego antes de que acabe la vuelta a los sectores (${fmt(vuelta,0)} min): los riegos se pisan y se quedan en lista de espera, así que alguno regará más tarde de lo que toca. Si pasa mucho, alarga la duración.</div>`;
   if(!ok.length)h+=`<div class="note">Hace falta al menos un día con los minutos, el nº de riegos y el drenaje de cada sector apuntados en <b>Drenaje</b>. Con eso ya sale; con una semana sale mucho más fino.</div>`;
+  else if(RS.some(R=>R.kSrc==='hoy'))h+=`<div class="note">La radiación del uCrop se compara de momento con lo que lleva hoy; con unos días enteros leídos del uCrop el cálculo afina solo.</div>`;
   else if(RS.every(R=>R.kSrc!=='maquina'))h+=`<div class="note">Sin datos del uCrop todavía: con el lector en el PC del cabezal, la app usa la radiación, los riegos y el drenaje de la máquina sin apuntar nada.</div>`;
   const ut=(ucrDia(st.cab,hoy())||{}).t;if(ut)h+=`<div class="note">Datos del uCrop: última lectura a las ${new Date(ut).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}.</div>`;
   h+=`</section>`;
@@ -1273,7 +1276,7 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
       h+=`<h4 class="ajr-h4">Pon hoy en la máquina</h4><div class="ajr-big">
         <div class="${B&&B.tiene&&!B.minCambia&&!B.ctrlCambia?'ok':''}"><span>Radiación de control / mínima</span><b>${ajrBanTxt(B)}</b>${est}<small>Wh/m²</small></div>
         <div><span>Duración de cada riego</span><b>${R.pulso?n0(R.pulso):'—'}</b><small>min${CP&&!CP.ok?' · mira abajo':''}</small></div>
-        <div><span>Riegos</span><b>${P.N??'—'}</b><small>${C.ini&&P.N?'1 a las '+esc(C.hIni)+' + '+P.nr+' por radiación':''}</small></div>
+        <div><span>Riegos</span><b>${P.N??'—'}</b><small>${C.ini&&P.N?'1 a las '+esc(C.hIni)+' + '+P.nr+' por radiación':''}${R.vivo&&R.vivo.act!=null?`<br><b>ya lleva ${R.vivo.act}</b>${P.N!=null&&R.vivo.act>=P.N?' (ya están los que hacían falta: si sigue drenando de más, sube el control)':''}`:''}</small></div>
         <div><span>Drenaje esperado</span><b>${P.Dreal!=null?fmt(Math.max(0,P.Dreal),0)+' %':'—'}</b><small>ideal ${fmt(Cs.dren,0)} %</small></div></div>`;
       if(BM&&BM.minCambia&&!B.minCambia)h+=`<div class="note">Mañana hará falta ≈ ${fmt(BM.rc,0)} Wh/m²: tendrás que bajar la mínima a ${fmt(BM.min,0)}.</div>`;
       // lo que lleva hoy la máquina (uCrop)

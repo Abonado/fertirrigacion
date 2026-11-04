@@ -10,7 +10,8 @@ HOY = datetime.date.today()
 def meteo():
     t = [(HOY + datetime.timedelta(days=i)).isoformat() for i in range(-10, 3)]
     R = [24.0 if d == HOY.isoformat() else 20.0 for d in t]; Tx = [30 if d == HOY.isoformat() else 25 for d in t]
-    return json.dumps({'daily': {'time': t, 'shortwave_radiation_sum': R, 'temperature_2m_max': Tx, 'temperature_2m_min': [12]*len(t), 'wind_speed_10m_max': [15]*len(t), 'et0_fao_evapotranspiration': [3]*len(t)}})
+    hs = [HOY.isoformat() + 'T%02d:00' % h for h in range(24)]
+    return json.dumps({'hourly': {'time': hs, 'shortwave_radiation': [300 if 8 <= h <= 16 else 0 for h in range(24)]}, 'daily': {'time': t, 'shortwave_radiation_sum': R, 'temperature_2m_max': Tx, 'temperature_2m_min': [12]*len(t), 'wind_speed_10m_max': [15]*len(t), 'et0_fao_evapotranspiration': [3]*len(t)}})
 async def ruta(r):
     if 'shortwave_radiation_sum,temperature_2m_max' in r.request.url: await r.fulfill(content_type='application/json', body=meteo())
     else: await r.abort()
@@ -50,7 +51,12 @@ async def main():
         await pg.fill('[data-ajr="rb"]:not([data-sec])', '150'); await pg.locator('[data-ajr="rb"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(300)
         q4 = (await pg.locator('.ajr-sec').nth(3).inner_text()).upper(); assert 'ESTÁ EN LA MÍNIMA (150) Y AUN ASÍ NO DRENA' in q4, q4[:600]
         q1 = (await pg.locator('.ajr-sec').nth(0).inner_text()).upper(); assert 'ESTÁ EN LA MÍNIMA' not in q1
+        assert 'YA LLEVA 3' in q1, 'los riegos que ya lleva la máquina hoy'
         await pg.screenshot(path='pruebas/salida/t131.png', full_page=True)
+        # el primer día (sin días enteros del uCrop): la radiación de la máquina se compara con la del servicio hasta la hora leída
+        K = await pg.evaluate("""(()=>{st.lec=st.lec.filter(d=>d.fecha===hoy());const d=st.lec.find(x=>x.dev==='UCR-FRA');d.p[0].t=new Date(hoy()+'T14:01:00').getTime();
+          const R=ajrCalc('fra',cabById('fra').sectores[0]);return [R.kSrc,R.k]})()"""); print('k de hoy', K)
+        assert K[0] == 'hoy' and abs(K[1] - 563 / 2100) < 0.001, K
         # no sale como aparato suelto
         assert not await pg.evaluate("(st.lec||[]).filter(d=>d.dev==='UCR-FRA').some(d=>document.body.innerText.includes('UCR-FRA'))")
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
