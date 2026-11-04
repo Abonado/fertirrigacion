@@ -699,6 +699,8 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .ajr-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;margin:8px 0}.ajr-chips span{border:1px solid var(--line);border-radius:12px;padding:6px 8px;display:grid;font-size:12px;color:var(--muted)}.ajr-chips b{font:700 20px/1.1 var(--f-display);color:var(--ink)}.ajr-chips small{font-size:11px}
 .ajr-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.ajr-h4{margin:14px 0 4px;font-size:13px;letter-spacing:.06em;color:var(--muted)}
 .ajr-big>div.ok{border-color:#2f7a52}.ajr-big small.ok{color:#2f7a52;font-weight:600}.ajr-big small.bad{color:#b3261e;font-weight:600}
+body.teclado .bnav,body.teclado .agbtn{display:none!important}body.teclado.conbn .savebar{bottom:0}
+.bnav,.savebar,.agbtn{translate:0 var(--vvfix,0px)}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -4766,6 +4768,18 @@ async function recargarApp(){const b=$('#recargar');if((st.dirtyReg||st.dirtyCfg
   if(b)b.classList.add('gira');try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await Promise.race([r.update(),new Promise(z=>setTimeout(z,2500))])}catch(e){}
   st.dirtyReg=false;st.dirtyCfg=false;location.reload()}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#recargar');if(b)recargarApp()});
+/* iPhone: al cerrar el teclado, Safari a veces deja lo fijo de abajo (menú, barra de guardar, AGRO) a media pantalla.
+   Con el teclado abierto se esconden el menú y AGRO; al cerrarlo se fuerza a recolocar y, si la parte visible sigue sin cuadrar con la
+   que usa Safari para lo fijo, se baja a su sitio. */
+(function(){const vv=window.visualViewport,esCampo=e=>!!e&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.tagName)&&!/^(checkbox|radio|button|submit|range|color|file)$/i.test(e.type||'');
+  const aj=()=>{const b=document.body;if(!b)return;const foco=esCampo(document.activeElement);let gap=0,fix=0;
+    if(vv){const vis=vv.height+vv.offsetTop;gap=window.innerHeight-vis;fix=!foco&&vis-window.innerHeight>1?Math.round(vis-window.innerHeight):0}
+    b.classList.toggle('teclado',foco&&gap>120);document.documentElement.style.setProperty('--vvfix',fix+'px')};
+  window.ajustaFijos=aj;
+  if(vv){vv.addEventListener('resize',aj);vv.addEventListener('scroll',aj)}window.addEventListener('resize',aj);window.addEventListener('orientationchange',()=>setTimeout(aj,300));
+  document.addEventListener('focusin',e=>{if(esCampo(e.target))setTimeout(aj,350)});
+  document.addEventListener('focusout',e=>{if(!esCampo(e.target))return;setTimeout(()=>{if(esCampo(document.activeElement))return;const y=window.scrollY;window.scrollTo(window.scrollX,y+1);window.scrollTo(window.scrollX,y);aj();setTimeout(aj,400)},120)});
+})();
 function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCfg;bar.hidden=!show;document.body.classList.toggle('consave',!!show);if(!show)return;requestAnimationFrame(()=>{const nb=$('#grupos'),bs=document.body.style;if(nb&&nb.offsetHeight&&getComputedStyle(nb).position==='fixed'&&!nb.hidden)bs.setProperty('--bnh',nb.offsetHeight+'px');bs.setProperty('--sbh',bar.offsetHeight+'px')});
   $('#savemsg').textContent=st.saving?'Guardando…':'Cambios sin guardar';
   $('#savebtns').innerHTML=(st.dirtyCfg?`<button class="btn" data-act="save-cfg" ${st.saving?'disabled':''}>Guardar receta y ajustes</button>`:'')+(st.dirtyReg?`<button class="btn pri" data-act="save-reg" ${st.saving?'disabled':''}>Guardar día ${fCorta(st.fecha)}</button>`:'')}
