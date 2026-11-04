@@ -73,7 +73,7 @@ const SITIO={
 };
 /* Comprobaciones antes de cerrar (lo que hay que ver en el monitor serie) */
 const PRUEBA={
-  N1:['Sube el código y abre el monitor serie (115200 baudios): tiene que salir la distancia cada pocos segundos.','Pon una regla y un objeto plano (una tabla) a 30, 80 y 150 cm del sensor: apunta lo que marca. Si se desvía más de 1 cm, revisa que el sensor está recto.','dist: 82 cm'],
+  N1:['Sube el código y abre el monitor serie (115200 baudios): tiene que salir la distancia en mm cada 30 segundos («#AF mm=…»).','Pon una regla y un objeto plano (una tabla) a 30, 80 y 150 cm del sensor: apunta lo que marca. Si se desvía más de 1 cm, revisa que el sensor está recto.','#AF mm=820'],
   N2:['Sube el código y mira en el monitor serie el valor «raw» del sensor.','Calibra: con el sensor al aire apunta el valor SECO; mételo en un vaso de agua hasta la raya (sin mojar la electrónica) y apunta el valor MOJADO. Pon los dos números en el código y vuelve a subirlo.','raw: 2310'],
   N3:['Con el sensor todavía sin conectar, sube el código: tiene que decir que no contesta (es normal).','Cuando tengas la hoja técnica, conecta A y B y comprueba que salen humedad, temperatura y CE. Si no contesta, cambia A por B: no se rompe nada.','sin respuesta'],
   N4:['Sube el código y mira en el monitor serie las tres medidas: temperatura del aire, humedad y temperatura de la hoja.','Compara el aire con un termómetro de confianza a la sombra y la hoja con la pistola de infrarrojos apuntando a la misma hoja. Deben coincidir en ±1 °C.','T 24.1 HR 71 hoja 22.8'],

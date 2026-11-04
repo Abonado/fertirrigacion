@@ -357,42 +357,59 @@ void inicio(const char* nodo) {
 }
 // ---- Fin de lo común ----`;
 Object.assign(COD,{
-N1:`// N1 · Nivel del depósito · versión 1 (sin probar todavía en la placa real)
+N1:`// N1 · Nivel del depósito · versión 2 (sin probar todavía en la placa real)
 // Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib
+// Manda la distancia del sensor al líquido en mm (la app la pasa a «cm de regla» con la altura del sensor que apuntes en el depósito).
+// Mide cada 30 s (mediana de 15 lecturas) y manda cada 5 min, o al momento si sube o baja 2 cm o más (llenado o bajada rápida).
 #include <RadioLib.h>
 #define VEXT 36
 #define SENSOR_RX {rx}   // cable blanco (TX del A02YYUW)
 ${COMUN}
 HardwareSerial Sensor(1);
-const float FONDO_CM = 167;   // distancia del sensor al fondo: CÁMBIALA por la medida real
-const float LLENO_CM = 20;    // distancia con el depósito lleno: CÁMBIALA
+const float FONDO_CM = 167;   // opcional, solo para el % orientativo: distancia del sensor al fondo
+const float LLENO_CM = 20;    // opcional: distancia con el depósito lleno
+const int CAMBIO_MM = 20;     // si cambia esto o más, manda al momento
+const unsigned long CADA_MS = 30000, ENVIO_MS = 300000;
 
 int leerMM() {                // el sensor manda 4 bytes: 0xFF, alto, bajo, suma
   unsigned long t0 = millis();
-  while (millis() - t0 < 1000) {
+  while (millis() - t0 < 600) {
     if (Sensor.available() >= 4 && Sensor.read() == 0xFF) {
       int h = Sensor.read(), l = Sensor.read(), s = Sensor.read();
-      if (((0xFF + h + l) & 0xFF) == s) return h * 256 + l;
+      if (((0xFF + h + l) & 0xFF) == s) { int mm = h * 256 + l; if (mm >= 30 && mm <= 4500) return mm; }
     }
   }
   return -1;
 }
+// Mediana de 15 lecturas: quita los rebotes del chorro, del agitador o de la pared
+int medirMM(int& validas) {
+  int v[15]; validas = 0;
+  for (int i = 0; i < 15; i++) { while (Sensor.available()) Sensor.read(); int mm = leerMM(); if (mm > 0) v[validas++] = mm; delay(50); }
+  if (validas < 5) return -1;
+  for (int i = 1; i < validas; i++) { int x = v[i], j = i - 1; while (j >= 0 && v[j] > x) { v[j + 1] = v[j]; j--; } v[j + 1] = x; }
+  return v[validas / 2];
+}
+int ultimoMM = -1; unsigned long ultimoEnvio = 0;
 void setup() {
-  inicio("N1");
+  inicio("N1"); af("n1=v2");
   pinMode(VEXT, OUTPUT); digitalWrite(VEXT, LOW); delay(500);
   Sensor.begin(9600, SERIAL_8N1, SENSOR_RX, -1);
   af(leerMM() > 0 ? "a02=ok" : "a02=no");
   radioIni();
 }
 void loop() {
-  int mm = leerMM();
+  int n, mm = medirMM(n);
   if (mm > 0) {
-    float cm = mm / 10.0;
-    int pct = constrain((int)round((FONDO_CM - cm) * 100 / (FONDO_CM - LLENO_CM)), 0, 100);
-    enviar("N1;id=" + ID + ";cm=" + String(cm, 0) + ";pct=" + String(pct));
+    af("mm=" + String(mm)); af("validas=" + String(n));
+    bool salto = ultimoMM > 0 && abs(mm - ultimoMM) >= CAMBIO_MM;
+    if (ultimoMM < 0 || salto || millis() - ultimoEnvio >= ENVIO_MS) {
+      int pct = constrain((int)round((FONDO_CM - mm / 10.0) * 100 / (FONDO_CM - LLENO_CM)), 0, 100);
+      enviar("N1;id=" + ID + ";mm=" + String(mm) + ";cm=" + String(mm / 10.0, 1) + ";pct=" + String(pct) + ";ok=" + String(n));
+      ultimoMM = mm; ultimoEnvio = millis();
+    }
   } else af("a02=no");
   af("fin");
-  delay(60000);               // una lectura por minuto
+  delay(CADA_MS);
 }
 `,
 N2:`// N2 · Humedad del sustrato (capacitivo) · versión 1 (sin probar todavía en la placa real)
