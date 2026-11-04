@@ -1,11 +1,25 @@
 {
   "manifest_version": 3,
   "name": "Agro FLY · Lector del clima y del riego",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Lee cada rato el controlador de clima (compartimentos) o la página de riego del uCrop (drenajes) y lo manda a la app Abonado-Fertirrigación.",
-  "permissions": ["alarms", "storage", "tabs", "scripting"],
-  "host_permissions": ["<all_urls>"],
-  "background": { "service_worker": "background.js" },
-  "action": { "default_popup": "popup.html", "default_title": "Lector del clima" },
-  "icons": { "128": "icono.png" }
+  "permissions": [
+    "alarms",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Lector del clima y del riego"
+  },
+  "icons": {
+    "128": "icono.png"
+  }
 }

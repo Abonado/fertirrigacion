@@ -5,8 +5,12 @@
      radiación acumulada, corte, anterior y corrección) y arriba la radiación acumulada del día, ET0, CE y pH → ruta /riego.
    Lo manda al servidor puente de la app con la clave PUENTE_TOKEN. Si la página se queda colgada o pide entrar, la recarga.
    No guarda ni manda nada más de la página. */
-const DEF = { puente: '', token: '', cab: 'gas', cada: 15, pagina: '' };
-const cfg = async () => ({ ...DEF, ...((await chrome.storage.local.get('cfg')).cfg || {}) });
+const DEF = { puente: '', token: '', cada: 15, paginas: [] };
+/* Puede leer varias páginas (por ejemplo el clima y el riego del uCrop en el mismo PC): cada una con su cabezal y su pestaña fijada.
+   La configuración de la versión 1.0 (una sola página) se pasa sola a la lista. */
+const cfg = async () => { const c = { ...DEF, ...((await chrome.storage.local.get('cfg')).cfg || {}) };
+  if ((!c.paginas || !c.paginas.length) && c.pagina) c.paginas = [{ url: c.pagina, cab: c.cab || 'gas' }];
+  c.paginas = (c.paginas || []).filter(p => p && p.url); return c; };
 const est = async () => (await chrome.storage.local.get('est')).est || {};
 const ponEst = async p => { const e = { ...(await est()), ...p }; await chrome.storage.local.set({ est: e }); return e; };
 const badge = (t, c) => { chrome.action.setBadgeText({ text: t }); if (c) chrome.action.setBadgeBackgroundColor({ color: c }); };
@@ -105,16 +109,16 @@ function leerRiego() {
   return { ok: true, tipo: 'riego', dren, ext, firma: JSON.stringify(dren) };
 }
 
-async function miPestana(c, crear) {
-  const { tabId } = await chrome.storage.local.get('tabId');
-  if (tabId != null) { try { const t = await chrome.tabs.get(tabId); if (t) return t; } catch (e) {} }
+async function miPestana(P, i, crear) {
+  const { tabs = {}, tabId } = await chrome.storage.local.get(['tabs', 'tabId']); const id = tabs[i] ?? (i === 0 ? tabId : null);
+  if (id != null) { try { const t = await chrome.tabs.get(id); if (t) return t; } catch (e) {} }
   if (!crear) return null;
-  const t = await chrome.tabs.create({ url: c.pagina, active: false, pinned: true });
-  await chrome.storage.local.set({ tabId: t.id }); return null;   // se lee en la siguiente vuelta, cuando haya cargado
+  const t = await chrome.tabs.create({ url: P.url, active: false, pinned: true });
+  tabs[i] = t.id; await chrome.storage.local.set({ tabs }); return null;   // se lee en la siguiente vuelta, cuando haya cargado
 }
 
-async function mandar(c, r0) {
-  const riego = r0.tipo === 'riego', cuerpo = riego ? { cab: c.cab, dren: r0.dren, ext: r0.ext } : { cab: c.cab, comp: r0.comp };
+async function mandar(c, cab, r0) {
+  const riego = r0.tipo === 'riego', cuerpo = riego ? { cab, dren: r0.dren, ext: r0.ext } : { cab, comp: r0.comp };
   const r = await fetch(c.puente.replace(/\/+$/, '') + (riego ? '/riego' : '/clima'), { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.token }, body: JSON.stringify(cuerpo) });
   const j = await r.json().catch(() => ({}));
   if (r.status === 401) throw new Error('la clave (PUENTE_TOKEN) no es la buena');
@@ -134,26 +138,31 @@ const resumen = r => r.tipo === 'riego' ? `${r.dren.length} drenajes` : `${r.com
 
 async function ciclo(forzar) {
   const c = await cfg(), e = await est();
-  if (!c.puente || !c.token || !c.pagina) { badge('!', '#b00020'); return { ok: false, msg: 'Falta configurar: abre el lector y rellena los datos' }; }
+  if (!c.puente || !c.token || !c.paginas.length) { badge('!', '#b00020'); return { ok: false, msg: 'Falta configurar: abre el lector y rellena los datos' }; }
   if (!forzar && e.ult && Date.now() - e.ult < c.cada * 60000 - 20000) return { ok: true, msg: 'Aún no toca' };
-  const tab = await miPestana(c, true);
-  if (!tab) { await ponEst({ msg: 'Abriendo la página del clima…' }); return { ok: false, msg: 'Abriendo la página del clima: prueba otra vez en un minuto' }; }
-  if (tab.discarded || tab.status === 'unloaded') { await chrome.tabs.reload(tab.id); return { ok: false, msg: 'La pestaña estaba dormida: recargando' }; }
-  let r;
-  r = await leer(tab.id);
+  const ps = e.p || [], out = [];
+  for (let i = 0; i < c.paginas.length; i++) out.push(await leerUna(c, i, ps[i] || {}).catch(err => ({ ok: false, msg: 'Error: ' + err.message, est: { ...(ps[i] || {}), msg: 'Error: ' + err.message } })));
+  const todo = out.every(o => o.ok);
+  await ponEst({ ult: Date.now(), p: out.map(o => o.est), msg: out.map((o, i) => `${i + 1}: ${o.msg}`).join(' · ') }); badge(todo ? '' : '×', todo ? '#1a7f4b' : '#b00020');
+  return { ok: todo, msg: out.map((o, i) => `${i + 1}: ${o.msg}`).join(' · '), res: out };
+}
+async function leerUna(c, i, e) {
+  const P = c.paginas[i], tab = await miPestana(P, i, true);
+  if (!tab) return { ok: false, msg: 'Abriendo la página…', est: { ...e, msg: 'Abriendo la página…' } };
+  if (tab.discarded || tab.status === 'unloaded') { await chrome.tabs.reload(tab.id); return { ok: false, msg: 'Estaba dormida: recargando', est: { ...e, msg: 'Estaba dormida: recargando' } }; }
+  const r = await leer(tab.id);
   if (!r || !r.ok) {
-    const fallos = (e.fallos || 0) + 1; await ponEst({ fallos, msg: (r && r.motivo) || 'No se ha podido leer' }); badge('×', '#b00020');
-    if (fallos % 3 === 0) await chrome.tabs.update(tab.id, { url: c.pagina });   // a la tercera, vuelve a la página guardada
-    return { ok: false, msg: (r && r.motivo) || 'No se ha podido leer' };
+    const fallos = (e.fallos || 0) + 1, msg = (r && r.motivo) || 'No se ha podido leer';
+    if (fallos % 3 === 0) await chrome.tabs.update(tab.id, { url: P.url });   // a la tercera, vuelve a la página guardada
+    return { ok: false, msg, est: { ...e, fallos, msg } };
   }
   // Si lo leído no cambia en 45 minutos, la página no se está refrescando sola: se recarga
-  const desde = r.firma === e.firma ? (e.desde || Date.now()) : Date.now();
-  if (Date.now() - desde > 45 * 60000) { await chrome.tabs.reload(tab.id); await ponEst({ desde: Date.now() }); }
+  let desde = r.firma === e.firma ? (e.desde || Date.now()) : Date.now();
+  if (Date.now() - desde > 45 * 60000) { await chrome.tabs.reload(tab.id); desde = Date.now(); }
   try {
-    await mandar(c, r);
-    await ponEst({ ult: Date.now(), fallos: 0, firma: r.firma, desde, ultimo: r.tipo === 'riego' ? null : r.comp, ultimoR: r.tipo === 'riego' ? r : null, msg: `Enviado: ${resumen(r)}` }); badge('', '#1a7f4b');
-    return { ok: true, ...r, msg: `Enviado: ${resumen(r)}` };
-  } catch (err) { await ponEst({ msg: 'Leído pero no enviado: ' + err.message }); badge('×', '#b00020'); return { ok: false, ...r, msg: 'Leído pero no enviado: ' + err.message }; }
+    await mandar(c, P.cab, r); const msg = `Enviado: ${resumen(r)}`;
+    return { ok: true, ...r, msg, est: { ult: Date.now(), fallos: 0, firma: r.firma, desde, tipo: r.tipo, ultimo: r.tipo === 'riego' ? null : r.comp, ultimoR: r.tipo === 'riego' ? r : null, msg } };
+  } catch (err) { const msg = 'Leído pero no enviado: ' + err.message; return { ok: false, ...r, msg, est: { ...e, firma: r.firma, desde, msg } }; }
 }
 
 /* El panel del lector: probar en la pestaña de delante, guardar la página y mandar ya */
@@ -161,7 +170,8 @@ chrome.runtime.onMessage.addListener((m, s, responder) => {
   (async () => {
     if (m.q === 'probar') { const [t] = await chrome.tabs.query({ active: true, currentWindow: true }); if (!t) return { ok: false, motivo: 'No hay pestaña' };
       const result = await leer(t.id); return { ...result, url: t.url, tabId: t.id }; }
-    if (m.q === 'usar') { await chrome.storage.local.set({ tabId: m.tabId }); return { ok: true }; }
+    if (m.q === 'usar') { const { tabs = {} } = await chrome.storage.local.get('tabs'); tabs[m.i] = m.tabId; await chrome.storage.local.set({ tabs }); return { ok: true }; }
+    if (m.q === 'quitar') { const { tabs = {} } = await chrome.storage.local.get('tabs'), n = {}; Object.keys(tabs).forEach(k => { if (+k < m.i) n[k] = tabs[k]; else if (+k > m.i) n[+k - 1] = tabs[k]; }); await chrome.storage.local.set({ tabs: n }); return { ok: true }; }
     if (m.q === 'ahora') return await ciclo(true);
     return { ok: false };
   })().then(responder, e => responder({ ok: false, msg: e.message }));
