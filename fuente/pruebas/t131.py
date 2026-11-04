@@ -1,0 +1,57 @@
+"""Riego del uCrop: el lector lee la página de riego (Estado del cabezal: cada Drenaje con activaciones, % de drenaje, litros, pulsos,
+corte, anterior y corrección; arriba la radiación acumulada, ET0, CE y pH) y la app lo usa en Ajuste del riego de Franco: el Drenaje N es el
+sector N, los riegos y el drenaje salen de la máquina, la radiación de la máquina cuadra sola y se ve lo que lleva hoy; si un drenaje está en la
+mínima y no drena, avisa. Todo en Wh/m² como el uCrop."""
+import asyncio, sys, json, re, datetime
+from playwright.async_api import async_playwright
+MOCK = open('mock-firebase.js').read()
+LEER = re.search(r'function leerRiego\(\) \{.*?\n\}\n', open('lector-clima/background.js').read(), re.S).group(0)
+HOY = datetime.date.today()
+def meteo():
+    t = [(HOY + datetime.timedelta(days=i)).isoformat() for i in range(-10, 3)]
+    R = [24.0 if d == HOY.isoformat() else 20.0 for d in t]; Tx = [30 if d == HOY.isoformat() else 25 for d in t]
+    return json.dumps({'daily': {'time': t, 'shortwave_radiation_sum': R, 'temperature_2m_max': Tx, 'temperature_2m_min': [12]*len(t), 'wind_speed_10m_max': [15]*len(t), 'et0_fao_evapotranspiration': [3]*len(t)}})
+async def ruta(r):
+    if 'shortwave_radiation_sum,temperature_2m_max' in r.request.url: await r.fulfill(content_type='application/json', body=meteo())
+    else: await r.abort()
+async def main():
+    async with async_playwright() as p:
+        b = await p.chromium.launch(); errs = []
+        # 1) el lector en la página del uCrop
+        pu = await b.new_page(viewport={'width': 1600, 'height': 1000}); await pu.goto('file://' + __import__('os').path.abspath('pruebas/datos/ucrop-riego.html'))
+        L = await pu.evaluate('(' + LEER + ')()'); await pu.close()
+        assert L['ok'] and L['tipo'] == 'riego' and len(L['dren']) == 4, L
+        d1 = L['dren'][0]; assert (d1['act'], d1['dU'], d1['dH'], d1['rH'], d1['drH'], d1['corte'], d1['ant'], d1['corr']) == (3, 27, 9, 4.73, 0.46, 245, 150, 95), d1
+        assert L['dren'][3]['corr'] == -1080 and L['ext'] == {'racc': 563, 'rad': 185, 'eto': 2.43, 'ta': 16, 'hr': 72, 'viento': 5, 'ceE': 1.4, 'ceS': 3.26, 'ceI': 3.18, 'ph': 5.52}, L['ext']
+        # 2) la app
+        ctx = await b.new_context(service_workers='block', viewport={'width': 390, 'height': 844}, locale='es-ES', timezone_id='Europe/Madrid')
+        pg = await ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)))
+        await ctx.route('https://www.gstatic.com/**', lambda r: r.fulfill(content_type='application/javascript', body=MOCK if 'app-compat' in r.request.url else ''))
+        await ctx.route('https://api.open-meteo.com/**', ruta)
+        await pg.goto('http://localhost:8776/'); await pg.evaluate('localStorage.clear()')
+        await pg.evaluate("localStorage.setItem('mockfb',JSON.stringify({docs:{},users:{'juanjo.serrano3@gmail.com':'admin123'},cur:null}))")
+        await pg.reload(); await pg.wait_for_timeout(600)
+        await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
+        # lo que habría guardado el puente: 7 días enteros (14 riegos, drena un 20 %, 5000 Wh/m² en la máquina) y hoy lo leído ahora
+        await pg.evaluate("""(async L=>{const f=n=>isoD(new Date(Date.now()-n*864e5));
+          for(let i=1;i<=7;i++){const dren=[1,2,3,4].map(n=>({n,act:14,dU:20,dH:20,rU:1.58,rH:22.12,drU:0.32,drH:4.424,corte:300,ant:290,corr:10}));
+            await Store.setCol('lecturas','UCR-FRA_'+f(i),{dev:'UCR-FRA',nodo:'UCR',cab:'fra',fecha:f(i),ts:new Date().toISOString(),p:[{t:Date.now()-i*864e5-3600e3,v:{dren:dren.map(d=>({...d,act:5,rH:7.9,drH:0.5})),ext:{racc:2000}}},{t:Date.now()-i*864e5,v:{dren,ext:{racc:5000,ceE:1.4,ceS:3.2}}}]})}
+          await Store.setCol('lecturas','UCR-FRA_'+hoy(),{dev:'UCR-FRA',nodo:'UCR',cab:'fra',fecha:hoy(),ts:new Date().toISOString(),p:[{t:Date.now()-60e3,v:{dren:L.dren,ext:L.ext}}]});
+          st.lec=undefined;cerrarSplash();st.finca='pinta';st.cab='fra';st.hist=[];st.tab='ajriego';renderAll()})""" , L)
+        await pg.wait_for_timeout(1500)
+        R = await pg.evaluate("(()=>{const c=cabById('fra'),R=ajrCalc('fra',c.sectores[0]),x=R.ay;return {n:R.ok.length,src:x.src,N:x.N,D:Math.round(x.D),M:x.M,k:R.k,kSrc:R.kSrc,pulso:R.pulso,Nh:R.hoy.N,ctrl:R.banda().ctrl,vivo:R.vivo&&R.vivo.corte,sect:c.sectores.length}})()"); print(R)
+        assert R['n'] == 7 and R['src'] == 'ucrop' and R['N'] == 14 and R['D'] == 20 and R['M'] == 112 and R['pulso'] == 8
+        assert abs(R['k'] - 0.9) < 0.001 and R['kSrc'] == 'maquina', 'la radiación de la máquina sale del uCrop (5000 Wh/m² = 1800 J/cm²)'
+        assert R['Nh'] == 20 and R['ctrl'] == 315 and R['vivo'] == 245, R
+        t = (await pg.locator('#main').inner_text()).upper(); print(t[:1200])
+        assert 'AHORA EN EL UCROP' in t and '3 RIEGOS' in t and 'DRENA 9 %' in t and 'CORTE 245' in t and '(ANTES 150, +95)' in t
+        assert 'DATOS DEL UCROP: ÚLTIMA LECTURA' in t and '(DEL UCROP)' in t
+        # mínima 150 en todos: el Drenaje 4 está en la mínima y no drena → aviso
+        await pg.fill('[data-ajr="rb"]:not([data-sec])', '150'); await pg.locator('[data-ajr="rb"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(300)
+        q4 = (await pg.locator('.ajr-sec').nth(3).inner_text()).upper(); assert 'ESTÁ EN LA MÍNIMA (150) Y AUN ASÍ NO DRENA' in q4, q4[:600]
+        q1 = (await pg.locator('.ajr-sec').nth(0).inner_text()).upper(); assert 'ESTÁ EN LA MÍNIMA' not in q1
+        await pg.screenshot(path='pruebas/salida/t131.png', full_page=True)
+        # no sale como aparato suelto
+        assert not await pg.evaluate("(st.lec||[]).filter(d=>d.dev==='UCR-FRA').some(d=>document.body.innerText.includes('UCR-FRA'))")
+        print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
+asyncio.run(main())

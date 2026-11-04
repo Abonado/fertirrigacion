@@ -1,7 +1,9 @@
-/* Agro FLY · Lector del clima (extensión de Edge / Chrome)
-   Cada minuto mira si toca leer (cada «cada» minutos). Abre su propia pestaña fijada con la página del controlador de clima,
-   lee la tabla «Estados» (Compartimento 1…N: humedad, temperatura y posición de las ventanas) y la manda al servidor puente
-   de la app (ruta /clima, con la clave PUENTE_TOKEN). Si la página se queda colgada o pide entrar, la recarga.
+/* Agro FLY · Lector del clima y del riego (extensión de Edge / Chrome)
+   Cada minuto mira si toca leer (cada «cada» minutos). Abre su propia pestaña fijada con la página que se le haya dado y lee:
+   · la del controlador de clima: la tabla «Estados» (Compartimento 1…N: humedad, temperatura y ventanas) → ruta /clima;
+   · la de riego del uCrop: «Estado del cabezal» (cada Drenaje: activaciones, % de drenaje, litros regados y drenados, pulsos,
+     radiación acumulada, corte, anterior y corrección) y arriba la radiación acumulada del día, ET0, CE y pH → ruta /riego.
+   Lo manda al servidor puente de la app con la clave PUENTE_TOKEN. Si la página se queda colgada o pide entrar, la recarga.
    No guarda ni manda nada más de la página. */
 const DEF = { puente: '', token: '', cab: 'gas', cada: 15, pagina: '' };
 const cfg = async () => ({ ...DEF, ...((await chrome.storage.local.get('cfg')).cfg || {}) });
@@ -60,6 +62,49 @@ function leerPagina() {
   return { ok: true, comp, firma: JSON.stringify(comp) };
 }
 
+/* Se ejecuta DENTRO de la página de riego del uCrop. También por POSICIÓN: cada «Drenaje N» marca un bloque; dentro, cada etiqueta
+   (Activaciones, Drenaje, Regado, Drenado, Pulsos, Radiación acumulada) marca su fila y los números a su derecha son «Último» y «Hoy»;
+   bajo «Corte · Anterior · Corrección» van esos tres. Arriba, cada recuadro (Radiación acumulada, ETo, CE entrada…) lleva el número debajo. */
+function leerRiego() {
+  const norm = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+  const nums = s => { s = norm(s).replace(/\/\s*m\s*[²2]/gi, '/m²'); return (s.match(/-?\d+(?:[.,]\d+)?/g) || []).map(x => parseFloat(x.replace(',', '.'))); };
+  if (!document.body) return { ok: false, motivo: 'La página está vacía' };
+  const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), T = [], rg = document.createRange();
+  for (let n = tw.nextNode(); n; n = tw.nextNode()) {
+    const t = norm(n.textContent); if (!t) continue;
+    rg.selectNodeContents(n); const r = rg.getBoundingClientRect(); if (r.width < 1 || r.height < 1) continue;
+    T.push({ t, l: r.left, r: r.right, top: r.top, b: r.bottom, cx: (r.left + r.right) / 2, cy: (r.top + r.bottom) / 2, h: r.bottom - r.top });
+  }
+  const esAct = /^activaciones$/i;
+  // cabeceras «Drenaje N» que tienen debajo «Activaciones» (así no se confunden con la lista de la pestaña Drenajes)
+  const H = [];
+  for (const x of T) { const m = /^drenaje\s*(\d+)$/i.exec(x.t); if (!m || +m[1] > 24) continue;
+    if (T.some(y => esAct.test(y.t) && y.cy > x.cy && y.cy < x.cy + 90 && y.r > x.l - 200 && y.l < x.r + 200) && !H.some(h => h.n === +m[1])) H.push({ n: +m[1], x }); }
+  if (!H.length) return { ok: false, motivo: 'No se ven los drenajes (¿está en la página de riego, con «Estado del cabezal» abierto?)' };
+  const bloque = h => { const mismos = H.filter(o => o !== h && Math.abs(o.x.cy - h.x.cy) < 40).map(o => o.x.cx), izq = mismos.filter(c => c < h.x.cx), der = mismos.filter(c => c > h.x.cx);
+    const a = izq.length ? (Math.max(...izq) + h.x.cx) / 2 : h.x.cx - 190, z = der.length ? (Math.min(...der) + h.x.cx) / 2 : h.x.cx + 190; return { a, z, y0: h.x.cy, y1: h.x.cy + 340 } };
+  const FIL = { act: esAct, d: /^drenaje$/i, r: /^regado$/i, dr: /^drenado$/i, p: /^pulsos$/i, racc: /^radiaci\S{1,2}n acumulada$/i };
+  const dren = [];
+  for (const h of H) { const B = bloque(h), dentro = x => x.cx >= B.a && x.cx < B.z && x.cy > B.y0 && x.cy < B.y1, o = { n: h.n };
+    const fila = et => nums(T.filter(x => x !== et && dentro(x) && Math.abs(x.cy - et.cy) <= Math.max(6, et.h * 0.7) && x.l > et.r - 2).sort((p, q) => p.l - q.l).map(x => x.t).join(' '));
+    for (const [k, re] of Object.entries(FIL)) { const et = T.find(x => dentro(x) && re.test(x.t)); if (!et) continue; const v = fila(et);
+      if (k === 'act' || k === 'racc') { if (v.length) o[k] = v[0] } else { if (v.length >= 2) { o[k + 'U'] = v[0]; o[k + 'H'] = v[1] } else if (v.length) o[k + 'H'] = v[0] } }
+    const ec = T.find(x => dentro(x) && /^corte$/i.test(x.t));
+    if (ec) { const v = nums(T.filter(x => dentro(x) && x.cy > ec.b && x.cy < ec.b + ec.h * 2.6).sort((p, q) => p.l - q.l).map(x => x.t).join(' ')); if (v[0] != null) o.corte = v[0]; if (v[1] != null) o.ant = v[1]; if (v[2] != null) o.corr = v[2]; }
+    // nombres para el servidor: dU/dH drenaje %, rU/rH regado, drU/drH drenado, pU/pH pulsos
+    const r = { n: o.n, act: o.act, dU: o.dU, dH: o.dH, rU: o.rU, rH: o.rH, drU: o.drU, drH: o.drH, pU: o.pU, pH: o.pH, racc: o.racc, corte: o.corte, ant: o.ant, corr: o.corr };
+    if (r.act != null || r.dH != null || r.corte != null) dren.push(r); }
+  if (!dren.length) return { ok: false, motivo: 'Veo los drenajes pero no sus números' };
+  // recuadros de arriba: el número va debajo de la etiqueta
+  const top = Math.min(...H.map(h => h.x.top)), ext = {};
+  const ARR = { racc: /^radiaci\S{1,2}n acumulada$/i, rad: /^radiaci\S{1,2}n$/i, eto: /^eto$/i, ta: /^temperatura$/i, hr: /^humedad$/i, viento: /^velocidad del viento$/i, ceE: /^ce entrada$/i, ceS: /^ce salida$/i, ceI: /^ce ideal$/i, ph: /^ph le\S{1,2}do$/i };
+  for (const [k, re] of Object.entries(ARR)) { const et = T.find(x => re.test(x.t) && (k.startsWith('ce') || k === 'ph' || x.cy < top)); if (!et) continue;
+    const c = T.filter(x => x !== et && /\d/.test(x.t) && x.top >= et.top - 2 && x.top < et.b + 70 && x.l >= et.l - 12 && x.l < et.l + 260 && !(Math.abs(x.cy - et.cy) < 4 && x.l < et.r)).sort((p, q) => (p.top - q.top) || (p.l - q.l));
+    // la fila del primero (así el «2» de «m²» puesto en pequeño va con su número y no se lee suelto)
+    const v = c.length ? nums(c.filter(x => Math.abs(x.cy - c[0].cy) < Math.max(c[0].h, 10)).sort((p, q) => p.l - q.l).map(x => x.t).join(' ')) : []; if (v.length) ext[k] = v[0]; }
+  return { ok: true, tipo: 'riego', dren, ext, firma: JSON.stringify(dren) };
+}
+
 async function miPestana(c, crear) {
   const { tabId } = await chrome.storage.local.get('tabId');
   if (tabId != null) { try { const t = await chrome.tabs.get(tabId); if (t) return t; } catch (e) {} }
@@ -68,13 +113,24 @@ async function miPestana(c, crear) {
   await chrome.storage.local.set({ tabId: t.id }); return null;   // se lee en la siguiente vuelta, cuando haya cargado
 }
 
-async function mandar(c, comp) {
-  const r = await fetch(c.puente.replace(/\/+$/, '') + '/clima', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.token }, body: JSON.stringify({ cab: c.cab, comp }) });
+async function mandar(c, r0) {
+  const riego = r0.tipo === 'riego', cuerpo = riego ? { cab: c.cab, dren: r0.dren, ext: r0.ext } : { cab: c.cab, comp: r0.comp };
+  const r = await fetch(c.puente.replace(/\/+$/, '') + (riego ? '/riego' : '/clima'), { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.token }, body: JSON.stringify(cuerpo) });
   const j = await r.json().catch(() => ({}));
   if (r.status === 401) throw new Error('la clave (PUENTE_TOKEN) no es la buena');
   if (!r.ok || !j.ok) throw new Error(j.error || ('el servidor contesta ' + r.status));
   return j;
 }
+
+async function leer(tabId) {
+  let a = null, b = null;
+  try { [{ result: a }] = await chrome.scripting.executeScript({ target: { tabId }, func: leerPagina }); } catch (err) { return { ok: false, motivo: 'No puedo leer la pestaña: ' + err.message }; }
+  if (a && a.ok) return { ...a, tipo: 'clima' };
+  try { [{ result: b }] = await chrome.scripting.executeScript({ target: { tabId }, func: leerRiego }); } catch (err) {}
+  if (b && b.ok) return b;
+  return { ok: false, motivo: (a && a.motivo) + ' · ' + ((b && b.motivo) || '') };
+}
+const resumen = r => r.tipo === 'riego' ? `${r.dren.length} drenajes` : `${r.comp.length} compartimentos`;
 
 async function ciclo(forzar) {
   const c = await cfg(), e = await est();
@@ -84,27 +140,27 @@ async function ciclo(forzar) {
   if (!tab) { await ponEst({ msg: 'Abriendo la página del clima…' }); return { ok: false, msg: 'Abriendo la página del clima: prueba otra vez en un minuto' }; }
   if (tab.discarded || tab.status === 'unloaded') { await chrome.tabs.reload(tab.id); return { ok: false, msg: 'La pestaña estaba dormida: recargando' }; }
   let r;
-  try { [{ result: r }] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: leerPagina }); } catch (err) { r = { ok: false, motivo: 'No puedo leer la pestaña: ' + err.message }; }
+  r = await leer(tab.id);
   if (!r || !r.ok) {
     const fallos = (e.fallos || 0) + 1; await ponEst({ fallos, msg: (r && r.motivo) || 'No se ha podido leer' }); badge('×', '#b00020');
-    if (fallos % 3 === 0) await chrome.tabs.update(tab.id, { url: c.pagina });   // a la tercera, vuelve a la página del clima
+    if (fallos % 3 === 0) await chrome.tabs.update(tab.id, { url: c.pagina });   // a la tercera, vuelve a la página guardada
     return { ok: false, msg: (r && r.motivo) || 'No se ha podido leer' };
   }
   // Si lo leído no cambia en 45 minutos, la página no se está refrescando sola: se recarga
   const desde = r.firma === e.firma ? (e.desde || Date.now()) : Date.now();
   if (Date.now() - desde > 45 * 60000) { await chrome.tabs.reload(tab.id); await ponEst({ desde: Date.now() }); }
   try {
-    await mandar(c, r.comp);
-    await ponEst({ ult: Date.now(), fallos: 0, firma: r.firma, desde, ultimo: r.comp, msg: `Enviado: ${r.comp.length} compartimentos` }); badge('', '#1a7f4b');
-    return { ok: true, comp: r.comp, msg: `Enviado: ${r.comp.length} compartimentos` };
-  } catch (err) { await ponEst({ msg: 'Leído pero no enviado: ' + err.message }); badge('×', '#b00020'); return { ok: false, comp: r.comp, msg: 'Leído pero no enviado: ' + err.message }; }
+    await mandar(c, r);
+    await ponEst({ ult: Date.now(), fallos: 0, firma: r.firma, desde, ultimo: r.tipo === 'riego' ? null : r.comp, ultimoR: r.tipo === 'riego' ? r : null, msg: `Enviado: ${resumen(r)}` }); badge('', '#1a7f4b');
+    return { ok: true, ...r, msg: `Enviado: ${resumen(r)}` };
+  } catch (err) { await ponEst({ msg: 'Leído pero no enviado: ' + err.message }); badge('×', '#b00020'); return { ok: false, ...r, msg: 'Leído pero no enviado: ' + err.message }; }
 }
 
 /* El panel del lector: probar en la pestaña de delante, guardar la página y mandar ya */
 chrome.runtime.onMessage.addListener((m, s, responder) => {
   (async () => {
     if (m.q === 'probar') { const [t] = await chrome.tabs.query({ active: true, currentWindow: true }); if (!t) return { ok: false, motivo: 'No hay pestaña' };
-      try { const [{ result }] = await chrome.scripting.executeScript({ target: { tabId: t.id }, func: leerPagina }); return { ...result, url: t.url, tabId: t.id }; } catch (e) { return { ok: false, motivo: 'Esta pestaña no se puede leer: ' + e.message }; } }
+      const result = await leer(t.id); return { ...result, url: t.url, tabId: t.id }; }
     if (m.q === 'usar') { await chrome.storage.local.set({ tabId: m.tabId }); return { ok: true }; }
     if (m.q === 'ahora') return await ciclo(true);
     return { ok: false };

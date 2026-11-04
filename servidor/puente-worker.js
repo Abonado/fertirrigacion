@@ -7,6 +7,9 @@
 //            {"cab":"gas","comp":[{"n":1,"ta":27.5,"hr":68,"vent":[98,98,100]},…]}. Se guarda como una placa por compartimento
 //            (UC-GAS-1, UC-GAS-2…) y en UC-ESTADO la hora de la última lectura. Si en horario de trabajo lleva más de 90 min sin
 //            llegar nada, avisa una vez al administrador.
+//   · /riego → lo que lee el mismo lector en la página de riego del uCrop (Estado del cabezal): por cada drenaje, riegos (activaciones),
+//            % de drenaje, litros regados y drenados, pulsos, radiación de corte, anterior y corrección; y de arriba la radiación
+//            acumulada del día, ET0, CE de entrada y salida y pH. Se guarda en UCR-FRA_<fecha> (una lectura cada vez).
 //   Con cada dato: lo guarda en abonado_lecturas (un documento por placa y día, con todos los puntos) y pone el «último dato»
 //   y la batería en su aparato de «Mis aparatos» (el que tenga ese número de placa).
 //   · Cada 30 minutos (Cron): si un aparato con placa lleva más de 2 horas sin mandar nada, avisa al administrador
@@ -113,6 +116,22 @@ async function registrarClima(env, b) {
   await fs(env, 'POST', ':commit', { writes });
   return { ok: true, n: C.length };
 }
+/* ---------- riego del uCrop: lo manda el lector del PC de cada cabezal ---------- */
+async function registrarRiego(env, b) {
+  const cab = corto(b.cab, 12).replace(/[^a-z0-9]/gi, '').toLowerCase(); if (!cab) return { error: 'cab' };
+  const N = (x, a, z) => typeof x === 'number' && isFinite(x) && x >= a && x <= z ? Math.round(x * 100) / 100 : null;
+  const D = (Array.isArray(b.dren) ? b.dren : []).slice(0, 24).map(d => d && ({ n: Math.round(+d.n), act: N(d.act, 0, 500), dU: N(d.dU, 0, 100), dH: N(d.dH, 0, 100),
+    rU: N(d.rU, 0, 1e5), rH: N(d.rH, 0, 1e5), drU: N(d.drU, 0, 1e5), drH: N(d.drH, 0, 1e5), pU: N(d.pU, 0, 1e5), pH: N(d.pH, 0, 1e5),
+    racc: N(d.racc, -1e5, 1e5), corte: N(d.corte, -1e5, 1e5), ant: N(d.ant, -1e5, 1e5), corr: N(d.corr, -1e5, 1e5) })).filter(d => d && d.n >= 1 && d.n <= 24);
+  if (!D.length) return { error: 'sin_datos' };
+  const e = b.ext && typeof b.ext === 'object' ? b.ext : {}, ext = {};
+  for (const [k, a, z] of [['racc', 0, 1e5], ['rad', 0, 2000], ['eto', 0, 30], ['ta', -20, 60], ['hr', 0, 100], ['viento', 0, 300], ['ceE', 0, 30], ['ceS', 0, 30], ['ceI', 0, 30], ['ph', 0, 14]]) { const v = N(e[k], a, z); if (v != null) ext[k] = v; }
+  const t = Date.now(), fecha = hoyMadrid(t), iso = new Date(t).toISOString(), dev = `UCR-${cab.toUpperCase()}`;
+  const v = { dren: D.map(d => Object.fromEntries(Object.entries(d).filter(([, x]) => x != null))), ext };
+  await fs(env, 'POST', ':commit', { writes: [{ update: { name: docFS(`${dev}_${fecha}`), fields: { dev: aFS(dev), nodo: aFS('UCR'), cab: aFS(cab), fecha: aFS(fecha), ts: aFS(iso) } },
+    updateMask: { fieldPaths: ['dev', 'nodo', 'cab', 'fecha', 'ts'] }, updateTransforms: [{ fieldPath: 'p', appendMissingElements: { values: [aFS({ t, v })] } }] }] });
+  return { ok: true, n: D.length };
+}
 async function revisarClima(env) {
   if (!env.AVISOS_URL || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;
   let d; try { d = await fs(env, 'GET', '/abonado_lecturas/UC-ESTADO'); } catch (e) { return; }
@@ -150,6 +169,10 @@ export default {
         if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
         const L = leerRaw(b.raw); if (!L.id) return json({ error: 'sin_id' }, 400);
         return json(await registrar(env, { ...L, rssi: typeof b.rssi === 'number' ? b.rssi : null, snr: typeof b.snr === 'number' ? b.snr : null, gw: corto(b.gw, 20) }));
+      }
+      if (ruta === 'riego') {
+        if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
+        return json(await registrarRiego(env, b));
       }
       if (ruta === 'clima') {
         if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);

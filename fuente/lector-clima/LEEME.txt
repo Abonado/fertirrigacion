@@ -1,6 +1,9 @@
-AGRO FLY · LECTOR DEL CLIMA
-Lee cada rato la tabla «Estados» del controlador de clima (Compartimento 1…6: temperatura, humedad y ventanas)
-y la manda a la app (servidor puente, ruta /clima). En la app sale en Clima y estrés: «Rellenar las naves».
+AGRO FLY · LECTOR DEL CLIMA Y DEL RIEGO
+Lee cada rato una de estas dos páginas y lo manda a la app (servidor puente):
+ · la tabla «Estados» del controlador de clima (Compartimento 1…6: temperatura, humedad y ventanas) → sale en Clima y estrés;
+ · la página de riego del uCrop, con «Estado del cabezal» abierto (cada Drenaje: riegos, % de drenaje, litros, corte…)
+   → sale en Riego › Ajuste del riego. El Drenaje 1 del uCrop es el sector 1 del cabezal, el Drenaje 2 el sector 2…
+Cada ordenador lee su página: en el de Franco, la de riego del uCrop con el cabezal Franco.
 
 INSTALAR (una vez, en el ordenador donde se ve el controlador, con Microsoft Edge)
  1. Descomprime esta carpeta en un sitio fijo, por ejemplo Documentos\lector-clima (no la borres luego).
@@ -10,12 +13,13 @@ INSTALAR (una vez, en el ordenador donde se ve el controlador, con Microsoft Edg
  5. Pulsa el icono de las piezas de puzle (arriba a la derecha) → el ojo junto a «Lector del clima» para tenerlo a mano.
 
 CONFIGURAR
- 1. Abre el programa del clima, entra en la finca y en la pestaña «Estados» (la tabla de compartimentos).
+ 1. Abre la página que va a leer: la del clima en la pestaña «Estados», o la de riego del uCrop (Fincas › la finca › riego)
+    con «Estado del cabezal» desplegado («Ver más») para que se vean los cuadros de Drenaje 1, 2, 3…
  2. Pulsa el icono del Lector del clima → «Usar esta pestaña». Debe salir la tabla leída.
- 3. Rellena la dirección del puente y la clave (PUENTE_TOKEN), el cabezal (Gasolinera) y cada cuánto leer → «Guardar».
- 4. Pulsa «Leer y mandar ya» para probar. Debe decir «Enviado: 6 compartimentos».
+ 3. Rellena la dirección del puente y la clave (PUENTE_TOKEN), el cabezal (Gasolinera, Franco…) y cada cuánto leer → «Guardar».
+ 4. Pulsa «Leer y mandar ya» para probar. Debe decir «Enviado: 6 compartimentos» o «Enviado: 4 drenajes».
 
 PARA QUE NO PARE
  · El ordenador encendido y sin suspender (Configuración → Sistema → Energía → Suspender: Nunca).
- · Edge abierto (puede estar minimizado) con la pestaña fijada del clima. Para usar el programa, ábrelo en otra pestaña.
+ · Edge abierto (puede estar minimizado) con la pestaña fijada. Para usar el programa, ábrelo en otra pestaña.
  · Si deja de llegar más de hora y media entre las 8 y las 20 h, el puente avisa al móvil del administrador.
