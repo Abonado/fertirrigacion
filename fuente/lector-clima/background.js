@@ -106,7 +106,17 @@ function leerRiego() {
     const c = T.filter(x => x !== et && /\d/.test(x.t) && x.top >= et.top - 2 && x.top < et.b + 70 && x.l >= et.l - 12 && x.l < et.l + 260 && !(Math.abs(x.cy - et.cy) < 4 && x.l < et.r)).sort((p, q) => (p.top - q.top) || (p.l - q.l));
     // la fila del primero (así el «2» de «m²» puesto en pequeño va con su número y no se lee suelto)
     const v = c.length ? nums(c.filter(x => Math.abs(x.cy - c[0].cy) < Math.max(c[0].h, 10)).sort((p, q) => p.l - q.l).map(x => x.t).join(' ')) : []; if (v.length) ext[k] = v[0]; }
-  return { ok: true, tipo: 'riego', dren, ext, firma: JSON.stringify(dren) };
+  // estado del cabezal: qué programa está regando ahora (etiqueta y el valor debajo), el tiempo y la lista de espera
+  // el valor que va debajo de una etiqueta: el primer texto que empieza a su altura y los que le siguen pegados en la misma línea
+  const debajo = re => { const et = T.find(x => re.test(x.t)); if (!et) return null; const c = T.filter(x => x !== et && x.top >= et.b - 2 && x.top < et.b + 44 && x.l >= et.l - 12 && x.l < et.l + 60).sort((p, q) => (p.top - q.top) || (p.l - q.l));
+    if (!c.length) return null; const f = c[0], fila = T.filter(x => x !== et && Math.abs(x.cy - f.cy) < Math.max(f.h * 0.5, 5) && x.l >= f.l).sort((p, q) => p.l - q.l), w = [f];
+    for (const x of fila) { if (x === f) continue; if (x.l - w.at(-1).r > 24) break; w.push(x); } return norm(w.map(x => x.t).join(' ')); };
+  const chip = T.find(x => /^\S.*\s[-–]\s*regando$/i.test(x.t)), et = T.find(x => /^tiempo:?/i.test(x.t));
+  const filaT = et ? norm(T.filter(x => Math.abs(x.cy - et.cy) <= Math.max(6, et.h * 0.7) && x.l >= et.l - 2 && x.l < et.l + 500).sort((p, q) => p.l - q.l).map(x => x.t).join(' ')) : '';
+  const mt = /(\d{1,2}:\d{2}(?::\d{2})?)\s*\/\s*(\d{1,2}:\d{2}(?::\d{2})?)/.exec(filaT), fase = debajo(/^fase$/i), actv = debajo(/^activaci\S{1,2}n$/i);
+  const estado = { prog: debajo(/^programa activo$/i) || (chip ? norm(chip.t.replace(/\s[-–]\s*regando$/i, '')) : null), fase, agr: debajo(/^agrupaci\S{1,2}n$/i), valv: debajo(/^v\S{1,2}lvulas$/i),
+    act: actv && /\d/.test(actv) ? nums(actv)[0] : null, t: mt ? mt[1] : null, tt: mt ? mt[2] : null, espera: debajo(/^lista de espera$/i), regando: /regand/i.test(fase || '') || !!chip };
+  return { ok: true, tipo: 'riego', dren, ext, estado, firma: JSON.stringify(dren) };
 }
 
 async function miPestana(P, i, crear) {
@@ -118,7 +128,7 @@ async function miPestana(P, i, crear) {
 }
 
 async function mandar(c, cab, r0) {
-  const riego = r0.tipo === 'riego', cuerpo = riego ? { cab, dren: r0.dren, ext: r0.ext } : { cab, comp: r0.comp };
+  const riego = r0.tipo === 'riego', cuerpo = riego ? { cab, dren: r0.dren, ext: r0.ext, estado: r0.estado || null, empieza: !!r0.empieza } : { cab, comp: r0.comp };
   const r = await fetch(c.puente.replace(/\/+$/, '') + (riego ? '/riego' : '/clima'), { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.token }, body: JSON.stringify(cuerpo) });
   const j = await r.json().catch(() => ({}));
   if (r.status === 401) throw new Error('la clave (PUENTE_TOKEN) no es la buena');
@@ -139,14 +149,21 @@ const resumen = r => r.tipo === 'riego' ? `${r.dren.length} drenajes` : `${r.com
 async function ciclo(forzar) {
   const c = await cfg(), e = await est();
   if (!c.puente || !c.token || !c.paginas.length) { badge('!', '#b00020'); return { ok: false, msg: 'Falta configurar: abre el lector y rellena los datos' }; }
-  if (!forzar && e.ult && Date.now() - e.ult < c.cada * 60000 - 20000) return { ok: true, msg: 'Aún no toca' };
-  const ps = e.p || [], out = [];
-  for (let i = 0; i < c.paginas.length; i++) out.push(await leerUna(c, i, ps[i] || {}).catch(err => ({ ok: false, msg: 'Error: ' + err.message, est: { ...(ps[i] || {}), msg: 'Error: ' + err.message } })));
+  const toca = forzar || !e.ult || Date.now() - e.ult >= c.cada * 60000 - 20000, ps = e.p || [];
+  // si no toca, solo se miran las páginas de riego (cada minuto) por si empieza un riego
+  if (!toca && !ps.some(p => p && p.tipo === 'riego')) return { ok: true, msg: 'Aún no toca' };
+  const out = [];
+  for (let i = 0; i < c.paginas.length; i++) { const pe = ps[i] || {};
+    if (!toca && pe.tipo !== 'riego') { out.push({ ok: true, msg: pe.msg || '', est: pe, quieta: true }); continue; }
+    out.push(await leerUna(c, i, pe, toca).catch(err => ({ ok: false, msg: 'Error: ' + err.message, est: { ...pe, msg: 'Error: ' + err.message } }))); }
+  if (!toca && out.every(o => o.quieta)) { await ponEst({ p: out.map(o => o.est) }); return { ok: true, msg: 'Mirando el riego' }; }
   const todo = out.every(o => o.ok);
-  await ponEst({ ult: Date.now(), p: out.map(o => o.est), msg: out.map((o, i) => `${i + 1}: ${o.msg}`).join(' · ') }); badge(todo ? '' : '×', todo ? '#1a7f4b' : '#b00020');
+  await ponEst({ ...(toca ? { ult: Date.now() } : {}), p: out.map(o => o.est), msg: out.map((o, i) => `${i + 1}: ${o.msg}`).join(' · ') }); badge(todo ? '' : '×', todo ? '#1a7f4b' : '#b00020');
   return { ok: todo, msg: out.map((o, i) => `${i + 1}: ${o.msg}`).join(' · '), res: out };
 }
-async function leerUna(c, i, e) {
+// empieza un riego: ahora riega y antes no, u otro programa, u otra activación del mismo
+const empieza = (a, b) => !!(b && b.regando && (!a || !a.regando || a.prog !== b.prog || (b.act != null && a.act !== b.act)));
+async function leerUna(c, i, e, toca = true) {
   const P = c.paginas[i], tab = await miPestana(P, i, true);
   if (!tab) return { ok: false, msg: 'Abriendo la página…', est: { ...e, msg: 'Abriendo la página…' } };
   if (tab.discarded || tab.status === 'unloaded') { await chrome.tabs.reload(tab.id); return { ok: false, msg: 'Estaba dormida: recargando', est: { ...e, msg: 'Estaba dormida: recargando' } }; }
@@ -156,12 +173,14 @@ async function leerUna(c, i, e) {
     if (fallos % 3 === 0) await chrome.tabs.update(tab.id, { url: P.url });   // a la tercera, vuelve a la página guardada
     return { ok: false, msg, est: { ...e, fallos, msg } };
   }
+  const nuevo = r.tipo === 'riego' && empieza(e.estado, r.estado); if (nuevo) r.empieza = true;
+  if (!toca && !nuevo) return { ok: true, msg: e.msg || 'Mirando el riego', est: { ...e, tipo: r.tipo, estado: r.estado || null }, quieta: true };
   // Si lo leído no cambia en 45 minutos, la página no se está refrescando sola: se recarga
   let desde = r.firma === e.firma ? (e.desde || Date.now()) : Date.now();
   if (Date.now() - desde > 45 * 60000) { await chrome.tabs.reload(tab.id); desde = Date.now(); }
   try {
-    await mandar(c, P.cab, r); const msg = `Enviado: ${resumen(r)}`;
-    return { ok: true, ...r, msg, est: { ult: Date.now(), fallos: 0, firma: r.firma, desde, tipo: r.tipo, ultimo: r.tipo === 'riego' ? null : r.comp, ultimoR: r.tipo === 'riego' ? r : null, msg } };
+    await mandar(c, P.cab, r); const msg = `Enviado: ${resumen(r)}` + (r.empieza ? ` · empieza ${r.estado.prog || 'un riego'}` : '');
+    return { ok: true, ...r, msg, est: { ult: Date.now(), fallos: 0, firma: r.firma, desde, tipo: r.tipo, estado: r.estado || null, ultimo: r.tipo === 'riego' ? null : r.comp, ultimoR: r.tipo === 'riego' ? r : null, msg } };
   } catch (err) { const msg = 'Leído pero no enviado: ' + err.message; return { ok: false, ...r, msg, est: { ...e, firma: r.firma, desde, msg } }; }
 }
 

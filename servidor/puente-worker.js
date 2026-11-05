@@ -10,6 +10,8 @@
 //   · /riego → lo que lee el mismo lector en la página de riego del uCrop (Estado del cabezal): por cada drenaje, riegos (activaciones),
 //            % de drenaje, litros regados y drenados, pulsos, radiación de corte, anterior y corrección; y de arriba la radiación
 //            acumulada del día, ET0, CE de entrada y salida y pH. Se guarda en UCR-FRA_<fecha> (una lectura cada vez).
+//            Con «estado» (qué programa riega ahora) y «empieza» (el lector ha visto empezar un riego): avisa al móvil de quien diga
+//            la app (Ajuste del riego → Avisos de riego; si no hay nada puesto, al administrador).
 //   Con cada dato: lo guarda en abonado_lecturas (un documento por placa y día, con todos los puntos) y pone el «último dato»
 //   y la batería en su aparato de «Mis aparatos» (el que tenga ese número de placa).
 //   · Cada 30 minutos (Cron): si un aparato con placa lleva más de 2 horas sin mandar nada, avisa al administrador
@@ -127,10 +129,27 @@ async function registrarRiego(env, b) {
   const e = b.ext && typeof b.ext === 'object' ? b.ext : {}, ext = {};
   for (const [k, a, z] of [['racc', 0, 1e5], ['rad', 0, 2000], ['eto', 0, 30], ['ta', -20, 60], ['hr', 0, 100], ['viento', 0, 300], ['ceE', 0, 30], ['ceS', 0, 30], ['ceI', 0, 30], ['ph', 0, 14]]) { const v = N(e[k], a, z); if (v != null) ext[k] = v; }
   const t = Date.now(), fecha = hoyMadrid(t), iso = new Date(t).toISOString(), dev = `UCR-${cab.toUpperCase()}`;
-  const v = { dren: D.map(d => Object.fromEntries(Object.entries(d).filter(([, x]) => x != null))), ext };
+  const s0 = b.estado && typeof b.estado === 'object' ? b.estado : null, S = (x, n) => (x == null ? null : corto(String(x), n || 40));
+  const estado = s0 ? Object.fromEntries(Object.entries({ prog: S(s0.prog), fase: S(s0.fase, 24), agr: S(s0.agr), valv: S(s0.valv), act: N(s0.act, 0, 1000), t: S(s0.t, 10), tt: S(s0.tt, 10), espera: S(s0.espera, 80), regando: !!s0.regando }).filter(([, x]) => x != null)) : null;
+  const v = { dren: D.map(d => Object.fromEntries(Object.entries(d).filter(([, x]) => x != null))), ext, ...(estado ? { estado } : {}) };
   await fs(env, 'POST', ':commit', { writes: [{ update: { name: docFS(`${dev}_${fecha}`), fields: { dev: aFS(dev), nodo: aFS('UCR'), cab: aFS(cab), fecha: aFS(fecha), ts: aFS(iso) } },
     updateMask: { fieldPaths: ['dev', 'nodo', 'cab', 'fecha', 'ts'] }, updateTransforms: [{ fieldPath: 'p', appendMissingElements: { values: [aFS({ t, v })] } }] }] });
-  return { ok: true, n: D.length };
+  let aviso = null; if (b.empieza && estado && estado.regando) aviso = await avisarRiego(env, cab, estado).catch(e => ({ error: corto(e.message, 80) }));
+  return { ok: true, n: D.length, ...(aviso ? { aviso } : {}) };
+}
+/* Aviso de que empieza un riego: a quien diga la app (abonado_config/finca → avisoRiego {on, para:[correos], cabs:[…]}); sin nada, al
+   administrador. El aviso de cada cabezal sustituye al anterior en el móvil (mismo «tag»), así no se amontonan. */
+const CAB_N = { gas: 'Gasolinera', pla: 'Planos', fra: 'Franco' };
+const nombreProg = p => { const m = /^SE[O0]?(\d+)\s*(.*)$/i.exec(p || ''), k = /^METAL\S*?\s*(\d+)$/i.exec(p || ''); return m ? `Sector ${+m[1]}${m[2] ? ' · ' + m[2] : ''}` : k ? `Metálicos ${+k[1]}` : (p || 'un sector'); };
+async function avisarRiego(env, cab, e) {
+  if (!env.AVISOS_URL || !env.INTERNO_TOKEN) return { enviado: false, motivo: 'sin_avisos' };
+  let cfg = {}; try { const d = await fs(env, 'GET', '/abonado_config/finca?mask.fieldPaths=avisoRiego'); cfg = deFS((d.fields || {}).avisoRiego) || {}; } catch (x) {}
+  if (cfg.on === false || (Array.isArray(cfg.cabs) && cfg.cabs.length && !cfg.cabs.includes(cab))) return { enviado: false, motivo: 'apagado' };
+  const para = (Array.isArray(cfg.para) && cfg.para.length ? cfg.para : [env.ADMIN_EMAIL]).filter(Boolean).slice(0, 5); if (!para.length) return { enviado: false, motivo: 'sin_destino' };
+  const cuerpo = [CAB_N[cab] || cab, e.prog, e.valv, e.tt ? e.tt.replace(/^00:/, '') + ' min' : null].filter(Boolean).join(' · ');
+  const r = await fetch(env.AVISOS_URL + '/interno', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
+    body: JSON.stringify({ para, titulo: 'Regando: ' + nombreProg(e.prog), cuerpo, tag: 'riego-' + cab, tab: 'ajriego' }) });
+  return { enviado: r.ok };
 }
 async function revisarClima(env) {
   if (!env.AVISOS_URL || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;

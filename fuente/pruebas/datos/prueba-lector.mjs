@@ -32,4 +32,14 @@ enviados.length = 0; r = await ctx.ciclo(false); ok(enviados.length === 0, 'aún
 // 4) si una pestaña se cierra, la abre otra vez fijada y en la vuelta siguiente la lee
 delete tabs[21]; enviados.length = 0; r = await ctx.ciclo(true); ok(!r.ok && enviados.length === 1, 'abre la pestaña cerrada'); ok(Object.values(tabs).some(t => t.pinned && /riego/.test(t.url)), 'pestaña fijada nueva');
 enviados.length = 0; r = await ctx.ciclo(true); ok(r.ok && enviados.length === 2, 'vuelve a leer las dos');
+// 5) el riego se mira cada minuto: si empieza un riego se manda en el momento con «empieza»; si no, no se manda hasta que toque
+let est = { regando: true, prog: 'SE01FRANCO', act: 2, t: '00:01:00', tt: '00:08:00' };
+const exe = chrome.scripting.executeScript; chrome.scripting.executeScript = async o => { const r = await exe(o); const x = r[0].result; if (x && x.tipo === 'riego') x.estado = { ...est }; return r; };
+enviados.length = 0; r = await ctx.ciclo(true); ok(r.ok && enviados.length === 2, 'vuelta completa');
+const r2 = enviados.find(x => x.url.endsWith('/riego')); ok(r2.body.estado.prog === 'SE01FRANCO' && r2.body.empieza === true, 'el primer riego visto se avisa');
+enviados.length = 0; est = { ...est, t: '00:03:00' }; r = await ctx.ciclo(false); ok(enviados.length === 0, 'el mismo riego sigue: no se manda nada: ' + r.msg);
+enviados.length = 0; est = { regando: true, prog: 'SE02FRANCO', act: 2, t: '00:00:20', tt: '00:08:00' }; r = await ctx.ciclo(false);
+ok(enviados.length === 1 && enviados[0].url.endsWith('/riego') && enviados[0].body.empieza === true && enviados[0].body.estado.prog === 'SE02FRANCO', 'empieza otro sector: se avisa al momento y sin leer el clima');
+enviados.length = 0; est = { regando: false, prog: null, act: null }; r = await ctx.ciclo(false); ok(enviados.length === 0, 'para: no se avisa');
+enviados.length = 0; est = { regando: true, prog: 'SE02FRANCO', act: 3, t: '00:00:10', tt: '00:08:00' }; r = await ctx.ciclo(false); ok(enviados.length === 1 && enviados[0].body.empieza, 'el mismo sector vuelve a regar (otra activación): se avisa');
 console.log('LECTOR OK');

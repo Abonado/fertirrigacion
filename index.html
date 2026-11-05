@@ -714,7 +714,7 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .ajo-tb{width:100%;border-collapse:collapse;font-size:14px}.ajo-tb th,.ajo-tb td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right}.ajo-tb th:first-child,.ajo-tb td:first-child{text-align:left;color:var(--muted)}.ajo-tb th{font-size:12px;color:var(--muted)}
 .ajr-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;margin:8px 0}.ajr-chips span{border:1px solid var(--line);border-radius:12px;padding:6px 8px;display:grid;font-size:12px;color:var(--muted)}.ajr-chips b{font:700 20px/1.1 var(--f-display);color:var(--ink)}.ajr-chips small{font-size:11px}
 .ajr-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.ajr-h4{margin:14px 0 4px;font-size:13px;letter-spacing:.06em;color:var(--muted)}
-.ajr-big>div.ok{border-color:#2f7a52}.ajr-vivo{background:#eef3fb;border-radius:10px;padding:6px 10px}.ajr-cola{color:#8a5a00}.ajr-big small.ok{color:#2f7a52;font-weight:600}.ajr-big small.bad{color:#b3261e;font-weight:600}
+.ajr-big>div.ok{border-color:#2f7a52}.ajr-vivo{background:#eef3fb;border-radius:10px;padding:6px 10px}.ajr-cola{color:#8a5a00}.ajr-av{border-top:1px solid var(--line);margin-top:10px;padding-top:8px;display:grid;gap:6px}.ajr-big small.ok{color:#2f7a52;font-weight:600}.ajr-big small.bad{color:#b3261e;font-weight:600}
 body.teclado .bnav,body.teclado .agbtn{display:none!important}body.teclado.conbn .savebar{bottom:0}
 .bnav,.savebar,.agbtn{translate:0 var(--vvfix,0px)}
 </style>
@@ -1166,6 +1166,7 @@ const WH=2.7778,aWh=j=>j==null?null:j*WH,r5w=w=>w==null?null:Math.max(5,Math.rou
 const ucrDev=cab=>'UCR-'+String(cab).toUpperCase();
 function ucrDia(cab,f){const d=(st.lec||[]).find(x=>x.dev===ucrDev(cab)&&x.fecha===f);if(!d||!(d.p||[]).length)return null;const p=d.p.reduce((a,b)=>b.t>a.t?b:a);return{t:p.t,v:p.v||{}}}
 const ucrFechas=cab=>(st.lec||[]).filter(x=>x.dev===ucrDev(cab)&&x.fecha).map(x=>x.fecha);
+const ajrProg=p=>{const m=/^SE[O0]?(\d+)\s*(.*)$/i.exec(p||''),k=/^METAL\S*?\s*(\d+)$/i.exec(p||'');return m?`Sector ${+m[1]}${m[2]?' ('+m[2]+')':''}`:k?`Metálicos ${+k[1]}`:(p||'—')};
 const ucrSec=(u,c,s)=>u?((u.v.dren||[]).find(d=>d.n===c.sectores.indexOf(s)+1)||null):null;
 function ajrDrenSec(r,s){const min=(r.min||{})[s.id],ps=[];for(const bj of s.bandejas){const ml=(r.dren||{})[bj.id];if(min&&ml!=null&&bj.caudal){const p=ml*100/(min*bj.caudal);if(p>=0&&p<95)ps.push(p)}}return ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null}
 function ajrDias(cab,s){const C=ajrSecCfg(ajrCfg(cab),s.id),c=cabById(cab),W=(st.ajrW[ajrKey(cab)]||{}).dias||{},regs={},dias=new Set();
@@ -1283,6 +1284,8 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
   if(!ok.length)h+=`<div class="note">Hace falta al menos un día con los minutos, el nº de riegos y el drenaje de cada sector apuntados en <b>Drenaje</b>. Con eso ya sale; con una semana sale mucho más fino.</div>`;
   else if(RS.some(R=>R.kSrc==='hoy'))h+=`<div class="note">La radiación del uCrop se compara de momento con lo que lleva hoy; con unos días enteros leídos del uCrop el cálculo afina solo.</div>`;
   else if(RS.every(R=>R.kSrc!=='maquina'))h+=`<div class="note">Sin datos del uCrop todavía: con el lector en el PC del cabezal, la app usa la radiación, los riegos y el drenaje de la máquina sin apuntar nada.</div>`;
+  const uH=ucrDia(st.cab,hoy()),E=uH&&uH.v.estado,hace=uH?Math.round((Date.now()-uH.t)/60000):null;
+  if(E&&hace<=20)h+=E.regando?`<p class="ajr-p ajr-vivo"><b>Regando ahora:</b> ${esc(ajrProg(E.prog))}${E.valv?' · '+esc(E.valv):''}${E.t?` · ${esc(E.t.replace(/^00:/,''))} de ${esc((E.tt||'').replace(/^00:/,''))}`:''}${E.espera?` · en espera: ${esc(E.espera)}`:''}</p>`:`<p class="ajr-p">Ahora no está regando.</p>`;
   const ut=(ucrDia(st.cab,hoy())||{}).t;if(ut)h+=`<div class="note">Datos del uCrop: última lectura a las ${new Date(ut).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}.</div>`;
   h+=`</section>`;
   // ---- 2. Un recuadro por sector
@@ -1327,6 +1330,9 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
     <div class="field"><label>Radiación mínima</label><div class="inp"><input data-ajr="rb" inputmode="decimal" value="${inVal(C.rb)}" ${dis}><span class="u nt">Wh/m²</span></div></div>
     <div class="field"><label for="ajr_dr">Drenaje ideal</label><div class="inp"><input id="ajr_dr" data-ajr="dren" inputmode="decimal" value="${inVal(C.dren)}" ${dis}><span class="u">%</span></div></div>
     <div class="field"><label>Primer riego por hora</label><div class="inp"><input data-ajr="hIni" type="time" value="${esc(C.hIni)}" ${dis}></div></div></div>
+    ${(A=>`<div class="ajr-av"><label class="chk"><input type="checkbox" data-ajav="on" ${A.on!==false?'checked':''} ${dis}> Avisarme al móvil cada vez que empiece un riego</label>
+      <div class="field"><label>A quién (correos, separados por comas)</label><div class="inp"><input data-ajav="para" data-text="1" style="width:100%;text-transform:none;text-align:left" value="${esc((A.para||[]).join(', '))}" placeholder="${esc(miEmail()||'')} (si lo dejas vacío, al administrador)" ${dis}></div></div>
+      <div class="note">Lo avisa el lector del uCrop (mira la máquina cada minuto). Cada aviso sustituye al anterior en el móvil para que no se amontonen. Para recibirlos, activa los avisos en este móvil (Ajustes → Avisos con la app cerrada).</div></div>`)(st.cfg.avisoRiego||{})}
     <details class="ajr-det" data-ajdet="calc"${st.ajrDet.calc?' open':''}><summary>Ajustes del cálculo</summary><div class="frm">
       
       <div class="field"><label>Cómo se mide lo que pide la planta</label><div class="inp"><select data-ajr="modelo" ${dis}><option value="auto" ${C.modelo==='auto'?'selected':''}>El que mejor acierte</option><option value="sol" ${C.modelo==='sol'?'selected':''}>Sol × calor × viento</option><option value="et0" ${C.modelo==='et0'?'selected':''}>Evapotranspiración (ET0)</option></select></div>
@@ -1337,6 +1343,8 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
       <label class="chk"><input type="checkbox" data-ajr="mismoDia" ${C.mismoDia?'checked':''} ${dis}> Lo que se apunta en Drenaje es del mismo día (no del día anterior)</label></div>
       ${kTaj!=null&&g?`<div class="row"><button class="btn sm" data-ajr="usarkT">Usar ${fmt(kTaj*100,1)} %/°C (sale de la finca)</button></div>`:''}</details></section>`;
   return h}
+document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!t.dataset||!t.dataset.ajav||!esGestor())return;const A=st.cfg.avisoRiego={...(st.cfg.avisoRiego||{})};
+  if(t.dataset.ajav==='on')A.on=t.checked;else A.para=t.value.split(/[,;\s]+/).map(x=>x.trim().toLowerCase()).filter(x=>/^\S+@\S+\.\S+$/.test(x)).slice(0,5);st.dirtyCfg=true;renderSave()});
 document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!t.dataset||!t.dataset.ajr||!esGestor())return;const k=t.dataset.ajr,cab=st.cab,sid=t.dataset.sec;
   const A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[cab]={...(A[cab]||{})};
   if(sid){x.sec={...(x.sec||{})};x.sec[sid]={...(x.sec[sid]||{}),[k]:num(t.value)??undefined}}
@@ -6766,7 +6774,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v188';
+window.APP_V='abonado-v189';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;

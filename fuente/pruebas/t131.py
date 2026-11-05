@@ -23,6 +23,8 @@ async def main():
         L = await pu.evaluate('(' + LEER + ')()'); await pu.close()
         assert L['ok'] and L['tipo'] == 'riego' and len(L['dren']) == 4, L
         d1 = L['dren'][0]; assert (d1['act'], d1['dU'], d1['dH'], d1['rH'], d1['drH'], d1['corte'], d1['ant'], d1['corr']) == (3, 27, 9, 4.73, 0.46, 245, 150, 95), d1
+        E = L['estado']; print('estado', E)
+        assert E['regando'] and E['prog'] == 'SE04ENCAÑE' and E['fase'] == 'Regando' and E['valv'] == 'Válvula 4' and E['act'] == 3 and E['t'] == '00:05:42' and E['tt'] == '00:08:00' and E['espera'] == 'SEO3ALTO 08:38:00', E
         assert L['dren'][3]['corr'] == -1080 and L['ext'] == {'racc': 563, 'rad': 185, 'eto': 2.43, 'ta': 16, 'hr': 72, 'viento': 5, 'ceE': 1.4, 'ceS': 3.26, 'ceI': 3.18, 'ph': 5.52}, L['ext']
         # 2) la app
         ctx = await b.new_context(service_workers='block', viewport={'width': 390, 'height': 844}, locale='es-ES', timezone_id='Europe/Madrid')
@@ -37,7 +39,7 @@ async def main():
         await pg.evaluate("""(async L=>{const f=n=>isoD(new Date(Date.now()-n*864e5));
           for(let i=1;i<=7;i++){const dren=[1,2,3,4].map(n=>({n,act:14,dU:20,dH:20,rU:1.58,rH:22.12,drU:0.32,drH:4.424,corte:300,ant:290,corr:10}));
             await Store.setCol('lecturas','UCR-FRA_'+f(i),{dev:'UCR-FRA',nodo:'UCR',cab:'fra',fecha:f(i),ts:new Date().toISOString(),p:[{t:Date.now()-i*864e5-3600e3,v:{dren:dren.map(d=>({...d,act:5,rH:7.9,drH:0.5})),ext:{racc:2000}}},{t:Date.now()-i*864e5,v:{dren,ext:{racc:5000,ceE:1.4,ceS:3.2}}}]})}
-          await Store.setCol('lecturas','UCR-FRA_'+hoy(),{dev:'UCR-FRA',nodo:'UCR',cab:'fra',fecha:hoy(),ts:new Date().toISOString(),p:[{t:Date.now()-60e3,v:{dren:L.dren,ext:L.ext}}]});
+          await Store.setCol('lecturas','UCR-FRA_'+hoy(),{dev:'UCR-FRA',nodo:'UCR',cab:'fra',fecha:hoy(),ts:new Date().toISOString(),p:[{t:Date.now()-60e3,v:{dren:L.dren,ext:L.ext,estado:L.estado}}]});
           st.lec=undefined;cerrarSplash();st.finca='pinta';st.cab='fra';st.hist=[];st.tab='ajriego';renderAll()})""" , L)
         await pg.wait_for_timeout(1500)
         R = await pg.evaluate("(()=>{const c=cabById('fra'),R=ajrCalc('fra',c.sectores[0]),x=R.ay;return {n:R.ok.length,src:x.src,N:x.N,D:Math.round(x.D),M:x.M,k:R.k,kSrc:R.kSrc,pulso:R.pulso,Nh:R.hoy.N,ctrl:R.banda().ctrl,vivo:R.vivo&&R.vivo.corte,sect:c.sectores.length}})()"); print(R)
@@ -47,6 +49,11 @@ async def main():
         t = (await pg.locator('#main').inner_text()).upper(); print(t[:1200])
         assert 'AHORA EN EL UCROP' in t and '3 RIEGOS' in t and 'DRENA 9 %' in t and 'CORTE 245' in t and '(ANTES 150, +95)' in t
         assert 'DATOS DEL UCROP: ÚLTIMA LECTURA' in t and '(DEL UCROP)' in t
+        assert 'REGANDO AHORA: SECTOR 4 (ENCAÑE) · VÁLVULA 4 · 05:42 DE 08:00 · EN ESPERA: SEO3ALTO 08:38:00' in t, 'lo que riega ahora'
+        assert 'AVISARME AL MÓVIL CADA VEZ QUE EMPIECE UN RIEGO' in t
+        await pg.fill('[data-ajav="para"]', 'juanjo.serrano3@gmail.com, encargado@demo.es'); await pg.locator('[data-ajav="para"]').dispatch_event('change'); await pg.wait_for_timeout(200)
+        assert await pg.evaluate("st.cfg.avisoRiego.para") == ['juanjo.serrano3@gmail.com', 'encargado@demo.es'] and await pg.locator('#savebar').is_visible()
+        await pg.evaluate("st.cfg.avisoRiego=undefined;st.dirtyCfg=false;renderSave()")
         # mínima 150 en todos: el Drenaje 4 está en la mínima y no drena → aviso
         await pg.fill('[data-ajr="rb"]:not([data-sec])', '150'); await pg.locator('[data-ajr="rb"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(300)
         q4 = (await pg.locator('.ajr-sec').nth(3).inner_text()).upper(); assert 'ESTÁ EN LA MÍNIMA (150) Y AUN ASÍ NO DRENA' in q4, q4[:600]

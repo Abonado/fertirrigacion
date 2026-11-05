@@ -3,6 +3,7 @@ Lee cada rato una de estas dos páginas y lo manda a la app (servidor puente):
  · la tabla «Estados» del controlador de clima (Compartimento 1…6: temperatura, humedad y ventanas) → sale en Clima y estrés;
  · la página de riego del uCrop, con «Estado del cabezal» abierto (cada Drenaje: riegos, % de drenaje, litros, corte…)
    → sale en Riego › Ajuste del riego. El Drenaje 1 del uCrop es el sector 1 del cabezal, el Drenaje 2 el sector 2…
+La página de riego la mira cada minuto: cuando empieza un riego lo manda en el momento y la app avisa al móvil.
 Puede leer varias páginas a la vez en el mismo ordenador (por ejemplo el clima y el riego): cada una con su cabezal y su pestaña fijada.
 
 INSTALAR (una vez, en el ordenador donde se ve el controlador, con Microsoft Edge)
