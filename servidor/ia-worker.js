@@ -135,7 +135,7 @@ export default {
         model: env.MODEL || MODELO, max_tokens: 1500,
         system: SISTEMA_CHAT + (body.contexto ? '\n\nDatos de la finca de quien pregunta (úsalos solo si vienen al caso):\n' + String(body.contexto).slice(0, 6000) : ''),
         messages: chat.map((m, i) => ({ role: m.role, content: i === chat.length - 1 ? [...images, { type: 'text', text: m.text }] : m.text }))
-      } : { model: rapido ? (env.MODEL_RAPIDO || MODELO_RAPIDO) : (env.MODEL || MODELO), max_tokens: rapido ? 700 : 2000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
+      } : { model: rapido ? (env.MODEL_RAPIDO || MODELO_RAPIDO) : (env.MODEL || MODELO), max_tokens: rapido ? 700 : 4000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
     });
     const j = await r.json().catch(() => null);
     if (!r.ok) {

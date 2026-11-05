@@ -4065,7 +4065,20 @@ const iaOk=()=>{const c=iaCfg();return !!(c&&c.url&&c.pin)};
 const iaGemini=()=>!!(window.NUBE&&NUBE.ia&&NUBE.user);
 const iaModo=()=>SM?'claude':iaGemini()?'gemini':iaOk()?'servidor':null;
 const b64=blob=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob)});
-function jsonSuelto(t){try{return JSON.parse(t)}catch(e){}const m=t.match(/```(?:json)?\s*([\s\S]*?)```/);if(m){try{return JSON.parse(m[1])}catch(e){}}const a=t.indexOf('{'),b=t.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(t.slice(a,b+1))}catch(e){}}return null}
+/* Lee el JSON que devuelve la IA aunque venga envuelto en ```json, con saltos de línea dentro de los textos o CORTADO (respuesta
+   larga que llegó al tope): se cierran las comillas y los corchetes que quedaron abiertos y, si hace falta, se quita el último trozo a medias. */
+function jsonSuelto(t){t=String(t??'');try{return JSON.parse(t)}catch(e){}
+  const f=t.match(/```(?:json)?\s*([\s\S]*?)(?:```|$)/);let s=f?f[1]:t;const a=s.indexOf('{');if(a<0)return null;s=s.slice(a);
+  // 1) los saltos de línea y tabuladores dentro de las cadenas se escapan; se para donde se cierra el objeto de fuera
+  let out='',enStr=false,esc=false,niv=0;for(const ch of s){
+    if(enStr){if(esc){esc=false;out+=ch}else if(ch==='\\'){esc=true;out+=ch}else if(ch==='"'){enStr=false;out+=ch}else if(ch==='\n')out+='\\n';else if(ch==='\t')out+='\\t';else if(ch!=='\r')out+=ch;continue}
+    out+=ch;if(ch==='"')enStr=true;else if(ch==='{'||ch==='[')niv++;else if((ch==='}'||ch===']')&&--niv===0)break}
+  try{return JSON.parse(out)}catch(e){}
+  // 2) cortada: cerrar lo abierto; si no vale, quitar desde la última coma e intentarlo otra vez
+  const cierre=c=>{const p=[];let e=false,x=false;for(const ch of c){if(e){if(x)x=false;else if(ch==='\\')x=true;else if(ch==='"')e=false;continue}if(ch==='"')e=true;else if(ch==='{')p.push('}');else if(ch==='[')p.push(']');else if(ch==='}'||ch===']')p.pop()}
+    return (e?c+'"':c).replace(/[,:\s]+$/,'').replace(/,\s*"[^"]*"\s*$/,'')+p.reverse().join('')};
+  let c=out;for(let k=0;k<40&&c.length>1;k++){try{const o=JSON.parse(cierre(c));if(o&&typeof o==='object')return o}catch(e){}const i=c.lastIndexOf(',');if(i<=0)break;c=c.slice(0,i)}
+  return null}
 async function iaServidor(prompt,blobs,signal){const c=iaCfg(),images=[];for(const b of blobs)images.push(await b64(b));let r;
   try{r=await fetch(c.url,{method:'POST',headers:{'content-type':'application/json','x-app-pin':c.pin},body:JSON.stringify({prompt,images}),signal})}catch(e){if(signal.aborted)throw{code:'cancelled'};throw{code:'red'}}
   const j=await r.json().catch(()=>null);if(r.status===401)throw{code:'pin'};if(!r.ok||!j||!j.text)throw{code:'servidor',detail:j&&(j.detail||j.error)};
@@ -4095,8 +4108,8 @@ Reglas:
 - Usa los datos del día si los hay: un sector o una bandeja con mucho menos drenaje que los demás con los mismos minutos apunta a goteros obstruidos o falta de agua en esa zona; uno con mucho más, a fugas o goteros de más; dosis reales muy distintas de las deseadas apuntan al cabezal o a los bidones.
 - En "actuacion" da pasos concretos que pueda hacer el personal de la finca: limpiar o cambiar, purgar, revisar, medir, a quién avisar.
 - Seguridad: si hay ácidos o abonos concentrados, recuerda gafas y guantes; si hay algo eléctrico (bombas, cuadro, sondas), corta la corriente y que lo revise el electricista.
-- Español de España, frases cortas y claras para alguien de campo.
-Responde solo con un objeto JSON con esta forma exacta:
+- Español de España, frases cortas y claras para alguien de campo. Cada texto, como mucho 2 frases; sin saltos de línea ni comillas dobles dentro de los textos.
+Responde solo con un objeto JSON con esta forma exacta, sin nada antes ni después:
 {"resumen":"2-3 frases","urgencia":"baja|media|alta","posibles":[{"problema":"nombre","tipo":"obstrucción|fuga|rotura|presión|filtrado|cabezal|dosificación|sonda|precipitado|otro","probabilidad":"alta|media|baja","senales":"lo que se ve o lo que dicen los datos que apunta a esto","comprobar":"cómo confirmarlo en campo","actuacion":"qué hacer"}],"faltan":"fotos o datos que ayudarían, o cadena vacía"}
 
 Cultivo: ${g.cultivo||'tomate'}
@@ -4111,8 +4124,8 @@ Reglas:
 - Sé prudente: si con las fotos no se puede estar seguro, dilo y explica qué foto o dato haría falta.
 - Usa los datos de fertirrigación si los hay (CE y pH de gotero y drenaje, % de drenaje, dosis reales frente a deseadas) para apoyar o descartar causas nutricionales o de salinidad.
 - En "actuacion" da medidas concretas de manejo, riego y abonado. Para plagas y enfermedades no indiques productos ni dosis de fitosanitarios: di que el tratamiento lo debe prescribir el asesor y qué tipo de medida conviene (cultural, biológica…).
-- Español de España, frases cortas y claras para alguien de campo.
-Responde solo con un objeto JSON con esta forma exacta:
+- Español de España, frases cortas y claras para alguien de campo. Cada texto, como mucho 2 frases; sin saltos de línea ni comillas dobles dentro de los textos.
+Responde solo con un objeto JSON con esta forma exacta, sin nada antes ni después:
 {"resumen":"2-3 frases","urgencia":"baja|media|alta","posibles":[{"problema":"nombre","tipo":"carencia|exceso|plaga|enfermedad|fisiopatía|riego|salinidad|otro","probabilidad":"alta|media|baja","senales":"lo que se ve que apunta a esto","comprobar":"cómo confirmarlo en campo","actuacion":"qué hacer"}],"faltan":"fotos o datos que ayudarían, o cadena vacía"}
 
 Cultivo: ${g.cultivo||'tomate'}
@@ -6753,7 +6766,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v187';
+window.APP_V='abonado-v188';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
