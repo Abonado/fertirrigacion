@@ -45,7 +45,8 @@ async def main():
         R = await pg.evaluate("(()=>{const c=cabById('fra'),R=ajrCalc('fra',c.sectores[0]),x=R.ay;return {n:R.ok.length,src:x.src,N:x.N,D:Math.round(x.D),M:x.M,k:R.k,kSrc:R.kSrc,pulso:R.pulso,Nh:R.hoy.N,ctrl:R.banda().ctrl,vivo:R.vivo&&R.vivo.corte,sect:c.sectores.length}})()"); print(R)
         assert R['n'] == 7 and R['src'] == 'ucrop' and R['N'] == 14 and R['D'] == 20 and R['M'] == 112 and R['pulso'] == 8
         assert abs(R['k'] - 0.9) < 0.001 and R['kSrc'] == 'maquina', 'la radiación de la máquina sale del uCrop (5000 Wh/m² = 1800 J/cm²)'
-        assert R['Nh'] == 20 and R['ctrl'] == 315 and R['vivo'] == 245, R
+        # hoy 6000 Wh/m² en la máquina, de ellos el 11 % antes del primer riego (08:00): 5333 ÷ (18,6 riegos sin redondear + 0,5 que sobra) ≈ 280
+        assert R['Nh'] == 20 and R['ctrl'] == 280 and R['vivo'] == 245, R
         t = (await pg.locator('#main').inner_text()).upper(); print(t[:1200])
         assert 'AHORA EN EL UCROP' in t and '3 RIEGOS' in t and 'DRENA 9 %' in t and 'CORTE 245' in t and '(ANTES 150, +95)' in t
         assert 'DATOS DEL UCROP: ÚLTIMA LECTURA' in t and '(DEL UCROP)' in t
@@ -60,6 +61,26 @@ async def main():
         q1 = (await pg.locator('.ajr-sec').nth(0).inner_text()).upper(); assert 'ESTÁ EN LA MÍNIMA' not in q1
         assert 'YA LLEVA 3' in q1, 'los riegos que ya lleva la máquina hoy'
         await pg.screenshot(path='pruebas/salida/t131.png', full_page=True)
+        # la control de la app frente al corte con el que acabó la máquina (300 cada día)
+        A = await pg.evaluate("(()=>{const R=ajrCalc('fra',cabById('fra').sectores[0]);return [R.acCorte&&R.acCorte.n,R.acCorte&&Math.round(R.acCorte.mae),R.D.filter(x=>x.rcP!=null).length]})()"); print('corte real', A)
+        assert A[0] == 6 and A[2] == 6 and A[1] < 20, A
+        assert 'FRENTE AL CORTE CON EL QUE ACABA LA MÁQUINA' in q1, q1[:1500]
+        await pg.evaluate("document.querySelectorAll('[data-ajdet]').forEach(d=>{d.open=true})")
+        assert 'CORTE REAL' in (await pg.locator('.ajr-sec').nth(0).inner_text()).upper()
+        # los riegos que quiero: 16 en el sector 1 → la radiación por riego para 16 y la duración para el drenaje ideal
+        s1 = await pg.evaluate("cabById('fra').sectores[0].id")
+        await pg.fill(f'[data-ajr="nq"][data-sec="{s1}"]', '16'); await pg.locator(f'[data-ajr="nq"][data-sec="{s1}"]').dispatch_event('change'); await pg.wait_for_timeout(300)
+        Q = await pg.evaluate("(()=>{const R=ajrCalc('fra',cabById('fra').sectores[0]);return [R.hoy.N,R.banda().ctrl,R.calc.N,Math.round(R.hoy.puIdeal*10)/10]})()"); print('quiero 16', Q)
+        assert Q[0] == 16 and Q[1] > 280 and Q[2] == 20 and Q[3] > 8, Q
+        q1 = (await pg.locator('.ajr-sec').nth(0).inner_text()).upper(); print(q1[:900])
+        assert 'RIEGOS (LOS QUE QUIERES)' in q1 and 'CON 16 RIEGOS LA MÁQUINA TIENE QUE CORTAR' in q1 and 'SIN FIJARLOS SALÍAN 20 RIEGOS' in q1, q1
+        assert 'TIEMPO DE RIEGO ·' not in q1, 'con los riegos fijados no aconseja otro tiempo de riego'
+        assert 'CON 16' not in (await pg.locator('.ajr-sec').nth(1).inner_text()).upper(), 'solo en su sector'
+        await pg.screenshot(path='pruebas/salida/t131-quiero.png', full_page=True)
+        await pg.click(f'[data-ajnq="0"][data-sec="{s1}"]'); await pg.wait_for_timeout(300)
+        assert await pg.evaluate("ajrCalc('fra',cabById('fra').sectores[0]).hoy.N") == 20
+        await pg.fill(f'[data-ajr="nq"][data-sec="{s1}"]', '1'); await pg.locator(f'[data-ajr="nq"][data-sec="{s1}"]').dispatch_event('change'); await pg.wait_for_timeout(300)
+        assert await pg.evaluate("ajrCalc('fra',cabById('fra').sectores[0]).hoy.N") == 20, 'menos de 2 riegos no vale'
         # el primer día (sin días enteros del uCrop): la radiación de la máquina se compara con la del servicio hasta la hora leída
         K = await pg.evaluate("""(()=>{st.lec=st.lec.filter(d=>d.fecha===hoy());const d=st.lec.find(x=>x.dev==='UCR-FRA');d.p[0].t=new Date(hoy()+'T14:01:00').getTime();
           const R=ajrCalc('fra',cabById('fra').sectores[0]);return [R.kSrc,R.k]})()"""); print('k de hoy', K)

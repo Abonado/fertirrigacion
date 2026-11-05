@@ -714,7 +714,7 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .ajo-tb{width:100%;border-collapse:collapse;font-size:14px}.ajo-tb th,.ajo-tb td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right}.ajo-tb th:first-child,.ajo-tb td:first-child{text-align:left;color:var(--muted)}.ajo-tb th{font-size:12px;color:var(--muted)}
 .ajr-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;margin:8px 0}.ajr-chips span{border:1px solid var(--line);border-radius:12px;padding:6px 8px;display:grid;font-size:12px;color:var(--muted)}.ajr-chips b{font:700 20px/1.1 var(--f-display);color:var(--ink)}.ajr-chips small{font-size:11px}
 .ajr-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.ajr-h4{margin:14px 0 4px;font-size:13px;letter-spacing:.06em;color:var(--muted)}
-.ajr-big>div.ok{border-color:#2f7a52}.ajr-vivo{background:#eef3fb;border-radius:10px;padding:6px 10px}.ajr-cola{color:#8a5a00}.ajr-av{border-top:1px solid var(--line);margin-top:10px;padding-top:8px;display:grid;gap:6px}.ajr-big small.ok{color:#2f7a52;font-weight:600}.ajr-big small.bad{color:#b3261e;font-weight:600}
+.ajr-big>div.ok{border-color:#2f7a52}.ajr-big>div.ajr-nqb{border-color:#8a5a00}.ajr-nq{margin:8px 0 0}.ajr-vivo{background:#eef3fb;border-radius:10px;padding:6px 10px}.ajr-cola{color:#8a5a00}.ajr-av{border-top:1px solid var(--line);margin-top:10px;padding-top:8px;display:grid;gap:6px}.ajr-big small.ok{color:#2f7a52;font-weight:600}.ajr-big small.bad{color:#b3261e;font-weight:600}
 body.teclado .bnav,body.teclado .agbtn{display:none!important}body.teclado.conbn .savebar{bottom:0}
 .bnav,.savebar,.agbtn{translate:0 var(--vvfix,0px)}
 </style>
@@ -1142,14 +1142,17 @@ document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.c
 st.ajrW={};
 const AJR_DEF={dren:25,kT:0.02,kV:0.004,tRef:25,vRef:15,pulso:null,pulsoDef:8,hIni:'08:00',ini:true,mismoDia:false,modelo:'auto',rb:null,ra:null,sec:{}};
 const ajrCfg=cab=>({...AJR_DEF,...((st.cfg.ajr||{})[cab]||{})});
-const ajrSecCfg=(C,sid)=>{const x=(C.sec||{})[sid]||{};return{...C,dren:x.dren??C.dren,pulso:x.pulso??C.pulso,rb:x.rb??C.rb??null,ra:x.ra??C.ra??null}};
+const ajrSecCfg=(C,sid)=>{const x=(C.sec||{})[sid]||{};return{...C,dren:x.dren??C.dren,pulso:x.pulso??C.pulso,rb:x.rb??C.rb??null,ra:x.ra??C.ra??null,nq:x.nq>=2?x.nq:null}};
 const ajrKey=cab=>radKey(cab);
+// Open-Meteo da cada hora la media de la hora anterior (las 09:00 = de 8 a 9)
+function ajrFIni(cab,f,C){const v=((st.ajrW[ajrKey(cab)]||{}).hd||{})[f];if(!v)return 1;const tot=v.reduce((a,b)=>a+b,0);if(!(tot>0))return 1;
+  const m=/^(\d{2}):(\d{2})$/.exec(C.hIni||'');if(!m)return 1;const H=+m[1]+m[2]/60;let a=0;v.forEach((x,h)=>{a+=x*Math.min(1,Math.max(0,H-(h-1)))});return Math.max(0.5,1-a/tot)}
 const r5=x=>Math.max(5,Math.round(x/5)*5);
 async function ajrCargar(cab,force){if(enClaude())return;const k=ajrKey(cab),c=st.ajrW[k];if(!force&&c&&(c.cargando||Date.now()-c.t<30*60e3))return;
   st.ajrW[k]={...(c||{}),cargando:true,t:Date.now()};const[lat,lon]=k.split(',');
   try{const j=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=shortwave_radiation_sum,temperature_2m_max,temperature_2m_min,wind_speed_10m_max,et0_fao_evapotranspiration&hourly=shortwave_radiation&timezone=Europe%2FMadrid&past_days=31&forecast_days=3`)).json();
-    const d=j.daily||{},dias={},hh=j.hourly||{},horas={};(hh.time||[]).forEach((t,i)=>{if(hh.shortwave_radiation[i]!=null&&t.slice(0,10)===hoy())horas[t]=hh.shortwave_radiation[i]});(d.time||[]).forEach((f,i)=>{if(d.shortwave_radiation_sum[i]!=null)dias[f]={R:Math.round(d.shortwave_radiation_sum[i]*100),Tx:d.temperature_2m_max[i],Tn:d.temperature_2m_min[i],V:d.wind_speed_10m_max[i],et0:d.et0_fao_evapotranspiration[i]}});
-    if(!Object.keys(dias).length)throw new Error('vacio');st.ajrW[k]={t:Date.now(),dias,horas}}
+    const d=j.daily||{},dias={},hh=j.hourly||{},horas={};let hd;hd={};(hh.time||[]).forEach((t,i)=>{const v=hh.shortwave_radiation[i];if(v==null)return;if(t.slice(0,10)===hoy())horas[t]=v;(hd[t.slice(0,10)]=hd[t.slice(0,10)]||Array(24).fill(0))[+t.slice(11,13)]=v});(d.time||[]).forEach((f,i)=>{if(d.shortwave_radiation_sum[i]!=null)dias[f]={R:Math.round(d.shortwave_radiation_sum[i]*100),Tx:d.temperature_2m_max[i],Tn:d.temperature_2m_min[i],V:d.wind_speed_10m_max[i],et0:d.et0_fao_evapotranspiration[i]}});
+    if(!Object.keys(dias).length)throw new Error('vacio');st.ajrW[k]={t:Date.now(),dias,horas,hd}}
   catch(e){st.ajrW[k]={t:Date.now(),fallo:true,dias:(c&&c.dias)||null}}
   if(st.tab==='ajriego')renderMain()}
 const ajrFac=(w,C)=>{const fT=Math.min(1.6,Math.max(0.6,1+C.kT*((w.Tx??C.tRef)-C.tRef))),fV=Math.min(1.4,Math.max(0.8,1+C.kV*((w.V??C.vRef)-C.vRef)));return{fT,fV,f:fT*fV}};
@@ -1201,21 +1204,27 @@ function ajrCalc(cab,s,MOD){const c=cabById(cab);s=s||c.sectores[0];const C=ajrS
   const ps=D.filter(x=>x.p&&x.src!=='ucrop').slice(-3).map(x=>x.p).sort((a,b)=>a-b),pulso=C.pulso||(ps.length?ps[Math.floor(ps.length/2)]:C.pulsoDef||null);
   // lo que mide el sensor de la máquina respecto al servicio del tiempo: con la «Radiación» de la máquina apuntada en Drenaje, exacto;
   // si no, con la radiación de control fija y los riegos que dio; si no hay nada, igual
-  const kM=D.filter(x=>x.Rm&&x.w&&x.w.R>=200).map(x=>x.Rm/x.w.R),kF=D.filter(x=>!x.Rm&&x.rc&&x.N&&nRad(x.N)>0&&x.w&&x.w.R>=200).map(x=>x.rc*nRad(x.N)/x.w.R);
+  const kM=D.filter(x=>x.Rm&&x.w&&x.w.R>=200).map(x=>x.Rm/x.w.R),kF=D.filter(x=>!x.Rm&&x.rc&&x.N&&nRad(x.N)>0&&x.w&&x.w.R>=200).map(x=>x.rc*(nRad(x.N)+0.5)/(x.w.R*ajrFIni(cab,x.f,C)));
   const uh=ucrDia(cab,hoy()),HR=(st.ajrW[ajrKey(cab)]||{}).horas||{};let kH=null;
-  if(uh&&uh.v.ext&&uh.v.ext.racc>50){const hs=new Date(uh.t).toLocaleString('sv-SE',{timeZone:'Europe/Madrid'}).slice(0,13);let sw=0;for(const[t,w]of Object.entries(HR))if(t.slice(0,13)<=hs.replace(' ','T'))sw+=w;if(sw>100)kH=uh.v.ext.racc/sw}
+  if(uh&&uh.v.ext&&uh.v.ext.racc>300){const hs=new Date(uh.t).toLocaleString('sv-SE',{timeZone:'Europe/Madrid'}).slice(0,13);let sw=0;for(const[t,w]of Object.entries(HR))if(t.slice(0,13)<=hs.replace(' ','T'))sw+=w;if(sw>100)kH=uh.v.ext.racc/sw}
   const med=L=>{const v=L.slice().sort((a,b)=>a-b);return v[Math.floor(v.length/2)]},k=kM.length?med(kM):kH!=null?kH:kF.length?med(kF):1,kSrc=kM.length?'maquina':kH!=null?'hoy':kF.length?'fija':'supuesto';
-  for(const x of D){const nr=x.N?nRad(x.N):0,Rq=x.Rm??(x.w?k*x.w.R:null);x.rcEf=nr>0&&Rq?Rq/nr:null;x.rcExacta=!!x.Rm}
+  for(const x of D){const nr=x.N?nRad(x.N):0,Rq=x.Rm??(x.w?k*x.w.R:null);x.rcEf=nr>0&&Rq?Rq*ajrFIni(cab,x.f,C)/(nr+0.5):null;x.rcExacta=!!x.Rm}
   const vivo=ucrSec(ucrDia(cab,hoy()),c,s),vivoT=(ucrDia(cab,hoy())||{}).t||null;
   const M=MOD||ajrModelo(cab),m=M.m,ok=D.filter(x=>x.U!=null&&ajrDem(m,x.w,C,x.fP));
   if(!ok.length)return{s,D,C,pulso,k,kSrc,modelo:M,vivo,vivoT,poco:true};
   for(const x of ok){x.dem=ajrDem(m,x.w,C,x.fP);x.a=x.U/x.dem}
   const a=ajrMedia(ok.map(x=>x.a)),ay=ok[ok.length-1],prueba=ajrPrueba(m,ok,C);
   for(const o of prueba.err){const x=D.find(y=>y.f===o.f);if(x)x.Dp=o.Dp}
+  const ec=[];for(let i=1;i<ok.length;i++){const x=ok[i],aP=ajrMedia(ok.slice(0,i).map(o=>o.a)),pu=x.p||pulso;if(!aP||!pu)continue;const nr=nRad(Math.max(1,aP*x.dem/(1-C.dren/100)/pu));
+    if(nr>0){x.rcP=aWh(k*x.w.R*ajrFIni(cab,x.f,C)/(nr+0.5));if(x.corte>0)ec.push(x.rcP/x.corte-1)}}
+  const acCorte=ec.length?{n:ec.length,mae:ec.reduce((s,e)=>s+Math.abs(e),0)/ec.length*100,sesgo:ec.reduce((s,e)=>s+e,0)/ec.length*100}:null;
   const pre=(f,o={})=>{const w=W[f];if(!w)return null;const dr=o.dren??C.dren,pu=o.pulso??pulso,fP=ajrFP(cab,f),dem=ajrDem(m,w,C,fP);if(!dem)return null;
-    const U=a*dem,Mn=U/(1-dr/100),N=o.N??(pu?Math.max(1,Math.round(Mn/pu)):null),Rmq=k*w.R,nr=N?nRad(N):0,rcRaw=nr>0?Rmq/nr:null,rc=rcRaw!=null?r5(rcRaw):null;
+    /* La radiación por riego sale de los riegos sin redondear (la máquina no redondea: corta cuando junta la radiación) y de la radiación de
+       después del primer riego; al final del día siempre sobra algo que no llega a otro corte (de media, medio riego) */
+    const U=a*dem,Mn=U/(1-dr/100),Nf=o.N??(pu?Math.max(1,Mn/pu):null),N=Nf!=null?Math.max(1,Math.round(Nf)):null,Rmq=k*w.R,nr=N?nRad(N):0,nrF=Nf!=null?nRad(Nf):0,
+      rcRaw=nrF>0?Rmq*ajrFIni(cab,f,C)/(nrF+0.5):null,rc=rcRaw!=null?r5(rcRaw):null;
     // a mediodía la hora de más sol se lleva ≈ 12 % del día: minutos que tarda la máquina en juntar la radiación de un riego
-    return{f,w,fP,dem,U,M:Mn,N,nr,rc,rcRaw,Rmq,pulso:pu,dren:dr,minEntre:rcRaw?rcRaw/(Rmq*0.12)*60:null,Mreal:N&&pu?N*pu:null,Dreal:N&&pu?(1-U/(N*pu))*100:null}};
+    return{f,w,fP,dem,U,M:Mn,N,nr,rc,rcRaw,Rmq,pulso:pu,dren:dr,minEntre:rcRaw?rcRaw/(Rmq*0.12)*60:null,Mreal:N&&pu?N*pu:null,Dreal:N&&pu?(1-U/(N*pu))*100:null,puIdeal:N?Mn/N:null,quiero:o.N!=null}};
   const ce=D.filter(x=>x.ceI&&x.ceD&&x.D>0).pop()||null;
   /* Banda baja / alta. Si la radiación que hace falta cae dentro de la que tiene puesta la máquina, se deja; si no, se mueve solo el lado
      que no llega. Sin banda puesta se propone una que deje margen a los dos lados (−20 % y +50 %), porque la máquina se regula sola. */
@@ -1223,8 +1232,8 @@ function ajrCalc(cab,s,MOD){const c=cabById(cab);s=s||c.sectores[0];const C=ajrS
      corte cuando corrige porque no drena. Si lo que hace falta queda por debajo de la mínima (o muy cerca), la máquina no puede llegar: se baja. */
   const bandaPara=rc=>{if(rc==null)return null;const w=aWh(rc),ctrl=r5w(w),mb=C.rb,cerca=mb&&w<mb*1.1,min=mb?(cerca?r5w(w*0.7):mb):r5w(w*0.6);
     return{ctrl,min,rc:ctrl,minCambia:!!cerca,ctrlCambia:C.ra?Math.abs(ctrl-C.ra)/C.ra>0.2:false,tiene:!!(C.ra||C.rb)}};
-  const banda=(o={})=>{const P=pre(hoy(),o);return P?bandaPara(P.rcRaw):null};
-  return{s,D,C,ok,a,ay,pulso,k,kSrc,kN:kM.length+kF.length,modelo:M,prueba,ce,banda,bandaPara,vivo,vivoT,plan:o=>pre(hoy(),o),hoy:pre(hoy()),man:pre(sumaDias(hoy(),1))}}
+  const NQ=C.nq?{N:C.nq}:{},banda=(o={})=>{const P=pre(hoy(),{...NQ,...o});return P?bandaPara(P.rcRaw):null};
+  return{s,D,C,ok,a,ay,pulso,k,kSrc,kN:kM.length+kF.length,modelo:M,prueba,acCorte,ce,banda,bandaPara,vivo,vivoT,plan:o=>pre(hoy(),o),hoy:pre(hoy(),NQ),calc:C.nq?pre(hoy()):null,man:pre(sumaDias(hoy(),1),NQ)}}
 /* Tiempo de cada riego: que a mediodía haya entre 15 y 60 min entre riegos, que no se pisen con la vuelta y que no salgan demasiados ni muy pocos */
 function ajrConsejoPulso(R,vuelta){const P=R.hoy;if(!P||!R.pulso||P.minEntre==null)return null;const pu=R.pulso,lim=Math.max(15,vuelta||0);let n=pu,por='';
   const bien=Q=>Q&&Q.minEntre!=null&&Q.minEntre>=lim&&Q.N<=22,poco=Q=>Q&&(Q.minEntre>60||Q.N<8);
@@ -1295,12 +1304,16 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
     if(R.poco||!P)h+=`<div class="note">${R.poco?'Sin días con minutos, riegos y drenaje de este sector apuntados en Drenaje.':'Sin previsión para hoy.'}</div>`;
     else{const ay=R.ay,B=R.bandaPara(P.rcRaw),tiene=Cs.rb&&Cs.ra,BM=R.man?R.bandaPara(R.man.rcRaw):null;
       const est=!B?'':B.minCambia?`<small class="bad">baja la mínima a ${fmt(B.min,0)} (hace falta ≈ ${fmt(B.rc,0)})</small>`:B.ctrlCambia?`<small class="bad">cambia el control de ${fmt(Cs.ra,0)} a ${fmt(B.ctrl,0)}</small>`:B.tiene?`<small class="ok">✓ lo que tienes vale (hace falta ≈ ${fmt(B.rc,0)})</small>`:`<small>hace falta ≈ ${fmt(B.rc,0)} por riego</small>`;
-      const CP=ajrConsejoPulso(R,vuelta);
+      const CP=Cs.nq?null:ajrConsejoPulso(R,vuelta);
       h+=`<h4 class="ajr-h4">Pon hoy en la máquina</h4><div class="ajr-big">
         <div class="${B&&B.tiene&&!B.minCambia&&!B.ctrlCambia?'ok':''}"><span>Radiación de control / mínima</span><b>${ajrBanTxt(B)}</b>${est}<small>Wh/m²</small></div>
         <div><span>Duración de cada riego</span><b>${R.pulso?n0(R.pulso):'—'}</b><small>min${CP&&!CP.ok?' · mira abajo':''}</small></div>
-        <div><span>Riegos</span><b>${P.N??'—'}</b><small>${C.ini&&P.N?'1 a las '+esc(C.hIni)+' + '+P.nr+' por radiación':''}${R.vivo&&R.vivo.act!=null?`<br><b>ya lleva ${R.vivo.act}</b>${P.N!=null&&R.vivo.act>=P.N?' (ya están los que hacían falta: si sigue drenando de más, sube el control)':''}`:''}</small></div>
+        <div class="${Cs.nq?'ajr-nqb':''}"><span>Riegos${Cs.nq?' (los que quieres)':''}</span><b>${P.N??'—'}</b><small>${C.ini&&P.N?'1 a las '+esc(C.hIni)+' + '+P.nr+' por radiación':''}${R.vivo&&R.vivo.act!=null?`<br><b>ya lleva ${R.vivo.act}</b>${P.N!=null&&R.vivo.act>=P.N?' (ya están los que hacían falta: si sigue drenando de más, sube el control)':''}`:''}</small></div>
         <div><span>Drenaje esperado</span><b>${P.Dreal!=null?fmt(Math.max(0,P.Dreal),0)+' %':'—'}</b><small>ideal ${fmt(Cs.dren,0)} %</small></div></div>`;
+      h+=`<div class="frm ajr-nq"><div class="field"><label for="nq_${s.id}">Riegos que quiero hoy</label><div class="inp"><input id="nq_${s.id}" data-ajr="nq" data-sec="${s.id}" inputmode="numeric" autocomplete="off" value="${inVal(sc.nq)}" placeholder="${(R.calc||P).N??''}" ${dis}></div></div></div>`;
+      if(Cs.nq){const pi=P.puIdeal,pir=pi!=null?Math.round(pi*2)/2:null;
+        h+=`<p class="ajr-p">Con <b>${P.N} riegos</b> la máquina tiene que cortar cada <b>≈ ${fmt(B.rc,0)} Wh/m²</b>. ${pi!=null?`Para drenar el ${fmt(Cs.dren,0)} %, cada riego tendría que durar <b>${n0(pir)} min</b>${R.pulso&&Math.abs(pir-R.pulso)>=0.5?`; con los ${n0(R.pulso)} min que tiene drenaría ≈ <b>${fmt(Math.max(0,P.Dreal),0)} %</b>`:''}.`:''} Sin fijarlos salían ${(R.calc||{}).N??'—'} riegos.</p>
+          ${g?`<div class="row">${pir!=null&&R.pulso&&Math.abs(pir-R.pulso)>=0.5&&pir>=2?`<button class="btn sm pri" type="button" data-ajpu="${pir}" data-sec="${s.id}">Poner ${n0(pir)} min en ${esc(s.nombre)}</button>`:''}<button class="btn sm" type="button" data-ajnq="0" data-sec="${s.id}">Que los calcule la app</button></div>`:''}`}
       if(BM&&BM.minCambia&&!B.minCambia)h+=`<div class="note">Mañana hará falta ≈ ${fmt(BM.rc,0)} Wh/m²: tendrás que bajar la mínima a ${fmt(BM.min,0)}.</div>`;
       // lo que lleva hoy la máquina (uCrop)
       const V=R.vivo;if(V){const pegado=Cs.rb&&V.corte!=null&&V.corte<=Cs.rb+1&&(V.act||0)>=3&&!(V.dH>0);
@@ -1309,6 +1322,7 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
       if(CP)h+=`<div class="ajr-cp ${CP.ok?'ok':'mv'}"><b>Tiempo de riego</b> · ${esc(CP.txt)}${!CP.ok&&CP.Q?` Quedaría: ${CP.Q.N} riegos, control / mínima ${ajrBanTxt(R.bandaPara(CP.Q.rcRaw))} Wh/m², drenaje ≈ ${fmt(Math.max(0,CP.Q.Dreal),0)} %.`:''}
         ${!CP.ok&&g?`<div class="row"><button class="btn sm pri" type="button" data-ajpu="${CP.n}" data-sec="${s.id}">Poner ${fmt(CP.n,0)} min en ${esc(s.nombre)}</button></div>`:''}</div>`;
       h+=`<h4 class="ajr-h4">Ayer · ${esc(fdia(ay.f))}</h4><p class="ajr-p">${ay.N!=null?`<b>${fmt(ay.N,0)} riegos</b> de ${n0(ay.p||R.pulso)} min · `:`<b>${fmt(ay.M,0)} min</b> · `}drenó <b class="${Math.abs(ay.D-Cs.dren)>8?'tbad':''}">${fmt(ay.D,0)} %</b>${ay.rcEf?` · la máquina regó de media cada <b>${ay.rcExacta?'':'≈ '}${fmt(r5w(aWh(ay.rcEf)),0)} Wh/m²</b>`:''}${ay.corte!=null?` · acabó con el corte en ${fmt(ay.corte,0)}`:''}${ay.src==='ucrop'?' <small class="nt">(del uCrop)</small>':''}. La planta se llevó ≈ ${fmt(ay.U,0)} min de riego${ay.Dp!=null?`; el cálculo decía ${fmt(Math.max(0,ay.Dp),0)} %`:''}.</p>`;
+      const AC=R.acCorte;if(AC&&AC.n>=3)h+=`<p class="ajr-p">Frente al corte con el que acaba la máquina, la control que calcula la app se queda de media a <b class="${AC.mae>10?'tbad':''}">±${fmt(AC.mae,0)} %</b> (${AC.n} días${Math.abs(AC.sesgo)>=3?`; sale un ${fmt(Math.abs(AC.sesgo),0)} % ${AC.sesgo>0?'alta':'baja'}`:''}). Día a día, en la tabla de abajo.</p>`;
       h+=`<h4 class="ajr-h4">Quiero…</h4>${ajrObjHTML(R)}`}
     // datos de este sector: lo que tiene la máquina y los días
     h+=`<details class="ajr-det" data-ajdet="${s.id}"${st.ajrDet[s.id]??(R.poco||!P)?' open':''}><summary>Lo que tiene la máquina en ${esc(s.nombre)} y sus días</summary><div class="frm">
@@ -1318,9 +1332,9 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
       <div class="field"><label>Drenaje ideal</label><div class="inp"><input data-ajr="dren" data-sec="${s.id}" inputmode="decimal" value="${inVal(sc.dren)}" placeholder="${fmt(C.dren,0)}" ${dis}><span class="u">%</span></div></div>
 </div>
       <div class="note">Como en el uCrop, en el Drenaje ${c.sectores.indexOf(s)+1}. Vacío = lo de todos los sectores (abajo, en «La máquina»).</div>`;
-    if(R.D.length){const fi=R.D.slice(-10).reverse();h+=`<div style="overflow-x:auto"><table class="m3t ajr-t"><thead><tr><th>Día</th><th>Sol</th><th>Máx</th><th>Riegos</th><th>Min</th><th>Wh/m² por riego</th><th>Drenaje</th><th>Calculado</th><th>Se llevó</th></tr></thead><tbody>
-      ${fi.map(x=>`<tr><td>${esc(fdia(x.f))}</td><td>${x.w?fmt(aWh(x.w.R),0):'—'}</td><td>${x.w?fmt(x.w.Tx,0):'—'}</td><td>${x.N!=null?fmt(x.N,0):'—'}${x.src==='ucrop'?'<sup>u</sup>':''}</td><td>${x.M!=null?fmt(x.M,0):'—'}</td><td>${x.rcEf!=null?(x.rcExacta?'':'≈ ')+fmt(r5w(aWh(x.rcEf)),0):'—'}</td><td class="${x.D!=null&&Math.abs(x.D-Cs.dren)>8?'tbad':''}">${x.D!=null?fmt(x.D,0)+' %':'—'}</td><td>${x.Dp!=null?fmt(Math.max(0,x.Dp),0)+' %':'—'}</td><td>${x.U!=null?fmt(x.U,0)+' min':'—'}</td></tr>`).join('')}</tbody></table></div>
-      <div class="note">«Calculado» es el drenaje que habría dicho la app ese día solo con los días de antes: cuanto más se parezca al medido, más fiable. «≈» = sin la radiación de la máquina. <sup>u</sup> = leído del uCrop.</div>`}
+    if(R.D.length){const fi=R.D.slice(-10).reverse();h+=`<div style="overflow-x:auto"><table class="m3t ajr-t"><thead><tr><th>Día</th><th>Sol</th><th>Máx</th><th>Riegos</th><th>Min</th><th>Wh/m² por riego</th><th>Drenaje</th><th>Calculado</th><th>Se llevó</th><th>Control app</th><th>Corte real</th></tr></thead><tbody>
+      ${fi.map(x=>`<tr><td>${esc(fdia(x.f))}</td><td>${x.w?fmt(aWh(x.w.R),0):'—'}</td><td>${x.w?fmt(x.w.Tx,0):'—'}</td><td>${x.N!=null?fmt(x.N,0):'—'}${x.src==='ucrop'?'<sup>u</sup>':''}</td><td>${x.M!=null?fmt(x.M,0):'—'}</td><td>${x.rcEf!=null?(x.rcExacta?'':'≈ ')+fmt(r5w(aWh(x.rcEf)),0):'—'}</td><td class="${x.D!=null&&Math.abs(x.D-Cs.dren)>8?'tbad':''}">${x.D!=null?fmt(x.D,0)+' %':'—'}</td><td>${x.Dp!=null?fmt(Math.max(0,x.Dp),0)+' %':'—'}</td><td>${x.U!=null?fmt(x.U,0)+' min':'—'}</td><td>${x.rcP!=null?fmt(r5w(x.rcP),0):'—'}</td><td class="${x.rcP!=null&&x.corte>0&&Math.abs(x.rcP/x.corte-1)>0.1?'tbad':''}">${x.corte!=null?fmt(x.corte,0):'—'}</td></tr>`).join('')}</tbody></table></div>
+      <div class="note">«Calculado» es el drenaje que habría dicho la app ese día solo con los días de antes: cuanto más se parezca al medido, más fiable. «≈» = sin la radiación de la máquina. <sup>u</sup> = leído del uCrop. «Control app» es la que habría dicho la app ese día (con los días de antes) y «Corte real», el corte con el que acabó la máquina con la bandeja de demanda (Wh/m²).</div>`}
     h+=`</details></section>`}
   // ---- 3. La máquina (todos los sectores) y los ajustes del cálculo
   const kTaj=ajrKT(st.cab);
@@ -1347,12 +1361,13 @@ document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!
   if(t.dataset.ajav==='on')A.on=t.checked;else A.para=t.value.split(/[,;\s]+/).map(x=>x.trim().toLowerCase()).filter(x=>/^\S+@\S+\.\S+$/.test(x)).slice(0,5);st.dirtyCfg=true;renderSave()});
 document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!t.dataset||!t.dataset.ajr||!esGestor())return;const k=t.dataset.ajr,cab=st.cab,sid=t.dataset.sec;
   const A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[cab]={...(A[cab]||{})};
-  if(sid){x.sec={...(x.sec||{})};x.sec[sid]={...(x.sec[sid]||{}),[k]:num(t.value)??undefined}}
+  if(sid){x.sec={...(x.sec||{})};let v=num(t.value)??undefined;if(k==='nq'&&v!=null){v=Math.round(v);if(v<2||v>60){toast('Pon entre 2 y 60 riegos.');v=undefined}}x.sec[sid]={...(x.sec[sid]||{}),[k]:v}}
   else if(k==='mismoDia'||k==='ini')x[k]=t.checked;else if(k==='hIni')x.hIni=/^\d{2}:\d{2}$/.test(t.value)?t.value:undefined;else if(k==='modelo')x.modelo=t.value;
   else{const v=num(t.value);if(k==='kT'||k==='kV')x[k]=v==null?undefined:v/100;else x[k]=v==null?undefined:v}
   st.dirtyCfg=true;renderSave();renderMain()});
 document.addEventListener('click',e=>{if(st.tab!=='ajriego'||!e.target.closest)return;const o=e.target.closest('[data-ajo]');
   if(o){const sid=o.dataset.sec;st.ajrObj[sid]=st.ajrObj[sid]===o.dataset.ajo?null:o.dataset.ajo;renderMain();return}
+  const nb=e.target.closest('[data-ajnq]');if(nb&&esGestor()){const sid=nb.dataset.sec,A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[st.cab]={...(A[st.cab]||{})};x.sec={...(x.sec||{})};x.sec[sid]={...(x.sec[sid]||{}),nq:undefined};st.dirtyCfg=true;renderSave();renderMain();return}
   const pb=e.target.closest('[data-ajpu]');if(pb&&esGestor()){const sid=pb.dataset.sec,A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[st.cab]={...(A[st.cab]||{})};x.sec={...(x.sec||{})};x.sec[sid]={...(x.sec[sid]||{}),pulso:+pb.dataset.ajpu};st.dirtyCfg=true;renderSave();renderMain();toast('Tiempo de riego puesto. Guarda para que se quede.');return}
   const ap=e.target.closest('[data-ajap]');if(ap&&esGestor()){const sid=ap.dataset.sec,c=cabById(st.cab),s=c.sectores.find(x=>x.id===sid);if(!s)return;const X=ajrObjetivo(ajrCalc(st.cab,s),ap.dataset.ajap);if(!X||X.err)return;
     const A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[st.cab]={...(A[st.cab]||{})};x.sec={...(x.sec||{})};x.sec[sid]={...(x.sec[sid]||{}),...(X.dren!=null?{dren:X.dren}:{}),...(X.pulso!=null?{pulso:X.pulso}:{})};
@@ -6774,7 +6789,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v189';
+window.APP_V='abonado-v190';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;

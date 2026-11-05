@@ -36,27 +36,27 @@ async def main():
         print('planta', await pg.evaluate("[st.crec&&st.crec.length,JSON.stringify(culDe('gas')),JSON.stringify(ajrPlanta('gas',hoy()))]"))
         R = await pg.evaluate("cabById('gas').sectores.slice(0,2).map(s=>{const R=ajrCalc('gas',s);return {n:R.ok.length,a:R.a*ajrFP('gas',hoy()),pulso:R.pulso,k:R.k,N:R.hoy.N,nr:R.hoy.nr,rc:R.hoy.rc,D:R.hoy.Dreal}})"); print(R)
         a, b2 = R
-        assert a['n'] == 7 and abs(a['a'] - 31.5) < 0.01 and a['pulso'] == 6 and abs(a['k'] - 0.91) < 0.001 and a['N'] == 18 and a['nr'] == 17 and a['rc'] == 130 and 22 < a['D'] < 24, a
-        assert abs(b2['a'] - 28.8) < 0.01 and b2['pulso'] == 8 and abs(b2['k'] - 0.88) < 0.001 and b2['N'] == 13 and b2['rc'] == 175 and 26 < b2['D'] < 28, b2
+        assert a['n'] == 7 and abs(a['a'] - 31.5) < 0.01 and a['pulso'] == 6 and abs(a['k'] - 0.945) < 0.001 and a['N'] == 18 and a['nr'] == 17 and a['rc'] == 125 and 22 < a['D'] < 24, a
+        assert abs(b2['a'] - 28.8) < 0.01 and b2['pulso'] == 8 and abs(b2['k'] - 0.92) < 0.001 and b2['N'] == 13 and b2['rc'] == 180 and 26 < b2['D'] < 28, b2
         t = (await pg.locator('#main').inner_text()).upper(); print(t[:900])
         assert t.count('RADIACIÓN DE CONTROL / MÍNIMA') >= 2 and 'UN 32 % MÁS' in t and 'DRENÓ 25 %' in t and 'DRENÓ 40 %' in t and '+ 17 POR RADIACIÓN' in t and '+ 12 POR RADIACIÓN' in t
         assert 'VUELTA DE 14 MIN' in t and 'ACIERTA ±0 PUNTOS' in t and 'LOS RIEGOS SE PISAN' not in t
         assert 'CÓMO SE CALCULA' not in t, 'sin la explicación del cálculo'
         await pg.screenshot(path='pruebas/salida/t128.png', full_page=True)
-        # en unidades del uCrop (Wh/m²): hace falta 128 J/cm² ≈ 355 Wh/m² por riego → control 355; sin mínima puesta, 215 (60 %)
-        B = await pg.evaluate("ajrCalc('gas',cabById('gas').sectores[0]).banda()"); print('banda', B); assert B['ctrl'] == 355 and B['min'] == 215 and B['rc'] == 355, B
-        assert '355 / 215' in t and 'HACE FALTA ≈ 355 POR RIEGO' in t and 'SOL DEL DÍA' in t and '6667' in t, 'el sol en Wh/m² (2400 J/cm²)'
-        # lo que tiene la máquina: mínima 400 → hace falta 355, por debajo de la mínima: bajarla a 250
+        # en unidades del uCrop (Wh/m²): hace falta 126 J/cm² ≈ 350 Wh/m² por riego → control 350; sin mínima puesta, 210 (60 %)
+        B = await pg.evaluate("ajrCalc('gas',cabById('gas').sectores[0]).banda()"); print('banda', B); assert B['ctrl'] == 350 and B['min'] == 210 and B['rc'] == 350, B
+        assert '350 / 210' in t and 'HACE FALTA ≈ 350 POR RIEGO' in t and 'SOL DEL DÍA' in t and '6667' in t, 'el sol en Wh/m² (2400 J/cm²)'
+        # lo que tiene la máquina: mínima 400 → hace falta 350, por debajo de la mínima: bajarla a 245
         await pg.fill('[data-ajr="rb"]:not([data-sec])', '400'); await pg.locator('[data-ajr="rb"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(200)
         await pg.fill('[data-ajr="ra"]:not([data-sec])', '350'); await pg.locator('[data-ajr="ra"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(300)
         q = (await pg.locator('.ajr-sec').first.inner_text()).upper(); print(q[:700])
-        assert '355 / 250' in q and 'BAJA LA MÍNIMA A 250' in q, q
+        assert '350 / 245' in q and 'BAJA LA MÍNIMA A 245' in q, q
         # con control 350 y mínima 150 (como en el uCrop) vale
         await pg.fill('[data-ajr="rb"]:not([data-sec])', '150'); await pg.locator('[data-ajr="rb"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(300)
-        q = (await pg.locator('.ajr-sec').first.inner_text()).upper(); assert '355 / 150' in q and '✓ LO QUE TIENES VALE' in q, q
+        q = (await pg.locator('.ajr-sec').first.inner_text()).upper(); assert '350 / 150' in q and '✓ LO QUE TIENES VALE' in q, q
         # control muy distinto (600) → cambiarlo
         await pg.fill('[data-ajr="ra"]:not([data-sec])', '600'); await pg.locator('[data-ajr="ra"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(300)
-        assert 'CAMBIA EL CONTROL DE 600 A 355' in (await pg.locator('.ajr-sec').first.inner_text()).upper()
+        assert 'CAMBIA EL CONTROL DE 600 A 350' in (await pg.locator('.ajr-sec').first.inner_text()).upper()
         await pg.fill('[data-ajr="ra"]:not([data-sec])', '350'); await pg.locator('[data-ajr="ra"]:not([data-sec])').dispatch_event('change'); await pg.wait_for_timeout(300)
         await pg.evaluate("document.querySelectorAll('[data-ajdet]').forEach(d=>{d.open=true;st.ajrDet[d.dataset.ajdet]=true})")
         # tiempo de riego: con 6 min está bien; con 3 min salen demasiados riegos → aconseja subir a 4
