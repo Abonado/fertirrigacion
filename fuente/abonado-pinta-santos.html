@@ -78,7 +78,15 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .ucext{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:13px;padding:6px 0}.ucext b{font-size:12px;letter-spacing:.05em;color:var(--muted)}.ucmed{display:grid;gap:2px;font-size:13px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--navy) 6%,var(--surface))}.ucmed b{font-size:12px;letter-spacing:.05em}
 .ucinv{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
 .ucres{display:grid;gap:8px;padding:10px 12px;margin-bottom:8px;border:1px dashed var(--line);border-radius:12px}.ucf{display:grid;grid-template-columns:minmax(80px,1fr) auto minmax(120px,auto);gap:8px;align-items:center;font-size:13px}
-@media (max-width:560px){.ucf{grid-template-columns:1fr;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}}.plg{border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:6px;background:var(--surface-2)}.plg p{margin:0}.plg-h{display:flex;gap:10px;align-items:center}.plg-h>div{flex:1;min-width:0;display:grid}.plg-h b{text-transform:none;font-size:1.1rem}.plg-h small{color:var(--muted)}
+@media (max-width:560px){.ucf{grid-template-columns:1fr;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}}.pt{display:grid;gap:14px}.pt-top{display:flex;gap:12px;align-items:center}.pt-top>div{flex:1;min-width:0;display:grid}.pt-top b{text-transform:none;font-size:1.1rem}.pt-top small{color:var(--muted)}
+.pt-main{display:grid;justify-items:center;gap:6px;padding:26px 16px;border:0;border-radius:22px;background:var(--accent);color:var(--accent-ink);cursor:pointer;font:inherit;box-shadow:0 6px 18px rgba(0,0,0,.12)}.pt-main.fin{background:var(--bad)}.pt-main:disabled{opacity:.7}
+.pt-circ{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;font-size:2.2rem;background:rgba(255,255,255,.18);box-shadow:0 0 0 10px rgba(255,255,255,.08)}.pt-main b{font-size:1.45rem;letter-spacing:.02em}.pt-main small{opacity:.9;font-size:.95rem}
+.pt-row{display:grid;grid-template-columns:1fr;gap:10px}.pt-b{display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);cursor:pointer;font:inherit;min-height:64px}.pt-b b{font-size:1.1rem}
+.pt-ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:1rem;flex:none}.pt-ic.pau{background:#d98a1c}.pt-ic.go{background:var(--accent)}
+.pt-tl{list-style:none;margin:0;padding:0;display:grid;gap:0}.pt-tl li{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:10px;padding:8px 0;position:relative}.pt-tl li i{width:14px;height:14px;border-radius:50%;background:var(--accent);justify-self:center;position:relative;z-index:1}
+.pt-tl li.pausa i{background:#d98a1c}.pt-tl li.salida i{background:var(--bad)}.pt-tl li:not(:last-child)::before{content:'';position:absolute;left:10px;top:24px;bottom:-8px;width:2px;background:var(--line)}.pt-tl b{font-size:1.15rem}
+.ctstep{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}.ctstep .btn{min-width:48px;min-height:40px;font-weight:800}
+.plg{border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:6px;background:var(--surface-2)}.plg p{margin:0}.plg-h{display:flex;gap:10px;align-items:center}.plg-h>div{flex:1;min-width:0;display:grid}.plg-h b{text-transform:none;font-size:1.1rem}.plg-h small{color:var(--muted)}
 .plg-ico{width:38px;height:38px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;font-size:.85rem;flex:none}
 .ots{display:grid;gap:14px}.ot{border:1px solid var(--line);border-radius:16px;padding:12px;display:grid;gap:10px;background:var(--surface)}.ot.hecha{opacity:.9}.ot-lg{gap:4px;margin:0}.ot-lg .chip{text-transform:none;font-size:.8rem;padding:4px 10px}
 .ot-cuerpo{display:grid;gap:12px}.ot-h{display:flex;gap:12px;align-items:center}.ot-ico{width:48px;height:48px;border-radius:14px;background:var(--bad-bg);color:var(--bad);display:grid;place-items:center;flex:none}
@@ -5355,7 +5363,7 @@ function coNaves(cab){const M=MAPAS[cab];return M?M.naves:null}
 function coTrabHTML(j,t,i,edit){const cabs=collaDe(j.colla)&&collaDe(j.colla).finca?((st.cfg.fincas||[]).find(f=>f.id===collaDe(j.colla).finca)||{}).cabezales||[]:cabsVis().map(c=>c.id);
   const nv=coNaves(t.cab),nave=nv&&nv.find(x=>x.n===t.nave),pres=presentes(j),dentro=enTrabajo(j,t),hp=horasTrab(j,t),dis=edit?'':'disabled';
   const ud=udsLabor(t.labor),mp=coMatasPas(t.cab,t.nave);
-  const fld=(u,lab)=>`<div class="field"><label for="ct_${u}_${i}">${lab}</label><div class="inp sm"><input id="ct_${u}_${i}" data-co-t="${i}" data-c="${u}" inputmode="decimal" value="${t.pp&&t.ud===u?'':inVal(t[u])}" ${t.pp&&t.ud===u?'disabled placeholder="por persona"':dis}><span class="u">${CO_UD[u]}</span></div></div>`;
+  const fld=(u,lab)=>`<div class="field"><label for="ct_${u}_${i}">${lab}</label><div class="inp sm"><input id="ct_${u}_${i}" data-co-t="${i}" data-c="${u}" inputmode="decimal" value="${t.pp&&t.ud===u?'':inVal(t[u])}" ${t.pp&&t.ud===u?'disabled placeholder="por persona"':dis}><span class="u">${CO_UD[u]}</span></div>${edit&&u==='cajas'&&!(t.pp&&t.ud===u)?`<div class="ctstep">${[-1,1,5,10,25].map(n=>`<button class="btn sm" data-costep="${i}" data-u="${u}" data-n="${n}" aria-label="${n>0?'Sumar '+n:'Restar 1'} cajas">${n>0?'+'+n:'−1'}</button>`).join('')}</div>`:''}</div>`;
   return `<div class="cotr"><div class="cotr-h"><b>${i+1}. ${esc(LAB[t.labor]||'Trabajo')}</b>${t.labor==='recolectar'?plzPill(t.cab,t.nave):''}<small id="cot_${i}">${coTrabRes(j,t)}</small>${edit?`<button class="edx" data-act="co-delt" data-i="${i}" aria-label="Quitar trabajo">✕</button>`:''}</div>
     <div class="frm"><div class="field"><label for="ct_l_${i}">Labor</label><div class="inp"><select id="ct_l_${i}" data-co-t="${i}" data-c="labor" ${dis}>${LABORES.map(([k,n])=>`<option value="${k}" ${t.labor===k?'selected':''}>${n}</option>`).join('')}</select></div></div>
       <div class="field"><label for="ct_c_${i}">Cabezal</label><div class="inp"><select id="ct_c_${i}" data-co-t="${i}" data-c="cab" ${dis}><option value="">—</option>${cabs.map(c=>`<option value="${c}" ${t.cab===c?'selected':''}>${esc(cabNombre(c))}</option>`).join('')}</select></div></div>
@@ -5521,6 +5529,7 @@ function onCoInput(e){if(!CAMPO.has(st.tab))return;const t=e.target,d=t.dataset,
   if(d.coQp!=null&&j){const x=j.trabajos[+d.coQp];x.qp=x.qp||{};x.qp[d.p]=num(t.value);coSucio();coCalc();return}
   if(d.coGe&&st.co.ge){st.co.ge[d.coGe]=t.value;return}
   if(d.coGm!=null&&st.co.ge){st.co.ge.miembros[+d.coGm].n=t.value;return}}
+$('#main').addEventListener('click',e=>{const b=e.target.closest('[data-costep]');if(!b||!st.co.ed)return;const x=st.co.ed.trabajos[+b.dataset.costep],u=b.dataset.u;if(!x)return;x[u]=Math.max(0,(+x[u]||0)+ +b.dataset.n);coSucio();const el=$('#ct_'+u+'_'+b.dataset.costep);if(el)el.value=inVal(x[u]);coCalc()});
 $('#main').addEventListener('input',onCoInput);$('#main').addEventListener('change',onCoInput);
 
 /* ---------- Personal de campo: asistencia con foto, ficha del trabajador, incidencias, tareas y mensajes ---------- */
@@ -6769,32 +6778,46 @@ function fincaCerca(lat,lon){if(lat==null||lon==null)return null;let m=null;for(
 const lugarTxt=e=>{if(!e||e.lat==null)return 'sin ubicación';const f=fincaCerca(e.lat,e.lon);return f?(f.km<=3?f.nombre:'a '+fmt(f.km,1)+' km de '+f.nombre):fmt(e.lat,4)+', '+fmt(e.lon,4)};
 const posicion=alta=>new Promise((res,rej)=>{if(!navigator.geolocation){rej({code:'nogps'});return}navigator.geolocation.getCurrentPosition(p=>res({lat:+p.coords.latitude.toFixed(6),lon:+p.coords.longitude.toFixed(6),prec:Math.round(p.coords.accuracy||0)}),e=>rej({code:e&&e.code===1?'permiso':'gps'}),{enableHighAccuracy:!!alta,timeout:alta?20000:15000,maximumAge:alta?0:60000})});
 async function loadFich(){if(!fichOk())return;if(!$('#sp_fich')&&$('#sp_res')){const s=document.createElement('section');s.className='card';s.id='sp_fich';$('#sp_res').before(s)}try{const s=await NUBE.db.doc('fichajes/'+fichId(miEmail(),hoy())).get();st.fich=s.exists?s.data():{eventos:[]}}catch(e){st.fich=st.fich||{eventos:[]}}const el=$('#sp_fich');if(el)el.innerHTML=fichajeHTML();if(['ubic','cubic'].includes(st.tab))renderMain();ubEnviar(true)}
-const jornadaAbierta=d=>{const ev=(d&&d.eventos)||[];return !!(ev.length&&ev[ev.length-1].tipo==='entrada')};
+const jornadaAbierta=d=>{const ev=(d&&d.eventos)||[];return !!(ev.length&&ev[ev.length-1].tipo!=='salida')};
+const enDescanso=d=>{const ev=(d&&d.eventos)||[];return !!(ev.length&&ev[ev.length-1].tipo==='pausa')};
 /* Horas trabajadas de un día: suma de los tramos entrada → salida (el último, si sigue abierto, hasta ahora) */
-function horasDia(d,abiertoHasta){let ms=0,ini=null;for(const e of (d&&d.eventos)||[]){if(e.tipo==='entrada')ini=Date.parse(e.ts);else if(e.tipo==='salida'&&ini!=null){ms+=Date.parse(e.ts)-ini;ini=null}}if(ini!=null&&abiertoHasta)ms+=abiertoHasta-ini;return ms/36e5}
+function horasDia(d,abiertoHasta){let ms=0,ini=null;for(const e of (d&&d.eventos)||[]){if(e.tipo==='entrada'||e.tipo==='vuelta')ini=Date.parse(e.ts);else if((e.tipo==='salida'||e.tipo==='pausa')&&ini!=null){ms+=Date.parse(e.ts)-ini;ini=null}}if(ini!=null&&abiertoHasta)ms+=abiertoHasta-ini;return ms/36e5}
 const hmTxt=h=>h==null?'—':Math.floor(h)+' h '+String(Math.round((h%1)*60)).padStart(2,'0')+' min';
 const horaDe=ts=>new Date(ts).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
-function fichajeHTML(){if(!fichOk())return '';const d=st.fich;if(!d)return `<div><h3>Jornada</h3></div><div class="note">Cargando…</div>`;
-  const ev=d.eventos||[],ab=jornadaAbierta(d),ent=ev.filter(e=>e.tipo==='entrada'),u=ev[ev.length-1];
-  let h=`<div class="tank-h"><div><h3>Jornada de hoy</h3><div class="sub">${ev.length?ab?`Trabajando desde las ${horaDe(ent[ent.length-1].ts)} · ${esc(lugarTxt(ent[ent.length-1]))}`:`Has salido a las ${horaDe(u.ts)} · ${hmTxt(horasDia(d))}`:'Sin fichar todavía'}</div></div>
-    ${ab?`<span class="pill ok">${hmTxt(horasDia(d,Date.now()))}</span>`:''}</div>`;
-  if(st.ubAviso)return h+`<div class="banner">${esc(UB_AVISO)}</div><div class="row"><button class="btn pri" data-act="fi-ok" data-t="${st.ubAviso}">Entendido, fichar ${st.ubAviso}</button><button class="btn" data-act="fi-no">Cancelar</button></div>`;
-  h+=`<div class="row"><button class="btn pri" data-act="fi-fichar" data-t="${ab?'salida':'entrada'}" ${st.ubBusy?'disabled':''}>${st.ubBusy?'Buscando tu ubicación…':ab?'Fichar salida':'Fichar entrada'}</button></div>`;
-  if(ev.length>1||(ev.length&&!ab))h+=`<div class="note">${ev.map(e=>`${e.tipo==='entrada'?'Entrada':'Salida'} ${horaDe(e.ts)}`).join(' · ')}</div>`;
-  if(ab)h+=`<div class="note">Mientras tengas la jornada abierta y la app abierta, los encargados ven dónde estás. Al fichar la salida se deja de registrar.</div>`;
-  return h}
+const FI_TXT={entrada:'entrada',salida:'salida',pausa:'el descanso',vuelta:'la vuelta del descanso'};
+function fiLinea(ev){const L=[];ev.forEach((e,k)=>{if(e.tipo==='vuelta')return;if(e.tipo==='pausa'){const v=ev.slice(k+1).find(x=>x.tipo==='vuelta'||x.tipo==='salida');L.push(['pausa','Descanso',horaDe(e.ts)+' – '+(v?horaDe(v.ts):'…')])}else L.push([e.tipo,e.tipo==='entrada'?'Entrada':'Salida',horaDe(e.ts)])});return L}
+function fichajeHTML(grande){if(!fichOk())return '';const d=st.fich;if(!d)return `<div><h3>Jornada</h3></div><div class="note">Cargando…</div>`;
+  const ev=d.eventos||[],ab=jornadaAbierta(d),dsc=enDescanso(d),ent=ev.filter(e=>e.tipo==='entrada'),u=ev[ev.length-1],busy=st.ubBusy;
+  const sub=ev.length?ab?(dsc?`En descanso desde las ${horaDe(u.ts)}`:`Trabajando desde las ${horaDe(ent[ent.length-1].ts)} · ${esc(lugarTxt(ent[ent.length-1]))}`):`Has salido a las ${horaDe(u.ts)} · ${hmTxt(horasDia(d))}`:'Sin fichar todavía';
+  if(st.ubAviso)return `<div><h3>Jornada de hoy</h3></div><div class="banner">${esc(UB_AVISO)}</div><div class="row"><button class="btn pri" data-act="fi-ok" data-t="${st.ubAviso}">Entendido, fichar ${FI_TXT[st.ubAviso]||st.ubAviso}</button><button class="btn" data-act="fi-no">Cancelar</button></div>`;
+  const pausa=ab?`<button class="${grande?'pt-b':'btn'}" data-act="fi-pausa" data-t="${dsc?'vuelta':'pausa'}" ${busy?'disabled':''}>${grande?`<span class="pt-ic ${dsc?'go':'pau'}">${dsc?'▶':'❚❚'}</span><b>${dsc?'Volver del descanso':'Descanso'}</b>`:dsc?'Volver del descanso':'Descanso'}</button>`:'';
+  if(!grande){let h=`<div class="tank-h"><div><h3>Jornada de hoy</h3><div class="sub">${sub}</div></div>${ab?`<span class="pill ${dsc?'warn':'ok'}">${dsc?'Descanso':hmTxt(horasDia(d,Date.now()))}</span>`:''}</div>`;
+    h+=`<div class="row"><button class="btn pri" data-act="fi-fichar" data-t="${ab?'salida':'entrada'}" ${busy?'disabled':''}>${busy?'Buscando tu ubicación…':ab?'Fichar salida':'Fichar entrada'}</button>${pausa}</div>`;
+    if(ev.length>1||(ev.length&&!ab))h+=`<div class="note">${fiLinea(ev).map(x=>x[1]+' '+x[2]).join(' · ')}</div>`;
+    if(ab)h+=`<div class="note">Mientras tengas la jornada abierta y la app abierta, los encargados ven dónde estás. Al fichar la salida se deja de registrar.</div>`;
+    return h}
+  const hh=hmTxt(horasDia(d,ab&&!dsc?Date.now():null));
+  return `<div class="pt"><div class="pt-top">${avatarHTML({n:yoNombre()})}<div><b>${esc(yoNombre())}</b><small>${esc(fFecha(hoy()))}</small></div><span class="pill ${ab?(dsc?'warn':'ok'):'nd'}">${ab?(dsc?'En descanso':'Turno abierto'):ev.length?'Jornada terminada':'Sin fichar'}</span></div>
+    <button class="pt-main${ab?' fin':''}" data-act="fi-fichar" data-t="${ab?'salida':'entrada'}" ${busy?'disabled':''}><span class="pt-circ">${ab?'■':'▶'}</span><b>${busy?'Buscando tu ubicación…':ab?'Terminar jornada':ev.length?'Volver a entrar':'Empezar jornada'}</b><small id="pt_h">${ab?(dsc?'En descanso · '+hh+' trabajadas':hh+' trabajadas'):ev.length?hh+' trabajadas hoy':'Toca para fichar la entrada'}</small></button>
+    ${pausa?`<div class="pt-row">${pausa}</div>`:''}
+    ${ev.length?`<ol class="pt-tl">${fiLinea(ev).map(([t,l,h])=>`<li class="${t}"><i></i><span>${l}</span><b>${h}</b></li>`).join('')}</ol>`:''}
+    <div class="note">${sub}${ab?'. Mientras tengas la jornada abierta y la app abierta, los encargados ven dónde estás.':''}</div></div>`}
+setInterval(()=>{const el=$('#pt_h'),d=st.fich;if(el&&d&&jornadaAbierta(d)&&!enDescanso(d))el.textContent=hmTxt(horasDia(d,Date.now()))+' trabajadas'},30000);
+/* Lo que me toca hacer hoy: los tratamientos que me han mandado */
+function otMiasHTML(){if(!miEmail())return '';if(st.ot.list===null){otLoad();return ''}const L=st.ot.list.filter(o=>o.para===miEmail()&&!o.hecha);if(!L.length)return '';const tab=areaDe(st.tab)==='campo'?'cotrat':'otrat';
+  return `<section class="card"><div><h3>Tratamientos que te han mandado</h3><div class="sub">Toca para ver la dosis y marcarlo hecho</div></div><div class="mlist">${L.map(o=>{const lg=o.idioma||'es';return `<button class="mrow" data-tab="${tab}"><span class="mt" lang="${lg}" dir="${lg==='ar'?'rtl':'ltr'}"><b>${esc(otT(lg).trat)}: ${esc(o.prod)}</b><small>${esc(otResumen(o,lg))}</small></span></button>`}).join('')}</div></section>`}
 async function fichar(tipo){if(st.ubBusy||!fichOk())return;let ok=false;try{ok=localStorage.getItem('abono.ubic.aviso.'+miEmail())==='1'}catch(e){}
   if(!ok){st.ubAviso=tipo;fiRefrescar();return}
-  st.ubBusy=true;fiRefrescar();let p=null,err=null;try{p=await posicion(true)}catch(e){err=e.code}
-  const now=new Date(),ev={tipo,ts:now.toISOString(),...(p||{}),...(p?{}:{sinUbic:err||'gps'})},f=fincaCerca(p&&p.lat,p&&p.lon);if(f&&f.km<=3)ev.finca=f.id;
+  const gps=tipo==='entrada'||tipo==='salida';st.ubBusy=true;fiRefrescar();let p=null,err=null;if(gps)try{p=await posicion(true)}catch(e){err=e.code}
+  const now=new Date(),ev={tipo,ts:now.toISOString(),...(p||{}),...(p||!gps?{}:{sinUbic:err||'gps'})},f=fincaCerca(p&&p.lat,p&&p.lon);if(f&&f.km<=3)ev.finca=f.id;
   try{const ref=NUBE.db.doc('fichajes/'+fichId(miEmail(),hoy()));let d=null;try{const s=await ref.get();d=s.exists?s.data():null}catch(e){}
     const doc={email:miEmail(),nombre:yoNombre(),fecha:hoy(),eventos:[...((d&&d.eventos)||[]),ev],mod:ahoraISO()};await ref.set(doc);st.fich=doc;
     if(tipo==='entrada'&&p)await NUBE.db.doc('posiciones/'+miEmail()).set({email:miEmail(),nombre:yoNombre(),lat:p.lat,lon:p.lon,prec:p.prec,ts:now.toISOString(),activo:true,finca:ev.finca||''});
     if(tipo==='salida')await NUBE.db.doc('posiciones/'+miEmail()).set({email:miEmail(),nombre:yoNombre(),lat:null,lon:null,prec:null,ts:now.toISOString(),activo:false,finca:''});
-    ubUlt=Date.now();toast((tipo==='entrada'?'Entrada':'Salida')+' fichada a las '+horaDe(ev.ts)+(p?'':' (sin ubicación: '+(err==='permiso'?'da permiso de ubicación a la app':'el GPS no respondió')+')'))}
+    ubUlt=Date.now();if(!gps)toast((tipo==='pausa'?'Descanso desde las ':'Vuelta del descanso a las ')+horaDe(ev.ts));else toast((tipo==='entrada'?'Entrada':'Salida')+' fichada a las '+horaDe(ev.ts)+(p?'':' (sin ubicación: '+(err==='permiso'?'da permiso de ubicación a la app':'el GPS no respondió')+')'))}
   catch(e){toast(errMsg(e))}
   st.ubBusy=false;fiRefrescar();if(st.ubEq)loadUbEq()}
-function fiRefrescar(){const el=$('#sp_fich');if(el)el.innerHTML=fichajeHTML();if(['ubic','cubic'].includes(st.tab))renderMain()}
+function fiRefrescar(){const el=$('#sp_fich');if(el)el.innerHTML=fichajeHTML();const m=$('#ub_mia');if(m&&!['ubic','cubic'].includes(st.tab))m.innerHTML=fichajeHTML(true);if(['ubic','cubic'].includes(st.tab))renderMain()}
 /* Posición cada 5 minutos, solo con la jornada abierta y la app en pantalla */
 let ubUlt=0;
 async function ubEnviar(forzar){if(!fichOk()||!jornadaAbierta(st.fich)||document.hidden)return;if(!forzar&&Date.now()-ubUlt<4.5*60e3)return;if(forzar&&Date.now()-ubUlt<60e3)return;ubUlt=Date.now();
@@ -6817,12 +6840,12 @@ function ubMapa(pts){const el=document.getElementById('ubmapa');if(!el)return;co
     pts.map(p=>{const q=lonLatPx(p.lat,p.lon,z),viejo=Date.now()-Date.parse(p.ts)>20*60e3;return `<span class="ubp${viejo?' viejo':''}" style="left:${Math.round(q.x-x0)}px;top:${Math.round(q.y-y0)}px"><i></i><b>${esc((p.nombre||p.email).split(' ')[0])}</b></span>`}).join('')+
     `<span class="attr">Ortofoto PNOA © IGN · © OpenStreetMap</span>`}
 function vUbic(){for(const k in G)delete G[k];if(!fichOk())return `<section class="card"><div class="note">Fichar necesita la app con tu cuenta.</div></section>`;
-  if(st.fich===null)loadFich();let h=`<section class="card" id="ub_mia">${fichajeHTML()}</section>`;if(!esGestor())return h;
+  if(st.fich===null)loadFich();let h=`<section class="card" id="ub_mia">${fichajeHTML(true)}</section>`+otMiasHTML();if(!esGestor())return h;
   if(st.ubEq===null){loadUbEq();return h+'<div class="card"><div class="note">Cargando el equipo…</div></div>'}
   const E=st.ubEq,ahora=Date.now(),act=E.pos.filter(p=>p.activo&&p.lat!=null),gente=[{email:miEmail(),nombre:yoNombre()},...equipo()];
   const fi=e=>E.fich.find(x=>x.email===e),po=e=>E.pos.find(x=>x.email===e);
   const filas=gente.map(u=>{const d=fi(u.email),p=po(u.email),ab=jornadaAbierta(d),ev=(d&&d.eventos)||[],ent=ev.find(e=>e.tipo==='entrada'),sal=[...ev].reverse().find(e=>e.tipo==='salida');
-    return{u,d,p,ab,est:ab?'ok':ev.length?'nd':'',txt:ab?'Trabajando':ev.length?'Ha salido':'Sin fichar',ent,sal,h:d?horasDia(d,ab?ahora:null):null}}).sort((a,b)=>(b.ab-a.ab)||((b.d?1:0)-(a.d?1:0))||a.u.nombre.localeCompare(b.u.nombre));
+    return{u,d,p,ab,est:ab?(enDescanso(d)?'warn':'ok'):ev.length?'nd':'',txt:ab?(enDescanso(d)?'En descanso':'Trabajando'):ev.length?'Ha salido':'Sin fichar',ent,sal,h:d?horasDia(d,ab?ahora:null):null}}).sort((a,b)=>(b.ab-a.ab)||((b.d?1:0)-(a.d?1:0))||a.u.nombre.localeCompare(b.u.nombre));
   const n=filas.filter(f=>f.ab).length;
   h+=`<section class="card"><div class="tank-h"><div><h3>Dónde está el equipo</h3><div class="sub">${n} ${n===1?'persona trabajando':'personas trabajando'} · actualizado a las ${horaDe(E.t)}</div></div><button class="btn" data-act="ub-reload">Actualizar</button></div>
     <div class="radar ubmapa" id="ubmapa"></div>
@@ -6835,14 +6858,14 @@ function vUbic(){for(const k in G)delete G[k];if(!fichOk())return `<section clas
 async function ubExcel(){const m=st.ubMes||hoy().slice(0,7),prev=isoD(new Date(Date.parse(m+'-01T12:00:00')-864e5));let docs=[];
   try{docs=(await NUBE.db.collection('fichajes').where('fecha','>',prev).get()).docs.map(d=>d.data()).filter(d=>d.fecha.slice(0,7)===m)}catch(e){toast(errMsg(e));return}
   docs.sort((a,b)=>a.fecha<b.fecha?-1:a.fecha>b.fecha?1:(a.nombre||'').localeCompare(b.nombre||''));
-  const r1=[['Fecha','Persona','Correo','Entrada','Lugar entrada','Salida','Lugar salida','Horas']],tot={};
-  for(const d of docs){let ini=null;for(const e of d.eventos||[]){if(e.tipo==='entrada')ini=e;else if(e.tipo==='salida'){const h=ini?(Date.parse(e.ts)-Date.parse(ini.ts))/36e5:'';r1.push([fD(d.fecha),d.nombre||'',d.email,ini?horaDe(ini.ts):'',ini?lugarTxt(ini):'',horaDe(e.ts),lugarTxt(e),h===''?'':+h.toFixed(2)]);if(h!=='')tot[d.email]={n:d.nombre||d.email,h:((tot[d.email]||{}).h||0)+h,dias:new Set([...(((tot[d.email]||{}).dias)||[]),d.fecha])};ini=null}}
-    if(ini)r1.push([fD(d.fecha),d.nombre||'',d.email,horaDe(ini.ts),lugarTxt(ini),'sin salida','',''])}
+  const r1=[['Fecha','Persona','Correo','Entrada','Lugar entrada','Salida','Lugar salida','Descanso (min)','Horas']],tot={};
+  for(const d of docs){let ini=null,pz=null,dsc=0;for(const e of d.eventos||[]){if(e.tipo==='entrada'){ini=e;dsc=0;pz=null}else if(e.tipo==='pausa')pz=e;else if(e.tipo==='vuelta'){if(pz)dsc+=Date.parse(e.ts)-Date.parse(pz.ts);pz=null}else if(e.tipo==='salida'){if(pz){dsc+=Date.parse(e.ts)-Date.parse(pz.ts);pz=null}const h=ini?(Date.parse(e.ts)-Date.parse(ini.ts)-dsc)/36e5:'';r1.push([fD(d.fecha),d.nombre||'',d.email,ini?horaDe(ini.ts):'',ini?lugarTxt(ini):'',horaDe(e.ts),lugarTxt(e),Math.round(dsc/6e4)||'',h===''?'':+h.toFixed(2)]);if(h!=='')tot[d.email]={n:d.nombre||d.email,h:((tot[d.email]||{}).h||0)+h,dias:new Set([...(((tot[d.email]||{}).dias)||[]),d.fecha])};ini=null}}
+    if(ini)r1.push([fD(d.fecha),d.nombre||'',d.email,horaDe(ini.ts),lugarTxt(ini),'sin salida','','',''])}
   const r2=[['Persona','Días','Horas']];for(const t of Object.values(tot).sort((a,b)=>a.n.localeCompare(b.n)))r2.push([t.n,t.dias.size,+t.h.toFixed(2)]);
   const tit='Registro de jornada · '+mesTxt(m),sh=(name,rows)=>({name,rows:[[tit+' · '+name],[],...rows],bold:[0,2]});
   await saveBlob(xlsxBlob([sh('Fichajes',r1),sh('Por persona',r2)]),`registro-jornada-${m}.xlsx`)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act^="fi-"],[data-act^="ub-"]');if(!b)return;const a=b.dataset.act;
-  if(a==='fi-fichar')fichar(b.dataset.t);
+  if(a==='fi-fichar'||a==='fi-pausa')fichar(b.dataset.t);
   else if(a==='fi-ok'){try{localStorage.setItem('abono.ubic.aviso.'+miEmail(),'1')}catch(_){}const t=st.ubAviso;st.ubAviso=false;fichar(t)}
   else if(a==='fi-no'){st.ubAviso=false;fiRefrescar()}
   else if(a==='ub-reload')loadUbEq();
