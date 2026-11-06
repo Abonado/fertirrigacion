@@ -50,7 +50,7 @@ async def main():
         t = (await pg.locator('#main').inner_text()).upper(); print(t[:1200])
         assert 'AHORA EN EL UCROP' in t and '3 RIEGOS' in t and 'DRENA 9 %' in t and 'CORTE 245' in t and '(ANTES 150, +95)' in t
         assert 'DATOS DEL UCROP: ÚLTIMA LECTURA' in t and '(DEL UCROP)' in t
-        assert 'REGANDO AHORA: SECTOR 4 (ENCAÑE) · VÁLVULA 4 · 05:42 DE 08:00 · EN ESPERA: SEO3ALTO 08:38:00' in t, 'lo que riega ahora'
+        assert 'REGANDO AHORA\nSECTOR 4 (ENCAÑE)\nVÁLVULA 4 · 05:42 DE 08:00 · 3,0 M³/H · EN ESPERA: SEO3ALTO 08:38:00' in t, 'lo que riega ahora'
         assert 'AVISARME AL MÓVIL CADA VEZ QUE EMPIECE UN RIEGO' in t
         await pg.fill('[data-ajav="para"]', 'juanjo.serrano3@gmail.com, encargado@demo.es'); await pg.locator('[data-ajav="para"]').dispatch_event('change'); await pg.wait_for_timeout(200)
         assert await pg.evaluate("st.cfg.avisoRiego.para") == ['juanjo.serrano3@gmail.com', 'encargado@demo.es'] and await pg.locator('#savebar').is_visible()

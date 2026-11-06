@@ -718,7 +718,11 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .ajo-tb{width:100%;border-collapse:collapse;font-size:14px}.ajo-tb th,.ajo-tb td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right}.ajo-tb th:first-child,.ajo-tb td:first-child{text-align:left;color:var(--muted)}.ajo-tb th{font-size:12px;color:var(--muted)}
 .ajr-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;margin:8px 0}.ajr-chips span{border:1px solid var(--line);border-radius:12px;padding:6px 8px;display:grid;font-size:12px;color:var(--muted)}.ajr-chips b{font:700 20px/1.1 var(--f-display);color:var(--ink)}.ajr-chips small{font-size:11px}
 .ajr-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.ajr-h4{margin:14px 0 4px;font-size:13px;letter-spacing:.06em;color:var(--muted)}
-.ajr-big>div.ok{border-color:#2f7a52}.ajr-big>div.ajr-nqb{border-color:#8a5a00}.ajr-nq{margin:8px 0 0}.ajr-vivo{background:#eef3fb;border-radius:10px;padding:6px 10px}.ajr-cola{color:#8a5a00}.ajr-av{border-top:1px solid var(--line);margin-top:10px;padding-top:8px;display:grid;gap:6px}.ajr-big small.ok{color:#2f7a52;font-weight:600}.ajr-big small.bad{color:#b3261e;font-weight:600}
+.ajr-big>div.ok{border-color:#2f7a52}.ajr-big>div.ajr-nqb{border-color:#8a5a00}.ajr-nq{margin:8px 0 0}.ajv{display:flex;align-items:center;gap:12px;border-radius:14px;padding:12px 14px;margin:0 0 12px}.ajv.on{background:#1f7a4c;color:#fff;box-shadow:0 4px 14px rgba(31,122,76,.28)}.ajv.off{background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+.ajv-dot{width:14px;height:14px;border-radius:50%;flex:none;background:currentColor;opacity:.5}.ajv.on .ajv-dot{background:#9bf0c0;opacity:1;animation:ajvp 1.6s ease-out infinite}@keyframes ajvp{0%{box-shadow:0 0 0 0 rgba(155,240,192,.7)}100%{box-shadow:0 0 0 12px rgba(155,240,192,0)}}
+.ajv-t{flex:1;min-width:0;display:grid;gap:2px}.ajv-k{font-size:.72rem;font-weight:800;letter-spacing:.06em;opacity:.85}.ajv-t b{font-size:1.15rem;line-height:1.2}.ajv.on small{color:#e3f6eb}.ajv-h{font-size:.8rem;opacity:.85;flex:none}
+.ajv-bar{height:6px;border-radius:4px;background:rgba(255,255,255,.25);overflow:hidden;margin-top:4px}.ajv-bar i{display:block;height:100%;background:#fff;border-radius:4px}
+@media (prefers-reduced-motion:reduce){.ajv.on .ajv-dot{animation:none}}.ajr-cola{color:#8a5a00}.ajr-av{border-top:1px solid var(--line);margin-top:10px;padding-top:8px;display:grid;gap:6px}.ajr-big small.ok{color:#2f7a52;font-weight:600}.ajr-big small.bad{color:#b3261e;font-weight:600}
 body.teclado .bnav,body.teclado .agbtn{display:none!important}body.teclado.conbn .savebar{bottom:0}
 .bnav,.savebar,.agbtn{translate:0 var(--vvfix,0px)}
 </style>
@@ -1274,11 +1278,22 @@ function ajrObjHTML(R){const sid=R.s.id,o=st.ajrObj[sid],g=esGestor();let h=`<di
   h+=`<div class="note">${esc(X.txt)}${X.ce?` Calculado con el ${esc(fFecha(X.ce.c.f))}: riego ${fmt(X.ce.c.ceI,2)} mS/cm, drenaje ${fmt(X.ce.c.D,0)} % a ${fUS(X.ce.c.ceD)} µS/cm.`:''} Tarda 2 o 3 días en notarse en el drenaje.</div>`;
   if(g&&(X.dren!=null||X.pulso!=null))h+=`<div class="row"><button class="btn sm pri" type="button" data-ajap="${o}" data-sec="${sid}">Usar esto en el cálculo de ${esc(R.s.nombre)}</button></div>`;
   return (h+`</div>`).replace(/(µS\/cm|mS\/cm)/g,'<span class="nt">$1</span>')}
+/* Barra de arriba: qué riega ahora, cuánto lleva y qué espera. Se actualiza sola cada minuto con el lector del PC del cabezal. */
+const ajrSeg=t=>{const m=/^(\d+):(\d+)(?::(\d+))?$/.exec(String(t||'').trim());if(!m)return null;return m[3]!=null?(+m[1])*3600+(+m[2])*60+(+m[3]):(+m[1])*60+(+m[2])};
+const ajrMin=t=>String(t||'').replace(/^00:/,'');
+function ajrVivoHTML(c){const u=ucrDia(c.id,hoy());if(!u)return '';const E=u.v&&u.v.estado,hace=Math.round((Date.now()-u.t)/60000),hh=new Date(u.t).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  if(!E||hace>20)return `<div class="ajv off"><span class="ajv-dot"></span><div class="ajv-t"><b>Sin datos de la máquina</b><small>Última lectura del uCrop a las ${hh}${hace>20?` (hace ${hace>=120?Math.round(hace/60)+' h':hace+' min'})`:''}: mira que el PC del cabezal esté encendido con la pestaña abierta</small></div></div>`;
+  if(!E.regando)return `<div class="ajv off"><span class="ajv-dot"></span><div class="ajv-t"><b>Ahora no está regando</b><small>${E.espera?'En espera: '+esc(E.espera)+' · ':''}lectura de las ${hh}</small></div></div>`;
+  const a=ajrSeg(E.t),b=ajrSeg(E.tt),pc=a!=null&&b?Math.max(0,Math.min(100,a/b*100)):null;
+  return `<div class="ajv on" role="status"><span class="ajv-dot"></span><div class="ajv-t"><span class="ajv-k">Regando ahora</span><b>${esc(ajrProg(E.prog))}</b><small>${[E.valv?(/^\d+$/.test(String(E.valv).trim())?'Válvula ':'')+esc(E.valv):'',E.t?`${esc(ajrMin(E.t))}${E.tt?' de '+esc(ajrMin(E.tt)):''}`:'',E.act!=null?fmt(E.act,1)+' m³/h':'',E.espera?'en espera: '+esc(E.espera):''].filter(Boolean).join(' · ')}</small>
+    ${pc!=null?`<div class="ajv-bar" aria-label="Lleva el ${fmt(pc,0)} % del riego"><i style="width:${pc.toFixed(1)}%"></i></div>`:''}</div><span class="ajv-h">${hh}</span></div>`}
 function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();lecCargar();const c=cabById(st.cab);if(!c)return '';const k=ajrKey(st.cab),Wc=st.ajrW[k];if(!Wc||(!Wc.dias&&!Wc.fallo&&!Wc.cargando))ajrCargar(st.cab);
   const C=ajrCfg(st.cab),MOD=ajrModelo(st.cab),RS=c.sectores.map(s=>ajrCalc(st.cab,s,MOD)),g=esGestor(),dis=g?'':'disabled',fdia=f=>fFecha(f).replace(/^\w/,x=>x.toUpperCase()),W=(Wc&&Wc.dias)||{};
   const wh=W[hoy()],ok=RS.filter(R=>!R.poco&&R.hoy),vuelta=RS.reduce((a,R)=>a+(R.pulso||0),0),n0=v=>fmt(v,v%1?1:0);
+  // ---- 0. Lo que está regando ahora mismo (lector del uCrop)
+  let h=ajrVivoHTML(c);
   // ---- 1. Hoy: el tiempo, la planta y el programa
-  let h=`<section class="card"><div><h3>Hoy en ${esc(c.nombre)}</h3><div class="sub">Lo que va a pedir la planta y cómo poner la máquina, sector a sector</div></div>`;
+  h+=`<section class="card"><div><h3>Hoy en ${esc(c.nombre)}</h3><div class="sub">Lo que va a pedir la planta y cómo poner la máquina, sector a sector</div></div>`;
   if(Wc&&Wc.fallo&&!Wc.dias)h+=`<div class="note">No se pudo traer el tiempo. Comprueba la conexión.</div><div class="row"><button class="btn" data-ajr="recargar">Reintentar</button></div>`;
   const PL=ajrPlanta(st.cab,hoy()),PL7=ajrPlanta(st.cab,sumaDias(hoy(),-7));
   if(wh){h+=`<div class="ajr-chips"><span><small>Sol del día</small><b>${fmt(aWh(wh.R),0)}</b> Wh/m²</span><span><small>Máxima</small><b>${fmt(wh.Tx,0)}</b> °C</span><span><small>Viento</small><b>${fmt(wh.V,0)}</b> km/h</span>${PL?`<span><small>Planta</small><b>${fmt(PL.p.altura/100,2)}</b> m</span>`:''}</div>`;
@@ -1294,7 +1309,6 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
   else if(RS.some(R=>R.kSrc==='hoy'))h+=`<div class="note">La radiación del uCrop se compara de momento con lo que lleva hoy; con unos días enteros leídos del uCrop el cálculo afina solo.</div>`;
   else if(RS.every(R=>R.kSrc!=='maquina'))h+=`<div class="note">Sin datos del uCrop todavía: con el lector en el PC del cabezal, la app usa la radiación, los riegos y el drenaje de la máquina sin apuntar nada.</div>`;
   const uH=ucrDia(st.cab,hoy()),E=uH&&uH.v.estado,hace=uH?Math.round((Date.now()-uH.t)/60000):null;
-  if(E&&hace<=20)h+=E.regando?`<p class="ajr-p ajr-vivo"><b>Regando ahora:</b> ${esc(ajrProg(E.prog))}${E.valv?' · '+esc(E.valv):''}${E.t?` · ${esc(E.t.replace(/^00:/,''))} de ${esc((E.tt||'').replace(/^00:/,''))}`:''}${E.espera?` · en espera: ${esc(E.espera)}`:''}</p>`:`<p class="ajr-p">Ahora no está regando.</p>`;
   const ut=(ucrDia(st.cab,hoy())||{}).t;if(ut)h+=`<div class="note">Datos del uCrop: última lectura a las ${new Date(ut).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}.</div>`;
   h+=`</section>`;
   // ---- 2. Un recuadro por sector
@@ -3895,7 +3909,7 @@ const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633]
 };
 const ITIPOS={plaga:['Plaga','#c0392b','P'],enfermedad:['Enfermedad','#7d3c98','E'],riego:['Riego / goteo','#1f78c1','R'],estructura:['Estructura / plástico','#d35400','S'],nutricion:['Nutrición','#8a9a1b','N'],otro:['Otro','#566573','O']};
 const IPRIO={alta:['Alta','bad'],media:['Media','warn'],baja:['Baja','ok']};
-st.inc=null;st.mz=1;st.mSel=null;st.mNueva=null;st.mFil='abiertas';st.mRes=null;
+st.inc=null;st.mz=1;st.mSel=null;st.mNueva=null;st.mapFil='abiertas';st.mRes=null;
 let incLoading=false;
 async function loadInc(){if(incLoading)return;incLoading=true;try{st.inc=await Store.listCol('incidencias',0)}catch(e){st.inc=st.inc||[]}incLoading=false;try{renderGrupos()}catch(e){}if(st.tab==='mapa')renderMain()}
 const incVisible=i=>!restringido()||fincasVis().some(f=>f.cabezales.includes(i.cab));
@@ -3935,7 +3949,7 @@ function planoSVG(cab,incs){const M=MAPAS[cab],[vx,vy,vw,vh]=M.vb;let s=`<svg vi
   // focos de plaga y enfermedad: mancha de color alrededor (más grande y más roja cuanto más grave)
   for(const i of incs.filter(plgFoco))s+=`<circle class="foco" cx="${i.x.toFixed(1)}" cy="${(i.y-8).toFixed(1)}" r="${i.prio==='alta'?78:i.prio==='media'?60:46}" fill="url(#mpFoco${i.prio==='alta'?'A':i.prio==='baja'?'B':'M'})" pointer-events="none"/>`;
   // incidencias
-  for(const i of incs.filter(i=>st.mFil==='todas'||i.estado!=='resuelta')){const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta',sel=st.mSel===i.id,k=sel?1.35:1,col=res?'#9aa3a8':t[1];
+  for(const i of incs.filter(i=>st.mapFil==='todas'||i.estado!=='resuelta')){const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta',sel=st.mSel===i.id,k=sel?1.35:1,col=res?'#9aa3a8':t[1];
     s+=`<g class="mpin${sel?' sel':''}" data-inc="${i.id}" transform="translate(${i.x.toFixed(1)} ${i.y.toFixed(1)}) scale(${k})" filter="url(#mpSh)">${i.prio==='alta'&&!res?'<circle r="20" cy="-30" fill="none" stroke="#c0392b" stroke-width="3" class="mpulse"/>':''}<path d="M0 0C-4 -10 -15 -18 -15 -30A15 15 0 1 1 15 -30C15 -18 4 -10 0 0Z" fill="${col}" stroke="#fff" stroke-width="2.5"/><text y="-24" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${res?'✓':t[2]}</text><circle r="34" cy="-25" fill="transparent"/></g>`}
   if(st.mNueva&&st.mNueva.x!=null)s+=`<g transform="translate(${st.mNueva.x.toFixed(1)} ${st.mNueva.y.toFixed(1)})"><circle r="10" fill="none" stroke="#1b2f4a" stroke-width="3"/><circle r="22" fill="none" stroke="#1b2f4a" stroke-width="2" stroke-dasharray="4 4"/><line x1="-30" x2="-14" stroke="#1b2f4a" stroke-width="3"/><line x1="14" x2="30" stroke="#1b2f4a" stroke-width="3"/><line y1="-30" y2="-14" stroke="#1b2f4a" stroke-width="3"/><line y1="14" y2="30" stroke="#1b2f4a" stroke-width="3"/></g>`;
   // norte y cajetín
@@ -3953,7 +3967,7 @@ function vMapa(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
     <div class="mapwrap" id="mapwrap"><div class="mapin" style="width:${st.mz*100}%">${planoSVG(cab,incs)}</div></div>
     <div class="mley">${Object.entries(ITIPOS).map(([k,t])=>`<span><i style="background:${t[1]}">${t[2]}</i>${t[0]}</span>`).join('')}</div>
     ${esGestor()?(st.mPas?`<div class="panel"><div><h3>Pasillos de cada nave</h3><div class="sub">Cuántos tiene y desde qué lado se empiezan a contar</div></div>${M.naves.map(nv=>{const c=pasCfg(cab,nv);return `<div class="row" style="align-items:flex-end"><b style="min-width:70px">Nave ${nv.n}</b><div class="field"><label>Pasillos</label><div class="inp sm"><input data-mpas="n" data-nave="${nv.n}" inputmode="numeric" value="${c.n}"></div></div><label class="chk"><input type="checkbox" data-mpas="inv" data-nave="${nv.n}" ${c.otro?'checked':''}> Contar desde el otro lado</label></div>`}).join('')}<div class="row"><button class="btn pri" data-act="mpas-save">Guardar</button><button class="btn" data-act="mpas-no">Cancelar</button></div></div>`:`<div class="row"><button class="btn sm" data-act="mpas">Ajustar pasillos</button></div>`):''}
-    <div class="pick"><button class="chip" data-mfil="abiertas" aria-pressed="${st.mFil==='abiertas'}">Abiertas (${ab.length})</button><button class="chip" data-mfil="todas" aria-pressed="${st.mFil==='todas'}">Todas (${incs.length})</button></div></section>`;
+    <div class="pick"><button class="chip" data-mfil="abiertas" aria-pressed="${st.mapFil==='abiertas'}">Abiertas (${ab.length})</button><button class="chip" data-mfil="todas" aria-pressed="${st.mapFil==='todas'}">Todas (${incs.length})</button></div></section>`;
   if(N)h+=`<section class="card" id="mform"><div><h3>Nueva incidencia${N.x!=null?' · '+lugar(N):''}</h3><div class="sub">${N.x!=null?'Marcada en el plano. Toca otro punto para moverla.':'<b>Toca en el plano la nave donde está</b>'}</div></div>
     <div><div class="lbl">Tipo</div><div class="pick">${Object.entries(ITIPOS).map(([k,t])=>`<button class="chip" data-mtipo="${k}" aria-pressed="${N.tipo===k}">${t[0]}</button>`).join('')}</div></div>
     <div><div class="lbl">Prioridad</div><div class="pick">${Object.entries(IPRIO).map(([k,t])=>`<button class="chip" data-mprio="${k}" aria-pressed="${N.prio===k}">${t[0]}</button>`).join('')}</div></div>
@@ -3967,13 +3981,13 @@ function vMapa(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
       ${st.mRes===sel.id?`<div class="field"><label for="mi_res">Cómo se ha resuelto (opcional)</label><div class="inp"><input class="wide" id="mi_res" style="width:100%;text-transform:none" autocomplete="off"></div></div><div class="row"><button class="btn pri" data-act="mi-res-ok" data-id="${sel.id}">Marcar resuelta</button><button class="btn" data-act="mi-res-no">Cancelar</button></div>`
       :`<div class="row">${res?`<button class="btn" data-act="mi-abrir" data-id="${sel.id}">Volver a abrir</button>`:`<button class="btn pri" data-act="mi-res" data-id="${sel.id}">Resolver</button><button class="btn" data-act="mi-tarea" data-id="${sel.id}">Crear tarea</button>${esGestor()&&plgFoco(sel)?`<button class="btn" data-act="plg-trat" data-id="${sel.id}">Mandar tratamiento</button>`:''}`}${puede?(st.confirmMi===sel.id?`<button class="btn danger" data-act="mi-del-yes" data-id="${sel.id}">Sí, borrar</button>`:`<button class="btn" data-act="mi-del" data-id="${sel.id}">Borrar</button>`):''}<button class="btn" data-act="mi-cerrar">Cerrar</button></div>`}</section>`}
   h+=plgFocosHTML(ab);
-  const lista=(st.mFil==='todas'?incs:ab).slice().sort((a,b)=>(a.estado==='resuelta')-(b.estado==='resuelta')||((b.prio==='alta')-(a.prio==='alta'))||(a.ts<b.ts?1:-1));
-  h+=`<section class="card"><div><h3>${st.mFil==='todas'?'Todas las incidencias':'Incidencias abiertas'}</h3><div class="sub">Toca una para verla en el plano</div></div>${lista.length?`<div class="mlist">${lista.map(i=>{const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta';return `<button class="mrow${st.mSel===i.id?' on':''}" data-inc="${i.id}"><span class="mdot" style="background:${res?'#9aa3a8':t[1]}">${res?'✓':t[2]}</span><span class="mt"><b>${lugar(i)} · ${esc(t[0])}</b><small>${esc((i.txt||'Sin descripción').slice(0,90))}</small></span><span class="mr"><span class="pill ${res?'ok':(IPRIO[i.prio]||IPRIO.media)[1]}">${res?'Resuelta':(IPRIO[i.prio]||IPRIO.media)[0]}</span><small>${esc(fCorta(i.fecha))}</small></span></button>`}).join('')}</div>`:'<div class="note">Nada por aquí. Toca una nave en el plano para apuntar una incidencia.</div>'}</section>`;
+  const lista=(st.mapFil==='todas'?incs:ab).slice().sort((a,b)=>(a.estado==='resuelta')-(b.estado==='resuelta')||((b.prio==='alta')-(a.prio==='alta'))||(a.ts<b.ts?1:-1));
+  h+=`<section class="card"><div><h3>${st.mapFil==='todas'?'Todas las incidencias':'Incidencias abiertas'}</h3><div class="sub">Toca una para verla en el plano</div></div>${lista.length?`<div class="mlist">${lista.map(i=>{const t=ITIPOS[i.tipo]||ITIPOS.otro,res=i.estado==='resuelta';return `<button class="mrow${st.mSel===i.id?' on':''}" data-inc="${i.id}"><span class="mdot" style="background:${res?'#9aa3a8':t[1]}">${res?'✓':t[2]}</span><span class="mt"><b>${lugar(i)} · ${esc(t[0])}</b><small>${esc((i.txt||'Sin descripción').slice(0,90))}</small></span><span class="mr"><span class="pill ${res?'ok':(IPRIO[i.prio]||IPRIO.media)[1]}">${res?'Resuelta':(IPRIO[i.prio]||IPRIO.media)[0]}</span><small>${esc(fCorta(i.fecha))}</small></span></button>`}).join('')}</div>`:'<div class="note">Nada por aquí. Toca una nave en el plano para apuntar una incidencia.</div>'}</section>`;
   return h}
 function mapaPunto(e){const svg=$('#mapsvg');if(!svg)return null;const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=svg.getScreenCTM();if(!m)return null;const q=p.matrixTransform(m.inverse());return[q.x,q.y]}
 document.addEventListener('click',e=>{if(st.tab!=='mapa')return;
   const pin=e.target.closest('[data-inc]');if(pin){st.mSel=st.mSel===pin.dataset.inc&&pin.classList.contains('mrow')?null:pin.dataset.inc;st.mNueva=null;st.mRes=null;renderMain();const d=$(pin.classList.contains('mrow')?'#mapwrap':'#mdet');if(d)d.scrollIntoView({behavior:'smooth',block:'nearest'});return}
-  const f=e.target.closest('[data-mfil]');if(f){st.mFil=f.dataset.mfil;renderMain();return}
+  const f=e.target.closest('[data-mfil]');if(f){st.mapFil=f.dataset.mfil;renderMain();return}
   const ti=e.target.closest('[data-mtipo]');if(ti&&st.mNueva){st.mNueva.tipo=ti.dataset.mtipo;renderMain();return}
   const pr=e.target.closest('[data-mprio]');if(pr&&st.mNueva){st.mNueva.prio=pr.dataset.mprio;renderMain();return}
   if(e.target.closest('#mapsvg')){const pt=mapaPunto(e),M=MAPAS[st.cab];if(!pt||!M)return;const nv=M.naves.find(n=>dentro(pt,n.p));if(!nv){toast('Toca dentro de una nave');return}const pas=pasDe(st.cab,nv,pt);
