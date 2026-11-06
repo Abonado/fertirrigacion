@@ -15,7 +15,7 @@ async def main():
         await pg.reload(); await pg.wait_for_timeout(600)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash();st.finca='pinta';st.tab='taller';renderAll()"); await pg.wait_for_timeout(1500)
-        ops = await pg.locator('[data-tl="q"][data-k="medir"]').all_inner_texts(); print('qué medir:', len(ops)); assert len(ops) == 10
+        ops = await pg.locator('[data-tl="q"][data-k="medir"]').all_inner_texts(); print('qué medir:', len(ops)); assert len(ops) == 11
         # todos los nodos: esquema, código y caja
         res = await pg.evaluate("""(async()=>{const T=window.TALLER,N=T._.NODOS,out={};for(const k of Object.keys(N)){T.crearNodo(k);const d=st.tl.d;
             const av=T.validar(d),cod=(()=>{const s=document.createElement('div');st.tl.v='ficha';s.innerHTML=T.vista();return (s.querySelector('#tl_cod')||{}).textContent||''})();
@@ -26,7 +26,7 @@ async def main():
             assert not v['malos'], (k, v['malos'])
             assert not v['huecos'], (k, 'quedan huecos en el código', v['huecos'])
             assert v['svg'] and v['tris'][0] > 100 and v['tris'][1] > 20, k
-        assert all(res[k]['cod'] > 500 for k in ['N1', 'N2', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9'])
+        assert all(res[k]['cod'] > 500 for k in ['N1', 'N2', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N10'])
         assert res['N4']['solar'] == 'solar' and res['N7']['solar'] == 'enchufe'
         cod4 = await pg.evaluate("(()=>{window.TALLER.crearNodo('N4');st.tl.v='ficha';const s=document.createElement('div');s.innerHTML=window.TALLER.vista();return s.querySelector('#tl_cod').textContent})()")
         assert '#define I2C_SDA 41' in cod4 and '#define I2C_SCL 42' in cod4

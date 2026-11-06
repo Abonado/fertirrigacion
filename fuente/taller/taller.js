@@ -75,7 +75,7 @@ const PREG=[
   {k:'energia',t:'¿Cómo se alimenta?',ops:[['enchufe','Enchufe cerca (menos de 3 m)'],['solar','Batería y placa solar']]},
   {k:'lugar',t:'¿Dónde va?',ops:[['inv','Dentro del invernadero'],['fuera','Al aire libre']]}
 ];
-function nodoDe(q){return {nivel:'N1',humedad:'N2',ce:'N3',clima:'N4',raiz:'N5',pulsos:'N6',ma:'N7',co2:'N8',bomba:'N9',pasarela:'P'}[q.medir]||null}
+function nodoDe(q){return {nivel:'N1',humedad:'N2',ce:'N3',clima:'N4',raiz:'N5',pulsos:'N6',ma:'N7',co2:'N8',bomba:'N9',valvulas:'N10',pasarela:'P'}[q.medir]||null}
 
 /* ---------- Estado y guardado: en la nube (colección «tldisenos») y una copia en el móvil para abrirlos sin conexión ----------
    nube:true = esa copia ya está en la nube. Lo que solo está en el móvil (hecho sin conexión o de antes) se sube al abrir el Taller;
@@ -729,6 +729,165 @@ const ESPERA={N1:[['a02','Sensor de ultrasonidos']],N2:[['cap','Sensor capacitiv
   N7:[['lazo','Lazo 4–20 mA']],N8:[['scd41','SCD41 (CO₂)']],N9:[['pinza','Pinza de corriente']],P:[['wifi_cfg','Wifi configurada'],['wifi','Conectada a la wifi'],['url','Servidor puente']]};
 const PISTA={a02:'Revisa el cable blanco (TX) al GPIO del esquema y que el sensor tiene 5 V o 3,3 V.',cap:'Revisa el cable AOUT y que el sensor está alimentado.',sht40:'Revisa SDA, SCL, VCC y GND del SHT40.',mlx:'Revisa SDA, SCL y que es la versión de 3,3 V.',ds18:'Falta la resistencia de 4,7 kΩ o el amarillo no está en su GPIO.',
   pulsos:'',lazo:'Menos de 4 mA: el elevador no da 12 V, el lazo está abierto o al revés.',scd41:'Revisa SDA, SCL y que el SCD41 tiene alimentación.',pinza:'',wifi_cfg:'Mándale la wifi con el formulario de abajo.',wifi:'Nombre o clave de la wifi mal, o la señal no llega.',url:'Pon la dirección del servidor puente en el formulario.',radio:'La radio no arranca: mira la antena y que la placa es la V3 de 868 MHz.'};
+/* ---------- N10 · Válvulas y contador del cabezal (máquinas de riego antiguas, sin web) ----------
+   Va enchufado en el cabezal. Ve qué válvulas abre el programador (8 entradas por optoacoplador, en paralelo con las válvulas: no se
+   toca la máquina) y cuenta el contador. Manda por wifi directo al servidor puente si hay wifi en el cabezal; si no, por radio a la pasarela. */
+Object.assign(PIEZAS,{
+  opto8:{c:'Optoacopladores ×8',n:'Módulo de 8 optoacopladores con entrada de 24 V alterna o continua (PC814 o H11AA1), salida a 3,3 V',med:[75,55,16],dentro:true,color:'#8e44ad',v:[3.3,5],
+    nota:'Que diga «AC/DC 24 V» o lleve PC814 o H11AA1: con un PC817 normal la corriente alterna lo quema. Aísla la placa de los 24 V de las válvulas.'},
+  prog:{c:'Bornas de válvulas',n:'Bornas de las válvulas en el programador de riego (24 V~ de cada sector y su común)',med:[0,0,0],dentro:false,color:'#e67e22',
+    nota:'Los hilos van EN PARALELO con los que ya van a las válvulas: no se quita ni se corta nada. Con el programador apagado.',cable:'PG9'}
+});
+NODOS.N10={n:'N10 · Válvulas y contador del cabezal (máquina antigua)',corto:'Válvulas del cabezal',piezas:['heltec','opto8','prog','reed','c100n','usb'],
+  con:[{de:['opto8','VCC'],a:['heltec','Ve'],c:'#d62728',alim:'opto8'},{de:['opto8','GND'],a:['heltec','GND'],c:'#222'},
+    {de:['opto8','OUT1'],a:['heltec','GPIO'],c:'#1f77b4',var:'v1',tipo:'gpio',def:2,nom:'Válvula 1'},{de:['opto8','OUT2'],a:['heltec','GPIO'],c:'#1f77b4',var:'v2',tipo:'gpio',def:4,nom:'Válvula 2'},
+    {de:['opto8','OUT3'],a:['heltec','GPIO'],c:'#1f77b4',var:'v3',tipo:'gpio',def:5,nom:'Válvula 3'},{de:['opto8','OUT4'],a:['heltec','GPIO'],c:'#1f77b4',var:'v4',tipo:'gpio',def:6,nom:'Válvula 4'},
+    {de:['opto8','OUT5'],a:['heltec','GPIO'],c:'#1f77b4',var:'v5',tipo:'gpio',def:7,nom:'Válvula 5'},{de:['opto8','OUT6'],a:['heltec','GPIO'],c:'#1f77b4',var:'v6',tipo:'gpio',def:38,nom:'Válvula 6'},
+    {de:['opto8','OUT7'],a:['heltec','GPIO'],c:'#1f77b4',var:'v7',tipo:'gpio',def:39,nom:'Válvula 7'},{de:['opto8','OUT8'],a:['heltec','GPIO'],c:'#1f77b4',var:'v8',tipo:'gpio',def:40,nom:'Válvula 8'},
+    {de:['prog','Válvulas 1 a 8'],a:['opto8','IN1 a IN8'],c:'#e67e22',nota:'Un hilo de la borna de cada válvula a su entrada (la válvula 1 del programador a IN1…)'},
+    {de:['prog','Común'],a:['opto8','COM'],c:'#7f7f7f',nota:'El común (el hilo que comparten todas las válvulas) al COM del módulo'},
+    {de:['reed','Hilo 1'],a:['heltec','GPIO'],c:'#2ca02c',var:'pul',tipo:'gpio',def:41,nom:'Pulsos del contador'},{de:['reed','Hilo 2'],a:['heltec','GND'],c:'#222'},
+    {de:['c100n','Pata 1'],a:['reed','Hilo 1'],c:'#2ca02c'},{de:['c100n','Pata 2'],a:['heltec','GND'],c:'#222',nota:'Entre la entrada de pulsos y GND, cerca de la placa: evita que un rebote cuente doble'},
+    {de:['usb','USB-C'],a:['heltec','USB-C'],c:'#7f8c8d'}],
+  glands:['prog','reed','usb']};
+COD.N10=`// N10 · Válvulas y contador del cabezal (máquina de riego antigua) · versión 1 (sin probar todavía en la placa real)
+// Placa: Heltec WiFi LoRa 32 V3 · Librería: RadioLib (WiFi, HTTPClient y Preferences vienen con la placa)
+// Ve qué válvulas abre el programador (8 entradas por optoacoplador: valen 24 V de alterna o de continua) y cuenta los pulsos
+// del contador. Avisa al momento cuando abre o cierra cada válvula, cada minuto mientras riega y cada 10 minutos «sigo viva».
+// Si en el cabezal hay wifi, se le pasa desde la app por el cable USB como a la pasarela («CFG wifi=…|clave=…|url=…|token=…»)
+// y sube directo al servidor puente; sin wifi, manda por radio a la pasarela.
+// Mensajes (pm = pulsos del contador desde el mensaje anterior):
+//   «N10;id=…;ev=1;c=3;pm=0»                        abre la válvula 3
+//   «N10;id=…;ev=2;c=3;dur=482;pul=27.5;pm=4»        cierra la válvula 3: segundos y pulsos de ese riego
+//   «N10;id=…;on=3+5;pm=12»                          mientras riega (válvulas abiertas)   ·   «N10;id=…;on=0;pm=0;up=…» sigo viva
+#include <RadioLib.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <Preferences.h>
+#define PULSOS {pul}
+${COMUN}
+const int VALV[8] = {{v1}, {v2}, {v3}, {v4}, {v5}, {v6}, {v7}, {v8}};
+const unsigned long VIVA_MS = 10UL * 60UL * 1000UL, MARCHA_MS = 60UL * 1000UL;
+const unsigned long ABRE_MS = 2000, CIERRA_MS = 3000;   // tiempo seguido para dar por abierta o cerrada una válvula (evita falsos)
+const unsigned long PARPADEO_MS = 60;                    // con alterna la entrada se enciende y apaga 50 veces por segundo
+Preferences cfg; String WIFI, CLAVE, URL, TOKEN; bool hayRadio = false;
+volatile unsigned long cuenta = 0, ultP = 0;
+void IRAM_ATTR pulso() { unsigned long t = millis(); if (t - ultP > 30) { cuenta++; ultP = t; } }   // 30 ms antirrebote
+unsigned long bajo[8], desde[8], cambio[8], tUlt = 0, pmAnt = 0, repAnt = 0;
+bool abierta[8]; float pulR[8];
+String cola[20]; int nCola = 0;
+
+void leerCfg() {
+  cfg.begin("af", true);
+  WIFI = cfg.getString("wifi", ""); CLAVE = cfg.getString("clave", ""); URL = cfg.getString("url", ""); TOKEN = cfg.getString("token", "");
+  cfg.end();
+}
+void mirarSerie() {
+  if (!Serial.available()) return;
+  String l = Serial.readStringUntil('\\n'); l.trim();
+  if (!l.startsWith("CFG ")) return;
+  l = l.substring(4);
+  cfg.begin("af", false);
+  while (l.length()) {
+    int p = l.indexOf('|'); String kv = p < 0 ? l : l.substring(0, p); l = p < 0 ? "" : l.substring(p + 1);
+    int e = kv.indexOf('='); if (e > 0) cfg.putString(kv.substring(0, e).c_str(), kv.substring(e + 1));
+  }
+  cfg.end();
+  af("cfg=ok"); delay(300); ESP.restart();
+}
+bool conectar() {
+  if (WiFi.status() == WL_CONNECTED) return true;
+  if (!WIFI.length()) return false;
+  WiFi.mode(WIFI_STA); WiFi.begin(WIFI.c_str(), CLAVE.c_str());
+  for (int i = 0; i < 40 && WiFi.status() != WL_CONNECTED; i++) { delay(250); mirarSerie(); }
+  return WiFi.status() == WL_CONNECTED;
+}
+bool subir(const String& json) {
+  if (!URL.length() || !conectar()) return false;
+  HTTPClient h; h.setTimeout(8000); h.begin(URL);
+  h.addHeader("Content-Type", "application/json"); h.addHeader("Authorization", "Bearer " + TOKEN);
+  int c = h.POST(json); h.end();
+  return c >= 200 && c < 300;
+}
+// Con wifi configurada, por wifi (y si falla, a la cola para el siguiente intento); sin wifi, por radio a la pasarela
+void mandar(const String& m) {
+  af("dato=" + m);
+  if (WIFI.length()) {
+    String j = "{\\"raw\\":\\"" + m + "\\",\\"rssi\\":" + String(WiFi.RSSI()) + ",\\"gw\\":\\"wifi-" + ID + "\\"}";
+    if (subir(j)) af("envio=ok wifi"); else { af("envio=wifi_no"); if (nCola < 20) cola[nCola++] = j; }
+    return;
+  }
+  if (!hayRadio) { af("envio=sin_salida"); return; }
+  int e = radio.transmit(m);
+  af(e == RADIOLIB_ERR_NONE ? String("envio=ok radio") : "envio=err" + String(e));
+}
+String pm() { noInterrupts(); unsigned long c = cuenta; interrupts(); unsigned long d = c - pmAnt; pmAnt = c; return String(d); }
+// Los pulsos de cada momento se reparten entre las válvulas abiertas
+void repartir() {
+  noInterrupts(); unsigned long c = cuenta; interrupts();
+  unsigned long d = c - repAnt; repAnt = c; if (!d) return;
+  int n = 0; for (int i = 0; i < 8; i++) if (abierta[i]) n++;
+  if (n) for (int i = 0; i < 8; i++) if (abierta[i]) pulR[i] += (float)d / n;
+}
+String abiertas() { String s = ""; for (int i = 0; i < 8; i++) if (abierta[i]) { if (s.length()) s += "+"; s += String(i + 1); } return s.length() ? s : "0"; }
+void mirarValvulas() {
+  unsigned long t = millis();
+  for (int i = 0; i < 8; i++) if (digitalRead(VALV[i]) == LOW) bajo[i] = t;
+  repartir();
+  for (int i = 0; i < 8; i++) {
+    bool ve = bajo[i] && t - bajo[i] < PARPADEO_MS;
+    if (ve == abierta[i]) { cambio[i] = 0; continue; }
+    if (!cambio[i]) cambio[i] = t;
+    if (t - cambio[i] < (ve ? ABRE_MS : CIERRA_MS)) continue;
+    cambio[i] = 0; abierta[i] = ve; tUlt = millis();
+    if (ve) { desde[i] = t - ABRE_MS; pulR[i] = 0; mandar("N10;id=" + ID + ";ev=1;c=" + String(i + 1) + ";pm=" + pm()); }
+    else { unsigned long dur = (t - CIERRA_MS - desde[i]) / 1000;
+      mandar("N10;id=" + ID + ";ev=2;c=" + String(i + 1) + ";dur=" + String(dur) + ";pul=" + String(pulR[i], 1) + ";pm=" + pm()); }
+  }
+}
+void setup() {
+  inicio("N10");
+  leerCfg();
+  for (int i = 0; i < 8; i++) { pinMode(VALV[i], INPUT_PULLUP); bajo[i] = 0; desde[i] = 0; cambio[i] = 0; abierta[i] = false; pulR[i] = 0; }
+  pinMode(PULSOS, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(PULSOS), pulso, FALLING);
+  hayRadio = radioIni();
+  unsigned long t0 = millis(); while (millis() - t0 < 300) { unsigned long t = millis(); for (int i = 0; i < 8; i++) if (digitalRead(VALV[i]) == LOW) bajo[i] = t; delay(2); }
+  String ab = ""; for (int i = 0; i < 8; i++) if (bajo[i]) { if (ab.length()) ab += "+"; ab += String(i + 1); }
+  af(ab.length() ? "valvulas=ok con corriente ahora: " + ab : String("valvulas=ok todas cerradas"));
+  for (int i = 0; i < 8; i++) bajo[i] = 0;
+  af("pulsos=listo");
+  af(WIFI.length() ? String(conectar() ? "wifi=ok" : "wifi=no") : String("wifi=sin_configurar (manda por radio)"));
+  mandar("N10;id=" + ID + ";on=0;pm=0;up=0");
+  tUlt = millis();
+  af("fin");
+}
+void loop() {
+  mirarSerie();
+  mirarValvulas();
+  static unsigned long visto = 0; noInterrupts(); unsigned long c = cuenta; interrupts();
+  if (c != visto) { visto = c; af("pulso=" + String(c)); }   // en la mesa: cada pulso suma 1
+  bool riega = false; for (int i = 0; i < 8; i++) riega = riega || abierta[i];
+  if (millis() - tUlt >= (riega ? MARCHA_MS : VIVA_MS)) {
+    tUlt = millis();
+    mandar("N10;id=" + ID + ";on=" + abiertas() + ";pm=" + pm() + (riega ? String("") : ";up=" + String(millis() / 60000)));
+    if (!riega && nCola) { int q = 0; for (int i = 0; i < nCola; i++) if (!subir(cola[i])) cola[q++] = cola[i]; nCola = q; }
+  }
+  delay(4);
+}
+`;
+FICHA.N10={pasos:[...COMUN_INI,
+  'Mira qué manda el programador a las válvulas: polímetro en alterna (V~) entre la borna de una válvula y el común, con esa válvula regando. Lo normal son unos 24 V~. Si solo da un golpe de 9–12 V de continua al abrir y cerrar (válvulas de impulso o «latch»), PARA: este montaje no las ve.',
+  'Con el programador APAGADO y la placa desenchufada, lleva un hilo de la borna de cada válvula a su entrada del módulo (la válvula 1 a IN1…) y el común de las válvulas al COM. En paralelo: no quites ni cortes los cables que ya van a las válvulas.',
+  'Conecta el módulo a la placa: VCC a Ve (3,3 V), GND a GND y cada OUT a su GPIO del esquema.',
+  'El contador: comprueba con el polímetro en continuidad que el emisor es de contacto seco (abre y cierra al pasar agua, sin tensión). Un hilo al GPIO de pulsos y el otro a GND, con el condensador de 100 nF entre los dos.',
+  'Sube el código. Si en el cabezal hay wifi, mándale la wifi y el servidor puente con el formulario de abajo (como a la pasarela). Si no hay wifi, déjalo así: manda por radio a la pasarela.',
+  'Enciende el programador y abre un sector a mano: a los 2 segundos tiene que salir «ev=1;c=…» con el número de esa válvula, y al cerrarlo «ev=2» con los segundos y los pulsos.',
+  'En la app: Más → Ajustes → Válvulas del cabezal. Pon el número de la placa, el cabezal, qué sector es cada válvula y los litros por pulso del contador. Guarda.'],
+  uso:['Te avisa al móvil cuando empieza cada riego, y arriba en Ajuste del riego sale qué sector está regando, como con el uCrop.','En Cuentas del día, los m³ del cabezal salen del contador con un botón.','En Ajuste del riego salen los riegos de hoy de cada sector: cuántos, minutos y m³. Si pasa agua sin ninguna válvula abierta, lo marca: fuga o riego a mano.']};
+ESPERA.N10=[['valvulas','Entradas de las válvulas'],['pulsos','Entrada del contador'],['envio','Salida de los datos (wifi o radio)']];
+Object.assign(PISTA,{valvulas:'',envio:'Sin wifi y sin radio: mira la antena o mándale la wifi con el formulario.'});
+PREG[0].ops.splice(PREG[0].ops.findIndex(o=>o[0]==='pasarela'),0,['valvulas','Qué riega una máquina antigua (válvulas y contador)']);
 const PL={log:[],af:{},estado:'',prog:0,port:null};
 const hayWebSerial=()=>typeof navigator!=='undefined'&&!!(navigator.serial&&navigator.serial.requestPort);
 const dormirMs=ms=>new Promise(r=>setTimeout(r,ms));
@@ -772,7 +931,7 @@ function vPlaca(d){const pinesDef=JSON.stringify(T.pinesDefecto(d.nodo))===JSON.
   if(['bajando','conectando','instalando'].includes(PL.estado))h+=`<div class="sub">${{bajando:'Bajando el firmware…',conectando:'Conectando con la placa… (si no conecta: mantén BOOT/PRG y pulsa RST)',instalando:'Instalando… no desenchufes'}[PL.estado]}</div><div class="tl-pbar"><i id="tl_prog" style="width:${PL.prog}%"></i></div>`;
   if(PL.estado==='leyendo'||Object.keys(A).length)h+=`<div class="sub">${PL.estado==='leyendo'?'Leyendo la autoprueba de la placa…':'Resultado de la comprobación'}</div><div id="tl_placa" class="tl-avisos">${placaRes(d)}</div>`;
   if(A.id&&PL.estado==='hecho')h+=`<div class="tl-av ok" style="text-transform:none">Número de esta placa: <b>${e_(A.id)}</b>. <button class="lnk" type="button" data-tlx="vincular">Ponerlo en Mis aparatos</button></div>`;
-  if(d.nodo==='P'){const cs=(typeof st!=='undefined'&&st.cfg&&st.cfg.sens)||{};h+=`<div class="catsec"><h4>Configurar la pasarela</h4><div class="frm">
+  if(d.nodo==='P'||d.nodo==='N10'){const cs=(typeof st!=='undefined'&&st.cfg&&st.cfg.sens)||{};h+=`<div class="catsec"><h4>${d.nodo==='P'?'Configurar la pasarela':'Wifi del cabezal (solo si la hay; si no, manda por radio a la pasarela)'}</h4><div class="frm">
     <div class="field"><label for="tl_wifi">Wifi (nombre)</label><div class="inp"><input id="tl_wifi" autocomplete="off" style="text-transform:none;text-align:left"></div></div>
     <div class="field"><label for="tl_clave">Clave de la wifi</label><div class="inp"><input id="tl_clave" type="password" autocomplete="off" style="text-transform:none;text-align:left"></div></div>
     <div class="field"><label for="tl_url">Servidor puente</label><div class="inp"><input id="tl_url" value="${e_(cs.url?cs.url.replace(/\/+$/,'')+'/p':'')}" placeholder="https://…workers.dev/p" style="text-transform:none;text-align:left"></div></div>

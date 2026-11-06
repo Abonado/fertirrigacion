@@ -729,6 +729,7 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .ajr-big>div.ok{border-color:#2f7a52}.ajr-big>div.ajr-nqb{border-color:#8a5a00}.ajr-nq{margin:8px 0 0}.nuav{border-radius:12px;padding:10px 12px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;border:1px solid var(--line)}.nuav.mal{background:var(--warn-bg);border-color:transparent}.nuav.bien{background:var(--ok-bg);border-color:transparent}.nuav .btn{margin-left:auto}
 .nuce{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}.nurt td{text-align:center;vertical-align:top;white-space:nowrap}.nurt td:first-child{text-align:left;min-width:112px;white-space:normal}
 .ajlav{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:8px 12px}.ajlav summary{cursor:pointer;font-weight:700;padding:4px 0}
+.vlvp{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;display:grid;gap:8px}.vlvg{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px}
 .ajv{display:flex;align-items:center;gap:12px;border-radius:14px;padding:12px 14px;margin:0 0 12px}.ajv.on{background:#1f7a4c;color:#fff;box-shadow:0 4px 14px rgba(31,122,76,.28)}.ajv.off{background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
 .ajv-dot{width:14px;height:14px;border-radius:50%;flex:none;background:currentColor;opacity:.5}.ajv.on .ajv-dot{background:#9bf0c0;opacity:1;animation:ajvp 1.6s ease-out infinite}@keyframes ajvp{0%{box-shadow:0 0 0 0 rgba(155,240,192,.7)}100%{box-shadow:0 0 0 12px rgba(155,240,192,0)}}
 .ajv-t{flex:1;min-width:0;display:grid;gap:2px}.ajv-k{font-size:.72rem;font-weight:800;letter-spacing:.06em;opacity:.85}.ajv-t b{font-size:1.15rem;line-height:1.2}.ajv.on small{color:#e3f6eb}.ajv-h{font-size:.8rem;opacity:.85;flex:none}
@@ -1316,7 +1317,37 @@ function ajrObjHTML(R){const sid=R.s.id,o=st.ajrObj[sid],g=esGestor();let h=`<di
 /* Barra de arriba: qué riega ahora, cuánto lleva y qué espera. Se actualiza sola cada minuto con el lector del PC del cabezal. */
 const ajrSeg=t=>{const m=/^(\d+):(\d+)(?::(\d+))?$/.exec(String(t||'').trim());if(!m)return null;return m[3]!=null?(+m[1])*3600+(+m[2])*60+(+m[3]):(+m[1])*60+(+m[2])};
 const ajrMin=t=>String(t||'').replace(/^00:/,'');
-function ajrVivoHTML(c){const u=ucrDia(c.id,hoy());if(!u)return '';const E=u.v&&u.v.estado,hace=Math.round((Date.now()-u.t)/60000),hh=new Date(u.t).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+/* ---------- Válvulas del cabezal (placa N10 del Taller): máquinas de riego sin web ----------
+   Config (Ajustes, se guarda en la configuración y la lee también el servidor puente para los avisos):
+   st.cfg.valv = {<número de placa>: {cab, lpp: litros por pulso del contador, can: {'1': {s: id del sector, n: nombre}, …}}}
+   Datos: lecturas de la placa (una por día): ev=1 abre la válvula c · ev=2 cierra (dur s, pul pulsos) · on=«3+5» abiertas · pm = pulsos desde el mensaje anterior. */
+const vlvCfg=()=>st.cfg.valv||{};
+const vlvPlacas=cab=>Object.entries(vlvCfg()).filter(([,x])=>x&&x.cab===cab);
+const vlvNom=(x,c)=>((x.can||{})[String(c)]||{}).n||'Válvula '+c;
+const vlvOn=v=>v==null?null:String(v)==='0'?[]:String(v).split('+').map(Number).filter(n=>n>=1&&n<=8);
+function vlvDia(cab,f){const P=vlvPlacas(cab);if(!P.length)return null;const R={hay:false,riegos:[],can:{},m3:0,m3Sin:0,ult:null,abiertas:[],q:null};
+  for(const[id,x]of P){const d=(st.lec||[]).find(l=>l.dev===id&&l.fecha===f);if(!d)continue;R.hay=true;const lpp=+x.lpp||0,ps=(d.p||[]).slice().sort((a,b)=>a.t-b.t),abre={};let on=new Set(),tAnt=null;
+    for(const p of ps){const v=p.v||{},pm=+v.pm||0,m3=pm*lpp/1000;R.m3+=m3;if(!on.size&&v.ev!==1)R.m3Sin+=m3;
+      if(v.ev===1){on.add(+v.c);abre[v.c]=p.t}else if(v.ev===2){on.delete(+v.c);const k=id+':'+v.c,C=R.can[k]=R.can[k]||{n:vlvNom(x,v.c),c:+v.c,riegos:0,s:0,m3:0};C.riegos++;C.s+=+v.dur||0;C.m3+=(+v.pul||0)*lpp/1000;
+        R.riegos.push({c:+v.c,n:vlvNom(x,v.c),fin:p.t,dur:+v.dur||0,m3:(+v.pul||0)*lpp/1000})}
+      else{const o=vlvOn(v.on);if(o){on=new Set(o);if(o.length&&tAnt&&pm)R.q=m3/((p.t-tAnt)/36e5)}}
+      tAnt=p.t;if(!R.ult||p.t>R.ult)R.ult=p.t}
+    for(const c of on)R.abiertas.push({c,n:vlvNom(x,c),desde:abre[c]||null,ultDur:(R.riegos.filter(r=>r.c===c).at(-1)||{}).dur||null})}
+  R.riegos.sort((a,b)=>a.fin-b.fin);return R}
+const mmss=s=>{s=Math.max(0,Math.round(s));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')};
+function vlvVivoHTML(c){if(!vlvPlacas(c.id).length)return '';const V=vlvDia(c.id,hoy());
+  if(!V||!V.hay||Date.now()-V.ult>20*60000){const u=V&&V.ult;return `<div class="ajv off"><span class="ajv-dot"></span><div class="ajv-t"><b>Sin datos de las válvulas</b><small>${u?`Último dato de la placa a las ${hhmm(u)}: `:''}mira que la placa del cabezal esté enchufada y con wifi o cerca de la pasarela</small></div></div>`}
+  if(!V.abiertas.length){const r=V.riegos.at(-1);return `<div class="ajv off"><span class="ajv-dot"></span><div class="ajv-t"><b>Ahora no está regando</b><small>${r?`Último riego: ${esc(r.n)} a las ${hhmm(r.fin)} (${mmss(r.dur)} min)`:'Hoy todavía no ha regado'} · válvulas del cabezal</small></div></div>`}
+  const a=V.abiertas[0],lleva=a.desde?(Date.now()-a.desde)/1000:null,tt=a.ultDur,pc=lleva!=null&&tt?Math.min(100,lleva/tt*100):null;
+  return `<div class="ajv on" role="status"><span class="ajv-dot"></span><div class="ajv-t"><span class="ajv-k">Regando ahora</span><b>${V.abiertas.map(x=>esc(x.n)).join(' + ')}</b><small>${[V.abiertas.map(x=>'Válvula '+x.c).join(' y '),lleva!=null?`lleva ${mmss(lleva)}${tt?' de unos '+mmss(tt)+' (como el anterior)':''}`:'',V.q!=null?fmt(V.q,1)+' m³/h':''].filter(Boolean).join(' · ')}</small>
+    ${pc!=null?`<div class="ajv-bar"><i style="width:${pc.toFixed(1)}%"></i></div>`:''}</div><span class="ajv-h">${hhmm(V.ult)}</span></div>`}
+function vlvHoyHTML(c){if(!vlvPlacas(c.id).length)return '';const V=vlvDia(c.id,hoy());if(!V||!V.hay)return '';const C=Object.values(V.can).sort((a,b)=>a.c-b.c);
+  const tot=C.reduce((x,y)=>({r:x.r+y.riegos,s:x.s+y.s,m:x.m+y.m3}),{r:0,s:0,m:0});
+  return `<section class="card"><div><h3>Riegos de hoy en ${esc(c.nombre)}</h3><div class="sub">De la placa de las válvulas y el contador · ${V.riegos.length} riegos terminados</div></div>
+    ${C.length?`<div class="tbl"><table><thead><tr><th>Sector</th><th>Riegos</th><th>Minutos</th><th>m³</th></tr></thead><tbody>${C.map(x=>`<tr><td><b>${esc(x.n)}</b> <small class="u">v${x.c}</small></td><td>${x.riegos}</td><td>${fmt(x.s/60,0)}</td><td>${fmt(x.m3,2)}</td></tr>`).join('')}
+      <tr class="cotot"><td><b>Total</b></td><td><b>${tot.r}</b></td><td><b>${fmt(tot.s/60,0)}</b></td><td><b>${fmt(tot.m,2)}</b></td></tr></tbody></table></div>`:'<div class="note">Todavía no ha terminado ningún riego hoy.</div>'}
+    <div class="note">Agua del contador hoy: <b>${fmt(V.m3,2)} m³</b>.${V.m3Sin>0.05?` <span class="pill warn">Ojo</span> ${fmt(V.m3Sin,2)} m³ pasaron sin ninguna válvula abierta: ¿fuga o riego a mano?`:''}</div></section>`}
+function ajrVivoHTML(c){const u=ucrDia(c.id,hoy()),fresco=u&&u.v&&u.v.estado&&(Date.now()-u.t)<=20*60000;if(!fresco&&vlvPlacas(c.id).length)return vlvVivoHTML(c)+vlvHoyHTML(c);if(!u)return '';const E=u.v&&u.v.estado,hace=Math.round((Date.now()-u.t)/60000),hh=new Date(u.t).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
   if(!E||hace>20)return `<div class="ajv off"><span class="ajv-dot"></span><div class="ajv-t"><b>Sin datos de la máquina</b><small>Última lectura del uCrop a las ${hh}${hace>20?` (hace ${hace>=120?Math.round(hace/60)+' h':hace+' min'})`:''}: mira que el PC del cabezal esté encendido con la pestaña abierta</small></div></div>`;
   if(!E.regando)return `<div class="ajv off"><span class="ajv-dot"></span><div class="ajv-t"><b>Ahora no está regando</b><small>${E.espera?'En espera: '+esc(E.espera)+' · ':''}lectura de las ${hh}</small></div></div>`;
   const a=ajrSeg(E.t),b=ajrSeg(E.tt),pc=a!=null&&b?Math.max(0,Math.min(100,a/b*100)):null;
@@ -1648,7 +1679,7 @@ function banner(){return ''}
 function vCuentas(){const c=cabById(st.cab);let h=banner()+`<div data-out="pend" style="display:contents">${pendHTML()}${lvlBanner()}</div>`;
   h+=`<section class="summary" data-out="sum">${sumCuentas()}</section>`;
   h+=`<div class="card"><div class="tank-h"><div><h3>Agua regada</h3><div class="sub">${esc(c.nombre)} · total del día</div></div>
-    <div class="field big"><label for="m3_${c.id}">m³ del cabezal</label><div class="inp"><input id="m3_${c.id}" data-k="reg.m3.${c.id}" inputmode="decimal" autocomplete="off"${sugPh('m3',c.id)} value="${inVal(st.reg.m3[c.id])}"><span class="u">m³</span></div>${st.reg.m3[c.id]==null&&sugDe('m3',c.id)!=null?`<button class="btn sm" data-act="sug-m3" data-id="${c.id}">Igual que el ${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(sugDe('m3',c.id)))} m³</button>`:''}</div></div></div>`;
+    <div class="field big"><label for="m3_${c.id}">m³ del cabezal</label><div class="inp"><input id="m3_${c.id}" data-k="reg.m3.${c.id}" inputmode="decimal" autocomplete="off"${sugPh('m3',c.id)} value="${inVal(st.reg.m3[c.id])}"><span class="u">m³</span></div>${st.reg.m3[c.id]==null&&sugDe('m3',c.id)!=null?`<button class="btn sm" data-act="sug-m3" data-id="${c.id}">Igual que el ${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(sugDe('m3',c.id)))} m³</button>`:''}${(()=>{const V=vlvDia(c.id,st.fecha);return V&&V.hay&&V.m3>0.005?`<button class="btn sm" data-act="vlv-m3" data-id="${c.id}" data-v="${V.m3.toFixed(2)}">Contador del cabezal: ${fmt(V.m3,2)} m³ (${V.riegos.length} riegos) · usar</button>`:''})()}</div></div></div>`;
   for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}${fmt(b.lpcm,1)} L por cm</div></div></div>
       ${lecturaBoxes(b,c)}
@@ -2011,6 +2042,24 @@ function sumReceta(c){const rp=reparto(c.id);
   return `<div class="stat"><span>Incremento de CE estimado</span><b>${fmt(ceEstimada(c.id),0)}</b><small class="nt">µS/cm</small></div>
   <div class="stat wide"><span>Reparto de venturis</span><div class="tbl"><table><tbody>${rp.map(r=>`<tr><td>${esc(r.b.nombre)}</td><td><b>${fmt(r.pct,1)} %</b></td><td class="u">${r.b.venturis>1?r.b.venturis+' venturis × '+fmt(r.pct/r.b.venturis,1)+' %':'1 venturi'}</td></tr>`).join('')}</tbody></table></div></div>`}
 
+function vlvCfgHTML(){const V=vlvCfg(),ids=Object.keys(V);
+  const ult=id=>{const l=(st.lec||[]).filter(x=>x.dev===id).sort((a,b)=>(a.ts||'')<(b.ts||'')?1:-1)[0];return l&&l.ts?`último dato ${fFecha((l.ts||'').slice(0,10))} ${hhmm(Date.parse(l.ts))}`:'sin datos todavía'};
+  return `<section class="card" id="vlv_cfg"><div><h3>Válvulas del cabezal (máquina sin web)</h3><div class="sub">Para programadores antiguos: la placa N10 del Taller ve qué válvula abre y cuenta el contador. Con esto, avisos de riego, «Regando ahora» y los m³ del día, como con el uCrop</div></div>
+    ${ids.map(id=>{const x=V[id],cb=cabById(x.cab);return `<div class="vlvp"><div class="tank-h"><div><b>Placa ${esc(id)}</b><div class="sub">${esc(ult(id))}</div></div><button class="btn sm" data-act="vlv-del" data-id="${esc(id)}">Quitar</button></div>
+      <div class="frm"><div class="field"><label for="vlc_${id}">Cabezal</label><div class="inp"><select id="vlc_${id}" data-vlv-cab="${esc(id)}">${cabsVis().map(c=>`<option value="${c.id}" ${x.cab===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div>
+        <div class="field"><label for="vll_${id}">Litros por pulso del contador</label><div class="inp sm"><input id="vll_${id}" data-vlv-lpp="${esc(id)}" inputmode="decimal" value="${inVal(x.lpp)}"><span class="u">L</span></div></div></div>
+      <div class="vlvg">${[1,2,3,4,5,6,7,8].map(n=>{const k=(x.can||{})[n]||{};return `<div class="field"><label for="vls_${id}_${n}">Válvula ${n}</label><div class="inp"><select id="vls_${id}_${n}" data-vlv-can="${esc(id)}|${n}"><option value="">— sin usar —</option>${(cb?cb.sectores:[]).map(s=>`<option value="${s.id}" ${k.s===s.id?'selected':''}>${esc(s.nombre)}</option>`).join('')}</select></div></div>`}).join('')}</div></div>`}).join('')}
+    <div class="row"><div class="inp" style="max-width:220px"><input id="vlv_nuevo" placeholder="Nº de placa (ej. 1A2B3C)" autocomplete="off" style="text-transform:uppercase;text-align:left"></div><button class="btn" data-act="vlv-add">Añadir placa</button></div>
+    <div class="note">El número de la placa sale en Más → Taller → Comprobar en la mesa. Después pulsa Guardar: el servidor puente lee de aquí a quién avisar y el nombre de cada sector.</div></section>`}
+function vlvPon(f){const V=clone(vlvCfg());f(V);st.cfg.valv=V;st.dirtyCfg=true;renderSave()}
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset||st.tab!=='ajustes')return;
+  if(t.dataset.vlvCab)vlvPon(V=>{V[t.dataset.vlvCab].cab=t.value;V[t.dataset.vlvCab].can={};renderMain()});
+  else if(t.dataset.vlvLpp)vlvPon(V=>{V[t.dataset.vlvLpp].lpp=num(t.value)});
+  else if(t.dataset.vlvCan){const[id,n]=t.dataset.vlvCan.split('|');vlvPon(V=>{const x=V[id],can=x.can=x.can||{};if(!t.value)delete can[n];else{const sc=(cabById(x.cab)||{sectores:[]}).sectores.find(s=>s.id===t.value);can[n]={s:t.value,n:sc?sc.nombre:t.value}}})}});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-act="vlv-add"],[data-act="vlv-del"]');if(!b||!esGestor())return;
+  if(b.dataset.act==='vlv-add'){const id=(($('#vlv_nuevo')||{}).value||'').trim().toUpperCase();if(!/^[0-9A-F]{4,20}$/.test(id))return toast('El número de la placa son letras de la A a la F y números (ej. 1A2B3C)');
+    if(vlvCfg()[id])return toast('Esa placa ya está');vlvPon(V=>{V[id]={cab:st.cab,lpp:100,can:{}}});renderMain()}
+  else{vlvPon(V=>{delete V[b.dataset.id]});renderMain()}});
 function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de llenado, mensajes, tareas e incidencias</div></div><div data-out="notif">${notifHTML()}</div></section>`+(window.NUBE&&NUBE.user?NUBE.cardHTML():'')+carpetasHTML()+versionHTML();const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
   for(const b of bidonesDe(st.cab)){h+=`<div class="cfgrow"><div class="field nmf"><label for="bn_${b.id}">Nombre</label><div class="inp"><input class="wide" id="bn_${b.id}" data-k="cfg.bname.${b.id}" data-text="1" value="${esc(b.nombre)}"></div></div>
     <div class="field"><label for="lp_${b.id}">L por cm</label><div class="inp sm"><input id="lp_${b.id}" data-k="cfg.lpcm.${b.id}" inputmode="decimal" value="${inVal(b.lpcm)}"></div></div>
@@ -2044,6 +2093,7 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
   h+=cultivoAjHTML();
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
   h+=(esAdminU()?logoHTML():'')+carpetasHTML()+(esAdminU()?copiaHTML():'')+versionHTML();
+  h+=vlvCfgHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Recetas y ajustes iniciales</div></div>
     <div class="row">${st.confirmReset?`<span class="note">¿Restaurar recetas y ajustes iniciales?</span><button class="btn danger" data-act="reset-yes">Sí, restaurar</button><button class="btn" data-act="reset-no">Cancelar</button>`:`<button class="btn" data-act="reset">Restaurar recetas y ajustes iniciales</button>`}</div></section>`;
   return h}
@@ -5104,7 +5154,7 @@ const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
 /* Ajustes por apartados: cada tarjeta va a su grupo según su título; se abren y cierran tocando la cabecera */
 const AJ_GR=[['cab','Depósitos y bandejas',/^(Depósitos|Bandejas)/],['avisos','Avisos y alertas',/^(Aviso de llenado|Avisos de drenaje|Avisos en este móvil)/],['cultivo','Cultivo y partes',/^(Cultivo|Carpetas)/],
-  ['usuarios','Usuarios y acceso',/^Usuarios/],['conex','Conexiones y servidores',/^(IA de la app|Avisos con la app cerrada|Satélite|Sensores)/],['empresa','Empresa, copias y versión',/[\s\S]?/]];
+  ['usuarios','Usuarios y acceso',/^Usuarios/],['conex','Conexiones y servidores',/^(IA de la app|Avisos con la app cerrada|Satélite|Sensores|Válvulas del cabezal)/],['empresa','Empresa, copias y versión',/[\s\S]?/]];
 st.ajAb=new Set((()=>{try{return JSON.parse(localStorage.getItem('abono.ajAb')||'[]')}catch(e){return []}})());
 function ajAgrupar(root){const cards=[...root.children].filter(e=>e.matches('section.card'));if(cards.length<4)return;const G={};
   for(const c of cards){const t=((c.querySelector('h3')||{}).textContent||'').trim(),g=AJ_GR.find(x=>x[2].test(t));(G[g[0]]=G[g[0]]||[]).push([c,t])}
@@ -5274,6 +5324,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='pt-rev'){st.ptRev=t.dataset.id;renderMain();const i=$('#pt_nota');if(i)i.focus()}
   else if(t.dataset.act==='pt-rev-no'){st.ptRev=null;renderMain()}
   else if(t.dataset.act==='pt-rev-ok'){ptRevisar(t.dataset.id)}
+  else if(t.dataset.act==='vlv-m3'){const id=t.dataset.id;st.reg.m3[id]=+t.dataset.v;marcaReg('m3.'+id);renderMain();renderSave()}
   else if(t.dataset.act==='sug-m3'){const id=t.dataset.id;st.reg.m3[id]=sugDe('m3',id);marcaReg('m3.'+id);renderMain();renderSave()}
   else if(t.dataset.act==='mz'){const z=[1,1.6,2.4],i=z.indexOf(st.mz);st.mz=z[Math.max(0,Math.min(2,i+(+t.dataset.z)))];const w=$('#mapwrap'),fx=w?(w.scrollLeft+w.clientWidth/2)/w.scrollWidth:.5,fy=w?(w.scrollTop+w.clientHeight/2)/w.scrollHeight:.5;renderMain();const w2=$('#mapwrap');if(w2){w2.scrollLeft=fx*w2.scrollWidth-w2.clientWidth/2;w2.scrollTop=fy*w2.scrollHeight-w2.clientHeight/2}}
   else if(t.dataset.act==='mi-save')miGuardar();

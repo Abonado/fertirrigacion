@@ -3,6 +3,8 @@
 // Qué hace:
 //   · /p    → recibe lo que manda la pasarela casera (diseño P del Taller): {"raw":"N4;id=1A2B3C;ta=24.1;…","rssi":-87,"snr":7.5,"gw":"…"}
 //   · /ttn  → recibe los sensores LoRaWAN comprados desde The Things Network (webhook «Uplink message»)
+//   · N10 (por /p, directo por wifi o por radio a la pasarela): válvulas que abre una máquina de riego antigua y pulsos del contador.
+//            Al abrir una válvula avisa al móvil como el uCrop, con el sector que diga la app (abonado_config/finca → valv).
 //   · /clima → recibe lo que lee del controlador de clima el «Lector del clima» (extensión de Edge en el PC de la oficina):
 //            {"cab":"gas","comp":[{"n":1,"ta":27.5,"hr":68,"vent":[98,98,100]},…]}. Se guarda como una placa por compartimento
 //            (UC-GAS-1, UC-GAS-2…) y en UC-ESTADO la hora de la última lectura. Si en horario de trabajo lleva más de 90 min sin
@@ -77,6 +79,7 @@ function leerRaw(raw) {
 const TXT = {
   N1: v => `${v.pct} % · ${v.cm} cm`, N2: v => `humedad ${v.hum} %`, N4: v => `${fmt(v.ta)} °C · ${v.hr} % · hoja ${fmt(v.th)} °C`, N5: v => `${fmt(v.t)} °C`,
   N6: v => `${v.pul} pulsos · ${fmt(v.valor)}`, N7: v => `${fmt(v.valor)} ${v.u || ''} · ${fmt(v.ma)} mA`, N8: v => `${v.co2} ppm · ${fmt(v.ta)} °C`, N9: v => `${fmt(v.amp)} A · ${v.marcha ? 'en marcha' : 'parada'}`,
+  N10: v => v.ev === 1 ? `abre la válvula ${v.c}` : v.ev === 2 ? `cierra la válvula ${v.c} · ${Math.round((v.dur || 0) / 60)} min · ${fmt(v.pul)} pulsos` : String(v.on || 0) === '0' ? 'sin regar' : `regando: válvula ${String(v.on).split('+').join(' y ')}`,
   P: v => `pasarela · ${v.up} min encendida`, PING: v => `prueba de cobertura ${v.n}`
 };
 function fmt(n) { return typeof n === 'number' ? String(Math.round(n * 10) / 10).replace('.', ',') : '—'; }
@@ -160,6 +163,14 @@ async function avisarRiego(env, cab, e) {
   // por qué no: 401 = INTERNO_TOKEN distinto en los dos servidores (o falta el KV AVISOS); 404 con «error code: 1042» = falta el enlace AVISOS_SVC
   return { enviado: false, http: r.status, detalle: corto(await r.text().catch(() => ''), 120), via: env.AVISOS_SVC ? 'enlace' : 'url' };
 }
+/* N10 · válvulas del cabezal de una máquina antigua (sin web): al abrirse una válvula, el mismo aviso que con el uCrop.
+   El cabezal y el nombre de cada válvula los pone la app (Ajustes → Válvulas del cabezal) en abonado_config/finca → valv[<placa>]. */
+async function avisarValvula(env, id, c) {
+  let cfg = {}; try { const d = await fs(env, 'GET', '/abonado_config/finca?mask.fieldPaths=valv'); cfg = (deFS((d.fields || {}).valv) || {})[id] || {}; } catch (x) {}
+  if (!cfg.cab) return { enviado: false, motivo: 'sin_config' };
+  const k = (cfg.can || {})[String(c)] || {};
+  return avisarRiego(env, cfg.cab, { prog: k.n || 'Válvula ' + c, valv: 'Válvula ' + c, regando: true });
+}
 async function revisarClima(env) {
   if (!(env.AVISOS_SVC || env.AVISOS_URL) || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;
   let d; try { d = await fs(env, 'GET', '/abonado_lecturas/UC-ESTADO'); } catch (e) { return; }
@@ -196,7 +207,9 @@ export default {
       if (ruta === 'p') {
         if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
         const L = leerRaw(b.raw); if (!L.id) return json({ error: 'sin_id' }, 400);
-        return json(await registrar(env, { ...L, rssi: typeof b.rssi === 'number' ? b.rssi : null, snr: typeof b.snr === 'number' ? b.snr : null, gw: corto(b.gw, 20) }));
+        const r = await registrar(env, { ...L, rssi: typeof b.rssi === 'number' ? b.rssi : null, snr: typeof b.snr === 'number' ? b.snr : null, gw: corto(b.gw, 20) });
+        if (L.nodo === 'N10' && L.v.ev === 1 && r.ok) r.aviso = await avisarValvula(env, L.id, L.v.c).catch(e => ({ error: corto(e.message, 80) }));
+        return json(r);
       }
       if (ruta === 'riego') {
         if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
