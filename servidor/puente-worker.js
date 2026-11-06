@@ -156,7 +156,7 @@ async function avisarRiego(env, cab, e) {
   const cuerpo = [CAB_N[cab] || cab, e.prog, e.valv, e.tt ? e.tt.replace(/^00:/, '') + ' min' : null].filter(Boolean).join(' · ');
   const r = await avisosFetch(env, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
     body: JSON.stringify({ para, titulo: 'Regando: ' + nombreProg(e.prog), cuerpo, tag: 'riego-' + cab, tab: 'ajriego' }) });
-  if (r.ok) return { enviado: true };
+  if (r.ok) { const j = await r.json().catch(() => ({})); return { enviado: true, para, enviados: j.enviados ?? null, fallos: j.fallos ?? null, sinDispositivo: j.sinDispositivo ?? null }; }
   // por qué no: 401 = INTERNO_TOKEN distinto en los dos servidores (o falta el KV AVISOS); 404 con «error code: 1042» = falta el enlace AVISOS_SVC
   return { enviado: false, http: r.status, detalle: corto(await r.text().catch(() => ''), 120), via: env.AVISOS_SVC ? 'enlace' : 'url' };
 }
