@@ -78,7 +78,14 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .ucext{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:13px;padding:6px 0}.ucext b{font-size:12px;letter-spacing:.05em;color:var(--muted)}.ucmed{display:grid;gap:2px;font-size:13px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--navy) 6%,var(--surface))}.ucmed b{font-size:12px;letter-spacing:.05em}
 .ucinv{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
 .ucres{display:grid;gap:8px;padding:10px 12px;margin-bottom:8px;border:1px dashed var(--line);border-radius:12px}.ucf{display:grid;grid-template-columns:minmax(80px,1fr) auto minmax(120px,auto);gap:8px;align-items:center;font-size:13px}
-@media (max-width:560px){.ucf{grid-template-columns:1fr;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}}.cobars{display:grid;gap:12px;margin:4px 0 6px}.cobar{display:grid;gap:4px}.cobar-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.cobar-h span{min-width:0}.cobar small{color:var(--muted)}.cobar .bar{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}.cobar .bar i{display:block;height:100%;background:var(--accent);border-radius:5px}.summary.cosum{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+@media (max-width:560px){.ucf{grid-template-columns:1fr;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}}.ots{display:grid;gap:14px}.ot{border:1px solid var(--line);border-radius:16px;padding:12px;display:grid;gap:10px;background:var(--surface)}.ot.hecha{opacity:.9}.ot-lg{gap:4px;margin:0}.ot-lg .chip{text-transform:none;font-size:.8rem;padding:4px 10px}
+.ot-cuerpo{display:grid;gap:12px}.ot-h{display:flex;gap:12px;align-items:center}.ot-ico{width:48px;height:48px;border-radius:14px;background:var(--bad-bg);color:var(--bad);display:grid;place-items:center;flex:none}
+.ot-ico svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.ot-t{flex:1;min-width:0;display:grid;gap:1px}.ot-t b{font-size:1.3rem;text-transform:none;line-height:1.2}.ot-t small{color:var(--muted)}
+.ot-dosis{background:var(--ok-bg);border-radius:14px;padding:12px 14px;display:grid;gap:3px}.ot-dosis span{font-size:.78rem;color:var(--muted);font-weight:700}.ot-dosis b{font-size:1.4rem;line-height:1.25}.ot-dosis small{color:var(--muted)}
+.ot-dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:0}.ot-dl div{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:8px 12px}.ot-dl .full{grid-column:1/-1}
+.ot-dl dt{font-size:.75rem;color:var(--muted);font-weight:700}.ot-dl dd{margin:2px 0 0;font-weight:600;text-transform:none}.ot .ot-big{min-height:54px;font-size:1.05rem;flex:1 1 200px}.ot-meta{font-size:.8rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px;align-items:center;border-top:1px solid var(--line);padding-top:8px}
+.ot-meta span{display:inline-flex;align-items:center;gap:6px}.ot-calc{background:var(--ok-bg);border-radius:12px;padding:10px 14px;display:grid;gap:2px}.ot-calc span{font-size:.78rem;color:var(--muted);font-weight:700}.ot-calc b{font-size:1.3rem}
+.cobars{display:grid;gap:12px;margin:4px 0 6px}.cobar{display:grid;gap:4px}.cobar-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.cobar-h span{min-width:0}.cobar small{color:var(--muted)}.cobar .bar{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}.cobar .bar i{display:block;height:100%;background:var(--accent);border-radius:5px}.summary.cosum{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
 .codia{display:grid;gap:4px}.codia svg{width:100%;height:auto;max-height:150px;overflow:visible}.codia rect{fill:var(--accent)}.codia line{stroke:var(--line)}.codia text{font-size:8px;fill:var(--muted)}.codia small{color:var(--muted)}
 .coph{margin:4px 0 8px}.coph summary{cursor:pointer;font-weight:600;padding:6px 0}
 .rendt .cotot td{border-top:2px solid var(--line)}
@@ -898,7 +905,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
+const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['otrat','Tratamientos'],['cotrat','Tratamientos'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -1044,7 +1051,7 @@ window.addEventListener('popstate',()=>{try{if(volver())navGuarda()}catch(e){con
 /* Menú en 5 apartados */
 const IC_HOY='<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',IC_MAS='<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>';
 const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','cmbid','drenaje','ajriego','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
-  {id:'equipo',n:'Equipo',tabs:['tareas','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
+  {id:'equipo',n:'Equipo',tabs:['tareas','otrat','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['m3mes','climanv','cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
@@ -1052,7 +1059,7 @@ const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Rie
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'},
   {id:'mas',n:'Más',tabs:['mas'],ic:IC_MAS}];
 /* Personal de campo: su propio menú (de momento, las collas) */
-const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctareas','corend','coparte','cubic','cvivo'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
+const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctareas','cotrat','corend','coparte','cubic','cvivo'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'cmsg',n:'Mensajes',tabs:['cmensajes'],ic:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>'},
   {id:'ctiempo',n:'Tiempo',tabs:['ctiempo'],ic:'<circle cx="9" cy="9" r="3.2"/><path d="M9 2.8v1.6M3.6 9H2.4M4.6 4.6l1.1 1.1"/><path d="M8 19h9.5a3.5 3.5 0 0 0 .3-7 4.8 4.8 0 0 0-9.2 1.2A2.9 2.9 0 0 0 8 19z"/>'},
   {id:'cnotasg',n:'Notas',tabs:['cnotas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
@@ -1514,7 +1521,7 @@ try{if(window.speechSynthesis)speechSynthesis.onvoiceschanged=()=>{}}catch(e){}
 /* ---------- Hoy: lo que hay que mirar y lo de todos los días, de un vistazo ---------- */
 const HOY_T=[['cuentas','Cuentas del día','<path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>'],['rellenar','Rellenar depósito','<path d="M6 8h12l-1 12H7z"/><path d="M9 8V5h6v3"/>'],['drenaje','Drenaje','<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/><path d="M9 14h6"/>'],
   ['parte','Parte diario','<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 12l2 2 3.5-4"/>'],['mapa','Mapa de la finca','<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>'],['climanv','Clima de las naves','<path d="M10 14V5a2 2 0 1 1 4 0v9a4 4 0 1 1-4 0z"/>'],
-  ['receta','Receta','<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/>'],['tareas','Tareas','<path d="M4 6h3M4 12h3M4 18h3"/><path d="M10 6h10M10 12h10M10 18h10"/>'],['almacen','Almacén','<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6"/>'],['informe','Informe del mes','<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'],
+  ['receta','Receta','<path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"/><path d="M7.5 15h9"/>'],['tareas','Tareas','<path d="M4 6h3M4 12h3M4 18h3"/><path d="M10 6h10M10 12h10M10 18h10"/>'],['otrat','Tratamientos','<path d="M9 3h6M10 3v4l-4 6v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7l-4-6V3"/><path d="M6 14h12"/>'],['almacen','Almacén','<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6"/>'],['informe','Informe del mes','<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'],
   ['global','Datos totales','<path d="M4 19h16"/><path d="M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/>'],['taller','Taller','<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>']];
 const HOY_IC={cmbid:'<path d="M7 3h10v18H7z"/><path d="M7 7h3M7 11h4M7 15h3M7 19h4"/>',ajriego:'<circle cx="12" cy="12" r="8"/><path d="M12 12l4-3"/><path d="M12 4v2M20 12h-2M4 12h2"/>',
   aforo:'<path d="M5 4h14l-2 6H7z"/><path d="M12 10v4"/><path d="M9 20c0-2 1.5-3.5 3-6 1.5 2.5 3 4 3 6a3 3 0 0 1-6 0z"/>',instal:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
@@ -1526,7 +1533,7 @@ const HOY_IC={cmbid:'<path d="M7 3h10v18H7z"/><path d="M7 7h3M7 11h4M7 15h3M7 19
   tiempo:'<path d="M7 18a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.3 3.3 0 0 1 17 18z"/>',satelite:'<path d="M5 19l4-4M9 9l6 6M7 7l3-3 4 4-3 3zM14 14l3-3 4 4-3 3z"/>',
   catalogo:'<path d="M4 5h7v14H4zM13 5h7v14h-7z"/>',aparatos:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 17h4"/>',cajon:'<path d="M4 9h16v10H4z"/><path d="M4 9l2-4h12l2 4M10 13h4"/>'};
 /* Orden de los cuadros: primero lo de todos los días */
-const HOY_ORD={riego:['cuentas','rellenar','drenaje','cmbid','parte','ajriego','receta','aforo','instal','solucion','partes','global'],equipo:['tareas','mensajes'],almacen:['almacen','material','montaje'],
+const HOY_ORD={riego:['cuentas','rellenar','drenaje','cmbid','parte','ajriego','receta','aforo','instal','solucion','partes','global'],equipo:['tareas','otrat','mensajes'],almacen:['almacen','material','montaje'],
   datos:['informe','climanv','m3mes','historial','graficas','cultivo','cuaderno','tiempo','satelite','diagnostico','chatia'],lab:['catalogo','taller','aparatos','cajon']};
 const HOY_FILAS=[['riego','Riego'],['equipo','Equipo'],['almacen','Almacén'],['datos','Datos'],['lab','Taller']];
 function hoyFilas(cl){const G=gruposAct(),ic=k=>(HOY_T.find(x=>x[0]===k)||[])[2]||HOY_IC[k]||IC_MAS,nom=k=>k==='instal'?'Mapa de la finca':k==='mapa'?'Mapa de la finca':((HOY_T.find(x=>x[0]===k)||[])[1]||(TABS.find(x=>x[0]===k)||[])[1]||k);
@@ -3108,6 +3115,151 @@ function coNavesHTML(d){const P=(st.cfg.coste||{}).hora,hay=P!=null||Object.keys
     <div class="note">El €/kg reparte todas las horas de la nave (también destallar, bajar planta…) entre los kilos recolectados en esas fechas. Para que salga bien, el parte tiene que llevar la nave y, al recolectar, los kilos o las cajas.</div></section>`}
 $('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.coph==null||!esGestor())return;const v=num(t.value);st.cfg.coste={...(st.cfg.coste||{})};const ph={...(st.cfg.coste.ph||{})};if(v==null)delete ph[t.dataset.coph];else ph[t.dataset.coph]=v;st.cfg.coste.ph=ph;st.dirtyCfg=true;renderSave();renderMain()});
 $('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.coprecio==null||!esGestor())return;const v=num(t.value);st.cfg.coste={...(st.cfg.coste||{})};if(v==null)delete st.cfg.coste.hora;else st.cfg.coste.hora=v;st.dirtyCfg=true;renderSave();renderMain()});
+
+/* ---------- Órdenes de tratamiento: el encargado manda producto, dosis, lugar y hora; al aplicador le llega en su idioma, la puede escuchar
+   y marca que la ha hecho. Hecha, el encargado la pasa al cuaderno con todo rellenado. Las etiquetas van traducidas en la app (no dependen
+   de la IA); la IA solo traduce lo que se escribe a mano (plaga, protección, indicaciones). ---------- */
+const OT_LG=[['es','Español'],['ar','العربية'],['fr','Français'],['ro','Română'],['en','English']];
+const OT_NOM={es:'español',ar:'árabe (árabe estándar sencillo, que lo entienda un trabajador marroquí)',fr:'francés',ro:'rumano',en:'inglés'};
+const OT_VOZ={es:'es-ES',ar:'ar-SA',fr:'fr-FR',ro:'ro-RO',en:'en-GB'};
+const OT_EPI='Mascarilla, guantes, gafas y traje';
+const OT_PLAGAS=['Tuta absoluta','Araña roja','Mosca blanca','Trips','Pulgón','Orugas','Botrytis','Oídio','Mildiu','Vasates'];
+const OT_TX={
+  es:{trat:'Tratamiento',contra:'Contra',dosis:'Cuánto echar',mezcla:'{p} en {c} L de agua',conc:'Dosis',lugar:'Dónde',nave:'Nave',hora:'Cuándo',hoy:'Hoy',man:'Mañana',maq:'Máquina',epi:'Protección obligatoria',epiTxt:OT_EPI,ps:'No recoger hasta',notas:'Indicaciones',hecha:'Ya lo he hecho',ok:'Confirmar',cancel:'Cancelar',nota:'¿Algo que contar? (opcional)',escuchar:'Escuchar',hechoOk:'Hecho. Gracias',pend:'Pendiente',hechoP:'Hecho',ml:'ml',L:'L',g:'g',kg:'kg',m2:'m²'},
+  ar:{trat:'معالجة',contra:'ضد',dosis:'الكمية',mezcla:'{p} في {c} لتر من الماء',conc:'الجرعة',lugar:'المكان',nave:'الدفيئة',hora:'الوقت',hoy:'اليوم',man:'غدًا',maq:'الآلة',epi:'الحماية الإلزامية',epiTxt:'كمامة، قفازات، نظارات وبدلة واقية',ps:'لا تجني قبل',notas:'تعليمات',hecha:'لقد انتهيت',ok:'تأكيد',cancel:'إلغاء',nota:'هل هناك شيء تريد قوله؟ (اختياري)',escuchar:'استمع',hechoOk:'تم. شكرًا',pend:'قيد الانتظار',hechoP:'تم',ml:'مل',L:'لتر',g:'غ',kg:'كغ',m2:'م²'},
+  fr:{trat:'Traitement',contra:'Contre',dosis:'Quantité',mezcla:'{p} dans {c} L d’eau',conc:'Dose',lugar:'Où',nave:'Serre',hora:'Quand',hoy:'Aujourd’hui',man:'Demain',maq:'Appareil',epi:'Protection obligatoire',epiTxt:'Masque, gants, lunettes et combinaison',ps:'Ne pas récolter avant le',notas:'Consignes',hecha:'C’est fait',ok:'Confirmer',cancel:'Annuler',nota:'Quelque chose à signaler ? (facultatif)',escuchar:'Écouter',hechoOk:'Fait. Merci',pend:'À faire',hechoP:'Fait',ml:'ml',L:'L',g:'g',kg:'kg',m2:'m²'},
+  ro:{trat:'Tratament',contra:'Împotriva',dosis:'Cât se pune',mezcla:'{p} în {c} L de apă',conc:'Doză',lugar:'Unde',nave:'Sera',hora:'Când',hoy:'Azi',man:'Mâine',maq:'Echipament',epi:'Protecție obligatorie',epiTxt:'Mască, mănuși, ochelari și combinezon',ps:'Nu recoltați până la',notas:'Indicații',hecha:'Am terminat',ok:'Confirmă',cancel:'Anulează',nota:'Ceva de spus? (opțional)',escuchar:'Ascultă',hechoOk:'Gata. Mulțumim',pend:'De făcut',hechoP:'Gata',ml:'ml',L:'L',g:'g',kg:'kg',m2:'m²'},
+  en:{trat:'Treatment',contra:'Against',dosis:'How much',mezcla:'{p} in {c} L of water',conc:'Dose',lugar:'Where',nave:'Greenhouse',hora:'When',hoy:'Today',man:'Tomorrow',maq:'Equipment',epi:'Mandatory protection',epiTxt:'Mask, gloves, goggles and suit',ps:'Do not harvest until',notas:'Instructions',hecha:'I have done it',ok:'Confirm',cancel:'Cancel',nota:'Anything to report? (optional)',escuchar:'Listen',hechoOk:'Done. Thank you',pend:'To do',hechoP:'Done',ml:'ml',L:'L',g:'g',kg:'kg',m2:'m²'}};
+const otT=lg=>OT_TX[lg]||OT_TX.es;
+const OT_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6M10 3v4l-4 6v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7l-4-6V3"/><path d="M6 14h12"/></svg>';
+st.ot={list:null,form:null,lang:{},done:null,nota:'',conf:null,busy:false,err:null};
+/* Producto total: dosis × caldo (por hL) o dosis × superficie (por ha o por 1000 m²). En ml o g. */
+function otTotal(o){const d=+o.dosis,u=o.ud||'',S=+o.sup||0,C=+o.caldo||0;if(!(d>0))return null;const b=/^(kg|g)\//.test(u)?'g':'ml';let v=null;
+  if(/\/hL$/.test(u)){if(C>0)v=d*C/100}else if(/\/ha$/.test(u)){if(S>0)v=d*S/10}else if(/1000 m²$/.test(u)){if(S>0)v=d*S}
+  return v==null?null:{v,b}}
+function otCant(t,lg){const T=otT(lg),big=t.v>=1000,v=big?t.v/1000:t.v,u=t.b==='g'?(big?T.kg:T.g):(big?T.L:T.ml);return fmt(v,big?(v>=100?0:v%1?2:0):0)+' '+u}
+function otMezcla(o,lg){const t=otTotal(o),T=otT(lg);if(!t)return o.dosis!=null?fmt(o.dosis,o.dosis%1?2:0)+' '+o.ud:'—';const p=otCant(t,lg);return o.caldo>0?T.mezcla.replace('{p}',p).replace('{c}',fmt(o.caldo,0)):p}
+function otLugar(o,lg){const T=otT(lg);return [o.cab?cabNombre(o.cab):'',o.nave!=null&&o.nave!==''?T.nave+' '+o.nave:'',o.sup>0?fmt(o.sup,0)+' '+T.m2:''].filter(Boolean).join(' · ')||'—'}
+function otCuando(o,lg){const T=otT(lg),m=sigD(hoy());let d=o.fecha===hoy()?T.hoy:o.fecha===m?T.man:'';
+  if(!d)try{d=new Date(o.fecha+'T12:00').toLocaleDateString(({es:'es-ES',ar:'ar-MA',fr:'fr-FR',ro:'ro-RO',en:'en-GB'})[lg]||'es-ES',{weekday:'long',day:'numeric',month:'long'})}catch(e){d=fD(o.fecha)}
+  return d+(o.hora?' · '+o.hora:'')}
+const otTxt=(o,lg,k)=>lg!=='es'&&lg===o.idioma&&o.tr&&o.tr[k]?o.tr[k]:o[k];
+const otEpi=(o,lg)=>!o.epi||o.epi===OT_EPI?otT(lg).epiTxt:otTxt(o,lg,'epi');
+const otLgDe=o=>st.ot.lang[o.id]||(o.para===miEmail()?o.idioma:'es')||'es';
+function otResumen(o,lg){return [otMezcla(o,lg),otLugar(o,lg),otCuando(o,lg)].join(' · ')}
+let otLoading=false;
+async function otLoad(){if(otLoading)return;otLoading=true;st.ot.err=null;
+  try{let l;if(esGestor()||Store.mode!=='fb')l=await Store.listCol('ordenes',300);else{const me=miEmail();l=me?(await Store.db.collection('ordenes').where('para','==',me).get()).docs.map(d=>({...d.data(),id:d.id})):[]}
+    st.ot.list=l.filter(x=>!x.borrado).sort((a,b)=>(a.ts||'')<(b.ts||'')?1:-1)}catch(e){st.ot.list=st.ot.list||[];st.ot.err=e&&e.code||'error'}
+  otLoading=false;otVisto();if(['otrat','cotrat'].includes(st.tab))renderMain()}
+function otVisto(){const me=miEmail();if(!me)return;for(const o of st.ot.list||[])if(o.para===me&&!o.visto&&!o.hecha){o.visto=ahoraISO();Store.updCol('ordenes',o.id,{visto:o.visto}).catch(()=>{})}}
+function otPersonaIdioma(email){try{return (JSON.parse(localStorage.getItem('abono.otidi')||'{}'))[email]||null}catch(e){return null}}
+function otGuardaIdioma(email,lg){try{const m=JSON.parse(localStorage.getItem('abono.otidi')||'{}');m[email]=lg;localStorage.setItem('abono.otidi',JSON.stringify(m))}catch(e){}}
+function otProds(){return [...new Set([...(st.ot.list||[]).map(o=>o.prod),...(st.cuad||[]).filter(x=>x.tipo==='fito').map(x=>x.prod)].filter(Boolean))]}
+function otNueva(){const c=cabsVis()[0];st.ot.form={para:'',idioma:'es',plaga:'',prod:'',reg:'',ma:'',dosis:'',ud:'cc/hL',cab:st.cab||(c&&c.id)||'',nave:'',sup:'',caldo:'',eq:'',fecha:sigD(hoy()),hora:'07:00',ps:'',epi:OT_EPI,notas:''};if(st.cuad===null&&esGestor())loadCuad()}
+function otFormHTML(){const f=st.ot.form,ps=personas(),eqs=cqC().equipos,t=otTotal({...f,dosis:num(f.dosis),sup:num(f.sup),caldo:num(f.caldo)}),dest=ps.find(u=>u.email===f.para);
+  const inp=(k,l,o={})=>`<div class="field"${o.full?' style="grid-column:1/-1"':''}><label for="otf_${k}">${l}</label><div class="inp${o.u?' sm':''}"><input id="otf_${k}" data-otf="${k}" ${o.type?`type="${o.type}"`:''} ${o.num?'inputmode="decimal"':''} ${o.list?`list="${o.list}"`:''} style="text-transform:none${o.u?'':';text-align:left'}" value="${esc(f[k]??'')}" ${o.ph?`placeholder="${esc(o.ph)}"`:''} autocomplete="off">${o.u?`<span class="u">${o.u}</span>`:''}</div></div>`;
+  const nv=MAPAS[f.cab]?MAPAS[f.cab].naves:null;
+  return `<section class="card" id="ot_form"><div><h3>Nueva orden de tratamiento</h3><div class="sub">Al aplicador le llega al móvil en su idioma, con la cantidad de producto ya calculada</div></div>
+    <div class="frm"><div class="field"><label for="otf_para">Aplicador</label><div class="inp"><select id="otf_para" data-otf="para"><option value="">— elige —</option>${ps.map(u=>`<option value="${esc(u.email)}" ${f.para===u.email?'selected':''}>${esc(u.nombre)}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="otf_idioma">Su idioma</label><div class="inp"><select id="otf_idioma" data-otf="idioma">${OT_LG.map(([k,n])=>`<option value="${k}" ${f.idioma===k?'selected':''}>${n}</option>`).join('')}</select></div></div>
+      ${inp('plaga','Contra qué (plaga o enfermedad)',{list:'ot_plagas'})}
+      ${inp('prod','Producto (nombre comercial)',{list:'ot_prods'})}
+      ${inp('reg','Nº de registro')}${inp('ma','Materia activa')}
+      ${inp('dosis','Dosis',{num:1})}
+      <div class="field"><label for="otf_ud">Unidad de la dosis</label><div class="inp"><select id="otf_ud" data-otf="ud">${CQ_UD.map(([a,b])=>`<option value="${esc(a)}" ${f.ud===a?'selected':''}>${esc(b)}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="otf_cab">Cabezal</label><div class="inp"><select id="otf_cab" data-otf="cab"><option value="">—</option>${cabsVis().map(c=>`<option value="${c.id}" ${f.cab===c.id?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div>
+      ${nv?`<div class="field"><label for="otf_nave">Nave</label><div class="inp"><select id="otf_nave" data-otf="nave"><option value="">Todo el cabezal</option>${nv.map(x=>`<option value="${x.n}" ${String(f.nave)===String(x.n)?'selected':''}>Nave ${x.n}</option>`).join('')}</select></div></div>`:inp('nave','Nave',{num:1})}
+      ${inp('sup','Superficie',{num:1,u:'m²'})}${inp('caldo','Agua (caldo total)',{num:1,u:'L'})}
+      ${eqs.length?`<div class="field"><label for="otf_eq">Máquina</label><div class="inp"><select id="otf_eq" data-otf="eq"><option value="">—</option>${eqs.map(e=>`<option value="${e.id}" ${f.eq===e.id?'selected':''}>${esc(e.nom)}</option>`).join('')}</select></div></div>`:''}
+      ${inp('fecha','Día',{type:'date'})}${inp('hora','Hora',{type:'time'})}${inp('ps','Plazo de seguridad',{num:1,u:'días'})}
+      ${inp('epi','Protección obligatoria',{full:1})}
+      <div class="field" style="grid-column:1/-1"><label for="otf_notas">Indicaciones (opcional)</label><textarea id="otf_notas" data-otf="notas" rows="2" style="text-transform:none" placeholder="Ej.: mojar bien el envés de las hojas; cerrar ventanas al terminar">${esc(f.notas)}</textarea></div></div>
+    <datalist id="ot_plagas">${OT_PLAGAS.map(x=>`<option value="${esc(x)}">`).join('')}</datalist><datalist id="ot_prods">${otProds().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+    <div class="ot-calc" id="ot_total">${otCalcHTML(f,t)}</div>
+    ${f.idioma!=='es'?`<div class="note">Lo que escribes a mano (plaga, protección, indicaciones) lo traduce la IA al ${esc(OT_NOM[f.idioma].split(' (')[0])}; el resto ya va traducido.</div>`:''}
+    <div class="row"><button class="btn pri" data-act="ot-enviar" ${st.ot.busy?'disabled':''}>${st.ot.busy?(f.idioma!=='es'?'Traduciendo y enviando…':'Enviando…'):dest?'Enviar a '+esc(dest.nombre.replace(/ \(yo\)$/,'')):'Enviar'}</button><button class="btn" data-act="ot-cerrar">Cancelar</button></div></section>`}
+function otCalcHTML(f,t){if(!t){const u=f.ud||'';return `<small class="note">${/\/hL$/.test(u)?'Pon el agua (caldo total) para calcular el producto que hay que echar.':'Pon la superficie para calcular el producto que hay que echar.'}</small>`}
+  const C=num(f.caldo),S=num(f.sup);return `<span>Producto a echar</span><b>${esc(otCant(t,'es'))}</b>${C>0?`<small>en ${fmt(C,0)} L de agua${S>0?` · ${fmt(C/(S/10000),0)} L/ha`:''}</small>`:''}`}
+async function otTraducir(o){const src={};for(const k of ['plaga','notas','epi'])if(o[k]&&!(k==='epi'&&o[k]===OT_EPI))src[k]=o[k];if(!Object.keys(src).length)return {};
+  const pr=`Traduce al ${OT_NOM[o.idioma]} los textos de este JSON. Son instrucciones de un tratamiento fitosanitario para un trabajador de un invernadero de tomate en Almería.
+Frases cortas y sencillas. NO traduzcas nombres comerciales de productos ni nombres científicos de plagas (déjalos tal cual) y no cambies números ni unidades.
+Devuelve únicamente el JSON con las mismas claves, sin texto alrededor:
+${JSON.stringify(src)}`;
+  try{const r=await Promise.race([iaFotoJson(pr,[]),new Promise((_,rej)=>setTimeout(()=>rej({code:'tiempo'}),30000))]);if(!r||typeof r!=='object')return null;const out={};for(const k in src)if(typeof r[k]==='string'&&r[k].trim())out[k]=r[k].trim();return Object.keys(out).length?out:null}catch(e){console.warn('traducir',e);return null}}
+async function otEnviar(){const f=st.ot.form;if(!f||st.ot.busy)return;const u=personas().find(x=>x.email===f.para);
+  if(!u)return toast('Elige el aplicador');if(!f.prod.trim())return toast('Pon el producto');if(num(f.dosis)==null)return toast('Pon la dosis');
+  const eq=cqC().equipos.find(e=>e.id===f.eq);
+  const o={ts:ahoraISO(),fecha:f.fecha||hoy(),hora:f.hora||'',para:u.email,paraNombre:u.nombre.replace(/ \(yo\)$/,''),idioma:f.idioma||'es',plaga:f.plaga.trim(),prod:f.prod.trim(),reg:f.reg.trim(),ma:f.ma.trim(),
+    dosis:num(f.dosis),ud:f.ud,cab:f.cab||'',nave:f.nave===''||f.nave==null?null:+f.nave,sup:num(f.sup),caldo:num(f.caldo),eq:f.eq||'',eqNom:eq?eq.nom:'',ps:num(f.ps),epi:(f.epi||'').trim(),notas:(f.notas||'').trim(),
+    finca:fincaAct()?fincaAct().id:'',creadaPor:yoNombre(),creadaEmail:miEmail(),hecha:false,tr:null};
+  st.ot.busy=true;renderMain();if(o.idioma!=='es')o.tr=await otTraducir(o);
+  try{const id=await Store.addCol('ordenes',o);st.ot.list=st.ot.list||[];st.ot.list.unshift({...o,id});otGuardaIdioma(o.para,o.idioma);
+    pushEnviar([o.para],otT(o.idioma).trat+': '+o.prod,otResumen(o,o.idioma),'orden-'+id,veRiegoE(o.para)?'otrat':'cotrat');
+    st.ot.form=null;toast('Orden enviada a '+o.paraNombre+(o.idioma!=='es'&&o.tr===null?' (las notas van en español: no se pudo traducir)':''),5000)}catch(e){toast(errMsg(e))}
+  st.ot.busy=false;renderMain()}
+function otCardHTML(o){const me=miEmail(),mia=o.para===me,ges=esGestor(),lg=otLgDe(o),T=otT(lg),plaga=otTxt(o,lg,'plaga'),notas=otTxt(o,lg,'notas'),t=otTotal(o);
+  const conc=o.dosis!=null&&t?fmt(o.dosis,o.dosis%1?2:0)+' '+o.ud:'';
+  const meta=[`${avatarHTML({n:o.paraNombre},'sm')} Para ${esc(o.paraNombre||'')}`,`Mandada por ${esc(o.creadaPor||'')} el ${fD(o.ts.slice(0,10))}`,o.visto&&!o.hecha?`<b>Vista</b> ${fHora(o.visto)}`:(!o.hecha?'Sin abrir todavía':''),o.hecha?`<b>Hecha</b> ${fHora(o.hechaTs)} por ${esc(o.hechaPor||'')}`:'',o.idioma!=='es'?`Enviada en ${esc((OT_LG.find(x=>x[0]===o.idioma)||[])[1]||o.idioma)}${o.tr===null&&(o.notas||o.plaga)?' (notas sin traducir)':''}`:''].filter(Boolean);
+  let acc='';
+  if(mia&&!o.hecha){acc=st.ot.done===o.id?`<div class="field"><label for="ot_nota">${esc(T.nota)}</label><textarea id="ot_nota" data-otnota="1" rows="2" style="text-transform:none">${esc(st.ot.nota)}</textarea></div>
+      <div class="row"><button class="btn pri ot-big" data-act="ot-ok" data-id="${o.id}">${esc(T.ok)}</button><button class="btn" data-act="ot-cancel">${esc(T.cancel)}</button></div>`
+    :`<div class="row"><button class="btn pri ot-big" data-act="ot-hecha" data-id="${o.id}">✓ ${esc(T.hecha)}</button><button class="btn" data-act="ot-hablar" data-id="${o.id}">🔊 ${esc(T.escuchar)}</button></div>`}
+  else acc=`<div class="row"><button class="btn" data-act="ot-hablar" data-id="${o.id}">🔊 ${esc(T.escuchar)}</button>${ges&&o.hecha?(o.cuad?'<span class="pill ok">En el cuaderno</span>':`<button class="btn pri" data-act="ot-cuad" data-id="${o.id}">Apuntar en el cuaderno</button>`):''}
+    ${ges?(st.ot.conf===o.id?`<span class="note">¿Borrar la orden?</span><button class="btn danger" data-act="ot-del-yes" data-id="${o.id}">Sí, borrar</button><button class="btn" data-act="ot-cancel">No</button>`:`<button class="btn" data-act="ot-del" data-id="${o.id}">Borrar</button>`):''}</div>`;
+  return `<article class="ot${o.hecha?' hecha':''}" id="ot_${o.id}"><div class="pick ot-lg">${OT_LG.map(([k,n])=>`<button class="chip" data-otlg="${o.id}" data-v="${k}" aria-pressed="${lg===k}" lang="${k}">${n}</button>`).join('')}</div>
+    <div class="ot-cuerpo" dir="${lg==='ar'?'rtl':'ltr'}" lang="${lg}">
+    <div class="ot-h"><div class="ot-ico">${OT_SVG}</div><div class="ot-t"><small>${esc(T.trat)}</small><b>${esc(o.prod)}</b>${plaga?`<small>${esc(T.contra)} ${esc(plaga)}</small>`:''}</div><span class="pill ${o.hecha?'ok':'warn'}">${esc(o.hecha?T.hechoP:T.pend)}</span></div>
+    <div class="ot-dosis"><span>${esc(T.dosis)}</span><b>${esc(otMezcla(o,lg))}</b>${conc?`<small>${esc(T.conc)}: ${esc(conc)}</small>`:''}</div>
+    <dl class="ot-dl"><div><dt>${esc(T.lugar)}</dt><dd>${esc(otLugar(o,lg))}</dd></div><div><dt>${esc(T.hora)}</dt><dd>${esc(otCuando(o,lg))}</dd></div>
+      ${o.eqNom?`<div><dt>${esc(T.maq)}</dt><dd>${esc(o.eqNom)}</dd></div>`:''}<div><dt>${esc(T.epi)}</dt><dd>${esc(otEpi(o,lg))}</dd></div>
+      ${o.ps>0?`<div><dt>${esc(T.ps)}</dt><dd>${esc(fD(plAdd(o.fecha,+o.ps)))}</dd></div>`:''}${notas?`<div class="full"><dt>${esc(T.notas)}</dt><dd>${esc(notas)}</dd></div>`:''}</dl>
+    ${o.hecha&&o.nota?`<div class="hecho">${esc(o.nota)}</div>`:''}${acc}</div>
+    ${ges||!mia?`<div class="ot-meta">${meta.map(x=>`<span>${x}</span>`).join('')}</div>`:''}</article>`}
+function vOtrat(){if(st.ot.list===null){otLoad();return '<section class="card"><div class="note">Cargando órdenes de tratamiento…</div></section>'}
+  const ges=esGestor(),me=miEmail(),L=st.ot.list.filter(o=>ges||o.para===me),pend=L.filter(o=>!o.hecha).sort((a,b)=>(a.fecha+a.hora)<(b.fecha+b.hora)?-1:1),hech=L.filter(o=>o.hecha).sort((a,b)=>(a.hechaTs||'')<(b.hechaTs||'')?1:-1).slice(0,30);
+  let h='';
+  if(st.ot.err)h+=`<div class="banner">${st.ot.err==='permission-denied'?'Sin permiso para leer las órdenes de tratamiento: hay que actualizar las reglas de la base de datos.':'No se pudieron cargar las órdenes.'}</div>`;
+  if(ges)h+=st.ot.form?otFormHTML():`<div class="row"><button class="btn pri" data-act="ot-nueva">+ Nueva orden de tratamiento</button></div>`;
+  h+=`<section class="card"><div><h3>${ges?'Pendientes':'Tus tratamientos'}</h3><div class="sub">${pend.length} ${pend.length===1?'orden':'órdenes'} sin hacer</div></div>${pend.length?`<div class="ots">${pend.map(otCardHTML).join('')}</div>`:`<div class="note">${ges?'No hay tratamientos pendientes.':'No tienes tratamientos pendientes.'}</div>`}</section>`;
+  if(hech.length)h+=`<section class="card"><div><h3>Hechos</h3><div class="sub">Los últimos ${hech.length}${ges?' · pásalos al cuaderno con un toque':''}</div></div><div class="ots">${hech.map(otCardHTML).join('')}</div></section>`;
+  return h}
+function otHablar(id){const o=(st.ot.list||[]).find(x=>x.id===id);if(!o)return;const lg=otLgDe(o),T=otT(lg),pl=otTxt(o,lg,'plaga'),nt=otTxt(o,lg,'notas');
+  const txt=[T.trat+': '+o.prod,pl?T.contra+' '+pl:'',T.dosis+': '+otMezcla(o,lg),T.lugar+': '+otLugar(o,lg),T.hora+': '+otCuando(o,lg),T.epi+': '+otEpi(o,lg),nt?T.notas+': '+nt:''].filter(Boolean).join('. ');
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);u.lang=OT_VOZ[lg]||'es-ES';const v=speechSynthesis.getVoices().find(v=>(v.lang||'').toLowerCase().startsWith(lg));if(v)u.voice=v;u.rate=.9;speechSynthesis.speak(u);window._otVoz=txt}catch(e){toast('Este móvil no puede leer en voz alta')}}
+async function otHecha(id){const o=(st.ot.list||[]).find(x=>x.id===id);if(!o)return;const lg=otLgDe(o),p={hecha:true,hechaTs:ahoraISO(),hechaPor:yoNombre(),nota:(st.ot.nota||'').trim()};
+  try{await Store.updCol('ordenes',id,p);Object.assign(o,p);st.ot.done=null;st.ot.nota='';
+    if(o.creadaEmail)pushEnviar([o.creadaEmail],'Tratamiento hecho: '+o.prod,`Por ${p.hechaPor} · ${otLugar(o,'es')}${p.nota?' · '+p.nota:''}`,'ordenhecha-'+id,'otrat',{urgente:false});toast(otT(lg).hechoOk)}catch(e){toast(errMsg(e))}renderMain()}
+function otCuad(id){const o=(st.ot.list||[]).find(x=>x.id===id);if(!o)return;if(st.cuad===null)loadCuad();const f=cqFormDe('fito',null),c=cqC(),n=s=>(s||'').trim().toLowerCase();
+  f.fecha=(o.hechaTs||o.fecha).slice(0,10);f.hora=o.hora||'';f.plaga=o.plaga||'';f.prod=o.prod;f.reg=o.reg||'';f.ma=o.ma||'';f.dosis=o.dosis??'';f.ud=o.ud||'';f.ps=o.ps??'';
+  if(o.sup>0){f.sup=+(o.sup/10000).toFixed(4);if(o.caldo>0)f.caldo=Math.round(o.caldo/(o.sup/10000))}
+  const ap=c.pers.find(p=>n(p.nom)===n(o.paraNombre)||n(p.nom).startsWith(n(o.paraNombre)));if(ap)f.apl=ap.id;if(o.eq&&c.equipos.some(e=>e.id===o.eq))f.eq=o.eq;
+  f.obs=[o.cab?'Lugar: '+otLugar(o,'es'):'',o.notas,o.nota?'Al terminar: '+o.nota:''].filter(Boolean).join(' · ');f._orden=o.id;
+  st.cq.sec='fito';st.cq.form=f;st.tab='cuaderno';renderCabs();renderTabs();renderMain();window.scrollTo(0,0);setTimeout(()=>{const el=$('#cq_form');if(el)el.scrollIntoView({block:'start'})},60);toast('Revisa las parcelas y guarda: queda en el cuaderno',5000)}
+async function otEnCuaderno(id){const o=(st.ot.list||[]).find(x=>x.id===id);try{await Store.updCol('ordenes',id,{cuad:true});if(o)o.cuad=true}catch(e){}}
+async function otBorrar(id){try{await Store.delCol('ordenes',id);st.ot.list=st.ot.list.filter(x=>x.id!==id);st.ot.conf=null;toast('Orden borrada')}catch(e){toast(errMsg(e))}renderMain()}
+/* Al elegir un producto ya usado se rellenan el registro, la materia activa, la dosis y el plazo (de la última orden o del cuaderno) */
+function otAutoProd(f){const v=n=>(n||'').trim().toLowerCase(),p=v(f.prod);if(!p)return 0;
+  const prev=[...(st.ot.list||[]).filter(o=>v(o.prod)===p).map(o=>({...o,_f:o.ts})),...(st.cuad||[]).filter(x=>x.tipo==='fito'&&v(x.prod)===p).map(x=>({...x,_f:x.fecha}))].sort((a,b)=>a._f<b._f?1:-1)[0];if(!prev)return 0;
+  let k=0;for(const c of ['reg','ma','dosis','ud','ps','plaga'])if((f[c]===''||f[c]==null||(c==='ud'&&f.dosis===''))&&prev[c]!=null&&prev[c]!==''){f[c]=c==='dosis'||c==='ps'?inVal(prev[c]):prev[c];k++}return k}
+$('#main').addEventListener('click',e=>{const b=e.target.closest('[data-act^="ot-"],[data-otlg]');if(!b)return;const a=b.dataset.act,id=b.dataset.id;
+  if(b.dataset.otlg){st.ot.lang[b.dataset.otlg]=b.dataset.v;renderMain();return}
+  if(a==='ot-nueva'){otNueva();renderMain();setTimeout(()=>{const el=$('#ot_form');if(el)el.scrollIntoView({block:'start'})},40)}
+  else if(a==='ot-cerrar'){st.ot.form=null;renderMain()}
+  else if(a==='ot-enviar')otEnviar();
+  else if(a==='ot-hecha'){st.ot.done=id;st.ot.nota='';renderMain()}
+  else if(a==='ot-ok')otHecha(id);
+  else if(a==='ot-cancel'){st.ot.done=null;st.ot.conf=null;renderMain()}
+  else if(a==='ot-hablar')otHablar(id);
+  else if(a==='ot-cuad')otCuad(id);
+  else if(a==='ot-del'){st.ot.conf=id;renderMain()}
+  else if(a==='ot-del-yes')otBorrar(id)});
+function onOtInput(e){const t=e.target;if(!t.dataset)return;if(t.dataset.otnota){st.ot.nota=t.value;return}const k=t.dataset.otf,f=st.ot.form;if(!k||!f)return;f[k]=t.value;
+  if(k==='para'&&e.type==='change'){f.idioma=otPersonaIdioma(t.value)||f.idioma;renderMain();return}
+  if(k==='prod'&&e.type==='change'){if(otAutoProd(f)){renderMain();toast('Rellenado con el último uso de '+f.prod+': revisa la dosis',5000)}return}
+  if(['idioma','cab','ud'].includes(k)&&e.type==='change'){if(k==='cab')f.nave='';renderMain();return}
+  if(['dosis','sup','caldo','ud'].includes(k)){const el=$('#ot_total');if(el)el.innerHTML=otCalcHTML(f,otTotal({...f,dosis:num(f.dosis),sup:num(f.sup),caldo:num(f.caldo)}))}}
+$('#main').addEventListener('input',onOtInput);$('#main').addEventListener('change',onOtInput);
 
 /* ---------- Leer informe: foto o captura de un informe o pantalla de clima; la IA saca los datos por nave y se apuntan en Clima y estrés ---------- */
 const UC_PROMPT=`Esta imagen es una foto o captura de un informe o pantalla de control de clima de un invernadero de tomate.
@@ -4829,7 +4981,7 @@ async function tlPoner(){if(!esAdminU())return;const a=($('#tlk_n1')||{}).value|
 document.addEventListener('click',e=>{if(!TL_TABS.includes(st.tab))return;const b=e.target.closest&&e.target.closest('[data-tlk]');if(!b)return;const a=b.dataset.tlk;
   if(a==='abrir')tlAbrir();else if(a==='poner')tlPoner();else if(a==='cerrar'){tlRecordar('');renderMain();window.scrollTo(0,0);toast('Taller cerrado con llave')}});
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!e.target||e.target.id!=='tlk_pw')return;e.preventDefault();tlAbrir()});
-const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,otrat:vOtrat,cotrat:vOtrat,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
 for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
@@ -5717,7 +5869,7 @@ async function cqGuardar(){const f=st.cq.form;if(!f)return;const t=f._t,falta=CQ
   if(t==='cosecha'){const pl=cqReg('fito').filter(x=>(x.parcelas||[]).includes(d.parcela)&&x.ps&&Date.parse(x.fecha)+x.ps*864e5>Date.parse(d.fecha));if(pl.length&&!f._aviso){f._aviso=1;return toast('Ojo: en esa parcela hay un plazo de seguridad sin cumplir ('+pl[0].prod+'). Pulsa Guardar otra vez si es correcto.')}}
   const id=f._id||('q'+Date.now().toString(36)+Math.random().toString(36).slice(2,5)),ant=(st.cuad||[]).find(x=>x.id===id);
   const doc={...(ant||{}),...d,tipo:t,ts:(ant&&ant.ts)||ahoraISO(),por:(ant&&ant.por)||yoNombre(),porEmail:(ant&&ant.porEmail)||miEmail()};delete doc.id;
-  try{await Store.setCol('cuaderno',id,doc);const L=st.cuad,i=L.findIndex(x=>x.id===id);if(i>=0)L[i]={...doc,id};else L.unshift({...doc,id});st.cq.form=null;toast('Guardado en el cuaderno');renderMain()}catch(e){toast(errMsg(e))}}
+  try{await Store.setCol('cuaderno',id,doc);const L=st.cuad,i=L.findIndex(x=>x.id===id);if(i>=0)L[i]={...doc,id};else L.unshift({...doc,id});st.cq.form=null;if(f._orden)otEnCuaderno(f._orden);toast('Guardado en el cuaderno');renderMain()}catch(e){toast(errMsg(e))}}
 async function cqBorrar(t,id){if(cqEsCfg(t)){for(const c of [st.cfg,st.savedCfg]){if(c.cuad&&c.cuad[t])c.cuad[t]=c.cuad[t].filter(x=>x.id!==id)}try{await Store.setConfig(st.savedCfg);st.cq.conf=null;renderMain();toast('Borrado')}catch(e){toast(errMsg(e))}return}
   try{await Store.delCol('cuaderno',id);st.cuad=st.cuad.filter(x=>x.id!==id);st.cq.conf=null;renderMain();toast('Borrado')}catch(e){toast(errMsg(e))}}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-cqs],[data-cqm],[data-act^="cq-"]');if(!b)return;

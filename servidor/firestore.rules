@@ -167,6 +167,15 @@ service cloud.firestore {
       allow write: if autorizado() && email == request.auth.token.email && request.resource.data.email == email;
     }
 
+    // Órdenes de tratamiento: las manda el encargado; el aplicador ve solo las suyas y solo puede marcar que la ha visto o hecho.
+    match /abonado_ordenes/{doc} {
+      allow read: if esGestor() || (autorizado() && resource.data.para == request.auth.token.email);
+      allow create, delete: if esGestor();
+      allow update: if esGestor()
+        || (autorizado() && resource.data.para == request.auth.token.email
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['visto', 'hecha', 'hechaTs', 'hechaPor', 'nota', 'mod']));
+    }
+
     match /{coleccion}/{doc} {
       allow read, write: if coleccion.matches('abonado_.*')
         && coleccion != 'abonado_acceso'
@@ -183,6 +192,7 @@ service cloud.firestore {
         && coleccion != 'abonado_notas'
         && coleccion != 'abonado_fichajes'
         && coleccion != 'abonado_posiciones'
+        && coleccion != 'abonado_ordenes'
         && veRiego();
     }
   }
