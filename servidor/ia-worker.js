@@ -3,13 +3,16 @@
 //   OPENAI_API_KEY     →  clave de la API de OpenAI (platform.openai.com → API keys)
 //   ANTHROPIC_API_KEY  →  clave de la API de Claude (platform.claude.com → API keys)
 // Si están las dos, se usa Claude (salvo que pongas PROVEEDOR = openai).
-// Opcionales: OPENAI_MODEL (por defecto gpt-6-sol; gpt-6-luna es mucho más barato), MODEL (modelo de Claude) y MODEL_RAPIDO
-// (el de AGRO, el asistente de voz, que tiene que contestar rápido; por defecto claude-haiku-5-5).
+// Opcionales: OPENAI_MODEL (por defecto gpt-6-sol; gpt-6-luna es mucho más barato), MODEL (modelo de Claude para lo que es solo texto:
+// chat, traducciones, informes; por defecto claude-haiku-5-5, el barato), MODEL_FOTOS (para lo que lleva fotos: plagas, diagnóstico,
+// leer pantallas; por defecto claude-sonnet-5-5, que ve mucho mejor) y MODEL_RAPIDO (AGRO, el asistente de voz; claude-haiku-5-5).
+// Para gastar aún menos: MODEL_FOTOS = claude-haiku-5-5 (todo con Haiku). Para la máxima calidad: MODEL = claude-sonnet-5-5.
 // Solo responde a personas que han entrado en la app y que el administrador ha dado de alta.
 
 const PROYECTO = 'fertirrigacion-cabezales';           // proyecto de Firebase
 const ORIGENES = ['https://abonado.github.io'];          // desde dónde se puede usar
-const MODELO = 'claude-sonnet-5-5';
+const MODELO = 'claude-haiku-5-5';          // solo texto: barato y suficiente
+const MODELO_FOTOS = 'claude-sonnet-5-5';   // con fotos: aquí sí compensa el modelo bueno
 const MODELO_RAPIDO = 'claude-haiku-5-5';
 const MODELO_OPENAI = 'gpt-6-sol';
 const JWK_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
@@ -132,10 +135,10 @@ export default {
       method: 'POST',
       headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify(esChat ? {
-        model: env.MODEL || MODELO, max_tokens: 1500,
+        model: images.length ? (env.MODEL_FOTOS || MODELO_FOTOS) : (env.MODEL || MODELO), max_tokens: 1500,
         system: SISTEMA_CHAT + (body.contexto ? '\n\nDatos de la finca de quien pregunta (úsalos solo si vienen al caso):\n' + String(body.contexto).slice(0, 6000) : ''),
         messages: chat.map((m, i) => ({ role: m.role, content: i === chat.length - 1 ? [...images, { type: 'text', text: m.text }] : m.text }))
-      } : { model: rapido ? (env.MODEL_RAPIDO || MODELO_RAPIDO) : (env.MODEL || MODELO), max_tokens: rapido ? 700 : 4000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
+      } : { model: rapido ? (env.MODEL_RAPIDO || MODELO_RAPIDO) : images.length ? (env.MODEL_FOTOS || MODELO_FOTOS) : (env.MODEL || MODELO), max_tokens: rapido ? 700 : 4000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
     });
     const j = await r.json().catch(() => null);
     if (!r.ok) {
