@@ -94,7 +94,10 @@ h1{font-size:28px;line-height:1;color:var(--navy);font-weight:700}
 .ucext{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;font-size:13px;padding:6px 0}.ucext b{font-size:12px;letter-spacing:.05em;color:var(--muted)}.ucmed{display:grid;gap:2px;font-size:13px;padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--navy) 6%,var(--surface))}.ucmed b{font-size:12px;letter-spacing:.05em}
 .ucinv{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
 .ucres{display:grid;gap:8px;padding:10px 12px;margin-bottom:8px;border:1px dashed var(--line);border-radius:12px}.ucf{display:grid;grid-template-columns:minmax(80px,1fr) auto minmax(120px,auto);gap:8px;align-items:center;font-size:13px}
-@media (max-width:560px){.ucf{grid-template-columns:1fr;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}}.rendt .cotot td{border-top:2px solid var(--line)}
+@media (max-width:560px){.ucf{grid-template-columns:1fr;gap:4px;padding-bottom:6px;border-bottom:1px solid var(--line)}}.cobars{display:grid;gap:12px;margin:4px 0 6px}.cobar{display:grid;gap:4px}.cobar-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.cobar-h span{min-width:0}.cobar small{color:var(--muted)}.cobar .bar{height:12px;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}.cobar .bar i{display:block;height:100%;background:var(--accent);border-radius:5px}.summary.cosum{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.codia{display:grid;gap:4px}.codia svg{width:100%;height:auto;max-height:150px;overflow:visible}.codia rect{fill:var(--accent)}.codia line{stroke:var(--line)}.codia text{font-size:8px;fill:var(--muted)}.codia small{color:var(--muted)}
+.coph{margin:4px 0 8px}.coph summary{cursor:pointer;font-weight:600;padding:6px 0}
+.rendt .cotot td{border-top:2px solid var(--line)}
 .plr{list-style:none;margin:0;padding:0;display:grid;gap:8px}.plr li{border:1px solid var(--line);border-left:5px solid var(--c);border-radius:10px;padding:10px 12px;display:grid;gap:4px}
 .plh{display:flex;align-items:center;gap:8px}.plh i{width:12px;height:12px;border-radius:50%;background:var(--c)}.plh b{flex:1;font-size:15px}.plh em{font-style:normal;font-size:11px;font-weight:800;color:var(--c);letter-spacing:.05em}
 .plr span{font-size:13px}.plr .plp{font-weight:700;color:var(--ink)}.plr small{font-size:12.5px;color:var(--muted);line-height:1.4}
@@ -3076,18 +3079,55 @@ $('#main').addEventListener('change',e=>{const t=e.target;if(st.tab!=='cuaderno'
   if(n){renderMain();toast(`Rellenado con el último uso de ${prev.prod} (${fD(prev.fecha)}): revisa la dosis`,5000)}});
 
 /* ---------- Coste de mano de obra por nave: horas de los partes de colla × coste de la hora; kilos por hora y euros por kilo ---------- */
-function coNavesHTML(d){const P=(st.cfg.coste||{}).hora,N={};
-  for(const j of d.js)for(const t of j.trabajos||[]){if(!t.cab)continue;const k=t.cab+':'+(t.nave??''),x=N[k]=N[k]||{cab:t.cab,nave:t.nave,h:0,kg:0,cajas:0,lab:{}},hp=horasTrab(j,t)||0;x.h+=hp;x.lab[t.labor]=(x.lab[t.labor]||0)+hp;
-    for(const u of ['kg','cajas']){const v=cantT(t,u);if(v)x[u]+=v}}
-  const L=Object.values(N).filter(x=>x.h>0).sort((a,b)=>b.h-a.h);if(!L.length)return '';
-  const tot=L.reduce((s,x)=>({h:s.h+x.h,kg:s.kg+x.kg}),{h:0,kg:0}),eur=h=>P?fmt(h*P,0)+' €':'—',ekg=(h,kg)=>P&&kg?fmt(h*P/kg,2)+' €':'—',kgh=(kg,h)=>kg&&h?fmt(kg/h,1):'—';
-  return `<section class="card"><div><h3>Coste de mano de obra por nave</h3><div class="sub">Horas de las collas en cada nave por el coste de la hora. Sale solo de los partes: nadie apunta nada más</div></div>
-    <div class="field"><label for="co_precio">Coste de una hora de trabajo (con Seguridad Social)</label><div class="inp sm"><input id="co_precio" data-coprecio="1" inputmode="decimal" value="${inVal(P)}"><span class="u">€/h</span></div></div>
+const coPH=()=>(st.cfg.coste||{}).ph||{};
+const coTarifa=p=>{const r=coPH()[p];return r!=null?r:(st.cfg.coste||{}).hora??null};
+/* Reparte el dinero: cada persona, sus horas en cada trabajo por su precio; lo que le sobra de jornada sin trabajo apuntado va a «Sin labor apuntada» */
+function coCostes(d){const N={},L={},D={},T={h:0,e:0,kg:0,cajas:0,hSin:0};
+  const add=(o,k,ini)=>o[k]=o[k]||ini();
+  for(const j of d.js){const asig={};
+    for(const t of j.trabajos||[]){const kn=t.cab?t.cab+':'+(t.nave??''):'_',x=add(N,kn,()=>({cab:t.cab||null,nave:t.cab?t.nave:null,h:0,e:0,kg:0,cajas:0,lab:{}})),l=add(L,t.labor,()=>({labor:t.labor,h:0,e:0}));
+      for(const u of ['kg','cajas']){const v=cantT(t,u);if(v){x[u]+=v;T[u]+=v}}
+      for(const p of enTrabajo(j,t)){const hh=horasEn(j,t,p);if(!hh)continue;asig[p]=(asig[p]||0)+hh;const r=coTarifa(p),e=r!=null?hh*r:0;if(r==null)T.hSin+=hh;
+        x.h+=hh;x.e+=e;x.lab[t.labor]=(x.lab[t.labor]||0)+hh;l.h+=hh;l.e+=e;T.h+=hh;T.e+=e;D[j.fecha]=(D[j.fecha]||0)+e}}
+    for(const p of presentes(j)){const sobra=horasP(j,p)-(asig[p]||0);if(sobra<0.05)continue;const r=coTarifa(p),e=r!=null?sobra*r:0,l=add(L,'_sin',()=>({labor:'_sin',h:0,e:0}));if(r==null)T.hSin+=sobra;
+      l.h+=sobra;l.e+=e;T.h+=sobra;T.e+=e;D[j.fecha]=(D[j.fecha]||0)+e}}
+  return{N,L:Object.values(L).sort((a,b)=>b.e-a.e||b.h-a.h),D,T}}
+const coNaveNom=x=>x.cab?esc(cabNombre(x.cab))+(x.nave!=null&&x.nave!==''?' · nave '+esc(x.nave):''):'Sin nave apuntada';
+const coEur=v=>fmt(v,0)+' €';
+function coBarras(rows){const mx=Math.max(...rows.map(r=>r.v),0)||1;
+  return `<div class="cobars">${rows.map(r=>`<div class="cobar"><div class="cobar-h"><span>${r.n}</span><b>${r.t}</b></div><div class="bar"><i style="width:${Math.max(1.5,r.v*100/mx).toFixed(1)}%"></i></div>${r.s?`<small>${r.s}</small>`:''}</div>`).join('')}</div>`}
+function coDiasSVG(d,D){const ds=[];for(let x=new Date(d.desde+'T12:00');isoD(x)<=d.hasta;x.setDate(x.getDate()+1))ds.push(isoD(x));if(ds.length<2)return '';
+  const mx=Math.max(...ds.map(f=>D[f]||0))||1,W=ds.length*12,H=70;
+  return `<div class="lbl">Coste de cada día</div><div class="codia"><svg viewBox="0 0 ${W} ${H+14}" role="img" aria-label="Coste de mano de obra de cada día">${ds.map((f,i)=>{const v=D[f]||0,h=v?Math.max(2,v*H/mx):0;return `<rect x="${i*12+2}" y="${H-h}" width="8" height="${h}" rx="2"><title>${fD(f)}: ${coEur(v)}</title></rect>`}).join('')}
+    <line x1="0" x2="${W}" y1="${H+.5}" y2="${H+.5}"/><text x="2" y="${H+12}">${fCorta(ds[0])}</text><text x="${W-2}" y="${H+12}" text-anchor="end">${fCorta(ds[ds.length-1])}</text></svg><small>Día más caro: ${coEur(mx)}</small></div>`}
+function coGenteVis(){const m=new Map();for(const c of collasVis())for(const p of c.miembros||[])if(p.activo!==false&&!m.has(p.id))m.set(p.id,{...p,colla:c.nombre});return[...m.values()].sort((a,b)=>a.n.localeCompare(b.n))}
+function coCosteHTML(d){const P=(st.cfg.coste||{}).hora,ph=coPH(),hay=P!=null||Object.keys(ph).length,C=coCostes(d),T=C.T,gente=coGenteVis();
+  let h=`<section class="card" id="co_coste"><div><h3>Coste de mano de obra</h3><div class="sub">${fCorta(d.desde)} a ${fCorta(d.hasta)} · sale solo de los partes de las collas: nadie apunta nada más</div></div>
+    <div class="field"><label for="co_precio">Coste de una hora de trabajo (con Seguridad Social)</label><div class="inp sm"><input id="co_precio" data-coprecio="1" inputmode="decimal" value="${inVal(P)}"><span class="u">€/h</span></div></div>`;
+  if(gente.length)h+=`<details class="coph"${Object.keys(ph).length?' open':''}><summary>Precio distinto para alguna persona${Object.keys(ph).length?` (${Object.keys(ph).length})`:''}</summary><div class="note">Para quien cobre distinto (oficial, encargado, destajo…). En blanco cuenta el precio general.</div>
+    <div class="frm">${gente.map(m=>`<div class="field"><label for="coph_${m.id}">${esc(m.n)}</label><div class="inp sm"><input id="coph_${m.id}" data-coph="${m.id}" inputmode="decimal" placeholder="${P!=null?inVal(P):''}" value="${inVal(ph[m.id])}"><span class="u">€/h</span></div></div>`).join('')}</div></details>`;
+  if(!hay||!T.h)return h+`<div class="note">${!T.h?'No hay horas apuntadas en estas fechas.':'Pon el coste de la hora para ver los euros.'}</div></section>`;
+  const dias=new Set(d.js.map(j=>j.fecha)).size,kgT=T.kg;
+  h+=`<div class="summary cosum"><div class="stat"><span>Total</span><b>${coEur(T.e)}</b><small>${fmt(T.h,0)} h trabajadas</small></div><div class="stat"><span>Por día</span><b>${coEur(T.e/(dias||1))}</b><small>${dias} ${dias===1?'día':'días'} con parte</small></div>
+    <div class="stat"><span>Cada kilo</span><b>${kgT?fmt(T.e/kgT,2)+' €':'—'}</b><small>${kgT?fmt(kgT,0)+' kg recolectados':'sin kilos apuntados'}</small></div><div class="stat"><span>La hora media</span><b>${fmt(T.e/(T.h-T.hSin||1),2)} €</b><small>${Object.keys(ph).length?'con los precios de cada uno':'precio general'}</small></div></div>`;
+  if(T.hSin>0.05)h+=`<div class="note"><span class="pill warn">Ojo</span> ${fmt(T.hSin,1)} h son de gente sin precio y no cuentan en los euros: pon el precio general.</div>`;
+  const tl=T.e||1;
+  h+=`<div class="lbl">En qué se va el dinero</div>`+coBarras(C.L.map(l=>({n:l.labor==='_sin'?'Sin labor apuntada':esc(LAB[l.labor]||l.labor),t:coEur(l.e),v:l.e,s:`${Math.round(l.e*100/tl)} % · ${fmt(l.h,1)} h`})));
+  const NV=Object.values(C.N).filter(x=>x.h>0).sort((a,b)=>b.e-a.e);
+  if(NV.length)h+=`<div class="lbl">Por nave</div>`+coBarras(NV.map(x=>({n:coNaveNom(x),t:coEur(x.e),v:x.e,s:`${Math.round(x.e*100/tl)} % · ${fmt(x.h,1)} h${x.kg?` · ${fmt(x.kg,0)} kg · <b>${fmt(x.e/x.kg,2)} €/kg</b>`:''}`})));
+  h+=coDiasSVG(d,C.D);
+  if(C.L.some(l=>l.labor==='_sin'))h+=`<div class="note">«Sin labor apuntada» son horas de jornada que el jefe no ha puesto en ningún trabajo del parte.</div>`;
+  return h+`</section>`}
+function coNavesHTML(d){const P=(st.cfg.coste||{}).hora,hay=P!=null||Object.keys(coPH()).length,C=coCostes(d);
+  const L=Object.values(C.N).filter(x=>x.cab&&x.h>0).sort((a,b)=>b.h-a.h);if(!L.length)return '';
+  const tot=L.reduce((s,x)=>({h:s.h+x.h,e:s.e+x.e,kg:s.kg+x.kg}),{h:0,e:0,kg:0}),eur=e=>hay?coEur(e):'—',ekg=(e,kg)=>hay&&kg?fmt(e/kg,2)+' €':'—',kgh=(kg,h)=>kg&&h?fmt(kg/h,1):'—';
+  return `<section class="card"><div><h3>Coste de mano de obra por nave</h3><div class="sub">Horas de las collas en cada nave por el precio de la hora de cada persona</div></div>
     <div class="tbl"><table class="rendt"><thead><tr><th>Nave</th><th>Horas</th><th>Coste</th><th>Kg</th><th>Kg/h</th><th>€/kg</th><th>En qué se van las horas</th></tr></thead><tbody>
-    ${L.map(x=>`<tr><td><b>${esc(cabNombre(x.cab))}</b>${x.nave!=null&&x.nave!==''?` · nave ${esc(x.nave)}`:''}</td><td>${fmt(x.h,1)}</td><td>${eur(x.h)}</td><td>${x.kg?fmt(x.kg,0):'—'}</td><td>${kgh(x.kg,x.h)}</td><td><b>${ekg(x.h,x.kg)}</b></td><td><small>${Object.entries(x.lab).sort((a,b)=>b[1]-a[1]).map(([l,h])=>`${esc(LAB[l]||l)} ${Math.round(h*100/x.h)} %`).join(' · ')}</small></td></tr>`).join('')}
-    <tr class="cotot"><td><b>Total</b></td><td><b>${fmt(tot.h,1)}</b></td><td><b>${eur(tot.h)}</b></td><td><b>${tot.kg?fmt(tot.kg,0):'—'}</b></td><td><b>${kgh(tot.kg,tot.h)}</b></td><td><b>${ekg(tot.h,tot.kg)}</b></td><td></td></tr></tbody></table></div>
-    ${P?'':'<div class="note">Pon el coste de la hora para ver los euros.</div>'}
+    ${L.map(x=>`<tr><td><b>${esc(cabNombre(x.cab))}</b>${x.nave!=null&&x.nave!==''?` · nave ${esc(x.nave)}`:''}</td><td>${fmt(x.h,1)}</td><td>${eur(x.e)}</td><td>${x.kg?fmt(x.kg,0):'—'}</td><td>${kgh(x.kg,x.h)}</td><td><b>${ekg(x.e,x.kg)}</b></td><td><small>${Object.entries(x.lab).sort((a,b)=>b[1]-a[1]).map(([l,h])=>`${esc(LAB[l]||l)} ${Math.round(h*100/x.h)} %`).join(' · ')}</small></td></tr>`).join('')}
+    <tr class="cotot"><td><b>Total</b></td><td><b>${fmt(tot.h,1)}</b></td><td><b>${eur(tot.e)}</b></td><td><b>${tot.kg?fmt(tot.kg,0):'—'}</b></td><td><b>${kgh(tot.kg,tot.h)}</b></td><td><b>${ekg(tot.e,tot.kg)}</b></td><td></td></tr></tbody></table></div>
+    ${hay?'':'<div class="note">Pon el coste de la hora para ver los euros.</div>'}
     <div class="note">El €/kg reparte todas las horas de la nave (también destallar, bajar planta…) entre los kilos recolectados en esas fechas. Para que salga bien, el parte tiene que llevar la nave y, al recolectar, los kilos o las cajas.</div></section>`}
+$('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.coph==null||!esGestor())return;const v=num(t.value);st.cfg.coste={...(st.cfg.coste||{})};const ph={...(st.cfg.coste.ph||{})};if(v==null)delete ph[t.dataset.coph];else ph[t.dataset.coph]=v;st.cfg.coste.ph=ph;st.dirtyCfg=true;renderSave();renderMain()});
 $('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset||t.dataset.coprecio==null||!esGestor())return;const v=num(t.value);st.cfg.coste={...(st.cfg.coste||{})};if(v==null)delete st.cfg.coste.hora;else st.cfg.coste.hora=v;st.dirtyCfg=true;renderSave();renderMain()});
 
 /* ---------- Leer informe: foto o captura de un informe o pantalla de clima; la IA saca los datos por nave y se apuntan en Clima y estrés ---------- */
@@ -5188,7 +5228,7 @@ function coRendHTML(){const d=coDatos(),vis=collasVis();
   // por labor
   h+=`<section class="card"><div><h3>Rendimiento por labor</h3><div class="sub">Cantidad hecha entre las horas de todas las personas que estaban en ese trabajo</div></div><div class="tbl"><table class="rendt"><thead><tr><th>Labor</th><th>Horas</th><th>Matas</th><th>Matas/h</th><th>Kg</th><th>Kg/h</th><th>Cajas</th><th>Cajas/h</th></tr></thead><tbody>
     ${d.lab.map(L=>`<tr><td><b>${esc(LAB[L.labor]||L.labor)}</b>${vis.length>1&&!st.co.fil?`<br><small class="nt">${esc(L.colla)}</small>`:''}</td><td>${fmt(L.h,1)}</td><td>${L.matas?fmt(L.matas,0):'—'}</td><td><b>${coRate(L.matas,L.h,'matas')}</b></td><td>${L.kg?fmt(L.kg,0):'—'}</td><td><b>${coRate(L.kg,L.h,'kg')}</b></td><td>${L.cajas?fmt(L.cajas,0):'—'}</td><td><b>${coRate(L.cajas,L.h,'cajas')}</b></td></tr>`).join('')}</tbody></table></div></section>`;
-  if(esGestor())h+=coNavesHTML(d);
+  if(esGestor())h+=coCosteHTML(d)+coNavesHTML(d);
   // por persona y labor
   const labs=LABORES.filter(([k])=>d.per.some(x=>x.lab[k]));if(!st.co.lab||!labs.some(([k])=>k===st.co.lab))st.co.lab=(labs.slice().sort((a,b)=>d.per.reduce((s,x)=>s+((x.lab[b[0]]||{}).h||0),0)-d.per.reduce((s,x)=>s+((x.lab[a[0]]||{}).h||0),0))[0]||[null])[0];
   if(st.co.lab){const L=st.co.lab,us=L==='recolectar'?['kg','cajas']:['matas'],filas=d.per.filter(x=>x.lab[L]).map(x=>({x,a:x.lab[L]}));
@@ -6789,7 +6829,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v190';
+window.APP_V='abonado-v191';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
