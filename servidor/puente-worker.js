@@ -22,6 +22,8 @@
 //   PUENTE_TOKEN    → una clave larga inventada; la misma se pone en la app (Ajustes → Sensores) para la pasarela casera
 //   TTN_TOKEN       → otra clave larga; en The Things Network, webhook → «Additional headers»: Authorization = Bearer <TTN_TOKEN>
 //   AVISOS_URL      → dirección del servidor de avisos (la misma de la app), sin barra final   (opcional: sin ella no avisa)
+//   AVISOS_SVC      → (Bindings → Service binding) enlace al worker abonado-avisos. NECESARIO si los dos están en la misma cuenta:
+//                     Cloudflare bloquea la llamada por la dirección .workers.dev (error 1042)
 //   INTERNO_TOKEN   → clave compartida con el servidor de avisos (secreto con el mismo nombre allí)     (opcional)
 //   ADMIN_EMAIL     → correo del administrador para los avisos                                       (opcional)
 // Y un disparador Cron:  */30 * * * *
@@ -141,38 +143,43 @@ async function registrarRiego(env, b) {
    administrador. El aviso de cada cabezal sustituye al anterior en el móvil (mismo «tag»), así no se amontonan. */
 const CAB_N = { gas: 'Gasolinera', pla: 'Planos', fra: 'Franco' };
 const nombreProg = p => { const m = /^SE[O0]?(\d+)\s*(.*)$/i.exec(p || ''), k = /^METAL\S*?\s*(\d+)$/i.exec(p || ''); return m ? `Sector ${+m[1]}${m[2] ? ' · ' + m[2] : ''}` : k ? `Metálicos ${+k[1]}` : (p || 'un sector'); };
+/* Cloudflare no deja que un worker llame a otro worker de la misma cuenta por su dirección .workers.dev (error 1042).
+   Por eso se usa un enlace de servicio: puente-sensores → Settings → Bindings → Service binding, nombre AVISOS_SVC → abonado-avisos. */
+function avisosFetch(env, init) {
+  return env.AVISOS_SVC ? env.AVISOS_SVC.fetch('https://abonado-avisos/interno', init) : fetch(env.AVISOS_URL + '/interno', init);
+}
 async function avisarRiego(env, cab, e) {
-  if (!env.AVISOS_URL || !env.INTERNO_TOKEN) return { enviado: false, motivo: 'sin_avisos' };
+  if (!(env.AVISOS_SVC || env.AVISOS_URL) || !env.INTERNO_TOKEN) return { enviado: false, motivo: 'sin_avisos' };
   let cfg = {}; try { const d = await fs(env, 'GET', '/abonado_config/finca?mask.fieldPaths=avisoRiego'); cfg = deFS((d.fields || {}).avisoRiego) || {}; } catch (x) {}
   if (cfg.on === false || (Array.isArray(cfg.cabs) && cfg.cabs.length && !cfg.cabs.includes(cab))) return { enviado: false, motivo: 'apagado' };
   const para = (Array.isArray(cfg.para) && cfg.para.length ? cfg.para : [env.ADMIN_EMAIL]).filter(Boolean).slice(0, 5); if (!para.length) return { enviado: false, motivo: 'sin_destino' };
   const cuerpo = [CAB_N[cab] || cab, e.prog, e.valv, e.tt ? e.tt.replace(/^00:/, '') + ' min' : null].filter(Boolean).join(' · ');
-  const r = await fetch(env.AVISOS_URL + '/interno', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
+  const r = await avisosFetch(env, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
     body: JSON.stringify({ para, titulo: 'Regando: ' + nombreProg(e.prog), cuerpo, tag: 'riego-' + cab, tab: 'ajriego' }) });
   if (r.ok) return { enviado: true };
-  // por qué no: 401 = INTERNO_TOKEN distinto en los dos servidores (o falta el KV AVISOS); 404 = AVISOS_URL mal puesta
-  return { enviado: false, http: r.status, detalle: corto(await r.text().catch(() => ''), 120), a: env.AVISOS_URL };
+  // por qué no: 401 = INTERNO_TOKEN distinto en los dos servidores (o falta el KV AVISOS); 404 con «error code: 1042» = falta el enlace AVISOS_SVC
+  return { enviado: false, http: r.status, detalle: corto(await r.text().catch(() => ''), 120), via: env.AVISOS_SVC ? 'enlace' : 'url' };
 }
 async function revisarClima(env) {
-  if (!env.AVISOS_URL || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;
+  if (!(env.AVISOS_SVC || env.AVISOS_URL) || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;
   let d; try { d = await fs(env, 'GET', '/abonado_lecturas/UC-ESTADO'); } catch (e) { return; }
   const f = d.fields || {}, ts = Date.parse(deFS(f.ts) || ''); if (!ts || deFS(f.avisado)) return;
   const h = +new Date().toLocaleString('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', hour12: false }); if (h < 8 || h >= 20) return;
   const min = (Date.now() - ts) / 60000; if (min < 90) return;
-  await fetch(env.AVISOS_URL + '/interno', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
+  await avisosFetch(env, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
     body: JSON.stringify({ para: [env.ADMIN_EMAIL], titulo: 'El lector del clima no manda', cuerpo: `Lleva ${Math.round(min / 60 * 10) / 10} h sin leer el controlador. Mira que el ordenador esté encendido con Edge abierto.`, tag: 'clima-lector', tab: 'estres' }) }).catch(() => {});
   await fs(env, 'PATCH', '/abonado_lecturas/UC-ESTADO?updateMask.fieldPaths=avisado', { fields: { avisado: aFS(true) } });
 }
 
 /* ---------- aviso de aparatos que dejan de mandar ---------- */
 async function revisar(env) {
-  if (!env.AVISOS_URL || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;
+  if (!(env.AVISOS_SVC || env.AVISOS_URL) || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;
   const r = await fs(env, 'POST', ':runQuery', { structuredQuery: { from: [{ collectionId: 'abonado_aparatos' }], where: { fieldFilter: { field: { fieldPath: 'estado' }, op: 'EQUAL', value: { stringValue: 'activo' } } }, limit: 500 } });
   for (const x of r) { if (!x.document) continue; const f = x.document.fields || {}, dev = deFS(f.dev), dato = deFS(f.dato) || {}, nombre = deFS(f.nombre) || 'Aparato';
     if (!dev || !dato.ts || deFS(f.sinDatosAvisado)) continue;
     const min = (Date.now() - Date.parse(dato.ts)) / 60000; if (min < SIN_DATOS_MIN) continue;
     const id = x.document.name.split('/').pop();
-    await fetch(env.AVISOS_URL + '/interno', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
+    await avisosFetch(env, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
       body: JSON.stringify({ para: [env.ADMIN_EMAIL], titulo: 'Sin datos: ' + nombre, cuerpo: `Lleva ${Math.round(min / 60)} h sin mandar. Mira la batería, la antena y la pasarela.`, tag: 'sindatos-' + id, tab: 'aparatos' }) }).catch(() => {});
     await fs(env, 'PATCH', `/abonado_aparatos/${id}?updateMask.fieldPaths=sinDatosAvisado`, { fields: { sinDatosAvisado: aFS(true) } });
   }
