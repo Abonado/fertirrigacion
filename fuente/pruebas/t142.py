@@ -7,6 +7,7 @@ r = subprocess.run(['node', 'pruebas/datos/prueba-puente-n10.mjs', '../servidor/
 print(r.stdout, r.stderr); assert 'PUENTE N10 OK' in r.stdout
 ino = open('firmware/src/N10/N10.ino').read()
 assert 'const int VALV[8] = {2, 4, 5, 6, 7, 38, 39, 40};' in ino and '#define PULSOS 41' in ino and '${' not in ino and 'SX1262 radio' in ino and 'void loop()' in ino
+assert 'void mandar(String m)' in ino, 'RadioLib transmit() pide un String que pueda tocar: mandar() por copia, no const String&'
 MOCK = open('mock-firebase.js').read()
 async def main():
     async with async_playwright() as p:

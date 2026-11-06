@@ -104,7 +104,7 @@ bool subir(const String& json) {
   return c >= 200 && c < 300;
 }
 // Con wifi configurada, por wifi (y si falla, a la cola para el siguiente intento); sin wifi, por radio a la pasarela
-void mandar(const String& m) {
+void mandar(String m) {      // por copia: RadioLib pide un String que pueda tocar
   af("dato=" + m);
   if (WIFI.length()) {
     String j = "{\"raw\":\"" + m + "\",\"rssi\":" + String(WiFi.RSSI()) + ",\"gw\":\"wifi-" + ID + "\"}";
