@@ -734,7 +734,10 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .ajo-tb{width:100%;border-collapse:collapse;font-size:14px}.ajo-tb th,.ajo-tb td{padding:5px 4px;border-bottom:1px solid var(--line);text-align:right}.ajo-tb th:first-child,.ajo-tb td:first-child{text-align:left;color:var(--muted)}.ajo-tb th{font-size:12px;color:var(--muted)}
 .ajr-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(78px,1fr));gap:8px;margin:8px 0}.ajr-chips span{border:1px solid var(--line);border-radius:12px;padding:6px 8px;display:grid;font-size:12px;color:var(--muted)}.ajr-chips b{font:700 20px/1.1 var(--f-display);color:var(--ink)}.ajr-chips small{font-size:11px}
 .ajr-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.ajr-h4{margin:14px 0 4px;font-size:13px;letter-spacing:.06em;color:var(--muted)}
-.ajr-big>div.ok{border-color:#2f7a52}.ajr-big>div.ajr-nqb{border-color:#8a5a00}.ajr-nq{margin:8px 0 0}.ajv{display:flex;align-items:center;gap:12px;border-radius:14px;padding:12px 14px;margin:0 0 12px}.ajv.on{background:#1f7a4c;color:#fff;box-shadow:0 4px 14px rgba(31,122,76,.28)}.ajv.off{background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+.ajr-big>div.ok{border-color:#2f7a52}.ajr-big>div.ajr-nqb{border-color:#8a5a00}.ajr-nq{margin:8px 0 0}.nuav{border-radius:12px;padding:10px 12px;margin:0 0 12px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;border:1px solid var(--line)}.nuav.mal{background:var(--warn-bg);border-color:transparent}.nuav.bien{background:var(--ok-bg);border-color:transparent}.nuav .btn{margin-left:auto}
+.nuce{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}.nurt td{text-align:center;vertical-align:top;white-space:nowrap}.nurt td:first-child{text-align:left;min-width:112px;white-space:normal}
+.ajlav{margin-top:10px;border:1px solid var(--line);border-radius:12px;padding:8px 12px}.ajlav summary{cursor:pointer;font-weight:700;padding:4px 0}
+.ajv{display:flex;align-items:center;gap:12px;border-radius:14px;padding:12px 14px;margin:0 0 12px}.ajv.on{background:#1f7a4c;color:#fff;box-shadow:0 4px 14px rgba(31,122,76,.28)}.ajv.off{background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
 .ajv-dot{width:14px;height:14px;border-radius:50%;flex:none;background:currentColor;opacity:.5}.ajv.on .ajv-dot{background:#9bf0c0;opacity:1;animation:ajvp 1.6s ease-out infinite}@keyframes ajvp{0%{box-shadow:0 0 0 0 rgba(155,240,192,.7)}100%{box-shadow:0 0 0 12px rgba(155,240,192,0)}}
 .ajv-t{flex:1;min-width:0;display:grid;gap:2px}.ajv-k{font-size:.72rem;font-weight:800;letter-spacing:.06em;opacity:.85}.ajv-t b{font-size:1.15rem;line-height:1.2}.ajv.on small{color:#e3f6eb}.ajv-h{font-size:.8rem;opacity:.85;flex:none}
 .ajv-bar{height:6px;border-radius:4px;background:rgba(255,255,255,.25);overflow:hidden;margin-top:4px}.ajv-bar i{display:block;height:100%;background:#fff;border-radius:4px}
@@ -1283,6 +1286,30 @@ function ajrObjetivo(R,obj){const P=R.hoy;if(!P||!R.pulso)return{err:'Hace falta
       txt:obj==='ce+'?'Dos caminos: drenar menos (lava menos el sustrato) o subir la CE del riego. Lo más rápido es subir el incremento; lo más barato, drenar menos.':'Dos caminos: drenar más (lava el sustrato) o bajar la CE del riego.'}}
   return null}
 const ajrBanTxt=b=>b?fmt(b.ctrl,0)+' / '+fmt(b.min,0):'—';
+/* ¿Riego extra de lavado? Mira cuánto pasa la CE del drenaje a la del riego. Umbrales orientativos para tomate en sustrato. */
+const AJR_LAV={bajo:1,alto:2};st.ajrLav={};
+function ajrLavado(R,min,inc){const c=R.ce&&R.ce.c;if(!c||c.ceD==null||c.ceI==null)return{err:'Hace falta un día con la CE del riego y la del drenaje de este sector (en Drenaje).'};
+  const dif=c.ceD-c.ceI,pu=(R.hoy&&R.hoy.pulso)||R.pulso||null,veces=pu?min/pu:null,D0=Math.max(0,Math.min(90,c.D||0));
+  const dR=pu?Math.max(D0,Math.min(95,(Math.max(0,min-pu)+pu*D0/100)/min*100)):null,inc0=c.inc!=null?c.inc:null;
+  const ceR=inc==='normal'||inc0==null?c.ceI:inc==='mitad'?c.ceI-inc0/2:c.ceI-inc0;
+  return{c,dif,pu,veces,dR,ceR,v:dif>AJR_LAV.alto?'si':dif>AJR_LAV.bajo?'reparte':'no'}}
+function ajrLavHTML(R){const sid=R.s.id,o=st.ajrLav[sid]||{min:15,inc:'mitad'},L=ajrLavado(R,o.min,o.inc);
+  let h=`<details class="ajlav" ${o.open?'open':''} data-ajlav-d="${sid}"><summary>¿Riego extra de lavado?</summary><div class="frm"><div class="field"><label for="ajl_m_${sid}">Minutos</label><div class="inp sm"><input id="ajl_m_${sid}" inputmode="decimal" data-ajlav-min="${sid}" value="${inVal(o.min)}"><span class="u">min</span></div></div>
+    <div class="field"><label for="ajl_i_${sid}">Con el incremento</label><div class="inp"><select id="ajl_i_${sid}" data-ajlav-inc="${sid}">${[['normal','Normal'],['mitad','A la mitad'],['sin','Sin abono (solo agua y ácido)']].map(([k,t])=>`<option value="${k}" ${o.inc===k?'selected':''}>${t}</option>`).join('')}</select></div></div></div>`;
+  if(L.err)return h+`<div class="note">${L.err}</div></details>`;
+  const V={si:['bad','Sí conviene',`La CE del drenaje pasa a la del riego en ${fmt(L.dif,1)} mS/cm (más de ${fmt(AJR_LAV.alto,0)}): el sustrato está cargado de sales. Un riego de lavado a primera hora, después del primer riego, y con el incremento bajado.`],
+    reparte:['warn','Mejor reparte',`La CE del drenaje pasa a la del riego en ${fmt(L.dif,1)} mS/cm (entre ${fmt(AJR_LAV.bajo,0)} y ${fmt(AJR_LAV.alto,0)}): mejor sube un poco el drenaje en los riegos de mediodía («Más drenaje»). Lava igual y tira menos abono que un riego largo.`],
+    no:['ok','No hace falta',`La CE del drenaje solo pasa a la del riego en ${fmt(L.dif,1)} mS/cm: el sustrato no está cargado. Un riego extra se iría casi todo por el drenaje.`]}[L.v];
+  h+=`<p class="ajr-p"><span class="pill ${V[0]}">${V[1]}</span> ${V[2]}</p>
+    ${L.pu?`<p class="ajr-p">${fmt(o.min,0)} min son <b>${fmt(L.veces,1)} riegos normales</b> de ${fmt(L.pu,L.pu%1?1:0)} min. Con el sustrato ya húmedo, drenaría cerca del <b>${fmt(L.dR,0)} %</b> de lo que eche (ahora drena el ${fmt(L.c.D,0)} %).</p>`:''}
+    <p class="ajr-p">${o.inc==='normal'?`Con el incremento normal, ese ${fmt(L.dR||0,0)} % se va con todo el abono: más gasto y más nitrato al suelo (zona vulnerable).`:`CE de ese riego ≈ <b>${fmt(Math.max(0,L.ceR),2)} mS/cm</b>${o.inc==='sin'?' (solo el agua de la balsa con el ácido)':''}: lava sin tirar abono.`} Nunca al final de la tarde: el sustrato se queda encharcado toda la noche.</p>
+    <div class="note">Umbrales orientativos para tomate en sustrato (${fmt(AJR_LAV.bajo,0)} y ${fmt(AJR_LAV.alto,0)} mS/cm por encima de la CE del riego), calculado con el ${esc(fFecha(L.c.f))}. Ajústalos con tu técnico.</div>`;
+  return h+`</details>`}
+document.addEventListener('toggle',e=>{const d=e.target;if(!d.dataset||d.dataset.ajlavD==null)return;const sid=d.dataset.ajlavD;st.ajrLav[sid]={min:15,inc:'mitad',...(st.ajrLav[sid]||{}),open:d.open}},true);
+document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='ajriego'||!t.dataset)return;const sid=t.dataset.ajlavMin||t.dataset.ajlavInc;if(!sid)return;const o=st.ajrLav[sid]={min:15,inc:'mitad',...(st.ajrLav[sid]||{}),open:true};
+  if(t.dataset.ajlavMin){const n=num(t.value);if(n>0&&n<=120)o.min=n}else o.inc=t.value;const y=window.scrollY;renderMain();window.scrollTo(0,y)});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-nuce]');if(!b)return;const D=nuDraft();D.obj.ce=+b.dataset.nuce;st.tab='solucion';renderCabs();renderTabs();renderMain();
+  setTimeout(()=>{const el=$('#nu_res');if(el)el.scrollIntoView({block:'start'})},60);toast('Solución del técnico escalada a '+fmt(D.obj.ce,2)+' mS/cm: revisa los kg y pásalos a la Receta',6000)});
 function ajrObjHTML(R){const sid=R.s.id,o=st.ajrObj[sid],g=esGestor();let h=`<div class="ajo" role="group" aria-label="Lo que buscas en ${esc(R.s.nombre)}">${AJO.map(([k,n])=>`<button type="button" class="chip${o===k?' on':''}" data-ajo="${k}" data-sec="${sid}" aria-pressed="${o===k}">${n}</button>`).join('')}</div>`;
   if(!o)return h;const X=ajrObjetivo(R,o);if(!X)return h;if(X.err)return h+`<div class="note tbad">${X.err}</div>`;
   const P=R.hoy,Q=X.Q,fila=(n,a,b,u)=>`<tr><td>${n}</td><td>${a}</td><td><b>${b}</b>${u?' '+u:''}</td></tr>`,b0=R.C.rb||R.C.ra?{ctrl:R.C.ra??'—',min:R.C.rb??'—'}:R.bandaPara(P.rcRaw),b1=R.bandaPara(Q.rcRaw),w0=v=>v==null?'—':fmt(r5w(aWh(v)),0);
@@ -1294,7 +1321,7 @@ function ajrObjHTML(R){const sid=R.s.id,o=st.ajrObj[sid],g=esGestor();let h=`<di
     ${X.ce?fila('CE del riego (salida)',fmt(X.ce.c.ceI,2),fmt(X.ce.c.ceI,2),'mS/cm'):''}
     ${fila('Drenaje esperado',P.Dreal!=null?fmt(Math.max(0,P.Dreal),0)+' %':'—',Q.Dreal!=null?fmt(Math.max(0,Q.Dreal),0)+' %':'—','')}
     ${X.dren!=null?fila('Drenaje ideal',fmt(R.C.dren,0)+' %',fmt(X.dren,0)+' %',''):''}</tbody></table>`;
-  if(X.ce)h+=`<p class="ajr-p">O sin tocar los riegos: ${X.ce.ceI2<X.ce.c.ceI?'baja':'sube'} la CE del riego de <b>${fmt(X.ce.c.ceI,2)}</b> a <b>${fmt(X.ce.ceI2,2)} mS/cm</b>: el incremento de la máquina de ${fmt(X.ce.c.inc,2)} a <b>${fmt(X.ce.inc2,2)}</b>.</p>`;
+  if(X.ce)h+=`<p class="ajr-p">O sin tocar los riegos: ${X.ce.ceI2<X.ce.c.ceI?'baja':'sube'} la CE del riego de <b>${fmt(X.ce.c.ceI,2)}</b> a <b>${fmt(X.ce.ceI2,2)} mS/cm</b>: el incremento de la máquina de ${fmt(X.ce.c.inc,2)} a <b>${fmt(X.ce.inc2,2)}</b>.</p><div class="row"><button class="btn sm" type="button" data-nuce="${+X.ce.ceI2.toFixed(2)}">Kg de cada depósito para ${fmt(X.ce.ceI2,2)} mS/cm sin descuadrar los nutrientes</button></div>`;
   h+=`<div class="note">${esc(X.txt)}${X.ce?` Calculado con el ${esc(fFecha(X.ce.c.f))}: riego ${fmt(X.ce.c.ceI,2)} mS/cm, drenaje ${fmt(X.ce.c.D,0)} % a ${fUS(X.ce.c.ceD)} µS/cm.`:''} Tarda 2 o 3 días en notarse en el drenaje.</div>`;
   if(g&&(X.dren!=null||X.pulso!=null))h+=`<div class="row"><button class="btn sm pri" type="button" data-ajap="${o}" data-sec="${sid}">Usar esto en el cálculo de ${esc(R.s.nombre)}</button></div>`;
   return (h+`</div>`).replace(/(µS\/cm|mS\/cm)/g,'<span class="nt">$1</span>')}
@@ -1310,8 +1337,8 @@ function ajrVivoHTML(c){const u=ucrDia(c.id,hoy());if(!u)return '';const E=u.v&&
 function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();lecCargar();const c=cabById(st.cab);if(!c)return '';const k=ajrKey(st.cab),Wc=st.ajrW[k];if(!Wc||(!Wc.dias&&!Wc.fallo&&!Wc.cargando))ajrCargar(st.cab);
   const C=ajrCfg(st.cab),MOD=ajrModelo(st.cab),RS=c.sectores.map(s=>ajrCalc(st.cab,s,MOD)),g=esGestor(),dis=g?'':'disabled',fdia=f=>fFecha(f).replace(/^\w/,x=>x.toUpperCase()),W=(Wc&&Wc.dias)||{};
   const wh=W[hoy()],ok=RS.filter(R=>!R.poco&&R.hoy),vuelta=RS.reduce((a,R)=>a+(R.pulso||0),0),n0=v=>fmt(v,v%1?1:0);
-  // ---- 0. Lo que está regando ahora mismo (lector del uCrop)
-  let h=ajrVivoHTML(c);
+  // ---- 0. Lo que está regando ahora mismo (lector del uCrop) y si los nutrientes van como pide el técnico
+  let h=ajrVivoHTML(c)+nuAvisoHTML(st.cab);
   // ---- 1. Hoy: el tiempo, la planta y el programa
   h+=`<section class="card"><div><h3>Hoy en ${esc(c.nombre)}</h3><div class="sub">Lo que va a pedir la planta y cómo poner la máquina, sector a sector</div></div>`;
   if(Wc&&Wc.fallo&&!Wc.dias)h+=`<div class="note">No se pudo traer el tiempo. Comprueba la conexión.</div><div class="row"><button class="btn" data-ajr="recargar">Reintentar</button></div>`;
@@ -1357,7 +1384,7 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
         ${!CP.ok&&g?`<div class="row"><button class="btn sm pri" type="button" data-ajpu="${CP.n}" data-sec="${s.id}">Poner ${fmt(CP.n,0)} min en ${esc(s.nombre)}</button></div>`:''}</div>`;
       h+=`<h4 class="ajr-h4">Ayer · ${esc(fdia(ay.f))}</h4><p class="ajr-p">${ay.N!=null?`<b>${fmt(ay.N,0)} riegos</b> de ${n0(ay.p||R.pulso)} min · `:`<b>${fmt(ay.M,0)} min</b> · `}drenó <b class="${Math.abs(ay.D-Cs.dren)>8?'tbad':''}">${fmt(ay.D,0)} %</b>${ay.rcEf?` · la máquina regó de media cada <b>${ay.rcExacta?'':'≈ '}${fmt(r5w(aWh(ay.rcEf)),0)} Wh/m²</b>`:''}${ay.corte!=null?` · acabó con el corte en ${fmt(ay.corte,0)}`:''}${ay.src==='ucrop'?' <small class="nt">(del uCrop)</small>':''}. La planta se llevó ≈ ${fmt(ay.U,0)} min de riego${ay.Dp!=null?`; el cálculo decía ${fmt(Math.max(0,ay.Dp),0)} %`:''}.</p>`;
       const AC=R.acCorte;if(AC&&AC.n>=3)h+=`<p class="ajr-p">Frente al corte con el que acaba la máquina, la control que calcula la app se queda de media a <b class="${AC.mae>10?'tbad':''}">±${fmt(AC.mae,0)} %</b> (${AC.n} días${Math.abs(AC.sesgo)>=3?`; sale un ${fmt(Math.abs(AC.sesgo),0)} % ${AC.sesgo>0?'alta':'baja'}`:''}). Día a día, en la tabla de abajo.</p>`;
-      h+=`<h4 class="ajr-h4">Quiero…</h4>${ajrObjHTML(R)}`}
+      h+=`<h4 class="ajr-h4">Quiero…</h4>${ajrObjHTML(R)}${ajrLavHTML(R)}`}
     // datos de este sector: lo que tiene la máquina y los días
     h+=`<details class="ajr-det" data-ajdet="${s.id}"${st.ajrDet[s.id]??(R.poco||!P)?' open':''}><summary>Lo que tiene la máquina en ${esc(s.nombre)} y sus días</summary><div class="frm">
       <div class="field"><label>Duración</label><div class="inp"><input data-ajr="pulso" data-sec="${s.id}" inputmode="decimal" value="${inVal(sc.pulso)}" placeholder="${inVal(C.pulso??(R.D.filter(x=>x.p).slice(-1)[0]||{}).p??C.pulsoDef)}" ${dis}><span class="u">min</span></div></div>
@@ -6129,8 +6156,8 @@ function nuProds(R){R={...NU_RIQ,...(R||{})};const hn=R.hno3D*R.hno3P/100/63.01*
     caS:{n:'Nitrato cálcico sólido',app:null,m:{Ca:9.255,NO3:10.18,NH4:0.925}},
     mkp:{n:'Fosfato monopotásico',app:'mkp',m:{K:7.35,H2PO4:7.35}},kno3:{n:'Nitrato potásico',app:'kno3',m:{K:9.89,NO3:9.89}},
     k2so4:{n:'Sulfato potásico',app:'k2so4',m:{K:11.48,SO4:11.48}},mgso4:{n:'Sulfato magnésico',app:null,m:{Mg:8.11,SO4:8.11}},
-    mgno3:{n:'Nitrato magnésico',app:null,m:{Mg:7.80,NO3:7.80}},nh4no3:{n:'Nitrato amónico',app:null,m:{NH4:12.49,NO3:12.49}}}}
-function nuDef(){return{agua:{f:'',lab:'',u:'meq',v:{}},dren:{f:'',v:{}},obj:{pre:'tomMed',a:{...NU_PRE.tomMed.a},d:{...NU_PRE.tomMed.d}},op:{k:0.5,hco3:0.5,mg:'auto',ca:'caL',nh4:false},riq:{...NU_RIQ}}}
+    mgno3:{n:'Nitrato magnésico',app:null,m:{Mg:7.80,NO3:7.80}},nh4no3:{n:'Nitrato amónico',app:null,m:{NH4:12.49,NO3:12.49}},kcl:{n:'Cloruro potásico',app:'kcl',m:{K:13.41,Cl:13.41}}}}
+function nuDef(){return{agua:{f:'',lab:'',u:'meq',v:{}},dren:{f:'',v:{}},obj:{pre:'tomMed',a:{...NU_PRE.tomMed.a},d:{...NU_PRE.tomMed.d},u:'meq',ce:null,modo:'prop'},op:{k:0.5,hco3:0.5,mg:'auto',ca:'caL',nh4:false},riq:{...NU_RIQ}}}
 function nuCalc(D){const P=nuProds(D.riq),W=D.agua.v||{},Dr=D.dren.v||{},o=D.op,warn=[],k=+o.k||0;
   const w=i=>+W[i]||0;
   // 1. objetivo ajustado por el drenaje: aporte + k × (drenaje objetivo − drenaje medido), como mucho ±25 %
@@ -6163,13 +6190,35 @@ function nuCalc(D){const P=nuProds(D.riq),W=D.agua.v||{},Dr=D.dren.v||{},o=D.op,
   if(need.Ca>0&&w('HCO3')===0&&!W.HCO3)warn.push('Falta el bicarbonato del agua: sin él no se calcula el ácido.');
   const prods=Object.entries(uso).filter(([,u])=>u>1e-6).map(([id,u])=>{const pr=P[id];return{id,n:pr.n,app:pr.app,liq:!!pr.liq,porL:u,dosis:u*100,meq:aporte(id)}});
   return{adj,need,prods,fin,cat,an,ce:cat/10,acido,hayD,warn}}
+/* meq por mmol de cada ion (el técnico puede dar la solución en mmol/L) */
+const NU_VAL={NO3:1,H2PO4:1,SO4:2,NH4:1,K:1,Ca:2,Mg:2};
+/* Objetivo efectivo: la solución del técnico escalada hasta la CE del riego que quieres.
+   «prop»: todos los iones a la vez (mismo equilibrio). «k»: el nitrógeno, el fósforo, el calcio y el magnesio se quedan; se mueven potasio y sulfato. */
+function nuObjEf(D){const ce=+D.obj.ce||0;if(!(ce>0))return{D,f:1,ce:null};
+  const ks=D.obj.modo==='k'?['K','SO4']:NU_OBJI,mk=f=>{const a={...D.obj.a};for(const i of ks)a[i]=+((+D.obj.a[i]||0)*f).toFixed(3);return{...D,obj:{...D.obj,a}}},ceOf=f=>nuCalc(mk(f)).ce;
+  let lo=0.2,hi=3;if(ceOf(hi)<ce)return{D:mk(hi),f:hi,ce,tope:'alto'};if(ceOf(lo)>ce)return{D:mk(lo),f:lo,ce,tope:'bajo'};
+  for(let k=0;k<40;k++){const m=(lo+hi)/2;if(ceOf(m)<ce)lo=m;else hi=m}const f=(lo+hi)/2;return{D:mk(f),f,ce}}
+/* Lo que lleva de verdad el agua: la receta (lo que debería dar) y las cuentas del día (lo que ha dado), en meq/L con el agua de la balsa */
+const NU_REC={kno3:'kno3',k2so4:'k2so4',mkp:'mkp',h3po4:'h3po4',hno3:'hno3',ca:'caL',kcl:'kcl'},NU_MICRO=new Set(['fe','zn','mn','trad','nacl']);
+function nuReal(cab,D){const P=nuProds(D.riq),W=D.agua.v||{},pl={},re={},sin=new Set();let hayR=true,hayP=false;
+  for(const b of bidonesDe(cab))for(const x of b.productos){if(!x.dosis)continue;const id=NU_REC[x.p];if(!id){if(!NU_MICRO.has(x.p))sin.add(prod(x.p).n);continue}
+    hayP=true;const r=dosisReal(b,x,cab);if(r==null)hayR=false;for(const[i,v]of Object.entries(P[id].m)){pl[i]=(pl[i]||0)+x.dosis/100*v;re[i]=(re[i]||0)+(r||0)/100*v}}
+  const w=i=>+W[i]||0,o={};for(const i of NU_OBJI)o[i]={plan:w(i)+(pl[i]||0),real:hayR&&hayP?w(i)+(re[i]||0):null};
+  return{o,hayP,hayR:hayR&&hayP,sin:[...sin]}}
+const nuDesv=(v,obj)=>v==null||!(obj>0.05)?null:(v-obj)/obj*100;
+const nuPill=d=>d==null?'<span class="u">—</span>':`<span class="pill ${Math.abs(d)<=10?'ok':Math.abs(d)<=20?'warn':'bad'}">${d>0?'+':''}${fmt(d,0)} %</span>`;
+/* Para Ajuste del riego y Cuentas: los nutrientes que hoy se apartan más de un 15 % de lo que pide el técnico */
+function nuAvisoHTML(cab){const g=(st.cfg.nutri||{})[cab];if(!g||!g.agua||!NU_ION.some(([i])=>g.agua.v&&g.agua.v[i]!=null&&g.agua.v[i]!==''))return '';
+  const D={...nuDef(),...clone(g),obj:{...nuDef().obj,...(g.obj||{})},riq:{...NU_RIQ,...(g.riq||{})}},E=nuObjEf(D),X=nuReal(cab,D);if(!X.hayR)return '';
+  const malos=NU_OBJI.map(i=>[i,nuDesv(X.o[i].real,+E.D.obj.a[i]||0)]).filter(([,d])=>d!=null&&Math.abs(d)>15);
+  return `<div class="nuav ${malos.length?'mal':'bien'}"><b>Nutrientes del ${esc(fCorta(st.fecha))}:</b> ${malos.length?malos.map(([i,d])=>`${NU_IONN[i]} ${d>0?'+':''}${fmt(d,0)} %`).join(' · ')+' frente a lo que pide el técnico':'todos dentro de ±15 % de lo que pide el técnico'} <button class="btn sm" data-tab="solucion">Ver</button></div>`}
 /* La receta actual de este cabezal para cada producto */
 function nuReceta(cab,app){let t=0,hay=false;for(const b of bidonesDe(cab))for(const x of b.productos)if(x.p===app){hay=true;t+=x.dosis||0}return hay?t:null}
 st.nuD=null;st.nuCab=null;
 function nuDraft(){if(!st.nuD||st.nuCab!==st.cab){const g=(st.cfg.nutri||{})[st.cab];const d=nuDef();st.nuD=g?{...d,...clone(g),agua:{...d.agua,...(g.agua||{})},dren:{...d.dren,...(g.dren||{})},obj:{...d.obj,...(g.obj||{})},op:{...d.op,...(g.op||{})},riq:{...d.riq,...(g.riq||{})}}:d;st.nuCab=st.cab}return st.nuD}
 /* Los valores se guardan siempre en meq/L; en mg/L solo se muestran y se escriben */
 const nuEq=i=>(NU_ION.find(x=>x[0]===i)||[])[2]||1;
-function vSolucion(){const c=cabById(st.cab),D=nuDraft(),g=esGestor(),dis=g?'':'disabled',mg=D.agua.u==='mg',R=nuCalc(D);
+function vSolucion(){const c=cabById(st.cab),D=nuDraft(),g=esGestor(),dis=g?'':'disabled',mg=D.agua.u==='mg',E=nuObjEf(D),R=nuCalc(E.D),mm=D.obj.u==='mmol',ov=(i,v)=>v==null||v===''?'':mm?(+v)/(NU_VAL[i]||1):v;
   const inp=(k,v,o={})=>`<div class="inp sm"><input data-nu="${k}" inputmode="decimal" autocomplete="off" value="${v==null||v===''?'':inVal(+(+v).toFixed(o.d??2))}" ${dis} placeholder="${o.ph||''}">${o.u?`<span class="u">${o.u}</span>`:''}</div>`;
   const fila=(lab,cells)=>`<tr><td><b>${lab}</b></td>${cells.map(x=>`<td>${x}</td>`).join('')}</tr>`;
   let h=`<section class="card"><div><h3>Solución nutritiva · ${esc(c.nombre)}</h3><div class="sub">Del análisis de agua sale la receta en meq/L, ajustada con el análisis de drenaje</div></div>
@@ -6188,11 +6237,16 @@ function vSolucion(){const c=cabById(st.cab),D=nuDraft(),g=esGestor(),dis=g?'':'
     <div class="frm"><div class="field"><label>Fecha del análisis</label><div class="inp"><input type="date" data-nu="dren.f" value="${esc(D.dren.f||'')}" ${dis}></div></div><div class="field"><label>CE drenaje</label>${inp('dren.ce',D.dren.v.ce,{u:'mS/cm',ph:dm.ceD!=null?'hoy '+inVal(+dm.ceD.toFixed(2)):''})}</div><div class="field"><label>pH drenaje</label>${inp('dren.ph',D.dren.v.ph,{ph:dm.phD!=null?'hoy '+inVal(+dm.phD.toFixed(1)):''})}</div></div>
     <div class="frm">${NU_DRI.map(i=>`<div class="field"><label>${NU_IONN[i]}</label>${inp('dren.'+i,D.dren.v[i],{u:'meq/L'})}</div>`).join('')}</div></section>`;
   // Objetivo
-  h+=`<section class="card"><div><h3>3. Objetivo y opciones</h3><div class="sub">Lo que quieres que lleve el agua de riego (aporte) y lo que quieres ver en el drenaje, en meq/L</div></div>
+  h+=`<section class="card"><div class="sector-h"><div><h3>3. Objetivo y opciones</h3><div class="sub">La solución que te da el técnico: lo que quieres que lleve el agua de riego (aporte) y lo que quieres ver en el drenaje</div></div>
+    <div class="pick"><button class="chip" data-nu-ou="meq" aria-pressed="${!mm}">meq/L</button><button class="chip" data-nu-ou="mmol" aria-pressed="${mm}">mmol/L</button></div></div>
     <div class="field"><label>Partir de</label><div class="inp"><select data-nu-pre="1" ${dis}>${Object.entries(NU_PRE).map(([k,v])=>`<option value="${k}" ${D.obj.pre===k?'selected':''}>${esc(v.n)}</option>`).join('')}<option value="pers" ${D.obj.pre==='pers'?'selected':''}>Personalizado</option></select></div></div>
     <div class="tbl"><table><thead><tr><th></th>${NU_OBJI.map(i=>`<th>${NU_IONN[i]}</th>`).join('')}</tr></thead><tbody>
-      ${fila('Aporte objetivo',NU_OBJI.map(i=>inp('obj.a.'+i,D.obj.a[i],{})))}
-      ${fila('Drenaje objetivo',NU_OBJI.map(i=>['NH4'].includes(i)?'—':inp('obj.d.'+i,D.obj.d[i],{})))}</tbody></table></div>
+      ${fila('Aporte objetivo',NU_OBJI.map(i=>inp('obj.a.'+i,ov(i,D.obj.a[i]),{})))}
+      ${fila('Drenaje objetivo',NU_OBJI.map(i=>['NH4'].includes(i)?'—':inp('obj.d.'+i,ov(i,D.obj.d[i]),{})))}</tbody></table></div>
+    <div class="nuce"><div class="lbl">Subir o bajar la CE sin descuadrar los nutrientes</div>
+      <div class="frm"><div class="field"><label>CE del riego que quieres</label>${inp('obj.ce',D.obj.ce,{u:'mS/cm',ph:'como sale: '+inVal(+nuCalc(D).ce.toFixed(2))})}</div>
+        <div class="field"><label>Cómo llegar</label><div class="inp"><select data-nu="obj.modo" ${dis}><option value="prop" ${D.obj.modo!=='k'?'selected':''}>Todo en proporción (mismo equilibrio)</option><option value="k" ${D.obj.modo==='k'?'selected':''}>Mantener el nitrógeno: mover potasio y sulfato</option></select></div></div></div>
+      ${E.ce?`<div class="note">${E.tope?`<b>No se llega a ${fmt(E.ce,2)} mS/cm</b> moviendo solo ${D.obj.modo==='k'?'potasio y sulfato':'la solución'}: se queda en el ${E.tope==='alto'?'máximo':'mínimo'} razonable (× ${fmt(E.f,2)}).`:`Para ${fmt(E.ce,2)} mS/cm se multiplica ${D.obj.modo==='k'?'el potasio y el sulfato':'toda la solución del técnico'} por <b>${fmt(E.f,2)}</b>.`} Los kg de cada depósito salen abajo y se pasan a la Receta con un toque. Deja el campo vacío para usar la solución tal cual.</div>`:'<div class="note">Escribe la CE a la que quieres regar y la app escala la solución del técnico para llegar, en vez de cambiar los kg a ojo.</div>'}</div>
     <div class="frm"><div class="field"><label>Corrección por drenaje</label><div class="inp"><select data-nu="op.k" ${dis}>${[[0,'Sin corregir'],[0.25,'Suave (25 %)'],[0.5,'Normal (50 %)'],[0.75,'Fuerte (75 %)']].map(([v,t])=>`<option value="${v}" ${+D.op.k===v?'selected':''}>${t}</option>`).join('')}</select></div></div>
       <div class="field"><label>Bicarbonato que se deja</label>${inp('op.hco3',D.op.hco3,{u:'meq/L'})}</div>
       <div class="field"><label>Magnesio con</label><div class="inp"><select data-nu="op.mg" ${dis}>${[['auto','Automático'],['sulfato','Sulfato magnésico'],['nitrato','Nitrato magnésico']].map(([v,t])=>`<option value="${v}" ${D.op.mg===v?'selected':''}>${t}</option>`).join('')}</select></div></div>
@@ -6209,7 +6263,7 @@ function vSolucion(){const c=cabById(st.cab),D=nuDraft(),g=esGestor(),dis=g?'':'
   h+=`<section class="card" id="nu_res"><div><h3>4. Resultado</h3><div class="sub">${sinAgua?'Escribe el análisis de agua para calcular':R.hayD&&+D.op.k?'Objetivo corregido con el análisis de drenaje':'Sin análisis de drenaje: se usa el objetivo tal cual'}</div></div>`;
   if(!sinAgua){
     h+=`<div class="tbl"><table><thead><tr><th>meq/L</th>${NU_OBJI.map(i=>`<th>${NU_IONN[i]}</th>`).join('')}</tr></thead><tbody>
-      ${fila('Objetivo',NU_OBJI.map(i=>fmt(+D.obj.a[i]||0,2)))}${R.hayD&&+D.op.k?fila('Corregido por drenaje',NU_OBJI.map(i=>{const dlt=R.adj[i]-(+D.obj.a[i]||0);return `${fmt(R.adj[i],2)}${Math.abs(dlt)>0.005?` <small class="${dlt>0?'ok':'bad'}">${dlt>0?'+':''}${fmt(dlt,2)}</small>`:''}`})):''}
+      ${fila('Objetivo',NU_OBJI.map(i=>fmt(+D.obj.a[i]||0,2)))}${E.ce?fila(`A ${fmt(E.ce,2)} mS/cm (× ${fmt(E.f,2)})`,NU_OBJI.map(i=>`<b>${fmt(+E.D.obj.a[i]||0,2)}</b>`)):''}${R.hayD&&+D.op.k?fila('Corregido por drenaje',NU_OBJI.map(i=>{const dlt=R.adj[i]-(+E.D.obj.a[i]||0);return `${fmt(R.adj[i],2)}${Math.abs(dlt)>0.005?` <small class="${dlt>0?'ok':'bad'}">${dlt>0?'+':''}${fmt(dlt,2)}</small>`:''}`})):''}
       ${fila('Trae el agua',NU_OBJI.map(i=>fmt(+D.agua.v[i]||0,2)))}${fila('Hay que aportar',NU_OBJI.map(i=>fmt(R.need[i],2)))}</tbody></table></div>`;
     h+=`<h4 style="margin:10px 0 0">Abonos</h4><div class="tbl"><table><thead><tr><th>Producto</th><th>Dosis</th><th>Receta actual</th><th>Aporta (meq/L)</th></tr></thead><tbody>${R.prods.map(x=>{const act=x.app?nuReceta(st.cab,x.app):null,u=x.liq?'cc/hL':'g/hL';
       return `<tr><td>${esc(x.n)}</td><td><b>${fmt(x.dosis,1)}</b> <span class="u">${u}</span><br><small class="note">${x.liq?'L':'kg'} por 100 m³</small></td><td>${act!=null?fmt(act,1)+' '+u:x.app?'—':'<small class="note">No está en ningún depósito</small>'}</td><td><small>${Object.entries(x.meq).map(([i,v])=>NU_IONN[i]+' '+fmt(v,2)).join(' · ')}</small></td></tr>`}).join('')||'<tr><td colspan="4">No hace falta ningún abono</td></tr>'}</tbody></table></div>`;
@@ -6217,11 +6271,22 @@ function vSolucion(){const c=cabById(st.cab),D=nuDraft(),g=esGestor(),dis=g?'':'
       <div class="row" style="gap:6px"><span class="pill nd">Cationes ${fmt(R.cat,1)} · aniones ${fmt(R.an,1)} meq/L</span><span class="pill ${Math.abs(R.cat-R.an)/Math.max(R.cat,1)>0.1?'warn':'ok'}">Balance ${Math.abs(R.cat-R.an)/Math.max(R.cat,1)>0.1?'descompensado':'correcto'}</span><span class="pill nd">CE estimada ≈ ${fmt(R.ce,2)} mS/cm</span>${R.acido?`<span class="pill nd">Ácido para ${fmt(R.acido,2)} meq/L de bicarbonato</span>`:''}</div>
       ${R.warn.map(x=>`<div class="banner">${esc(x)}</div>`).join('')}
       <div class="note">Dosis en la unidad de la receta: g/hL (o cc/hL) es lo mismo que kg (o L) por cada 100 m³ de agua. La CE estimada es aproximada (suma de cationes ÷ 10).</div>
+      ${nuRespetaHTML(st.cab,D,E)}
       ${g?`<div class="row"><button class="btn pri" data-act="nu-aplicar">Pasar estas dosis a la receta de ${esc(c.nombre)}</button></div><div class="note">Cambia la receta en pantalla y te lleva a «Receta» para que la revises (los kg de cada depósito) y pulses Guardar. ${bidonesDe(st.cab).some(b=>b.cabezales.length>1)?'Ojo: algún depósito es compartido con otro cabezal y también le cambia a él.':''}</div>`:''}`}
   return h+`</section>`}
+function nuRespetaHTML(cab,D,E){const X=nuReal(cab,D);if(!X.hayP)return '';
+  return `<h4 style="margin:12px 0 0">¿Se está respetando?</h4><div class="sub">Lo que lleva el agua de riego con la receta de los depósitos y con las cuentas del ${esc(fCorta(st.fecha))}, frente a lo que pide el técnico${E.ce?` a ${fmt(E.ce,2)} mS/cm`:''} (meq/L, con el agua de la balsa)</div>
+    <div class="tbl"><table class="nurt"><thead><tr><th></th>${NU_OBJI.map(i=>`<th>${NU_IONN[i]}</th>`).join('')}</tr></thead><tbody>
+    <tr><td><b>Pide el técnico</b></td>${NU_OBJI.map(i=>`<td>${fmt(+E.D.obj.a[i]||0,2)}</td>`).join('')}</tr>
+    <tr><td><b>Da la receta</b></td>${NU_OBJI.map(i=>`<td>${fmt(X.o[i].plan,2)}<br>${nuPill(nuDesv(X.o[i].plan,+E.D.obj.a[i]||0))}</td>`).join('')}</tr>
+    <tr><td><b>Ha dado de verdad</b><br><small class="note">cuentas del día</small></td>${NU_OBJI.map(i=>`<td>${X.hayR?fmt(X.o[i].real,2)+'<br>'+nuPill(nuDesv(X.o[i].real,+E.D.obj.a[i]||0)):'—'}</td>`).join('')}</tr></tbody></table></div>
+    ${X.hayR?'':'<div class="note">Para «Ha dado de verdad» apunta los m³ y los cm de los depósitos en Cuentas del día.</div>'}
+    ${X.sin.length?`<div class="note">No cuento ${esc(X.sin.join(', '))}: la app no sabe qué nutrientes lleva.</div>`:''}
+    <div class="note">Verde: a menos de un 10 % · amarillo: 10–20 % · rojo: más del 20 %. Si «Da la receta» ya se aparta, cambia la receta con el botón de abajo; si solo se aparta «Ha dado de verdad», revisa los venturis o el llenado de ese depósito.</div>`}
 function nuSet(k,v){const D=nuDraft(),p=k.split('.');
   if(p[0]==='agua'||p[0]==='dren'){if(p[1]==='f'||p[1]==='lab'){D[p[0]][p[1]]=v;return}const n=num(v);let x=n;if(p[0]==='agua'&&D.agua.u==='mg'&&n!=null&&p[1]!=='ce'&&p[1]!=='ph')x=n/nuEq(p[1]);D[p[0]].v[p[1]]=x;return}
-  if(p[0]==='obj'){D.obj[p[1]][p[2]]=num(v);D.obj.pre='pers';return}
+  if(p[0]==='obj'&&p.length===2){D.obj[p[1]]=p[1]==='modo'?v:num(v);return}
+  if(p[0]==='obj'){const n=num(v);D.obj[p[1]][p[2]]=n!=null&&D.obj.u==='mmol'?+(n*(NU_VAL[p[2]]||1)).toFixed(3):n;D.obj.pre='pers';return}
   if(p[0]==='op'){D.op[p[1]]=p[1]==='nh4'?!!v:p[1]==='k'||p[1]==='hco3'?(num(v)??0):v;return}
   if(p[0]==='riq'){D.riq[p[1]]=num(v);return}}
 function nuRefresco(){const r=$('#nu_res');if(!r){renderMain();return}const y=window.scrollY;renderMain();window.scrollTo(0,y)}
@@ -6229,10 +6294,11 @@ $('#main').addEventListener('change',e=>{const t=e.target,d=t.dataset||{};if(st.
   if(d.nu){nuSet(d.nu,t.type==='checkbox'?t.checked:t.value);nuRefresco()}
   else if(d.nuPre){const D=nuDraft(),P=NU_PRE[t.value];D.obj.pre=t.value;if(P){D.obj.a={...P.a};D.obj.d={...P.d}}nuRefresco()}
   else if(d.nuCopia&&t.value){const o=(st.cfg.nutri||{})[t.value];if(o&&o.agua){nuDraft().agua=clone(o.agua);toast('Agua copiada de '+cabNombre(t.value)+': pulsa Guardar');nuRefresco()}}});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-nu-u],[data-act="nu-guardar"],[data-act="nu-aplicar"]');if(!b)return;const D=nuDraft();
+document.addEventListener('click',e=>{const b=e.target.closest('[data-nu-u],[data-nu-ou],[data-act="nu-guardar"],[data-act="nu-aplicar"]');if(!b)return;const D=nuDraft();
   if(b.dataset.nuU){D.agua.u=b.dataset.nuU;renderMain();return}
+  if(b.dataset.nuOu){D.obj.u=b.dataset.nuOu;renderMain();return}
   if(b.dataset.act==='nu-guardar'){for(const c of [st.cfg,st.savedCfg]){c.nutri=c.nutri||{};c.nutri[st.cab]=clone(D)}Store.setConfig(st.savedCfg).then(()=>toast('Análisis y objetivo guardados')).catch(er=>toast(errMsg(er)));return}
-  if(b.dataset.act==='nu-aplicar'){const R=nuCalc(D);let n=0;const falta=[];
+  if(b.dataset.act==='nu-aplicar'){const R=nuCalc(nuObjEf(D).D);let n=0;const falta=[];
     for(const x of R.prods){if(!x.app){falta.push(x.n);continue}let hecho=false;for(const bd of bidonesDe(st.cab))for(const y of bd.productos)if(y.p===x.app&&!hecho){y.dosis=+x.dosis.toFixed(x.dosis<10?2:1);hecho=true;n++}if(!hecho)falta.push(x.n)}
     for(const app of ['hno3','h3po4','mkp','kno3','k2so4','ca'])if(!R.prods.some(x=>x.app===app))for(const bd of bidonesDe(st.cab))for(const y of bd.productos)if(y.p===app&&y.dosis&&y.p!==bd.principal){y.dosis=0;n++}
     st.dirtyCfg=true;st.tab='receta';renderAll();renderSave();toast(`${n} dosis cambiadas en la receta: revisa y pulsa Guardar${falta.length?' · sin depósito: '+falta.join(', '):''}`)}});
@@ -7059,7 +7125,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v196';
+window.APP_V='abonado-v197';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
