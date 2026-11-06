@@ -149,7 +149,9 @@ async function avisarRiego(env, cab, e) {
   const cuerpo = [CAB_N[cab] || cab, e.prog, e.valv, e.tt ? e.tt.replace(/^00:/, '') + ' min' : null].filter(Boolean).join(' · ');
   const r = await fetch(env.AVISOS_URL + '/interno', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
     body: JSON.stringify({ para, titulo: 'Regando: ' + nombreProg(e.prog), cuerpo, tag: 'riego-' + cab, tab: 'ajriego' }) });
-  return { enviado: r.ok };
+  if (r.ok) return { enviado: true };
+  // por qué no: 401 = INTERNO_TOKEN distinto en los dos servidores (o falta el KV AVISOS); 404 = AVISOS_URL mal puesta
+  return { enviado: false, http: r.status, detalle: corto(await r.text().catch(() => ''), 120), a: env.AVISOS_URL };
 }
 async function revisarClima(env) {
   if (!env.AVISOS_URL || !env.INTERNO_TOKEN || !env.ADMIN_EMAIL) return;
