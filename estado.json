@@ -1,0 +1,57 @@
+{
+ "commit": "4bc6eca",
+ "fecha": "2026-11-06T18:36:59.083206+00:00",
+ "placa": "esp32:esp32:heltec_wifi_lora_32_V3",
+ "nodos": {
+  "N1": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "976999309c77548d3dbac58e05f2698a057438fad83ad6a90c3c6b0d7d748ecc"
+  },
+  "N10": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "56fd9ecea94f2e999bc6700662cdc3a54430087791186bd2e452efe038f43ba3"
+  },
+  "N2": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "ba7ea3c424e672823260118f9216bbed32efbb0ca0bd55dcb15c1bb9b3644dd9"
+  },
+  "N4": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "942470eb82c242d751cb4ab1216e2f7394bfeaf7090de9e629e97745f0b6dccc"
+  },
+  "N5": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "943d578d168b33d3a47d61171407215c1f35aca1bcf088e0ac79d0be8d01b936"
+  },
+  "N6": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "fa79cc813fa159e9f79563767a47cb0d26fc26fbb6312c5dd564c06cff9ca297"
+  },
+  "N7": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "0159493f361c5c59af105b0979ddaad1452842728cf2a0f10b7d9b7c0db9fc34"
+  },
+  "N8": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "16fd9f77fa282d913422b4257f2ab3dd29b54d62fe8c45841a12fdbae6d4d7c3"
+  },
+  "N9": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "169f71246865e4bddddcf84b63818acdefd9322438ef4540d313d01cd3028796"
+  },
+  "P": {
+   "estado": "ok",
+   "bytes": 8388608,
+   "sha256": "909668bdae052d87b37a590c506679ab0fe0a23979554372122e34421c0ff0f2"
+  }
+ }
+}
