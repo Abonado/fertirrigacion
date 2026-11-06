@@ -794,7 +794,7 @@ const CSS=`.tl-tabs{display:flex;gap:6px;flex-wrap:wrap}.tl-avisos{display:grid;
 .tl-code{white-space:pre;overflow:auto;font:12px/1.45 ui-monospace,Menlo,Consolas,monospace;background:#15222c;color:#e8eef0;border-radius:10px;padding:12px;text-transform:none;max-height:420px}
 .tl-nom .inp{width:100%}#tl_nom.wide{width:100%;min-width:0}.tl-ck{display:grid;gap:6px}.tl-ck label{display:flex;gap:8px;align-items:flex-start;text-transform:none}.tl-ck input{margin-top:3px;width:18px;height:18px}.tl-ck label.hecho span{text-decoration:line-through;color:var(--muted)}
 .tl-lst{display:grid;gap:6px}.tl-lst .r{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;text-transform:none}
-.tl-q{display:grid;gap:6px}.tl-q .row{flex-wrap:wrap}.tl-dim{font-size:13px;color:var(--muted);text-transform:none}`;
+.tl-q{display:grid;gap:6px}.tl-q .row{flex-wrap:wrap}.tl-q .chip{flex:0 1 auto;max-width:100%;white-space:normal;text-align:left}.tl-dim{font-size:13px;color:var(--muted);text-transform:none}`;
 function estilos(){if(document.getElementById('tl_css'))return;const e=document.createElement('style');e.id='tl_css';e.textContent=CSS+CSS_EN+CSS_PL+CSS_AS;document.head.appendChild(e)}
 
 function vAsistente(s){const q=s.q,listo=PREG.every(p=>q[p.k]),lista=cargar();if(!NB.ok)sincroniza();
