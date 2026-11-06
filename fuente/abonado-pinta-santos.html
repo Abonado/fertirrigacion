@@ -341,6 +341,18 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .lrow .gd{display:flex;align-items:center;gap:8px}
 .lrow .lnm small{color:var(--muted);font-size:12px}
 .lvl .bar i.est{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 6px,transparent 6px 12px)}
+.stk{display:grid}.stk-hd{display:none}
+.stk-f{display:grid;grid-template-columns:1fr auto;grid-template-areas:'n e' 'q q' 'd d' 'i i';gap:8px 12px;padding:14px 0;border-top:1px solid var(--line)}.stk-f:first-of-type{border-top:0}
+.stk-n{grid-area:n;min-width:0}.stk-n b{display:block;font-size:1.05rem}.stk-n small,.stk-q small,.stk-d small{color:var(--muted);font-size:12px}
+.stk-q{grid-area:q;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.stk-q b{font:600 30px/1 var(--f-display)}.stk-q .u{font-size:15px}.stk-r{font-weight:600}.stk-q small{flex-basis:100%}
+.stk-d{grid-area:d;display:grid;gap:4px}.stk-e{grid-area:e;justify-self:end}.stk-i{grid-area:i;display:flex;gap:10px;flex-wrap:wrap}.stk-i .field{display:flex;align-items:center;gap:8px;margin:0}
+.stk-bar{position:relative;height:10px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);overflow:visible}.stk-bar i{display:block;height:100%;border-radius:5px;background:var(--ok,#2e7d4f)}
+.stk-bar.warn i{background:var(--warn)}.stk-bar.nd i{background:var(--muted)}.stk-bar.bad i{background:var(--bad)}.stk-bar em{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.55;transform:translateX(-1px)}
+.stk-f.bad{background:linear-gradient(90deg,var(--bad-bg),transparent 60%)}
+@media (min-width:900px){.stk-hd{display:grid;grid-template-columns:minmax(140px,1.2fr) 150px minmax(130px,1fr) 92px 172px;gap:14px;padding:0 10px 8px;font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);border-bottom:2px solid var(--line)}
+  .stk-f{grid-template-columns:minmax(140px,1.2fr) 150px minmax(130px,1fr) 92px 172px;grid-template-areas:'n q d e i';align-items:center;gap:14px;padding:12px 10px}
+  .stk-i{flex-direction:column;gap:4px}.stk-i .field{justify-content:space-between}.stk-i .inp.sm{width:104px}.stk-q b{font-size:26px}
+  .stk-f:first-of-type{border-top:0}.stk-e{justify-self:start}.stk-i{flex-wrap:nowrap}.stk-i .field label{font-size:11px}.stk-f:hover{background:var(--surface-2)}.stk-f.bad:hover{background:var(--bad-bg)}}
 .srow{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
 .srow:first-child{border-top:0}
 .yo{min-height:42px;display:flex;align-items:center;padding:0 12px;border-radius:8px;background:var(--ok-bg);color:var(--ok);font-size:16px}
@@ -538,10 +550,6 @@ a.btn{text-decoration:none;display:inline-flex;align-items:center}
   th{font-size:10px;letter-spacing:.04em}
   .pill{padding:2px 4px;font-size:11px}
   .cerow{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .srow{grid-template-columns:1fr auto;row-gap:6px}
-  .srow .field{display:flex;align-items:center;gap:8px}
-  .srow .flds{grid-column:1/-1}
-  .srow .sv{text-align:right}
   .lrow{grid-template-columns:1fr}
   td:first-child{overflow-wrap:anywhere}
   .cfgrow{grid-template-columns:1fr 1fr 1fr}
@@ -2547,15 +2555,29 @@ function consumoCabHTML(a){const al=almById(a);if(!al)return '';if(st.hist===nul
         ${cabs.length>1&&t>0?`<div class="cbar">${cabs.map((c,k)=>`<i style="width:${(kg[c][p]||0)*100/t}%;background:${['var(--accent)','#c98a2b','var(--navy)'][k%3]}"></i>`).join('')}</div>`:''}
         <div class="cv">${cabs.map(c=>`<span>${esc(cabNombre(c))} <b>${fmt(kg[c][p]||0,1)} ${uCant(p)}</b>${cabs.length>1&&t>0?' · '+fmt((kg[c][p]||0)*100/t,0)+' %':''}</span>`).join('')}</div></div>`}).join('')}</div>
       <div class="note">«Salido del almacén» son los abonos descontados al registrar llenados. Si difiere mucho del total gastado, revisa llenados o cuentas.</div>`:'<div class="note">Sin datos de consumo en este periodo.</div>'}</section>`}
+/* Stock: lo que queda en sacos (grande), para cuántos días y el mínimo. Lo urgente arriba. En el PC, una tabla; en el móvil, una ficha por abono. */
+const STK_DIAS=60;
+function stockSacos(p,v){const z=sacoDe(p);if(!z||v<=0.001)return `<b>${fmt(v,1)}</b> <span class="u">${uCant(p)}</span>`;const n=Math.floor(v/z+1e-6),rr=v-n*z;
+  return `<b>${n}</b> <span class="u">${n===1?'saco':'sacos'}</span>${rr>0.05?` <span class="stk-r">+ ${fmt(rr,1)} kg</span>`:''}`}
+function stockHTML(ps,aid){const R=ps.map(p=>{const r={...stockRow(p)};if(r.s<=0.001&&r.s>=-0.001&&!(r.c>0)&&r.min==null){r.k='nd';r.t='Sin stock'}return{p,r}}),ord={bad:0,warn:1,ok:2,nd:3};
+  R.sort((a,b)=>ord[a.r.k]-ord[b.r.k]||(a.r.d??1e9)-(b.r.d??1e9)||pn(a.p).localeCompare(pn(b.p)));
+  const fila=({p,r})=>{const z=sacoDe(p),sinG=!(r.c>0),pc=!sinG?Math.min(100,(r.d||0)*100/STK_DIAS):r.min>0?Math.min(100,Math.max(0,r.s)*50/r.min):r.s>0.001?100:0,mk=r.min!=null&&r.min>0?(sinG?50:Math.min(100,r.min/r.c*100/STK_DIAS)):null,bajo=r.min!=null&&r.s<=r.min;
+    return `<div class="stk-f ${r.k}" data-stk="${p}"><div class="stk-n"><b>${esc(prod(p).n)}</b><small data-out="sc_${p}">${r.c>0?'Gasta '+fmt(r.c,1)+' '+uCant(p)+'/día':'Sin consumo reciente'}</small></div>
+      <div class="stk-q" data-out="sv_${p}">${stockSacos(p,r.s)}<small>${z&&r.s>0.001?fmt(r.s,1)+' kg en total':''}</small></div>
+      <div class="stk-d"><div class="stk-bar ${r.k}" title="${r.d!=null?'Para '+fmt(r.d,0)+' días':'Sin consumo'}"><i style="width:${pc.toFixed(1)}%"></i>${mk!=null?`<em style="left:${mk.toFixed(1)}%" title="Mínimo"></em>`:''}</div>
+        <small>${r.s<-0.001?'En negativo: revisa entradas o llenados':bajo?`Por debajo del mínimo (${fmt(r.min,0)} ${uCant(p)})${r.d!=null?` · para ${fmt(r.d,0)} días`:''}`:r.d!=null?`Para <b>${fmt(r.d,0)} días</b>`:r.s>0.001?'Sin gasto reciente':'Sin existencias'}</small></div>
+      <div class="stk-e" data-out="sp_${p}"><span class="pill ${r.k}">${r.t}</span></div>
+      <div class="stk-i"><div class="field"><label for="mn_${p}">Mínimo</label><div class="inp sm"><input id="mn_${p}" data-k="cfg.min.${aid}|${p}" inputmode="decimal" value="${inVal(r.min)}"><span class="u">${uCant(p)}</span></div></div>
+        ${z?`<div class="field"><label for="sz_${p}">Saco de</label><div class="inp sm"><input id="sz_${p}" data-k="cfg.saco.${p}" inputmode="decimal" value="${inVal(z)}"><span class="u">kg</span></div></div>`:''}</div></div>`};
+  const nP=R.filter(x=>x.r.k==='bad').length,nW=R.filter(x=>x.r.k==='warn').length;
+  return `<section class="card"><div class="tank-h"><div><h3>Stock</h3><div class="sub">Lo que queda, para cuántos días al ritmo de los últimos 30 y el mínimo para pedir · lo urgente arriba</div></div>
+    <div class="row">${nP?`<span class="pill bad">${nP} para pedir</span>`:''}${nW?`<span class="pill warn">${nW} con pocos días</span>`:''}${!nP&&!nW?'<span class="pill ok">Todo bien</span>':''}</div></div>
+    <div class="stk"><div class="stk-hd" aria-hidden="true"><span>Abono</span><span>Quedan</span><span>Para cuántos días · raya: mínimo</span><span>Estado</span><span>Mínimo y saco</span></div>${R.map(fila).join('')}</div></section>`}
 function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div class="note">Cargando almacén…</div></div>'}const aid=almAct(),alm=almById(aid),avs=almsVis();
   const ps=Object.keys(st.cfg.productos),mes=hoy().slice(0,7),movA=st.alm.filter(m=>almDeMov(m)===aid),ent=movA.filter(m=>m.tipo==='entrada'&&(m.fecha||'').slice(0,7)===mes),nb=ps.filter(p=>stockRow(p).k==='bad').length;
   let h=(avs.length>1?`<div class="pick">${avs.map(a=>`<button class="chip" data-almsel="${a.id}" aria-pressed="${a.id===aid}">Almacén ${esc(a.nombre)}</button>`).join('')}</div>`:'')+`<div class="almh"><h2>Almacén ${esc(alm.nombre)}</h2><div class="sub">Da servicio a ${esc(alm.cabezales.map(cabNombre).join(', '))}${alm.cabezales.length>1?' · stock común':''}</div></div>`;
   h+=`<section class="summary" data-out="asum"><div class="stat"><span>Para pedir</span><b>${nb}</b><small>bajo mínimo o en negativo</small></div><div class="stat"><span>Entradas del mes</span><b>${ent.length}</b><small>albaranes</small></div><div class="stat"><span>Movimientos</span><b>${movA.length}</b><small>registrados</small></div></section>`;
-  h+=`<section class="card"><div><h3>Stock</h3><div class="sub">Existencias, consumo de los últimos 30 días y mínimo para pedir</div></div><div>`+ps.map(p=>{const r=stockRow(p);return `<div class="srow"><div class="nm"><b>${esc(prod(p).n)}</b><small data-out="sc_${p}">${r.c>0?'consumo '+fmt(r.c,1)+' '+uCant(p)+'/día':'sin consumo reciente'}${r.d!=null?' · '+fmt(r.d,0)+' días':''}</small></div>
-    <div class="sv" data-out="sv_${p}">${sacoDe(p)&&r.s>0.001?(()=>{const z=sacoDe(p),n=Math.floor(r.s/z+1e-6),rr=r.s-n*z;return `<b>${n}</b> <span class="u">${n===1?'saco':'sacos'}</span>${rr>0.05?` <span class="u">+ ${fmt(rr,1)} kg</span>`:''}<small>${fmt(r.s,1)} kg en total</small>`})():`<b>${fmt(r.s,1)}</b> <span class="u">${uCant(p)}</span>`}</div>
-    <div class="flds"><div class="field"><label for="mn_${p}">Mínimo</label><div class="inp sm"><input id="mn_${p}" data-k="cfg.min.${aid}|${p}" inputmode="decimal" value="${inVal(r.min)}"><span class="u">${uCant(p)}</span></div></div>
-    ${sacoDe(p)?`<div class="field"><label for="sz_${p}">Saco de</label><div class="inp sm"><input id="sz_${p}" data-k="cfg.saco.${p}" inputmode="decimal" value="${inVal(sacoDe(p))}"><span class="u">kg</span></div></div>`:''}</div>
-    <span data-out="sp_${p}"><span class="pill ${r.k}">${r.t}</span></span></div>`}).join('')+`</div></section>`;
+  h+=stockHTML(ps,aid);
   h+=consumoCabHTML(aid);
   const e=st.ent;
   h+=`<section class="card"><div><h3>Nueva entrada</h3><div class="sub">Pedido recibido en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
