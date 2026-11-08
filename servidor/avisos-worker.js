@@ -6,7 +6,7 @@
 // Solo atiende a personas que han entrado en la app y que el administrador ha dado de alta.
 
 const PROYECTO = 'fertirrigacion-cabezales';
-const ORIGENES = ['https://abonado.github.io', 'https://agrofly-abonado.pages.dev', 'https://agrofly-abonado.netlify.app'];
+const ORIGENES = ['https://abonado.github.io', 'https://agrofly-abonado.pages.dev', 'https://agro-fly.netlify.app'];
 // Copia de la app en Cloudflare Pages (agrofly-abonado.pages.dev y sus vistas previas) mientras GitHub no vuelva
 const okOrigen = o => ORIGENES.includes(o) || /^https:\/\/([a-z0-9-]+\.)?agrofly-abonado(-[a-z0-9]+)?\.pages\.dev$/.test(o || '');
 const SUB_VAPID = 'https://abonado.github.io/fertirrigacion/';
