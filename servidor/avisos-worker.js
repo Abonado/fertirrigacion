@@ -7,6 +7,8 @@
 
 const PROYECTO = 'fertirrigacion-cabezales';
 const ORIGENES = ['https://abonado.github.io'];
+// Copia de la app en Cloudflare Pages (agrofly-abonado.pages.dev y sus vistas previas) mientras GitHub no vuelva
+const okOrigen = o => ORIGENES.includes(o) || /^https:\/\/([a-z0-9-]+\.)?agrofly-abonado(-[a-z0-9]+)?\.pages\.dev$/.test(o || '');
 const SUB_VAPID = 'https://abonado.github.io/fertirrigacion/';
 const VAPID_PUBLICA = 'BH8Jm5HP_bXDhFs4e9_lwXiJ7n9YcmHtWzkjqKSx15ySOHDuYFgU2NXji0kaft9Orq4aOHqCYnoLveltvsOcc0I';
 const VAPID_PRIVADA_EN_CODIGO = '';   // la clave privada; también vale como secreto VAPID_PRIVADA
@@ -138,7 +140,7 @@ async function revisarProgramados(env) {
 export default {
   async fetch(request, env, ctx) {
     const origin = request.headers.get('origin') || '';
-    const cors = { 'Access-Control-Allow-Origin': ORIGENES.includes(origin) ? origin : ORIGENES[0], 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'content-type, authorization', 'Access-Control-Max-Age': '86400', 'Vary': 'Origin' };
+    const cors = { 'Access-Control-Allow-Origin': okOrigen(origin) ? origin : ORIGENES[0], 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'content-type, authorization', 'Access-Control-Max-Age': '86400', 'Vary': 'Origin' };
     const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { ...cors, 'content-type': 'application/json' } });
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
     if (request.method === 'GET') return json({ ok: true, servicio: 'Avisos de Abonado', kv: !!env.AVISOS, vapid: !!(env.VAPID_PRIVADA || VAPID_PRIVADA_EN_CODIGO) });
@@ -152,7 +154,7 @@ export default {
       if (!para.length) return json({ ok: true, enviados: 0 });
       return json({ ok: true, ...(await enviarA(env, para, datosDe(b), true)) });
     }
-    if (!ORIGENES.includes(origin)) return json({ error: 'origen' }, 403);
+    if (!okOrigen(origin)) return json({ error: 'origen' }, 403);
     if (!env.AVISOS) return json({ error: 'sin_kv' }, 500);
 
     const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
