@@ -13,6 +13,7 @@ function allowed(path,write,mod){const s=load();const em=s.cur;if(!em)return fal
   if(write&&col==='abonado_config'&&!gestor()&&!window.__cfgSoloBidones)return false;
   if(write&&mod&&col==='abonado_almacen'&&!gestor()){const d=s.docs[path];if(d&&d.porEmail!==em&&!d.auto)return false}
   if(col==='abonado_acceso')return write?em===ADMIN:true;
+  if(col==='abonado_buzon'){if(em===ADMIN)return true;const ac=s.docs['abonado_acceso/usuarios'];return write&&!mod&&!!(ac&&ac.emails.includes(em))}   // sugerencias y fallos: todos mandan, solo el administrador lee
   if(!col.startsWith('abonado_'))return false;if(em===ADMIN)return true;const acc=s.docs['abonado_acceso/usuarios'];{const ar=acc&&acc.info&&acc.info[em]&&acc.info[em].areas;if(Array.isArray(ar)&&!ar.includes('riego')&&!['abonado_config','abonado_collas','abonado_jornadas','abonado_adjuntos','abonado_notas','abonado_fichajes','abonado_posiciones',...CAMPO_C].includes(col))return false}return !!(acc&&acc.emails.includes(em))}
 function snap(path,data){return{id:path.split('/').pop(),exists:data!==undefined,data:()=>data===undefined?undefined:JSON.parse(JSON.stringify(data))}}
 function docRef(path){return{id:path.split('/').pop(),path,

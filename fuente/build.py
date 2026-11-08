@@ -42,7 +42,7 @@ else:
     (out/'nube.js').unlink(missing_ok=True)
 _a, _b, _c = s.rpartition('</script>')   # solo en el script principal (el último), una vez
 s = _a + """
-window.APP_V='abonado-v200';
+window.APP_V='abonado-v201';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
@@ -73,15 +73,20 @@ head = """<!doctype html>
  "background_color":"#0e2851","theme_color":"#1b2f4a",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
           {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]},ensure_ascii=False,indent=1))
-(out/'sw.js').write_text("""const C='abonado-v200';
+(out/'sw.js').write_text("""const C='abonado-v201';
 const FILES=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./apple-touch-icon.png','./badge-96.png','./pdf-lib.min.js','./parte-tpl.js','./parte-tpl-p.js'"""+(",'./nube.js'" if nube else '')+"""];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(FILES.map(f=>new Request(f,{cache:'reload'})))));self.skipWaiting()});   // siempre de la red, nunca de la caché del navegador
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.origin!==location.origin&&!u.hostname.startsWith('fonts.g')&&!u.pathname.startsWith('/firebasejs/'))return;
   const same=u.origin===location.origin;
   const nav=e.request.mode==='navigate';   // Safari no deja reutilizar una petición de navegación con opciones: se pide por su dirección
-  e.respondWith((nav?fetch(e.request.url,{cache:'no-cache',credentials:'same-origin'}):fetch(e.request,same?{cache:'no-cache'}:undefined)).then(r=>{const cp=r.clone();caches.open(C).then(c=>c.put(e.request,cp));return r})
-    .catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))))});
+  /* Red primero, pero con poca cobertura no se espera más de 3 s: se abre lo guardado y la red, cuando llega, deja guardado lo nuevo */
+  const red=(nav?fetch(e.request.url,{cache:'no-cache',credentials:'same-origin'}):fetch(e.request,same?{cache:'no-cache'}:undefined)).then(r=>{if(r&&(r.ok||r.type==='opaque')){const cp=r.clone();caches.open(C).then(c=>c.put(e.request,cp))}return r});
+  const guardado=()=>caches.match(e.request).then(r=>r||(nav?caches.match('./index.html'):undefined));
+  e.waitUntil(red.catch(()=>{}));
+  e.respondWith(new Promise(ok=>{let ya=false;const da=r=>{if(!ya&&r){ya=true;ok(r)}};
+    const t=setTimeout(()=>guardado().then(da),3000);
+    red.then(r=>{clearTimeout(t);da(r)},()=>{clearTimeout(t);guardado().then(r=>{if(r)da(r);else if(!ya){ya=true;ok(Response.error())}})})}))});
 /* Avisos con la app cerrada */
 self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(_){d={b:e.data?e.data.text():''}}
   e.waitUntil(self.registration.showNotification(d.t||'Abonado-Fertirrigación',{body:d.b||'',icon:'icon-192.png',badge:'badge-96.png',tag:d.tag||undefined,renotify:!!d.tag,vibrate:[120,60,120],data:{tab:d.tab||''}}))});

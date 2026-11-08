@@ -176,6 +176,18 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['visto', 'hecha', 'hechaTs', 'hechaPor', 'nota', 'mod']));
     }
 
+    // Sugerencias y fallos: cualquiera del equipo (riego o campo) manda una idea, un fallo o un error de la app a su nombre;
+    // solo el administrador los lee, los marca como vistos o los borra.
+    match /abonado_buzon/{doc} {
+      allow create: if autorizado()
+        && request.resource.data.de == request.auth.token.email
+        && request.resource.data.tipo in ['idea', 'fallo', 'error']
+        && request.resource.data.txt is string && request.resource.data.txt.size() <= 2000
+        && request.resource.data.keys().hasOnly(['tipo', 'txt', 'donde', 'de', 'nombre', 'v', 'tab', 'disp', 'ts', 'mod']);
+      allow read, delete: if esAdmin();
+      allow update: if esAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['visto', 'mod']);
+    }
+
     match /{coleccion}/{doc} {
       allow read, write: if coleccion.matches('abonado_.*')
         && coleccion != 'abonado_acceso'
@@ -193,6 +205,7 @@ service cloud.firestore {
         && coleccion != 'abonado_fichajes'
         && coleccion != 'abonado_posiciones'
         && coleccion != 'abonado_ordenes'
+        && coleccion != 'abonado_buzon'
         && veRiego();
     }
   }

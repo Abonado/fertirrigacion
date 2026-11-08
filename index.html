@@ -753,6 +753,13 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 @media (prefers-reduced-motion:reduce){.ajv.on .ajv-dot{animation:none}}.ajr-cola{color:#8a5a00}.ajr-av{border-top:1px solid var(--line);margin-top:10px;padding-top:8px;display:grid;gap:6px}.ajr-big small.ok{color:#2f7a52;font-weight:600}.ajr-big small.bad{color:#b3261e;font-weight:600}
 body.teclado .bnav,body.teclado .agbtn{display:none!important}body.teclado.conbn .savebar{bottom:0}
 .bnav,.savebar,.agbtn{translate:0 var(--vvfix,0px)}
+/* AGRO se aparta mientras se baja por la pantalla (no tapa botones ni casillas) y vuelve al subir o al llegar arriba */
+.agbtn{transition:opacity .18s,scale .18s,transform .18s;transform:translateY(calc(-1 * var(--agsube,0px)))}body.agfuera .agbtn:not(.oye):not(.manos){opacity:0;scale:.5;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.agbtn{transition:none}}
+/* Sugerencias y fallos */
+.bz textarea{width:100%;box-sizing:border-box;text-transform:none;font:inherit;padding:10px;border:1px solid var(--line,#ccd);border-radius:10px;min-height:96px}
+.bzl{display:grid;gap:8px}.bzi{border-top:1px solid var(--line,#dde);padding-top:8px;display:grid;gap:4px}.bzi p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}.bzi small{color:var(--muted,#667)}.bzi.visto{opacity:.6}
+.bzi pre{margin:0;font-size:11px;white-space:pre-wrap;overflow-wrap:anywhere;max-height:120px;overflow:auto;background:rgba(0,0,0,.04);padding:6px;border-radius:6px}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
@@ -951,7 +958,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['otrat','Tratamientos'],['cotrat','Tratamientos'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
+const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['otrat','Tratamientos'],['cotrat','Tratamientos'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['buzon','Sugerencias y fallos'],['cbuzon','Sugerencias y fallos'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -1102,14 +1109,14 @@ const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Rie
   {id:'datos',n:'Datos',tabs:['m3mes','climanv','cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
   {id:'lab',n:'Taller',tabs:['catalogo','taller','aparatos','cajon'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
-  {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'},
+  {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura','buzon'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'},
   {id:'mas',n:'Más',tabs:['mas'],ic:IC_MAS}];
 /* Personal de campo: su propio menú (de momento, las collas) */
 const GRUPOS_CAMPO=[{id:'cpersonal',n:'Personal',tabs:['casist','cincid','ctareas','cotrat','corend','coparte','cubic','cvivo'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'cmsg',n:'Mensajes',tabs:['cmensajes'],ic:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>'},
   {id:'ctiempo',n:'Tiempo',tabs:['ctiempo'],ic:'<circle cx="9" cy="9" r="3.2"/><path d="M9 2.8v1.6M3.6 9H2.4M4.6 4.6l1.1 1.1"/><path d="M8 19h9.5a3.5 3.5 0 0 0 .3-7 4.8 4.8 0 0 0-9.2 1.2A2.9 2.9 0 0 0 8 19z"/>'},
   {id:'cnotasg',n:'Notas',tabs:['cnotas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
-  {id:'cajustes',n:'Ajustes',tabs:['cajustes','cogente'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
+  {id:'cajustes',n:'Ajustes',tabs:['cajustes','cogente','cbuzon'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'}];
 const CAMPO=new Set(GRUPOS_CAMPO.flatMap(g=>g.tabs));
 const areaDe=t=>CAMPO.has(t)?'campo':'riego';
 function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO.filter(g=>g.id!=='lab'||tabPermitida('taller'));const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
@@ -1673,6 +1680,53 @@ function vHoy(){lecCargar();const av=hoyAvisos(),cl=hoyClima(),ab=!!st.hoyAv,mal
 window.addEventListener('scroll',()=>document.body.classList.toggle('scrolled',window.scrollY>4),{passive:true});
 new MutationObserver(()=>{for(const r of document.querySelectorAll('.hoyrow:not([data-sr])')){r.dataset.sr=1;scrollRaton(r)}}).observe(document.getElementById('main')||document.body,{childList:true,subtree:true});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-hoyav]');if(!b||st.tab!=='hoy')return;st.hoyAv=!st.hoyAv;renderMain()});
+/* AGRO se aparta al bajar por la pantalla y vuelve al subir (o cerca de arriba): así no tapa lo que hay debajo */
+(()=>{let y0=window.scrollY,acum=0;window.addEventListener('scroll',()=>{const y=window.scrollY,d=y-y0;y0=y;if(y<60){acum=0;document.body.classList.remove('agfuera');return}
+  if(Math.sign(d)!==Math.sign(acum))acum=0;acum+=d;if(acum>24)document.body.classList.add('agfuera');else if(acum<-24)document.body.classList.remove('agfuera');agSitioLuego()},{passive:true})})();
+/* En reposo, si debajo de AGRO queda un botón o una casilla, sube por el borde derecho hasta un hueco libre (como mucho media pantalla) */
+function agSitio(){const b=document.getElementById('agbtn'),m=document.getElementById('main');if(!b||b.hidden||!m)return;const bs=document.body.style;
+  const r0={left:b.offsetLeft,right:b.offsetLeft+b.offsetWidth,height:b.offsetHeight},base=b.offsetTop;   // sin contar el desplazamiento ni la animación
+  const els=[...m.querySelectorAll('button,input,select,textarea,a,[data-act],[data-tab]')].map(e=>e.getBoundingClientRect()).filter(q=>q.width&&q.height&&q.bottom>0&&q.top<innerHeight);
+  /* tapa = encima de algo; estorba = encima de su centro o de más de la mitad (en una fila ancha se puede tocar por otro lado) */
+  const tapa=(q,t)=>q.right>r0.left-4&&q.left<r0.right+4&&q.bottom>t-4&&q.top<t+r0.height+4;
+  const estorba=(q,t)=>{const w=Math.min(q.right,r0.right)-Math.max(q.left,r0.left),h=Math.min(q.bottom,t+r0.height)-Math.max(q.top,t);if(w<=0||h<=0)return false;const cx=(q.left+q.right)/2,cy=(q.top+q.bottom)/2;return (cx>r0.left&&cx<r0.right&&cy>t&&cy<t+r0.height)||w*h>q.width*q.height/2};
+  for(const f of [tapa,estorba])for(let s=0;s<=innerHeight*0.5;s+=8){if(base-s<60)break;if(!els.some(q=>f(q,base-s))){bs.setProperty('--agsube',s+'px');return}}bs.setProperty('--agsube','0px')}
+let agT=0;function agSitioLuego(){clearTimeout(agT);agT=setTimeout(agSitio,120)}
+window.addEventListener('resize',agSitioLuego);new MutationObserver(agSitioLuego).observe(document.getElementById('main')||document.body,{childList:true,subtree:true});
+/* ---------- Sugerencias y fallos ---------- */
+/* Cualquiera manda una idea o un fallo; el administrador los lee aquí mismo. Los errores de la app también llegan solos (máx. 5 por sesión, sin repetir). */
+const bzUser=()=>window.NUBE&&NUBE.user||null;
+function bzDoc(tipo,txt,donde){const u=bzUser();return{tipo,txt:String(txt||'').slice(0,2000),donde:String(donde||'').slice(0,1500),de:u?u.email:'',nombre:u&&u.nombre||'',v:window.APP_V||'',tab:String(st.bzDe||st.tab||''),disp:String(navigator.userAgent||'').slice(0,200),ts:ahoraISO()}}
+const BZ_ERR={n:0,vistos:new Set()};
+function bzError(msg,donde){try{msg=String(msg||'').slice(0,500);if(!msg||BZ_ERR.n>=5||BZ_ERR.vistos.has(msg)||/ResizeObserver loop|^Script error\.?$/.test(msg))return;
+  if(!bzUser()||Store.mode!=='fb')return;BZ_ERR.vistos.add(msg);BZ_ERR.n++;Store.addCol('buzon',bzDoc('error',msg,donde)).catch(()=>{})}catch(e){}}
+window.addEventListener('error',e=>{if(e&&e.message)bzError(e.message,(String(e.filename||'').split('/').pop()+':'+(e.lineno||0)+':'+(e.colno||0))+(e.error&&e.error.stack?'\n'+e.error.stack:''))});
+window.addEventListener('unhandledrejection',e=>{const r=e&&e.reason;bzError(r&&r.message||String(r),r&&r.stack||'')});
+async function bzCarga(){if(st.bzCargando)return;st.bzCargando=true;try{st.bz=(await Store.listCol('buzon',200)).filter(x=>!x.borrado)}catch(e){st.bz=[];st.bzErr=e&&e.code||'error'}st.bzCargando=false;if(st.tab==='buzon'||st.tab==='cbuzon')renderMain()}
+function vBuzon(){const u=bzUser(),adm=!!(u&&u.admin)||!window.NUBE,t=st.bzTipo||'idea';
+  let h=`<section class="card bz"><div><h3>Sugerencias y fallos</h3><div class="sub">¿Algo no va, se ve mal o se podría hacer mejor? Cuéntalo con tus palabras. Lo lee el administrador; se manda también la pantalla de la que vienes y la versión de la app.</div></div>
+    <div class="row" role="group" aria-label="Qué quieres contar"><button class="chip" type="button" data-bz="tipo" data-t="idea" aria-pressed="${t==='idea'}">Una idea o mejora</button><button class="chip" type="button" data-bz="tipo" data-t="fallo" aria-pressed="${t==='fallo'}">Algo falla</button></div>
+    <label for="bz_txt" class="sub">${t==='fallo'?'Qué ha pasado y qué estabas haciendo':'Tu idea'}</label>
+    <textarea id="bz_txt" rows="4" maxlength="2000" placeholder="${t==='fallo'?'Ej.: al guardar las cuentas del día se queda cargando':'Ej.: que el stock avise cuando quede para una semana'}">${esc(st.bzTxt||'')}</textarea>
+    <div class="row"><button class="btn pri" type="button" data-bz="enviar" ${st.bzEnviando?'disabled':''}>Enviar</button></div></section>`;
+  if(!adm)return h;
+  if(st.bz==null){bzCarga();return h+`<section class="card"><div class="sub">Cargando lo recibido…</div></section>`}
+  const f=st.bzF||'pend',L=st.bz.filter(x=>f==='todo'||(f==='pend'?!x.visto:f==='error'?x.tipo==='error':x.tipo!=='error')),n=k=>st.bz.filter(x=>k==='pend'?!x.visto:k==='error'?x.tipo==='error':k==='todo'||x.tipo!=='error').length;
+  const nom={idea:'Idea',fallo:'Fallo',error:'Error de la app'},cls={idea:'ok',fallo:'warn',error:'bad'};
+  h+=`<section class="card"><div><h3>Recibido</h3><div class="sub">Solo lo ves tú, el administrador.${st.bzErr?' No se pudo cargar ('+esc(st.bzErr)+').':''}</div></div>
+    <div class="row" role="group" aria-label="Filtrar">${[['pend','Sin ver'],['gente','Del equipo'],['error','Errores'],['todo','Todo']].map(([k,tx])=>`<button class="chip" type="button" data-bz="f" data-f="${k}" aria-pressed="${f===k}">${tx} (${n(k)})</button>`).join('')}</div>
+    <div class="bzl">${L.length?L.slice(0,100).map(x=>`<div class="bzi${x.visto?' visto':''}"><div class="row" style="align-items:center;gap:8px"><span class="pill ${cls[x.tipo]||''}">${nom[x.tipo]||esc(x.tipo)}</span><small>${esc((x.ts||'').slice(0,16).replace('T',' '))} · ${esc(x.nombre||x.de||'')} · ${esc(x.tab||'')} · ${esc(x.v||'')}</small></div>
+      <p>${esc(x.txt)}</p>${x.donde?`<pre>${esc(x.donde)}</pre>`:''}<div class="row">${x.visto?'':`<button class="btn" type="button" data-bz="visto" data-id="${esc(x.id)}">Visto</button>`}<button class="btn" type="button" data-bz="borrar" data-id="${esc(x.id)}">Borrar</button></div></div>`).join(''):'<div class="sub">Nada por aquí.</div>'}</div></section>`;
+  return h}
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='bz_txt')st.bzTxt=e.target.value});
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-tab="buzon"],[data-tab="cbuzon"]');if(t&&st.tab!=='buzon'&&st.tab!=='cbuzon')st.bzDe=st.tab},true);
+document.addEventListener('click',async e=>{const b=e.target.closest&&e.target.closest('[data-bz]');if(!b)return;const a=b.dataset.bz,id=b.dataset.id;
+  if(a==='tipo'){st.bzTipo=b.dataset.t;renderMain();return}
+  if(a==='f'){st.bzF=b.dataset.f;renderMain();return}
+  if(a==='enviar'){const tx=(st.bzTxt||'').trim();if(tx.length<3){toast('Escribe qué quieres contar');return}st.bzEnviando=true;renderMain();
+    try{const d=bzDoc(st.bzTipo||'idea',tx,'');const nid=await Store.addCol('buzon',d);st.bzTxt='';if(st.bz)st.bz.unshift({...d,id:nid});toast('Enviado. ¡Gracias!')}catch(err){toast(errMsg(err))}st.bzEnviando=false;renderMain();return}
+  if(a==='visto'){try{await Store.updCol('buzon',id,{visto:true});const x=(st.bz||[]).find(x=>x.id===id);if(x)x.visto=true}catch(err){toast(errMsg(err))}renderMain();return}
+  if(a==='borrar'){try{await Store.delCol('buzon',id);st.bz=(st.bz||[]).filter(x=>x.id!==id)}catch(err){toast(errMsg(err))}renderMain();return}});
 /* ---------- Más: Equipo, Notas, Taller y Ajustes ---------- */
 function vMas(){const G=gruposAct().filter(g=>MAS_G.includes(g.id)),ins=insignias();
   return G.map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k));if(!ts.length)return '';
@@ -5164,7 +5218,7 @@ async function tlPoner(){if(!esAdminU())return;const a=($('#tlk_n1')||{}).value|
 document.addEventListener('click',e=>{if(!TL_TABS.includes(st.tab))return;const b=e.target.closest&&e.target.closest('[data-tlk]');if(!b)return;const a=b.dataset.tlk;
   if(a==='abrir')tlAbrir();else if(a==='poner')tlPoner();else if(a==='cerrar'){tlRecordar('');renderMain();window.scrollTo(0,0);toast('Taller cerrado con llave')}});
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!e.target||e.target.id!=='tlk_pw')return;e.preventDefault();tlAbrir()});
-const VIEWS={cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,otrat:vOtrat,cotrat:vOtrat,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+const VIEWS={buzon:vBuzon,cbuzon:vBuzon,cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,otrat:vOtrat,cotrat:vOtrat,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
 for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
@@ -7198,7 +7252,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v200';
+window.APP_V='abonado-v201';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
