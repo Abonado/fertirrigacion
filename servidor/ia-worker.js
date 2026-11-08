@@ -10,7 +10,7 @@
 // Solo responde a personas que han entrado en la app y que el administrador ha dado de alta.
 
 const PROYECTO = 'fertirrigacion-cabezales';           // proyecto de Firebase
-const ORIGENES = ['https://abonado.github.io'];          // desde dónde se puede usar
+const ORIGENES = ['https://abonado.github.io', 'https://agrofly-abonado.pages.dev', 'https://agrofly-abonado.netlify.app'];          // desde dónde se puede usar
 // Copia de la app en Cloudflare Pages (agrofly-abonado.pages.dev y sus vistas previas) mientras GitHub no vuelva
 const okOrigen = o => ORIGENES.includes(o) || /^https:\/\/([a-z0-9-]+\.)?agrofly-abonado(-[a-z0-9]+)?\.pages\.dev$/.test(o || '');
 const MODELO = 'claude-haiku-5-5';          // solo texto: barato y suficiente
