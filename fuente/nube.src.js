@@ -220,9 +220,12 @@ const iaProvPon=x=>{if(!x)return;try{localStorage.setItem('abono.iaProv',x)}catc
 let iaSondeado=false;
 function iaSondear(){if(iaSondeado||!iaUrl())return;iaSondeado=true;fetch(iaUrl()).then(r=>r.json()).then(j=>{if(j&&j.proveedor)iaProvPon(j.proveedor)}).catch(()=>{})}
 const iaUrl=()=>{try{return (st.cfg&&st.cfg.iaUrl)||''}catch(e){return ''}};
+/* Si el servidor no contesta (sin cobertura, o la compañía de internet bloquea Cloudflare), no se queda cargando para siempre */
+const iaEspera=ms=>{const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal};
+const iaFalloRed=e=>({code:e&&e.name==='AbortError'?'ia_tiempo':'red'});
 const CL_ERR={sesion:'ia_sesion',sin_acceso:'ia_sinacceso',creditos:'ia_creditos',limite:'ia_cuota',ocupada:'ia_ocupada',clave:'ia_clave',sin_clave:'ia_clave',origen:'ia_origen'};
 async function iaClaude(prompt,blobs,opts){const tk=await N.auth.currentUser.getIdToken();const images=[];for(const b of blobs||[])images.push({data:await aB64(b),type:b.type||'image/jpeg'});
-  let r;try{r=await fetch(iaUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({prompt,images,...(opts&&opts.rapido?{rapido:true}:{})})})}catch(e){throw{code:'red'}}
+  let r;try{r=await fetch(iaUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({prompt,images,...(opts&&opts.rapido?{rapido:true}:{})}),signal:iaEspera(images.length?90000:60000)})}catch(e){throw iaFalloRed(e)}
   const j=await r.json().catch(()=>null);if(!r.ok||!j||!j.text){console.error('IA Claude',r.status,j);throw{code:(j&&CL_ERR[j.error])||'ia_error'}}iaProvPon(j.proveedor);N.ia.ultimo=j.proveedor||iaProv()||'IA';return j.text}
 /* Chat agrícola: con Claude (servidor propio, que pone las instrucciones) o, si no hay servidor, con Gemini */
 const SISTEMA_CHAT=`Eres el asistente agronómico de Agro FLY, una app de fertirrigación y gestión de fincas (sobre todo tomate en invernadero en la Región de Murcia, también árboles al aire libre).
@@ -232,7 +235,7 @@ Habla en español de España, claro y práctico, como un técnico de campo con e
 Las cifras que des son orientativas: dilo cuando importe. Para fitosanitarios, nunca des una dosis como definitiva: recuerda usar solo productos autorizados en el Registro de Productos Fitosanitarios para ese cultivo y seguir la etiqueta y al técnico asesor.
 Si una foto o los datos no bastan para estar seguro, dilo y explica qué mirar o qué medir para salir de dudas.`;
 async function chatClaude(chat,contexto,blob){const tk=await N.auth.currentUser.getIdToken();const images=blob?[{data:await aB64(blob),type:blob.type||'image/jpeg'}]:[];
-  let r;try{r=await fetch(iaUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({chat,contexto,images})})}catch(e){throw{code:'red'}}
+  let r;try{r=await fetch(iaUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({chat,contexto,images}),signal:iaEspera(images.length?90000:60000)})}catch(e){throw iaFalloRed(e)}
   const j=await r.json().catch(()=>null);if(!r.ok||!j||!j.text){console.error('Chat IA',r.status,j);throw{code:(j&&CL_ERR[j.error])||'ia_error'}}iaProvPon(j.proveedor);return j.text}
 async function chatGemini(chat,contexto,blob){let I;try{I=await iaInit()}catch(e){throw{code:'red'}}
   const contents=chat.map((m,i)=>{const parts=[{text:m.text}];if(blob&&i===chat.length-1)return{role:'user',parts:[{text:m.text}]};return{role:m.role==='assistant'?'model':'user',parts}});
