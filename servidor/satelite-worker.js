@@ -12,7 +12,9 @@
 // Solo atiende a personas que han entrado en la app y que el administrador ha dado de alta.
 
 const PROYECTO = 'fertirrigacion-cabezales';
-const ORIGENES = ['https://abonado.github.io'];
+const ORIGENES = ['https://abonado.github.io', 'https://agrofly-abonado.pages.dev', 'https://agro-fly.netlify.app'];
+// Copia de la app en Cloudflare Pages (agrofly-abonado.pages.dev y sus vistas previas) mientras GitHub no vuelva
+const okOrigen = o => ORIGENES.includes(o) || /^https:\/\/([a-z0-9-]+\.)?agrofly-abonado(-[a-z0-9]+)?\.pages\.dev$/.test(o || '');
 const JWK_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 const CDSE_TOKEN = 'https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token';
 const SH = 'https://sh.dataspace.copernicus.eu/api/v1';
@@ -227,7 +229,7 @@ async function recinto(b) {
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('origin') || '';
-    const cors = { 'Access-Control-Allow-Origin': ORIGENES.includes(origin) ? origin : ORIGENES[0], 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'content-type, authorization', 'Access-Control-Max-Age': '86400', 'Vary': 'Origin' };
+    const cors = { 'Access-Control-Allow-Origin': okOrigen(origin) ? origin : ORIGENES[0], 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'content-type, authorization', 'Access-Control-Max-Age': '86400', 'Vary': 'Origin' };
     const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { ...cors, 'content-type': 'application/json' } });
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
     if (request.method === 'GET') {
@@ -236,7 +238,7 @@ export default {
       return json({ ok: true });
     }
     if (request.method !== 'POST') return json({ error: 'metodo' }, 405);
-    if (!ORIGENES.includes(origin)) return json({ error: 'origen' }, 403);
+    if (!okOrigen(origin)) return json({ error: 'origen' }, 403);
     const tk = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
     let user; try { user = await verificarToken(tk); } catch (e) { return json({ error: 'sesion' }, 401); }
     const yo = String(user.email || '').toLowerCase();

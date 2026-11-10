@@ -10,7 +10,9 @@
 // Solo responde a personas que han entrado en la app y que el administrador ha dado de alta.
 
 const PROYECTO = 'fertirrigacion-cabezales';           // proyecto de Firebase
-const ORIGENES = ['https://abonado.github.io'];          // desde dónde se puede usar
+const ORIGENES = ['https://abonado.github.io', 'https://agrofly-abonado.pages.dev', 'https://agro-fly.netlify.app'];          // desde dónde se puede usar
+// Copia de la app en Cloudflare Pages (agrofly-abonado.pages.dev y sus vistas previas) mientras GitHub no vuelva
+const okOrigen = o => ORIGENES.includes(o) || /^https:\/\/([a-z0-9-]+\.)?agrofly-abonado(-[a-z0-9]+)?\.pages\.dev$/.test(o || '');
 const MODELO = 'claude-haiku-5-5';          // solo texto: barato y suficiente
 const MODELO_FOTOS = 'claude-sonnet-5-5';   // con fotos: aquí sí compensa el modelo bueno
 const MODELO_RAPIDO = 'claude-haiku-5-5';
@@ -68,7 +70,7 @@ export default {
   async fetch(request, env) {
     const origin = request.headers.get('origin') || '';
     const cors = {
-      'Access-Control-Allow-Origin': ORIGENES.includes(origin) ? origin : ORIGENES[0],
+      'Access-Control-Allow-Origin': okOrigen(origin) ? origin : ORIGENES[0],
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'content-type, authorization',
       'Access-Control-Max-Age': '86400',
@@ -81,7 +83,7 @@ export default {
     const nombre = prov === 'openai' ? 'OpenAI' : 'Claude';
     if (request.method === 'GET') return json({ ok: true, configurado: !!prov, proveedor: prov ? nombre : null }, 200);   // no da más pistas a nadie de fuera
     if (request.method !== 'POST') return json({ error: 'metodo' }, 405);
-    if (!ORIGENES.includes(origin)) return json({ error: 'origen' }, 403);
+    if (!okOrigen(origin)) return json({ error: 'origen' }, 403);
     if (!prov) return json({ error: 'sin_clave' }, 500);
 
     // 1. ¿Quién es? (sesión de la app)
