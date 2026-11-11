@@ -341,18 +341,18 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .lrow .gd{display:flex;align-items:center;gap:8px}
 .lrow .lnm small{color:var(--muted);font-size:12px}
 .lvl .bar i.est{background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0 6px,transparent 6px 12px)}
-.stk{display:grid}.stk-hd{display:none}
-.stk-f{display:grid;grid-template-columns:1fr auto;grid-template-areas:'n e' 'q q' 'd d' 'i i';gap:8px 12px;padding:14px 0;border-top:1px solid var(--line)}.stk-f:first-of-type{border-top:0}
-.stk-n{grid-area:n;min-width:0}.stk-n b{display:block;font-size:1.05rem}.stk-n small,.stk-q small,.stk-d small{color:var(--muted);font-size:12px}
-.stk-q{grid-area:q;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}.stk-q b{font:600 30px/1 var(--f-display)}.stk-q .u{font-size:15px}.stk-r{font-weight:600}.stk-q small{flex-basis:100%}
-.stk-d{grid-area:d;display:grid;gap:4px}.stk-e{grid-area:e;justify-self:end}.stk-i{grid-area:i;display:flex;gap:10px;flex-wrap:wrap}.stk-i .field{display:flex;align-items:center;gap:8px;margin:0}
-.stk-bar{position:relative;height:10px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line);overflow:visible}.stk-bar i{display:block;height:100%;border-radius:5px;background:var(--ok,#2e7d4f)}
-.stk-bar.warn i{background:var(--warn)}.stk-bar.nd i{background:var(--muted)}.stk-bar.bad i{background:var(--bad)}.stk-bar em{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);opacity:.55;transform:translateX(-1px)}
-.stk-f.bad{background:linear-gradient(90deg,var(--bad-bg),transparent 60%)}
-@media (min-width:900px){.stk-hd{display:grid;grid-template-columns:minmax(140px,1.2fr) 150px minmax(130px,1fr) 92px 172px;gap:14px;padding:0 10px 8px;font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);border-bottom:2px solid var(--line)}
-  .stk-f{grid-template-columns:minmax(140px,1.2fr) 150px minmax(130px,1fr) 92px 172px;grid-template-areas:'n q d e i';align-items:center;gap:14px;padding:12px 10px}
-  .stk-i{flex-direction:column;gap:4px}.stk-i .field{justify-content:space-between}.stk-i .inp.sm{width:104px}.stk-q b{font-size:26px}
-  .stk-f:first-of-type{border-top:0}.stk-e{justify-self:start}.stk-i{flex-wrap:nowrap}.stk-i .field label{font-size:11px}.stk-f:hover{background:var(--surface-2)}.stk-f.bad:hover{background:var(--bad-bg)}}
+.stt,.gct{width:100%;border-collapse:collapse}
+.stt th,.gct th{text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700;padding:0 8px 8px;border-bottom:2px solid var(--line)}
+.stt td,.gct td{padding:12px 8px;border-top:1px solid var(--line);vertical-align:middle}.stt tr:first-child td,.gct tbody tr:first-child td{border-top:0}
+.stt td.n b,.gct td.n b{display:block;font-size:1.02rem}.stt td.n .pill{margin-top:4px;font-size:11px}
+.stw{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}.stq{font:700 28px/1.05 var(--f-display);white-space:nowrap}.stq .u,.stg .u{font:600 14px var(--f-body);color:var(--muted)}
+.sts{font-size:14px;font-weight:600;color:var(--ink-2,#3b4a5c);white-space:nowrap}.stg{font:600 19px/1.1 var(--f-display);white-space:nowrap}.stt small,.gct small{display:block;color:var(--muted);font-size:12px;font-weight:400;letter-spacing:0;text-transform:none}
+.stt tr.bad td:first-child{box-shadow:inset 4px 0 var(--bad)}.stt tr.warn td:first-child{box-shadow:inset 4px 0 var(--warn)}.stt td.n{padding-left:12px}.stt td.g,.stt th.g{text-align:right}
+.gct td,.gct th{text-align:right;white-space:nowrap}.gct td.n,.gct th.n{text-align:left;white-space:normal}.gct td.t,.gct th.t{font-weight:700;background:var(--surface-2)}.gct td b{font:600 17px var(--f-display)}
+.saj{display:grid;gap:0}.saj-f{display:grid;grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.saj-f:first-child{border-top:0}.saj-f .field{margin:0}.saj-f .inp.sm{width:104px}
+@media (max-width:520px){.saj-f{grid-template-columns:1fr 1fr}.saj-f>b{grid-column:1/-1}.stq{font-size:22px}.stt td,.stt th{padding-left:4px;padding-right:4px}.stt th{white-space:normal}.stt td.n b{font-size:.95rem}.gct td b{font-size:15px}.gct td,.gct th{padding-left:6px;padding-right:6px}.sts{font-size:12.5px;white-space:normal}.stg{font-size:16px}.stt td.n .pill{white-space:normal}}
+@media print{.stq{font-size:16pt}.stg{font-size:12pt}.stt td,.gct td{padding:5px 6px}.stt th,.gct th{padding:0 6px 5px}}
+.gct td.n{min-width:120px}.stt td.n b,.gct td.n b{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
 .srow{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
 .srow:first-child{border-top:0}
 .yo{min-height:42px;display:flex;align-items:center;padding:0 12px;border-radius:8px;background:var(--ok-bg);color:var(--ok);font-size:16px}
@@ -2591,46 +2591,49 @@ function stockDe(p,a){let s=0;for(const m of st.alm||[])if(m.p===p&&(!a||almDeMo
 function consumoDia(p,a){const d=new Date();d.setDate(d.getDate()-30);const lim=isoD(d);let s=0;for(const m of st.alm||[])if(m.p===p&&m.tipo==='salida'&&m.fecha>=lim&&(!a||almDeMov(m)===a))s+=-m.qty;return s/30}
 function stockRow(p){const a=almAct(),s=stockDe(p,a),c=consumoDia(p,a),min=minStock(p,a),d=c>0?Math.max(0,s)/c:null,bajo=min!=null&&s<=min;
   const k=s<-0.001?'bad':bajo?'bad':d!=null&&d<=7?'warn':'ok';return{s,c,min,d,k,t:s<-0.001?'Revisar':bajo?'Pedir':k==='warn'?'Pocos días':'Bien'}}
-st.almPer=st.almPer||30;
-function consumoCabHTML(a){const al=almById(a);if(!al)return '';if(st.hist===null){loadHist();return ''}const per=st.almPer,d=new Date();let desde;
-  if(per==='mes')desde=hoy().slice(0,7)+'-01';else{d.setDate(d.getDate()-per+1);desde=isoD(d)}
-  const regs=(st.hist||[]).filter(r=>r.fecha>=desde&&r.fecha<=hoy()),cabs=al.cabezales.filter(c=>cabsVis().some(x=>x.id===c)),kg={},dias={};
+st.almPer=st.almPer||'mes';
+/* Lo gastado según las cuentas del día, por cabezal (zona), desde una fecha hasta hoy */
+const almDesde=per=>{if(per==='mes')return hoy().slice(0,7)+'-01';const d=new Date();d.setDate(d.getDate()-per+1);return isoD(d)};
+const almPerTxt=per=>per==='mes'?'en '+new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'}):'en los últimos '+per+' días';
+function gastoCabs(a,desde){const al=almById(a),cabs=al?al.cabezales.filter(c=>cabsVis().some(x=>x.id===c)):[],kg={},dias={};if(st.hist===null){loadHist();return null}
+  const regs=(st.hist||[]).filter(r=>r.fecha>=desde&&r.fecha<=hoy());
   for(const c of cabs){kg[c]={};dias[c]=0;for(const r of regs){if(!r.m3||r.m3[c]==null)continue;dias[c]++;const k=kgCab(r,c);for(const p in k)kg[c][p]=(kg[c][p]||0)+k[p]}}
-  const sal={};for(const m of st.alm||[])if(m.tipo==='salida'&&m.fecha>=desde&&almDeMov(m)===a)sal[m.p]=(sal[m.p]||0)-m.qty;
-  const ps=Object.keys(st.cfg.productos).filter(p=>cabs.some(c=>(kg[c][p]||0)>0.0001)||(sal[p]||0)>0.0001);
-  return `<section class="card"><div class="tank-h"><div><h3>Consumo por cabezal</h3><div class="sub">Lo que ha gastado cada uno según las cuentas del día${cabs.length>1?' · el stock es común':''}</div></div>
+  const tot=p=>cabs.reduce((x,c)=>x+(kg[c][p]||0),0);return{cabs,kg,dias,tot}}
+const cantTxt=(p,v)=>`${fmt(v,1)} <span class="u">${uCant(p)}</span>`;
+/* Gasto por cabezal: una columna por zona y el total · se imprime en la hoja del almacén */
+function consumoCabHTML(a){const per=st.almPer,G=gastoCabs(a,almDesde(per));if(!G)return '<section class="card"><div class="note">Cargando las cuentas…</div></section>';const{cabs,kg,dias,tot}=G,varias=cabs.length>1;
+  const ps=Object.keys(st.cfg.productos).filter(p=>tot(p)>0.0001).sort((x,y)=>tot(y)-tot(x));
+  return `<section class="card gcab"><div class="tank-h"><div><h3>Gasto por cabezal</h3><div class="sub">Lo que ha gastado cada zona según las cuentas del día, ${esc(almPerTxt(per))}</div></div>
     <div class="row">${[[7,'7 días'],[30,'30 días'],['mes','Este mes']].map(([k,t])=>`<button class="chip" data-aper="${k}" aria-pressed="${String(per)===String(k)}">${t}</button>`).join('')}</div></div>
-    ${ps.length?`${cabs.length>1?`<div class="cleg">${cabs.map((c,k)=>`<span><i style="background:${['var(--accent)','#c98a2b','var(--navy)'][k%3]}"></i>${esc(cabNombre(c))} · ${dias[c]} días</span>`).join('')}</div>`:''}<div class="crows">${ps.map(p=>{const t=cabs.reduce((x,c)=>x+(kg[c][p]||0),0);
-      return `<div class="crow"><div class="cn"><b>${esc(pn(p))}</b><span>Total <b>${fmt(t,1)} ${uCant(p)}</b> · salido del almacén ${fmt(sal[p]||0,1)} ${uCant(p)}</span></div>
-        ${cabs.length>1&&t>0?`<div class="cbar">${cabs.map((c,k)=>`<i style="width:${(kg[c][p]||0)*100/t}%;background:${['var(--accent)','#c98a2b','var(--navy)'][k%3]}"></i>`).join('')}</div>`:''}
-        <div class="cv">${cabs.map(c=>`<span>${esc(cabNombre(c))} <b>${fmt(kg[c][p]||0,1)} ${uCant(p)}</b>${cabs.length>1&&t>0?' · '+fmt((kg[c][p]||0)*100/t,0)+' %':''}</span>`).join('')}</div></div>`}).join('')}</div>
-      <div class="note">«Salido del almacén» son los abonos descontados al registrar llenados. Si difiere mucho del total gastado, revisa llenados o cuentas.</div>`:'<div class="note">Sin datos de consumo en este periodo.</div>'}</section>`}
-/* Stock: lo que queda en sacos (grande), para cuántos días y el mínimo. Lo urgente arriba. En el PC, una tabla; en el móvil, una ficha por abono. */
-const STK_DIAS=60;
-function stockSacos(p,v){const z=sacoDe(p);if(!z||v<=0.001)return `<b>${fmt(v,1)}</b> <span class="u">${uCant(p)}</span>`;const n=Math.floor(v/z+1e-6),rr=v-n*z;
-  return `<b>${n}</b> <span class="u">${n===1?'saco':'sacos'}</span>${rr>0.05?` <span class="stk-r">+ ${fmt(rr,1)} kg</span>`:''}`}
-function stockHTML(ps,aid){const R=ps.map(p=>{const r={...stockRow(p)};if(r.s<=0.001&&r.s>=-0.001&&!(r.c>0)&&r.min==null){r.k='nd';r.t='Sin stock'}return{p,r}}),ord={bad:0,warn:1,ok:2,nd:3};
-  R.sort((a,b)=>ord[a.r.k]-ord[b.r.k]||(a.r.d??1e9)-(b.r.d??1e9)||pn(a.p).localeCompare(pn(b.p)));
-  const fila=({p,r})=>{const z=sacoDe(p),sinG=!(r.c>0),pc=!sinG?Math.min(100,(r.d||0)*100/STK_DIAS):r.min>0?Math.min(100,Math.max(0,r.s)*50/r.min):r.s>0.001?100:0,mk=r.min!=null&&r.min>0?(sinG?50:Math.min(100,r.min/r.c*100/STK_DIAS)):null,bajo=r.min!=null&&r.s<=r.min;
-    return `<div class="stk-f ${r.k}" data-stk="${p}"><div class="stk-n"><b>${esc(prod(p).n)}</b><small data-out="sc_${p}">${r.c>0?'Gasta '+fmt(r.c,1)+' '+uCant(p)+'/día':'Sin consumo reciente'}</small></div>
-      <div class="stk-q" data-out="sv_${p}">${stockSacos(p,r.s)}<small>${z&&r.s>0.001?fmt(r.s,1)+' kg en total':''}</small></div>
-      <div class="stk-d"><div class="stk-bar ${r.k}" title="${r.d!=null?'Para '+fmt(r.d,0)+' días':'Sin consumo'}"><i style="width:${pc.toFixed(1)}%"></i>${mk!=null?`<em style="left:${mk.toFixed(1)}%" title="Mínimo"></em>`:''}</div>
-        <small>${r.s<-0.001?'En negativo: revisa entradas o llenados':bajo?`Por debajo del mínimo (${fmt(r.min,0)} ${uCant(p)})${r.d!=null?` · para ${fmt(r.d,0)} días`:''}`:r.d!=null?`Para <b>${fmt(r.d,0)} días</b>`:r.s>0.001?'Sin gasto reciente':'Sin existencias'}</small></div>
-      <div class="stk-e" data-out="sp_${p}"><span class="pill ${r.k}">${r.t}</span></div>
-      <div class="stk-i"><div class="field"><label for="mn_${p}">Mínimo</label><div class="inp sm"><input id="mn_${p}" data-k="cfg.min.${aid}|${p}" inputmode="decimal" value="${inVal(r.min)}"><span class="u">${uCant(p)}</span></div></div>
-        ${z?`<div class="field"><label for="sz_${p}">Saco de</label><div class="inp sm"><input id="sz_${p}" data-k="cfg.saco.${p}" inputmode="decimal" value="${inVal(z)}"><span class="u">kg</span></div></div>`:''}</div></div>`};
-  const nP=R.filter(x=>x.r.k==='bad').length,nW=R.filter(x=>x.r.k==='warn').length;
-  return `<section class="card"><div class="tank-h"><div><h3>Stock</h3><div class="sub">Lo que queda, para cuántos días al ritmo de los últimos 30 y el mínimo para pedir · lo urgente arriba</div></div>
+    ${ps.length?`<div class="tablewrap" style="overflow-x:auto"><table class="gct"><thead><tr><th class="n">Abono</th>${cabs.map(c=>`<th data-gc="${c}">${esc(cabNombre(c))}<small>${dias[c]} ${dias[c]===1?'día':'días'}</small></th>`).join('')}${varias?'<th class="t">Total</th>':''}</tr></thead>
+      <tbody>${ps.map(p=>`<tr data-gp="${p}"><td class="n"><b>${esc(pn(p))}</b></td>${cabs.map(c=>`<td>${(kg[c][p]||0)>0.0001?`<b>${cantTxt(p,kg[c][p])}</b>${varias?`<small>${fmt(kg[c][p]*100/tot(p),0)} %</small>`:''}`:'—'}</td>`).join('')}${varias?`<td class="t"><b>${cantTxt(p,tot(p))}</b>${sacoDe(p)&&tot(p)>=sacoDe(p)?`<small>${sacosTxt(p,tot(p))}</small>`:''}</td>`:''}</tr>`).join('')}</tbody></table></div>`
+      :'<div class="note">Sin cuentas guardadas en este periodo.</div>'}</section>`}
+/* Stock: abono · lo que queda (kilos o litros en grande, con los sacos al lado) · lo gastado este mes. Lo urgente arriba. */
+function stockHTML(ps,aid){const G=gastoCabs(aid,almDesde('mes'));
+  const R=ps.map(p=>{const r={...stockRow(p)},g=G?G.tot(p):null;if(r.s<=0.001&&r.s>=-0.001&&!(r.c>0)&&r.min==null&&!(g>0)){r.k='nd';r.t='Sin stock'}return{p,r,g}}),ord={bad:0,warn:1,ok:2,nd:3};
+  R.sort((a,b)=>ord[a.r.k]-ord[b.r.k]||pn(a.p).localeCompare(pn(b.p)));
+  const fila=({p,r,g})=>{const sc=sacosTxt(p,r.s);
+    return `<tr class="${r.k}" data-stk="${p}"><td class="n"><b>${esc(pn(p))}</b>${r.k==='ok'||r.k==='nd'?'':`<span class="pill ${r.k}">${r.t}${r.k==='bad'&&r.min!=null&&r.s>=0?' · mínimo '+fmt(r.min,0)+' '+uCant(p):''}</span>`}</td>
+      <td class="q"><div class="stw"><span class="stq">${cantTxt(p,r.s)}</span>${sc&&r.s>0.001?`<span class="sts">${sc}</span>`:''}</div>${r.s<-0.001?'<small>En negativo: revisa entradas o llenados</small>':r.d!=null&&r.s>0.001?`<small>Para unos ${fmt(r.d,0)} días</small>`:''}</td>
+      <td class="g">${g==null?'…':g>0.0001?`<span class="stg">${cantTxt(p,g)}</span>${sacoDe(p)&&g>=sacoDe(p)?`<small>${sacosTxt(p,g)}</small>`:''}`:'<span class="note">—</span>'}</td></tr>`};
+  const nP=R.filter(x=>x.r.k==='bad').length,nW=R.filter(x=>x.r.k==='warn').length,mes=new Date().toLocaleDateString('es-ES',{month:'long'});
+  return `<section class="card stock"><div class="tank-h"><div><h3>Stock</h3><div class="sub">Lo que queda en el almacén y lo gastado en ${esc(mes)} según las cuentas · lo urgente arriba</div></div>
     <div class="row">${nP?`<span class="pill bad">${nP} para pedir</span>`:''}${nW?`<span class="pill warn">${nW} con pocos días</span>`:''}${!nP&&!nW?'<span class="pill ok">Todo bien</span>':''}</div></div>
-    <div class="stk"><div class="stk-hd" aria-hidden="true"><span>Abono</span><span>Quedan</span><span>Para cuántos días · raya: mínimo</span><span>Estado</span><span>Mínimo y saco</span></div>${R.map(fila).join('')}</div></section>`}
+    <div class="tablewrap" style="overflow-x:auto"><table class="stt"><thead><tr><th>Abono</th><th>Queda</th><th class="g">Gastado en ${esc(mes)}</th></tr></thead><tbody>${R.filter(x=>x.r.k!=='nd').map(fila).join('')}</tbody></table></div>${R.some(x=>x.r.k==='nd')?`<p class="note stnd">Sin existencias ni gasto este mes: ${R.filter(x=>x.r.k==='nd').map(x=>esc(pn(x.p))).join(', ')}</p>`:''}</section>`}
+/* Aparte: el mínimo para pedir y el tamaño del saco de cada abono */
+function stockAjHTML(ps,aid){return `<section class="card noprint saj-c"><details ${st.sajOpen?'open':''} data-saj><summary><h3 style="display:inline">Mínimo y tamaño del saco</h3><div class="sub">Cuándo avisar para pedir y de cuántos kilos es cada saco</div></summary>
+  <div class="saj">${ps.map(p=>{const z=sacoDe(p),mn=minStock(p,aid);return `<div class="saj-f" data-saj="${p}"><b>${esc(pn(p))}</b>
+    <div class="field"><label for="mn_${p}">Mínimo</label><div class="inp sm"><input id="mn_${p}" data-k="cfg.min.${aid}|${p}" inputmode="decimal" value="${inVal(mn)}"><span class="u">${uCant(p)}</span></div></div>
+    ${z?`<div class="field"><label for="sz_${p}">Saco de</label><div class="inp sm"><input id="sz_${p}" data-k="cfg.saco.${p}" inputmode="decimal" value="${inVal(z)}"><span class="u">kg</span></div></div>`:'<span class="note">Líquido</span>'}</div>`}).join('')}</div></details></section>`}
 function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div class="note">Cargando almacén…</div></div>'}const aid=almAct(),alm=almById(aid),avs=almsVis();
   const ps=Object.keys(st.cfg.productos),mes=hoy().slice(0,7),movA=st.alm.filter(m=>almDeMov(m)===aid),ent=movA.filter(m=>m.tipo==='entrada'&&(m.fecha||'').slice(0,7)===mes),nb=ps.filter(p=>stockRow(p).k==='bad').length;
-  let h=(avs.length>1?`<div class="pick">${avs.map(a=>`<button class="chip" data-almsel="${a.id}" aria-pressed="${a.id===aid}">Almacén ${esc(a.nombre)}</button>`).join('')}</div>`:'')+`<div class="almh"><h2>Almacén ${esc(alm.nombre)}</h2><div class="sub">Da servicio a ${esc(alm.cabezales.map(cabNombre).join(', '))}${alm.cabezales.length>1?' · stock común':''}</div></div>`;
-  h+=`<section class="summary" data-out="asum"><div class="stat"><span>Para pedir</span><b>${nb}</b><small>bajo mínimo o en negativo</small></div><div class="stat"><span>Entradas del mes</span><b>${ent.length}</b><small>albaranes</small></div><div class="stat"><span>Movimientos</span><b>${movA.length}</b><small>registrados</small></div></section>`;
+  let h=(avs.length>1?`<div class="pick noprint">${avs.map(a=>`<button class="chip" data-almsel="${a.id}" aria-pressed="${a.id===aid}">Almacén ${esc(a.nombre)}</button>`).join('')}</div>`:'')+`<div class="almh"><div class="tank-h"><div><h2>Almacén ${esc(alm.nombre)}</h2><div class="sub">Da servicio a ${esc(alm.cabezales.map(cabNombre).join(', '))}${alm.cabezales.length>1?' · stock común':''}</div></div><button class="btn" data-act="alm-print">Imprimir hoja</button></div></div>`;
+  h+=`<section class="summary noprint" data-out="asum"><div class="stat"><span>Para pedir</span><b>${nb}</b><small>bajo mínimo o en negativo</small></div><div class="stat"><span>Entradas del mes</span><b>${ent.length}</b><small>albaranes</small></div><div class="stat"><span>Movimientos</span><b>${movA.length}</b><small>registrados</small></div></section>`;
   h+=stockHTML(ps,aid);
   h+=consumoCabHTML(aid);
+  h+=stockAjHTML(ps,aid);
   const e=st.ent;
-  h+=`<section class="card"><div><h3>Nueva entrada</h3><div class="sub">Pedido recibido en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
+  h+=`<section class="card noprint"><div><h3>Nueva entrada</h3><div class="sub">Pedido recibido en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
     <div class="field"><label for="ae_p">Producto</label><div class="inp"><select id="ae_p" data-ae="p">${ps.map(p=>`<option value="${p}" ${e.p===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div></div>
     ${sacoDe(e.p)?`<div class="field"><label for="ae_sacos">Sacos de ${fmt(sacoDe(e.p),0)} kg</label><div class="inp"><input id="ae_sacos" data-ae="sacos" inputmode="decimal" value="${sacIn(e.p,e.qty)}"></div></div>`:''}
     <div class="field"><label for="ae_qty">${sacoDe(e.p)?'Kilos':'Cantidad'}</label><div class="inp"><input id="ae_qty" data-ae="qty" inputmode="decimal" value="${inVal(e.qty)}"><span class="u">${uCant(e.p)}</span></div></div>
@@ -2640,13 +2643,13 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
     ${adjHTML(e.adj,true)}
     <div class="row">${Adj.can()?`<label class="btn" for="ae_foto">Foto del albarán</label><input type="file" id="ae_foto" data-ae="file" accept="image/*,application/pdf" multiple hidden>`:''}<button class="btn pri" data-act="ent-save" ${e.adj.some(a=>a.tmp)?'disabled':''}>Guardar entrada</button></div></section>`;
   const a=st.aj;
-  if(esGestor())h+=`<section class="card"><div><h3>Ajustar inventario</h3><div class="sub">Cuando cuentes lo que hay de verdad en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
+  if(esGestor())h+=`<section class="card noprint"><div><h3>Ajustar inventario</h3><div class="sub">Cuando cuentes lo que hay de verdad en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
     <div class="field"><label for="aj_p">Producto</label><div class="inp"><select id="aj_p" data-aj="p">${ps.map(p=>`<option value="${p}" ${a.p===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div></div>
     ${sacoDe(a.p)?`<div class="field"><label for="aj_sacos">Sacos reales de ${fmt(sacoDe(a.p),0)} kg</label><div class="inp"><input id="aj_sacos" data-aj="sacos" inputmode="decimal" value="${sacIn(a.p,a.real)}"></div></div>`:''}
     <div class="field"><label for="aj_real">${sacoDe(a.p)?'Kilos reales':'Stock real'}</label><div class="inp"><input id="aj_real" data-aj="real" inputmode="decimal" value="${inVal(a.real)}"><span class="u">${uCant(a.p)}</span></div></div></div>
     <div class="row"><span class="note" data-out="ajn">En la app: ${fmt(stockDe(a.p,aid),1)} ${uCant(a.p)}${sacosTxt(a.p,stockDe(a.p,aid))?' ('+sacosTxt(a.p,stockDe(a.p,aid))+')':''}${a.real!=null?' · diferencia '+(a.real-stockDe(a.p,aid)>=0?'+':'')+fmt(a.real-stockDe(a.p,aid),1)+' '+uCant(a.p):''}</span><button class="btn pri" data-act="aj-save">Ajustar</button></div></section>`;
   const mv=movA.slice().sort((x,y)=>x.ts<y.ts?1:-1).slice(0,60);
-  h+=`<section class="card"><div><h3>Movimientos</h3><div class="sub">Entradas, salidas por llenado y ajustes</div></div>`+(mv.length?`<div class="msgs">`+mv.map(m=>{const o=m.origen&&bid(m.origen);
+  h+=`<section class="card noprint"><div><h3>Movimientos</h3><div class="sub">Entradas, salidas por llenado y ajustes</div></div>`+(mv.length?`<div class="msgs">`+mv.map(m=>{const o=m.origen&&bid(m.origen);
     return `<div class="msg"><div class="h"><span class="pill ${m.tipo==='entrada'?'ok':m.tipo==='salida'?'nd':'warn'}">${m.tipo}</span><b>${m.qty>=0?'+':'−'}${fmt(Math.abs(m.qty),1)} ${uCant(m.p)}</b>${sacosTxt(m.p,Math.abs(m.qty))&&Math.abs(m.qty)>=sacoDe(m.p)?`<span>${sacosTxt(m.p,Math.abs(m.qty))}</span>`:''}<span>${esc(pn(m.p))}</span><span>${fFecha(m.fecha)}</span></div>
     ${m.prov||m.alb?`<p>${esc([m.prov,m.alb?'Albarán '+m.alb:''].filter(Boolean).join(' · '))}</p>`:''}${m.auto?`<p class="note">Llenado deducido de las cuentas del ${esc(fCorta(m.autoDe))} (${fmt(m.autoCm,1)} cm)</p>`:''}${o?`<p class="note">${esc(o.nombre)} · ${esc(o.cabezales.map(cabNombre).join(' + '))}</p>`:''}${adjHTML(m.adjuntos,false)}
     <div class="row">${!esGestor()&&m.porEmail!==miEmail()?'':st.confirmMv===m.id?`<span class="note">¿Borrar movimiento?</span><button class="btn danger" data-act="mv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="mv-del-no">Cancelar</button>`:`<button class="btn" data-act="mv-del" data-id="${m.id}">Borrar</button>`}</div></div>`}).join('')+`</div>`:`<div class="note">Sin movimientos.</div>`)+`</section>`;
@@ -5178,6 +5181,7 @@ function imprimirVista(){const f=fincaAct(),tn=(TABS.find(t=>t[0]===st.tab)||[,'
   if(st.tab==='graficas'||st.tab==='tiempo')try{drawCharts()}catch(e){}
   try{window.print()}catch(e){toast('Aquí no se puede imprimir: ábrela en el navegador')}setTimeout(fin,4000)}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#imprimir');if(b)imprimirVista()});
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.matches&&d.matches('details[data-saj]'))st.sajOpen=d.open},true);
 async function recargarApp(){const b=$('#recargar');if((st.dirtyReg||st.dirtyCfg)&&!confirm('Tienes cambios sin guardar. Si recargas se pierden. ¿Recargar igualmente?'))return;
   if(b)b.classList.add('gira');try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await Promise.race([r.update(),new Promise(z=>setTimeout(z,2500))])}catch(e){}
   st.dirtyReg=false;st.dirtyCfg=false;location.reload()}
@@ -5311,6 +5315,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='ll-del-no'){st.confirmLl=null;renderMain()}
   else if(t.dataset.act==='ll-del-yes')llDel(t.dataset.id);
   else if(t.dataset.act==='ent-save')entSave();
+  else if(t.dataset.act==='alm-print')imprimirVista();
   else if(t.dataset.act==='aj-save')ajSave();
   else if(t.dataset.act==='mv-del'){st.confirmMv=t.dataset.id;renderMain()}
   else if(t.dataset.act==='mv-del-no'){st.confirmMv=null;renderMain()}
