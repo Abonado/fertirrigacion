@@ -347,7 +347,7 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .stt td.n b,.gct td.n b{display:block;font-size:1.02rem}.stt td.n .pill{margin-top:4px;font-size:11px}
 .stw{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 10px}.stq{font:700 28px/1.05 var(--f-display);white-space:nowrap}.stq .u,.stg .u{font:600 14px var(--f-body);color:var(--muted)}
 .sts{font-size:14px;font-weight:600;color:var(--ink-2,#3b4a5c);white-space:nowrap}.stg{font:600 19px/1.1 var(--f-display);white-space:nowrap}.stt small,.gct small{display:block;color:var(--muted);font-size:12px;font-weight:400;letter-spacing:0;text-transform:none}
-.stt tr.bad td:first-child{box-shadow:inset 4px 0 var(--bad)}.stt tr.warn td:first-child{box-shadow:inset 4px 0 var(--warn)}.stt td.n{padding-left:12px}.stt td.g,.stt th.g{text-align:right}
+.stt tr.bad td:first-child{box-shadow:inset 4px 0 var(--bad)}.stt tr.warn td:first-child{box-shadow:inset 4px 0 var(--warn)}.stt td.n{padding-left:12px}.stt .stk-aj{margin-top:6px;min-height:32px;padding:4px 12px;font-size:13px}.stt td.g,.stt th.g{text-align:right}
 .gct td,.gct th{text-align:right;white-space:nowrap}.gct td.n,.gct th.n{text-align:left;white-space:normal}.gct td.t,.gct th.t{font-weight:700;background:var(--surface-2)}.gct td b{font:600 17px var(--f-display)}
 .saj{display:grid;gap:0}.saj-f{display:grid;grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.saj-f:first-child{border-top:0}.saj-f .field{margin:0}.saj-f .inp.sm{width:104px}
 @media (max-width:520px){.saj-f{grid-template-columns:1fr 1fr}.saj-f>b{grid-column:1/-1}.stq{font-size:22px}.stt td,.stt th{padding-left:4px;padding-right:4px}.stt th{white-space:normal}.stt td.n b{font-size:.95rem}.gct td b{font-size:15px}.gct td,.gct th{padding-left:6px;padding-right:6px}.sts{font-size:12.5px;white-space:normal}.stg{font-size:16px}.stt td.n .pill{white-space:normal}}
@@ -2613,7 +2613,7 @@ function stockHTML(ps,aid){const G=gastoCabs(aid,almDesde('mes'));
   const R=ps.map(p=>{const r={...stockRow(p)},g=G?G.tot(p):null;if(r.s<=0.001&&r.s>=-0.001&&!(r.c>0)&&r.min==null&&!(g>0)){r.k='nd';r.t='Sin stock'}return{p,r,g}}),ord={bad:0,warn:1,ok:2,nd:3};
   R.sort((a,b)=>ord[a.r.k]-ord[b.r.k]||pn(a.p).localeCompare(pn(b.p)));
   const fila=({p,r,g})=>{const sc=sacosTxt(p,r.s);
-    return `<tr class="${r.k}" data-stk="${p}"><td class="n"><b>${esc(pn(p))}</b>${r.k==='ok'||r.k==='nd'?'':`<span class="pill ${r.k}">${r.t}${r.k==='bad'&&r.min!=null&&r.s>=0?' · mínimo '+fmt(r.min,0)+' '+uCant(p):''}</span>`}</td>
+    return `<tr class="${r.k}" data-stk="${p}"><td class="n"><b>${esc(pn(p))}</b>${esGestor()?`<button class="btn sm noprint stk-aj" type="button" data-stkaj="${p}" aria-label="Ajustar el inventario de ${esc(pn(p))}">Ajustar</button>`:''}${r.k==='ok'||r.k==='nd'?'':`<span class="pill ${r.k}">${r.t}${r.k==='bad'&&r.min!=null&&r.s>=0?' · mínimo '+fmt(r.min,0)+' '+uCant(p):''}</span>`}</td>
       <td class="q"><div class="stw"><span class="stq">${cantTxt(p,r.s)}</span>${sc&&r.s>0.001?`<span class="sts">${sc}</span>`:''}</div>${r.s<-0.001?'<small>En negativo: revisa entradas o llenados</small>':r.d!=null&&r.s>0.001?`<small>Para unos ${fmt(r.d,0)} días</small>`:''}</td>
       <td class="g">${g==null?'…':g>0.0001?`<span class="stg">${cantTxt(p,g)}</span>${sacoDe(p)&&g>=sacoDe(p)?`<small>${sacosTxt(p,g)}</small>`:''}`:'<span class="note">—</span>'}</td></tr>`};
   const nP=R.filter(x=>x.r.k==='bad').length,nW=R.filter(x=>x.r.k==='warn').length,mes=new Date().toLocaleDateString('es-ES',{month:'long'});
@@ -2630,6 +2630,12 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
   let h=(avs.length>1?`<div class="pick noprint">${avs.map(a=>`<button class="chip" data-almsel="${a.id}" aria-pressed="${a.id===aid}">Almacén ${esc(a.nombre)}</button>`).join('')}</div>`:'')+`<div class="almh"><div class="tank-h"><div><h2>Almacén ${esc(alm.nombre)}</h2><div class="sub">Da servicio a ${esc(alm.cabezales.map(cabNombre).join(', '))}${alm.cabezales.length>1?' · stock común':''}</div></div><button class="btn" data-act="alm-print">Imprimir hoja</button></div></div>`;
   h+=`<section class="summary noprint" data-out="asum"><div class="stat"><span>Para pedir</span><b>${nb}</b><small>bajo mínimo o en negativo</small></div><div class="stat"><span>Entradas del mes</span><b>${ent.length}</b><small>albaranes</small></div><div class="stat"><span>Movimientos</span><b>${movA.length}</b><small>registrados</small></div></section>`;
   h+=stockHTML(ps,aid);
+  const a=st.aj;
+  if(esGestor())h+=`<section class="card noprint" id="almaj"><div><h3>Ajustar inventario</h3><div class="sub">Cuando cuentes lo que hay de verdad en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
+    <div class="field"><label for="aj_p">Producto</label><div class="inp"><select id="aj_p" data-aj="p">${ps.map(p=>`<option value="${p}" ${a.p===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div></div>
+    ${sacoDe(a.p)?`<div class="field"><label for="aj_sacos">Sacos reales de ${fmt(sacoDe(a.p),0)} kg</label><div class="inp"><input id="aj_sacos" data-aj="sacos" inputmode="decimal" value="${sacIn(a.p,a.real)}"></div></div>`:''}
+    <div class="field"><label for="aj_real">${sacoDe(a.p)?'Kilos reales':'Stock real'}</label><div class="inp"><input id="aj_real" data-aj="real" inputmode="decimal" value="${inVal(a.real)}"><span class="u">${uCant(a.p)}</span></div></div></div>
+    <div class="row"><span class="note" data-out="ajn">En la app: ${fmt(stockDe(a.p,aid),1)} ${uCant(a.p)}${sacosTxt(a.p,stockDe(a.p,aid))?' ('+sacosTxt(a.p,stockDe(a.p,aid))+')':''}${a.real!=null?' · diferencia '+(a.real-stockDe(a.p,aid)>=0?'+':'')+fmt(a.real-stockDe(a.p,aid),1)+' '+uCant(a.p):''}</span><button class="btn pri" data-act="aj-save">Ajustar</button></div></section>`;
   h+=consumoCabHTML(aid);
   h+=stockAjHTML(ps,aid);
   const e=st.ent;
@@ -2642,12 +2648,6 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
     <div class="field"><label for="ae_alb">Nº albarán</label><div class="inp"><input class="wide" id="ae_alb" data-ae="alb" value="${esc(e.alb)}"></div></div></div>
     ${adjHTML(e.adj,true)}
     <div class="row">${Adj.can()?`<label class="btn" for="ae_foto">Foto del albarán</label><input type="file" id="ae_foto" data-ae="file" accept="image/*,application/pdf" multiple hidden>`:''}<button class="btn pri" data-act="ent-save" ${e.adj.some(a=>a.tmp)?'disabled':''}>Guardar entrada</button></div></section>`;
-  const a=st.aj;
-  if(esGestor())h+=`<section class="card noprint"><div><h3>Ajustar inventario</h3><div class="sub">Cuando cuentes lo que hay de verdad en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
-    <div class="field"><label for="aj_p">Producto</label><div class="inp"><select id="aj_p" data-aj="p">${ps.map(p=>`<option value="${p}" ${a.p===p?'selected':''}>${esc(pn(p))}</option>`).join('')}</select></div></div>
-    ${sacoDe(a.p)?`<div class="field"><label for="aj_sacos">Sacos reales de ${fmt(sacoDe(a.p),0)} kg</label><div class="inp"><input id="aj_sacos" data-aj="sacos" inputmode="decimal" value="${sacIn(a.p,a.real)}"></div></div>`:''}
-    <div class="field"><label for="aj_real">${sacoDe(a.p)?'Kilos reales':'Stock real'}</label><div class="inp"><input id="aj_real" data-aj="real" inputmode="decimal" value="${inVal(a.real)}"><span class="u">${uCant(a.p)}</span></div></div></div>
-    <div class="row"><span class="note" data-out="ajn">En la app: ${fmt(stockDe(a.p,aid),1)} ${uCant(a.p)}${sacosTxt(a.p,stockDe(a.p,aid))?' ('+sacosTxt(a.p,stockDe(a.p,aid))+')':''}${a.real!=null?' · diferencia '+(a.real-stockDe(a.p,aid)>=0?'+':'')+fmt(a.real-stockDe(a.p,aid),1)+' '+uCant(a.p):''}</span><button class="btn pri" data-act="aj-save">Ajustar</button></div></section>`;
   const mv=movA.slice().sort((x,y)=>x.ts<y.ts?1:-1).slice(0,60);
   h+=`<section class="card noprint"><div><h3>Movimientos</h3><div class="sub">Entradas, salidas por llenado y ajustes</div></div>`+(mv.length?`<div class="msgs">`+mv.map(m=>{const o=m.origen&&bid(m.origen);
     return `<div class="msg"><div class="h"><span class="pill ${m.tipo==='entrada'?'ok':m.tipo==='salida'?'nd':'warn'}">${m.tipo}</span><b>${m.qty>=0?'+':'−'}${fmt(Math.abs(m.qty),1)} ${uCant(m.p)}</b>${sacosTxt(m.p,Math.abs(m.qty))&&Math.abs(m.qty)>=sacoDe(m.p)?`<span>${sacosTxt(m.p,Math.abs(m.qty))}</span>`:''}<span>${esc(pn(m.p))}</span><span>${fFecha(m.fecha)}</span></div>
@@ -5292,6 +5292,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='t-del-yes')tareaDel(t.dataset.id);
   else if(t.dataset.tfil){st.tFil=t.dataset.tfil;renderMain()}
   else if(t.dataset.mfil){st.mFil=t.dataset.mfil;renderMain()}
+  else if(t.dataset.stkaj){st.aj={p:t.dataset.stkaj,real:null};renderMain();const c=$('#almaj');if(c){c.scrollIntoView({block:'start',behavior:'smooth'});const i=$('#aj_sacos')||$('#aj_real');if(i)i.focus({preventScroll:true})}}
   else if(t.dataset.almsel){st.almSel=t.dataset.almsel;st.confirmMv=null;renderMain()}
   else if(t.dataset.aper){st.almPer=t.dataset.aper==='mes'?'mes':+t.dataset.aper;renderMain()}
   else if(t.dataset.act==='m-nuevo'){st.mf.open=true;if(!st.mf.finca&&st.finca)st.mf.finca=st.finca;renderMain();const i=$('#mf_art');if(i)i.focus()}
