@@ -1,4 +1,4 @@
-"""Arreglos urgentes (v202): el botón AGRO se aparta al bajar por la pantalla y no tapa botones ni casillas (se revisan todas las
+"""Arreglos urgentes (v204): el botón AGRO se aparta al bajar por la pantalla y no tapa botones ni casillas (se revisan todas las
 pantallas en un móvil); el service worker no espera más de 3 s a la red si hay guardado; y «Sugerencias y fallos»: cualquiera
 manda una idea o un fallo, los errores de la app llegan solos, y solo el administrador los lee."""
 import asyncio, sys, subprocess, json
@@ -73,7 +73,7 @@ async def main():
         await pg.evaluate("setTimeout(()=>Promise.reject(new Error('fallo de prueba 143')),0)"); await pg.wait_for_timeout(400)   # repetido: no se manda dos veces
         docs = await pg.evaluate("Object.entries(JSON.parse(localStorage.getItem('mockfb')).docs).filter(([k])=>k.startsWith('abonado_buzon/')).map(([k,v])=>v)")
         errores = [d for d in docs if d['tipo'] == 'error']; print('errores', errores)
-        assert len(errores) == 1 and errores[0]['txt'] == 'fallo de prueba 143' and errores[0]['de'] == 'juanjo.serrano3@gmail.com' and errores[0]['v'] == 'abonado-v202' and errores[0]['tab'] == 'buzon'
+        assert len(errores) == 1 and errores[0]['txt'] == 'fallo de prueba 143' and errores[0]['de'] == 'juanjo.serrano3@gmail.com' and errores[0]['v'] == 'abonado-v204' and errores[0]['tab'] == 'buzon'
         errs.clear()   # el error de prueba lo ve también Playwright: es lo esperado
         await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
         await pg.fill('#nb_em', 'campo@demo.es'); await pg.fill('#nb_pw', 'campo123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
