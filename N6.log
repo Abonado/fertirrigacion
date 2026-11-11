@@ -1,0 +1,19 @@
+/home/runner/work/fertirrigacion/fertirrigacion/fuente/firmware/src/N6/N6.ino: In function 'bool radioIni()':
+/home/runner/work/fertirrigacion/fertirrigacion/fuente/firmware/src/N6/N6.ino:23:22: error: no matching function for call to 'SX1262::begin(double, double, int, int, int, int, int, double)'
+   23 |   int e = radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+      |           ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/runner/Arduino/libraries/RadioLib/src/modules/LLCC68/LLCC68.h:9,
+                 from /home/runner/Arduino/libraries/RadioLib/src/RadioLib.h:83,
+                 from /home/runner/work/fertirrigacion/fertirrigacion/fuente/firmware/src/N6/N6.ino:4:
+/home/runner/Arduino/libraries/RadioLib/src/modules/LLCC68/../SX126x/SX1262.h:39:21: note: candidate: 'virtual int16_t SX1262::begin(const ConfigLoRa_t&)'
+   39 |     virtual int16_t begin(const ConfigLoRa_t& config);
+      |                     ^~~~~
+/home/runner/Arduino/libraries/RadioLib/src/modules/LLCC68/../SX126x/SX1262.h:39:21: note:   candidate expects 1 argument, 8 provided
+
+[92mUsed library[0m [92mVersion[0m [90mPath[0m
+[93mRadioLib[0m     8.0.0   [90m/home/runner/Arduino/libraries/RadioLib[0m
+[93mSPI[0m          3.3.12  [90m/home/runner/.arduino15/packages/esp32/hardware/esp32/3.3.12/libraries/SPI[0m
+
+[92mUsed platform[0m [92mVersion[0m [90mPath[0m
+[93mesp32:esp32[0m   3.3.12  [90m/home/runner/.arduino15/packages/esp32/hardware/esp32/3.3.12[0m
+Error during build: exit status 1

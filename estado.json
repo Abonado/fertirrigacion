@@ -1,0 +1,37 @@
+{
+ "commit": "58b070c",
+ "fecha": "2026-11-11T17:00:42.112662+00:00",
+ "placa": "esp32:esp32:heltec_wifi_lora_32_V3",
+ "nodos": {
+  "N1": {
+   "estado": "error"
+  },
+  "N10": {
+   "estado": "error"
+  },
+  "N2": {
+   "estado": "error"
+  },
+  "N4": {
+   "estado": "error"
+  },
+  "N5": {
+   "estado": "error"
+  },
+  "N6": {
+   "estado": "error"
+  },
+  "N7": {
+   "estado": "error"
+  },
+  "N8": {
+   "estado": "error"
+  },
+  "N9": {
+   "estado": "error"
+  },
+  "P": {
+   "estado": "error"
+  }
+ }
+}

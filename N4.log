@@ -1,0 +1,24 @@
+/home/runner/work/fertirrigacion/fertirrigacion/fuente/firmware/src/N4/N4.ino: In function 'bool radioIni()':
+/home/runner/work/fertirrigacion/fertirrigacion/fuente/firmware/src/N4/N4.ino:27:22: error: no matching function for call to 'SX1262::begin(double, double, int, int, int, int, int, double)'
+   27 |   int e = radio.begin(868.0, 125.0, 9, 7, RADIOLIB_SX126X_SYNC_WORD_PRIVATE, 14, 8, 1.8);
+      |           ~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/runner/Arduino/libraries/RadioLib/src/modules/LLCC68/LLCC68.h:9,
+                 from /home/runner/Arduino/libraries/RadioLib/src/RadioLib.h:83,
+                 from /home/runner/work/fertirrigacion/fertirrigacion/fuente/firmware/src/N4/N4.ino:3:
+/home/runner/Arduino/libraries/RadioLib/src/modules/LLCC68/../SX126x/SX1262.h:39:21: note: candidate: 'virtual int16_t SX1262::begin(const ConfigLoRa_t&)'
+   39 |     virtual int16_t begin(const ConfigLoRa_t& config);
+      |                     ^~~~~
+/home/runner/Arduino/libraries/RadioLib/src/modules/LLCC68/../SX126x/SX1262.h:39:21: note:   candidate expects 1 argument, 8 provided
+
+[92mUsed library[0m              [92mVersion[0m [90mPath[0m
+[93mRadioLib[0m                  8.0.0   [90m/home/runner/Arduino/libraries/RadioLib[0m
+[93mSPI[0m                       3.3.12  [90m/home/runner/.arduino15/packages/esp32/hardware/esp32/3.3.12/libraries/SPI[0m
+[93mWire[0m                      3.3.12  [90m/home/runner/.arduino15/packages/esp32/hardware/esp32/3.3.12/libraries/Wire[0m
+[93mAdafruit SHT4x Library[0m    1.0.5   [90m/home/runner/Arduino/libraries/Adafruit_SHT4x_Library[0m
+[93mAdafruit BusIO[0m            1.17.4  [90m/home/runner/Arduino/libraries/Adafruit_BusIO[0m
+[93mAdafruit Unified Sensor[0m   1.1.15  [90m/home/runner/Arduino/libraries/Adafruit_Unified_Sensor[0m
+[93mAdafruit MLX90614 Library[0m 2.1.7   [90m/home/runner/Arduino/libraries/Adafruit_MLX90614_Library[0m
+
+[92mUsed platform[0m [92mVersion[0m [90mPath[0m
+[93mesp32:esp32[0m   3.3.12  [90m/home/runner/.arduino15/packages/esp32/hardware/esp32/3.3.12[0m
+Error during build: exit status 1
