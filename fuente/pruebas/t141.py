@@ -64,10 +64,12 @@ async def main():
         assert await pg.evaluate("window.__imp") == 1
         assert 'Almacén' in await pg.text_content('#printhead')
         await pg.emulate_media(media='print'); await pg.wait_for_timeout(200)
-        vis = await pg.evaluate("""[...document.querySelectorAll('#main section')].filter(e=>e.offsetParent!==null).map(e=>(e.querySelector('h3')||{}).textContent||e.className)"""); print(vis)
-        assert vis == ['Stock', 'Gasto por cabezal', 'Gasto por día'], vis
+        vis = await pg.evaluate("""[...document.querySelectorAll('#main section')].filter(e=>e.offsetParent!==null).map(e=>(e.querySelector('h3,h2')||{}).textContent||e.className)"""); print(vis)
+        assert len(vis) == 2 and vis[0] == 'Stock' and vis[1].startswith('Almacén') and 'gasto por día' in vis[1], 'hoja 1 el stock, hoja 2 el gasto por día'
+        assert await pg.locator('.gdp .gdz').count() == 2, 'una tabla por zona'
         assert not await pg.is_visible('[data-act="alm-print"]') and not await pg.is_visible('[data-aper="7"]')
         await pg.pdf(path='pruebas/salida/t141-hoja.pdf', format='A4')
+        assert open('pruebas/salida/t141-hoja.pdf','rb').read().count(b'/Type /Page\n') + open('pruebas/salida/t141-hoja.pdf','rb').read().count(b'/Type /Page>') + open('pruebas/salida/t141-hoja.pdf','rb').read().count(b'/Type /Page ') >= 2
         await pg.emulate_media(media='screen')
         e1 = list(errs); await ctx.close()
         # móvil: cabe sin salirse

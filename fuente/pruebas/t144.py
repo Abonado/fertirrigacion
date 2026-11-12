@@ -36,14 +36,26 @@ async def main():
         await pg.click(f'[data-act="gd-edit"][data-d="{d3}"]'); await pg.wait_for_timeout(200)
         await pg.fill(f'tr[data-gd="{d3}"] [data-gde="{P}"]', ''); await pg.click(f'[data-act="gd-save"][data-d="{d3}"]'); await pg.wait_for_timeout(600)
         assert await pg.evaluate(f"st.alm.filter(m=>m.manual&&m.fecha==='{d3}').length") == 0
+        # la fila de los abonos se queda arriba al bajar por los días
+        assert await pg.evaluate("getComputedStyle(document.querySelector('.gdt thead th')).position") == 'sticky'
+        y0 = await pg.evaluate("document.querySelector('.gdt thead th:nth-child(2)').getBoundingClientRect().top-document.querySelector('.gdw').getBoundingClientRect().top")
+        await pg.evaluate("document.querySelector('.gdw').scrollTop=400"); await pg.wait_for_timeout(100)
+        y1 = await pg.evaluate("document.querySelector('.gdt thead th:nth-child(2)').getBoundingClientRect().top-document.querySelector('.gdw').getBoundingClientRect().top")
+        assert await pg.evaluate("document.querySelector('.gdw').scrollTop") > 0 and abs(y1 - y0) < 2, (y0, y1)
         # cambiar de zona
         await pg.click('[data-gdcab="pla"]'); await pg.wait_for_timeout(300)
         assert 'Planos' in await pg.text_content('.gdia .sub') and '45,0' not in await pg.text_content('.gdia tbody')
         await pg.click('[data-gdcab="gas"]'); await pg.wait_for_timeout(300)
         # imprimir: el gasto por día también sale en la hoja, sin botones
         await pg.emulate_media(media='print'); await pg.wait_for_timeout(200)
-        vis = await pg.evaluate("[...document.querySelectorAll('#main section')].filter(e=>e.offsetParent!==null).map(e=>(e.querySelector('h3')||{}).textContent)"); assert vis == ['Stock', 'Gasto por cabezal', 'Gasto por día'], vis
+        vis = await pg.evaluate("[...document.querySelectorAll('#main section')].filter(e=>e.offsetParent!==null).map(e=>(e.querySelector('h3,h2')||{}).textContent)"); assert vis[0] == 'Stock' and len(vis) == 2, vis
         assert not await pg.is_visible('[data-act="gd-edit"]')
+        # hoja 2: solo los días con gasto y debajo la suma de cada abono (gasto del cabezal)
+        z = await pg.evaluate("[...document.querySelectorAll('.gdz[data-gdz=gas] tr')].map(r=>[...r.children].map(x=>x.textContent.trim()))"); print(z)
+        assert len(z) == 3 and z[1][1] == '45,0' and z[2][0] == 'Gasto del cabezal' and z[2][1] == '45,0', z
+        assert z[0][1].startswith(await pg.evaluate(f"pn('{P}')"))
+        assert await pg.evaluate("document.querySelector('.gdp').getBoundingClientRect().top>0")
+        await pg.pdf(path='pruebas/salida/t144-hoja.pdf', format='A4')
         await pg.emulate_media(media='screen')
         # trabajador: no corrige
         await pg.evaluate("NUBE.user.admin=false;NUBE.user.encargado=false;renderMain()"); await pg.wait_for_timeout(300)

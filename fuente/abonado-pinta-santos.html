@@ -352,7 +352,12 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .saj{display:grid;gap:0}.saj-f{display:grid;grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.saj-f:first-child{border-top:0}.saj-f .field{margin:0}.saj-f .inp.sm{width:104px}
 @media (max-width:520px){.saj-f{grid-template-columns:1fr 1fr}.saj-f>b{grid-column:1/-1}.stq{font-size:22px}.stt td,.stt th{padding-left:4px;padding-right:4px}.stt th{white-space:normal}.stt td.n b{font-size:.95rem}.gct td b{font-size:15px}.gct td,.gct th{padding-left:6px;padding-right:6px}.sts{font-size:12.5px;white-space:normal}.stg{font-size:16px}.stt td.n .pill{white-space:normal}}
 @media print{.stq{font-size:16pt}.stg{font-size:12pt}.stt td,.gct td{padding:5px 6px}.stt th,.gct th{padding:0 6px 5px}}
-.gct td.n{min-width:120px}.gct .gce{width:110px;margin-left:auto}@media (max-width:520px){.gct .gce{width:82px}.gct .gce input{min-width:0}.gct td.n{min-width:96px}}.gcorr{color:var(--warn-ink,#9a6700)!important}.stt th .lnk{margin-left:8px;font-size:11px;text-transform:none;letter-spacing:0}.gc-ayuda{margin:6px 0 10px}.gdt td,.gdt th{padding:8px 6px}.gdt th{white-space:normal;min-width:70px;font-size:10.5px}.gdt td.n b{font-size:.92rem;white-space:nowrap}.gdt tr.sc td{color:var(--muted)}.gdt tr.ed td{background:var(--surface-2)}.gdt td.cor{color:var(--warn-ink,#9a6700);font-weight:700}.gdt td.n .lnk{font-size:13px;color:var(--accent,#1e6b45);padding:2px 0}.gd-bt{display:flex;gap:6px;margin-top:6px}.gd-bt .btn{padding:6px 10px}.gdt td.n{position:sticky;left:0;background:var(--surface,#fff);z-index:1}.gdt .gce{width:76px}.gdt tfoot td{border-top:2px solid var(--line);font-weight:700}.stt td.n b,.gct td.n b{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
+.gct td.n{min-width:120px}.gct .gce{width:110px;margin-left:auto}@media (max-width:520px){.gct .gce{width:82px}.gct .gce input{min-width:0}.gct td.n{min-width:96px}}.gcorr{color:var(--warn-ink,#9a6700)!important}.stt th .lnk{margin-left:8px;font-size:11px;text-transform:none;letter-spacing:0}.gc-ayuda{margin:6px 0 10px}.gdt td,.gdt th{padding:8px 6px}.gdt th{white-space:normal;min-width:70px;font-size:10.5px}.gdt td.n b{font-size:.92rem;white-space:nowrap}.gdt tr.sc td{color:var(--muted)}.gdt tr.ed td{background:var(--surface-2)}.gdt td.cor{color:var(--warn-ink,#9a6700);font-weight:700}.gdt td.n .lnk{font-size:13px;color:var(--accent,#1e6b45);padding:2px 0}.gd-bt{display:flex;gap:6px;margin-top:6px}.gd-bt .btn{padding:6px 10px}.gdt td.n{position:sticky;left:0;background:var(--surface,#fff);z-index:1}
+.gdw{overflow:auto;max-height:min(70vh,640px);overscroll-behavior:contain;border-radius:10px}.gdt thead th{position:sticky;top:0;z-index:2;background:var(--surface,#fff);box-shadow:0 2px 0 var(--line)}.gdt thead th.n{left:0;z-index:3}.gdt tfoot td{position:sticky;bottom:0;background:var(--surface-2,#f3f5f2);z-index:2}.gdt tfoot td.n{left:0;z-index:3}
+.solo-print{display:none}
+@media print{.solo-print{display:block!important}.gdw{max-height:none!important}.gdp{break-before:page;page-break-before:always;break-inside:auto!important;page-break-inside:auto!important;border:0!important;padding:0!important}
+  .gdp h2{font:700 15pt/1.2 var(--f-display);margin:0 0 2mm}.gdp .gdz{break-inside:avoid;page-break-inside:avoid;margin:0 0 6mm}.gdp h4{font:700 12pt var(--f-display);margin:0 0 1.5mm;border-bottom:1.5px solid #0e2851;padding-bottom:1mm}
+  .gdp table{border-collapse:collapse;font-size:9.5pt}.gdp th,.gdp td{border:1px solid #bbb;padding:2px 5px;text-align:right}.gdp th{background:#eef1f5;font-size:8.5pt;text-transform:none;letter-spacing:0;color:#000}.gdp td.n,.gdp th.n{text-align:left;white-space:nowrap}.gdp tfoot td{font-weight:700;background:#e7efe9}}.gdt .gce{width:76px}.gdt tfoot td{border-top:2px solid var(--line);font-weight:700}.stt td.n b,.gct td.n b{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
 .srow{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
 .srow:first-child{border-top:0}
 .yo{min-height:42px;display:flex;align-items:center;padding:0 12px;border-radius:8px;background:var(--ok-bg);color:var(--ok);font-size:16px}
@@ -2619,12 +2624,20 @@ function gastoDiaHTML(a){const al=almById(a),cabs=al?al.cabezales.filter(c=>cabs
       return e?`<td><div class="inp sm gce"><input data-gde="${p}" aria-label="${esc(pn(p))}" inputmode="decimal" value="${v>0.0001?inVal(+v.toFixed(2)):''}" placeholder="0"></div></td>`
         :`<td class="${r.ed[p]?'cor':''}">${v>0.0001?fmt(v,1):'—'}${r.ed[p]?'<small class="gcorr">corregido</small>':''}</td>`}).join('')}
 </tr>`};
-  return `<section class="card gdia"><div class="tank-h"><div><h3>Gasto por día</h3><div class="sub">${esc(cabNombre(c))} · lo que ha salido del almacén cada día de ${esc(new Date().toLocaleDateString('es-ES',{month:'long'}))} al llenar los bidones${ed?' · si un llenado no se guardó o la cantidad no es la buena, pulsa «Editar» o «Añadir» en ese día':''}</div></div>
+  return `<section class="card gdia noprint"><div class="tank-h"><div><h3>Gasto por día</h3><div class="sub">${esc(cabNombre(c))} · lo que ha salido del almacén cada día de ${esc(new Date().toLocaleDateString('es-ES',{month:'long'}))} al llenar los bidones${ed?' · si un llenado no se guardó o la cantidad no es la buena, pulsa «Editar» o «Añadir» en ese día':''}</div></div>
     ${cabs.length>1?`<div class="row noprint">${cabs.map(x=>`<button class="chip" data-gdcab="${x}" aria-pressed="${x===c}">${esc(cabNombre(x))}</button>`).join('')}</div>`:''}</div>
-    ${ps.length?`<div class="tablewrap" style="overflow-x:auto"><table class="gct gdt"><thead><tr><th class="n">Día</th>${ps.map(p=>`<th>${esc(pn(p))}<small>${uCant(p)}</small></th>`).join('')}</tr></thead>
+    ${ps.length?`<div class="tablewrap gdw"><table class="gct gdt"><thead><tr><th class="n">Día</th>${ps.map(p=>`<th>${esc(pn(p))}<small>${uCant(p)}</small></th>`).join('')}</tr></thead>
       <tbody>${D.map(fila).join('')}</tbody><tfoot><tr><td class="n"><b>Total del mes</b></td>${ps.map(p=>`<td class="t"><b>${fmt(tot(p),1)}</b></td>`).join('')}</tr></tfoot></table></div>`
       :'<div class="note">Esta zona no tiene abonos en sus bidones.</div>'}</section>`}
 /* Guardar el día: si ya hay una salida de ese abono se corrige (la última); si no la hay, se añade una a mano. Lo que queda se recalcula. */
+function gastoDiaPrintHTML(a){const al=almById(a),cabs=al?al.cabezales.filter(c=>cabsVis().some(x=>x.id===c)):[];if(!cabs.length)return '';
+  const mes=new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'});
+  const zona=c=>{const D=salidasDias(a,c).filter(r=>Object.values(r.kg).some(v=>v>0.0001)).reverse(),ps=Object.keys(st.cfg.productos).filter(p=>D.some(r=>(r.kg[p]||0)>0.0001)),tot=p=>D.reduce((x,r)=>x+(r.kg[p]||0),0);
+    ps.sort((x,y)=>tot(y)-tot(x)||pn(x).localeCompare(pn(y)));
+    return `<div class="gdz" data-gdz="${c}"><h4>${esc(cabNombre(c))}</h4>${D.length?`<table><thead><tr><th class="n">Día</th>${ps.map(p=>`<th>${esc(pn(p))} (${uCant(p)})</th>`).join('')}</tr></thead>
+      <tbody>${D.map(r=>`<tr><td class="n">${esc(fFecha(r.d))}</td>${ps.map(p=>`<td>${(r.kg[p]||0)>0.0001?fmt(r.kg[p],1):''}</td>`).join('')}</tr>`).join('')}</tbody>
+      <tfoot><tr><td class="n">Gasto del cabezal</td>${ps.map(p=>`<td>${fmt(tot(p),1)}</td>`).join('')}</tr></tfoot></table>`:'<p>Sin llenados este mes.</p>'}</div>`};
+  return `<section class="card solo-print gdp"><h2>Almacén ${esc(al.nombre)} · gasto por día de ${esc(mes)}</h2>${cabs.map(zona).join('')}</section>`}
 async function gastoDiaGuardar(d){const a=almAct(),c=st.gdCab,r=salidasDias(a,c).find(x=>x.d===d);if(!r)return;let n=0;
   try{for(const el of document.querySelectorAll(`tr[data-gd="${d}"] [data-gde]`)){const p=el.dataset.gde,v=el.value.trim()===''?0:num(el.value);if(v==null||v<0)continue;
     const ahora=r.kg[p]||0;if(Math.abs(v-ahora)<0.005)continue;const ms=r.ms.filter(m=>m.p===p);
@@ -2657,7 +2670,7 @@ function consumoCabHTML(a){const per=st.almPer,G=gastoCabs(a,almDesde(per)),ed=s
   const corr=(c,p)=>per==='mes'&&corrDe(a,p,c,hoy().slice(0,7)),celda=(c,p)=>{const v=kg[c][p]||0;
     if(ed)return `<td><div class="inp sm gce"><input data-gce="${c}|${p}" aria-label="${esc(pn(p)+' · '+cabNombre(c))}" inputmode="decimal" value="${v>0.0001?inVal(+v.toFixed(1)):''}" placeholder="0"><span class="u">${uCant(p)}</span></div></td>`;
     return `<td>${v>0.0001?`<b>${cantTxt(p,v)}</b>${cabs.length>1?`<small>${fmt(v*100/tot(p),0)} %</small>`:''}`:'—'}${corr(c,p)?'<small class="gcorr">corregido</small>':''}</td>`};
-  return `<section class="card gcab"><div class="tank-h"><div><h3>Gasto por cabezal</h3><div class="sub">Lo que ha gastado cada zona según las cuentas del día, ${esc(almPerTxt(per))}</div></div>
+  return `<section class="card gcab noprint"><div class="tank-h"><div><h3>Gasto por cabezal</h3><div class="sub">Lo que ha gastado cada zona según las cuentas del día, ${esc(almPerTxt(per))}</div></div>
     <div class="row">${[[7,'7 días'],[30,'30 días'],['mes','Este mes']].map(([k,t])=>`<button class="chip" data-aper="${k}" aria-pressed="${String(per)===String(k)}">${t}</button>`).join('')}${esGestor()&&!ed?`<button class="btn noprint" data-act="gc-edit">Corregir gasto</button>`:''}</div></div>
     ${ed?`<div class="note gc-ayuda">Escribe lo que de verdad ha gastado cada zona este mes. Lo que queda en el almacén sube o baja a la vez.</div>`:''}
     ${ps.length?`<div class="tablewrap" style="overflow-x:auto"><table class="gct"><thead><tr><th class="n">Abono</th>${cabs.map(c=>`<th data-gc="${c}">${esc(cabNombre(c))}<small>${dias[c]} ${dias[c]===1?'día':'días'}</small></th>`).join('')}${varias?'<th class="t">Total</th>':''}</tr></thead>
@@ -2687,6 +2700,7 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
   h+=stockHTML(ps,aid);
   h+=consumoCabHTML(aid);
   h+=gastoDiaHTML(aid);
+  h+=gastoDiaPrintHTML(aid);
   h+=stockAjHTML(ps,aid);
   const e=st.ent;
   h+=`<section class="card noprint"><div><h3>Nueva entrada</h3><div class="sub">Pedido recibido en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
