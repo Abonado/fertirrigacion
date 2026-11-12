@@ -42,6 +42,23 @@ async def main():
         await pg.evaluate("document.querySelector('.gdw').scrollTop=400"); await pg.wait_for_timeout(100)
         y1 = await pg.evaluate("document.querySelector('.gdt thead th:nth-child(2)').getBoundingClientRect().top-document.querySelector('.gdw').getBoundingClientRect().top")
         assert await pg.evaluate("document.querySelector('.gdw').scrollTop") > 0 and abs(y1 - y0) < 2, (y0, y1)
+        # «+ Producto»: uno nuevo que pide el técnico, líquido, y se anota en el día
+        await pg.click('[data-act="gd-mas"]'); await pg.wait_for_timeout(200)
+        await pg.select_option('#gd_mp', '__nuevo'); await pg.wait_for_timeout(100)
+        assert await pg.is_visible('#gd_mn')
+        await pg.fill('#gd_mn', 'Bioestimulante del técnico'); await pg.check('#gd_mliq'); await pg.click('[data-act="gd-mas-ok"]'); await pg.wait_for_timeout(1500)
+        NP = await pg.evaluate("Object.keys(st.cfg.productos).find(k=>st.cfg.productos[k].n==='Bioestimulante del técnico')"); assert NP
+        assert await pg.evaluate(f"st.cfg.productos['{NP}'].liq") is True
+        assert await pg.evaluate(f"Store.getConfig().then(c=>!!c.productos['{NP}'])"), 'el producto nuevo queda guardado'
+        assert 'Bioestimulante del técnico' in await pg.text_content('.gdt thead')
+        await pg.click(f'[data-act="gd-edit"][data-d="{d1}"]'); await pg.wait_for_timeout(200)
+        await pg.fill(f'tr[data-gd="{d1}"] [data-gde="{NP}"]', '3'); await pg.click(f'[data-act="gd-save"][data-d="{d1}"]'); await pg.wait_for_timeout(600)
+        assert await pg.evaluate(f"st.alm.filter(m=>m.p==='{NP}'&&m.manual&&m.fecha==='{d1}').map(m=>m.qty)") == [-3]
+        # uno que ya existe pero no estaba en la tabla
+        await pg.click('[data-act="gd-mas"]'); await pg.wait_for_timeout(200)
+        opts = await pg.evaluate("[...document.querySelectorAll('#gd_mp option')].map(o=>o.value)"); assert 'kcl' in opts and NP not in opts and P not in opts
+        await pg.select_option('#gd_mp', 'kcl'); await pg.click('[data-act="gd-mas-ok"]'); await pg.wait_for_timeout(300)
+        assert await pg.locator(f'.gdt thead th:has-text("{await pg.evaluate("pn('kcl')")}")').count() == 1
         # cambiar de zona
         await pg.click('[data-gdcab="pla"]'); await pg.wait_for_timeout(300)
         assert 'Planos' in await pg.text_content('.gdia .sub') and '45,0' not in await pg.text_content('.gdia tbody')
@@ -55,7 +72,19 @@ async def main():
         assert len(z) == 3 and z[1][1] == '45,0' and z[2][0] == 'Gasto del cabezal' and z[2][1] == '45,0', z
         assert z[0][1].startswith(await pg.evaluate(f"pn('{P}')"))
         assert await pg.evaluate("document.querySelector('.gdp').getBoundingClientRect().top>0")
-        await pg.pdf(path='pruebas/salida/t144-hoja.pdf', format='A4')
+        # debajo, el gasto por cabezal de las dos zonas
+        gc = await pg.evaluate("[...document.querySelectorAll('.gdc tr')].map(r=>[...r.children].map(x=>x.textContent.trim()))"); print(gc)
+        pnP = await pg.evaluate(f"pn('{P}')")
+        assert gc[0][:4] == ['Producto', 'Gasolinera', 'Planos', 'Total'] and any(r[0].startswith(pnP) and r[1] == '45,0' for r in gc[1:]), gc
+        await pg.evaluate("piePrepara()")
+        await pg.pdf(path='pruebas/salida/t144-hoja.pdf', prefer_css_page_size=True)
+        import subprocess, shutil
+        if shutil.which('pdfinfo'):
+            info = subprocess.run(['pdfinfo', '-f', '1', '-l', '3', 'pruebas/salida/t144-hoja.pdf'], capture_output=True, text=True).stdout
+            tam = [l for l in info.splitlines() if 'size:' in l]; print(tam)
+            w1, h1 = [float(x) for x in tam[0].split('size:')[1].split('pts')[0].split(' x ')]
+            w2, h2 = [float(x) for x in tam[1].split('size:')[1].split('pts')[0].split(' x ')]
+            assert w1 > h1 and w2 > h2 and len(tam) == 3, 'las dos hojas del almacén en horizontal'
         await pg.emulate_media(media='screen')
         # trabajador: no corrige
         await pg.evaluate("NUBE.user.admin=false;NUBE.user.encargado=false;renderMain()"); await pg.wait_for_timeout(300)
