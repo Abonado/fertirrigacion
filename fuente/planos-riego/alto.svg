@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1560 1080" width="1560" height="1080" font-family="Inter, 'Helvetica Neue', Arial, sans-serif"><title>Plano de riego del Emparrado nuevo</title><defs><marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#0aa3a3"/></marker></defs><rect width="1560" height="1080" fill="#f6f4ee"/><polygon points="42.0,332.6 255.0,332.6 255.0,943.2 42.0,943.2" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.3" stroke-linejoin="round"/>
+<polygon points="272.0,332.6 475.1,332.6 475.1,890.7 318.9,990.1 272.0,990.1" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.3" stroke-linejoin="round"/>
+<polygon points="499.2,332.6 698.0,332.6 698.0,812.6 510.6,855.2 499.2,855.2" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.3" stroke-linejoin="round"/>
+<polygon points="723.6,318.4 922.4,318.4 922.4,620.9 723.6,720.3" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.3" stroke-linejoin="round"/>
+<polygon points="950.8,324.1 996.2,315.6 1095.6,133.8 1121.2,133.8 1121.2,488.8 950.8,596.8" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.3" stroke-linejoin="round"/>
+<line x1="716.5" y1="968.8" x2="716.5" y2="315.6" stroke="#c45a1c" stroke-width="7" stroke-linecap="butt"/>
+<text x="732.5" y="855.2" font-size="12" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 732.5 855.2)">PVC Ø140</text>
+<line x1="152.8" y1="315.6" x2="368.6" y2="315.6" stroke="#c45a1c" stroke-width="5" stroke-linecap="butt"/>
+<text x="260.7" y="305.6" font-size="11.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1">PVC Ø90</text>
+<line x1="368.6" y1="315.6" x2="716.5" y2="315.6" stroke="#c45a1c" stroke-width="6" stroke-linecap="butt"/>
+<text x="542.5" y="305.6" font-size="11.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1">PVC Ø110</text>
+<line x1="716.5" y1="315.6" x2="823.0" y2="315.6" stroke="#c45a1c" stroke-width="4.6" stroke-linecap="butt"/>
+<text x="769.8" y="305.6" font-size="11.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1">PVC Ø75</text>
+<line x1="823.0" y1="315.6" x2="996.2" y2="315.6" stroke="#c45a1c" stroke-width="4" stroke-linecap="butt"/>
+<text x="909.6" y="305.6" font-size="11.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1">PVC Ø63</text>
+<line x1="996.2" y1="315.6" x2="1036.0" y2="230.4" stroke="#c45a1c" stroke-width="4" stroke-linecap="round"/>
+<line x1="152.8" y1="325.5" x2="152.8" y2="642.2" stroke="#c45a1c" stroke-width="4.6" stroke-linecap="butt"/>
+<text x="166.8" y="483.9" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 166.8 483.9)">PVC Ø90</text>
+<line x1="152.8" y1="642.2" x2="152.8" y2="855.2" stroke="#c45a1c" stroke-width="4" stroke-linecap="butt"/>
+<text x="166.8" y="748.7" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 166.8 748.7)">PVC Ø75</text>
+<line x1="152.8" y1="855.2" x2="152.8" y2="964.5" stroke="#c45a1c" stroke-width="3.4" stroke-linecap="butt"/>
+<text x="166.8" y="909.9" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 166.8 909.9)">PVC Ø63</text>
+<line x1="143.8" y1="336.9" x2="143.8" y2="528.6" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="131.8" y="432.7" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 131.8 432.7)">PE 40</text>
+<line x1="143.8" y1="741.6" x2="143.8" y2="954.6" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="131.8" y="848.1" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 131.8 848.1)">PE 40</text>
+<g><circle cx="152.8" cy="344.0" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M148.7,340.0L156.8,348.0M156.8,340.0L148.7,348.0" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="152.8" cy="436.3" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M148.7,432.3L156.8,440.3M156.8,432.3L148.7,440.3" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="152.8" cy="538.5" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M148.7,534.5L156.8,542.6M156.8,534.5L148.7,542.6" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="152.8" cy="642.2" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M148.7,638.2L156.8,646.2M156.8,638.2L148.7,646.2" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="152.8" cy="744.4" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M148.7,740.4L156.8,748.5M156.8,740.4L148.7,748.5" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="152.8" cy="855.2" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M148.7,851.2L156.8,859.2M156.8,851.2L148.7,859.2" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="152.8" cy="964.5" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M148.7,960.5L156.8,968.6M156.8,960.5L148.7,968.6" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<line x1="141.8" y1="649.2" x2="163.8" y2="635.2" stroke="#1d2a1f" stroke-width="2" stroke-linecap="round"/>
+<line x1="141.8" y1="862.2" x2="163.8" y2="848.2" stroke="#1d2a1f" stroke-width="2" stroke-linecap="round"/>
+<line x1="375.7" y1="322.7" x2="375.7" y2="535.7" stroke="#c45a1c" stroke-width="4" stroke-linecap="butt"/>
+<text x="389.7" y="429.2" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 389.7 429.2)">PVC Ø75</text>
+<line x1="375.7" y1="535.7" x2="375.7" y2="741.6" stroke="#c45a1c" stroke-width="3.4" stroke-linecap="butt"/>
+<text x="389.7" y="638.6" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 389.7 638.6)">PVC Ø63</text>
+<line x1="375.7" y1="741.6" x2="375.7" y2="947.5" stroke="#c45a1c" stroke-width="3.2" stroke-linecap="butt"/>
+<text x="389.7" y="844.5" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 389.7 844.5)">PE Ø50</text>
+<line x1="366.7" y1="336.9" x2="366.7" y2="528.6" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="354.7" y="432.7" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 354.7 432.7)">PE 40</text>
+<line x1="366.7" y1="741.6" x2="366.7" y2="947.5" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="354.7" y="844.5" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 354.7 844.5)">PE 40</text>
+<g><circle cx="375.7" cy="344.0" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M371.7,340.0L379.7,348.0M379.7,340.0L371.7,348.0" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="375.7" cy="432.0" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M371.7,428.0L379.7,436.1M379.7,428.0L371.7,436.1" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="375.7" cy="535.7" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M371.7,531.7L379.7,539.7M379.7,531.7L371.7,539.7" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="375.7" cy="637.9" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M371.7,633.9L379.7,642.0M379.7,633.9L371.7,642.0" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="375.7" cy="741.6" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M371.7,737.6L379.7,745.6M379.7,737.6L371.7,745.6" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="375.7" cy="848.1" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M371.7,844.1L379.7,852.1M379.7,844.1L371.7,852.1" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<line x1="364.7" y1="542.7" x2="386.7" y2="528.7" stroke="#1d2a1f" stroke-width="2" stroke-linecap="round"/>
+<line x1="364.7" y1="748.6" x2="386.7" y2="734.6" stroke="#1d2a1f" stroke-width="2" stroke-linecap="round"/>
+<line x1="598.6" y1="318.4" x2="598.6" y2="635.1" stroke="#c45a1c" stroke-width="3.4" stroke-linecap="butt"/>
+<text x="612.6" y="476.8" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 612.6 476.8)">PVC Ø63</text>
+<line x1="598.6" y1="635.1" x2="598.6" y2="798.4" stroke="#c45a1c" stroke-width="3.2" stroke-linecap="butt"/>
+<text x="612.6" y="716.8" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 612.6 716.8)">PE Ø50</text>
+<line x1="589.6" y1="336.9" x2="589.6" y2="528.6" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="577.6" y="432.7" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 577.6 432.7)">PE 40</text>
+<line x1="589.6" y1="635.1" x2="589.6" y2="798.4" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="577.6" y="716.8" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 577.6 716.8)">PE 40</text>
+<g><circle cx="598.6" cy="344.0" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M594.6,340.0L602.7,348.0M602.7,340.0L594.6,348.0" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="598.6" cy="426.4" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M594.6,422.3L602.7,430.4M602.7,422.3L594.6,430.4" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="598.6" cy="532.9" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M594.6,528.8L602.7,536.9M602.7,528.8L594.6,536.9" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="598.6" cy="635.1" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M594.6,631.1L602.7,639.1M602.7,631.1L594.6,639.1" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="598.6" cy="741.6" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M594.6,737.6L602.7,745.6M602.7,737.6L594.6,745.6" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<line x1="587.6" y1="642.1" x2="609.6" y2="628.1" stroke="#1d2a1f" stroke-width="2" stroke-linecap="round"/>
+<line x1="825.8" y1="311.3" x2="825.8" y2="528.6" stroke="#c45a1c" stroke-width="3.4" stroke-linecap="butt"/>
+<text x="839.8" y="420.0" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 839.8 420.0)">PVC Ø63</text>
+<line x1="825.8" y1="528.6" x2="825.8" y2="670.6" stroke="#c45a1c" stroke-width="3.2" stroke-linecap="butt"/>
+<text x="839.8" y="599.6" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 839.8 599.6)">PE Ø50</text>
+<line x1="816.8" y1="329.8" x2="816.8" y2="514.4" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="804.8" y="422.1" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 804.8 422.1)">PE 40</text>
+<line x1="816.8" y1="528.6" x2="816.8" y2="670.6" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="804.8" y="599.6" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 804.8 599.6)">PE 40</text>
+<g><circle cx="825.8" cy="332.6" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M821.8,328.6L829.9,336.7M829.9,328.6L821.8,336.7" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="825.8" cy="422.1" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M821.8,418.1L829.9,426.1M829.9,418.1L821.8,426.1" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="825.8" cy="528.6" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M821.8,524.6L829.9,532.6M829.9,524.6L821.8,532.6" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="825.8" cy="635.1" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M821.8,631.1L829.9,639.1M829.9,631.1L821.8,639.1" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<line x1="814.8" y1="535.6" x2="836.8" y2="521.6" stroke="#1d2a1f" stroke-width="2" stroke-linecap="round"/>
+<line x1="1038.8" y1="230.4" x2="1038.8" y2="415.0" stroke="#c45a1c" stroke-width="3.4" stroke-linecap="butt"/>
+<text x="1052.8" y="322.7" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 1052.8 322.7)">PVC Ø63</text>
+<line x1="1038.8" y1="415.0" x2="1038.8" y2="528.6" stroke="#c45a1c" stroke-width="3.2" stroke-linecap="butt"/>
+<text x="1052.8" y="471.8" font-size="10.5" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" stroke="#e9f1e4" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round" opacity="1" transform="rotate(90 1052.8 471.8)">PE Ø50</text>
+<line x1="1029.8" y1="415.0" x2="1029.8" y2="528.6" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="1017.8" y="471.8" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 1017.8 471.8)">PE 40</text>
+<g><circle cx="1038.8" cy="256.0" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M1034.8,251.9L1042.9,260.0M1042.9,251.9L1034.8,260.0" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="1038.8" cy="308.5" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M1034.8,304.5L1042.9,312.5M1042.9,304.5L1034.8,312.5" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="1038.8" cy="415.0" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M1034.8,411.0L1042.9,419.0M1042.9,411.0L1034.8,419.0" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<g><circle cx="1038.8" cy="528.6" r="6.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M1034.8,524.6L1042.9,532.6M1042.9,524.6L1034.8,532.6" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<line x1="1027.8" y1="422.0" x2="1049.8" y2="408.0" stroke="#1d2a1f" stroke-width="2" stroke-linecap="round"/>
+<line x1="1050.2" y1="219.0" x2="1107.0" y2="123.9" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="1125.0" y="143.9" font-size="10" font-weight="700" fill="#2f80c9" text-anchor="start" letter-spacing="0" opacity="1">PE 40</text>
+<circle cx="84.6" cy="656.4" r="14" fill="#1d2a1f"/><text x="84.6" y="661.4" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" opacity="1">1</text>
+<circle cx="425.4" cy="486.0" r="14" fill="#1d2a1f"/><text x="425.4" y="491.0" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" opacity="1">2</text>
+<circle cx="652.6" cy="486.0" r="14" fill="#1d2a1f"/><text x="652.6" y="491.0" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" opacity="1">3</text>
+<circle cx="879.8" cy="457.6" r="14" fill="#1d2a1f"/><text x="879.8" y="462.6" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" opacity="1">4</text>
+<circle cx="1078.6" cy="386.6" r="14" fill="#1d2a1f"/><text x="1078.6" y="391.6" font-size="13" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" opacity="1">5</text>
+<text x="40.0" y="58.0" font-size="34" font-weight="700" fill="#1d2a1f" text-anchor="start" letter-spacing="2" opacity="1">EMPARRADO NUEVO</text>
+<text x="42.0" y="84.0" font-size="14" font-weight="600" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Rambla · el Alto (5 naves) · Finca Pinta Santos</text>
+<rect x="1170" y="150" width="366" height="188" rx="10" fill="#fff" stroke="#1d2a1f" stroke-width="1.4"/>
+<rect x="1170" y="150" width="366" height="34" rx="10" fill="#1d2a1f"/><rect x="1170" y="170" width="366" height="14" fill="#1d2a1f"/>
+<text x="1184.0" y="172.0" font-size="15" font-weight="700" fill="#fff" text-anchor="start" letter-spacing="0.6" opacity="1">EMPARRADO NUEVO · ALTO</text>
+<text x="1184.0" y="202.0" font-size="11.5" font-weight="600" fill="#5d6b60" text-anchor="start" letter-spacing="0.4" opacity="1">FINCA PINTA SANTOS</text>
+<text x="1184.0" y="220.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Superficie útil</text>
+<text x="1522.0" y="220.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">26.500 m²</text>
+<text x="1184.0" y="238.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Parcelas</text>
+<text x="1522.0" y="238.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">5</text>
+<text x="1184.0" y="256.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Electroválvulas</text>
+<text x="1522.0" y="256.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">26</text>
+<text x="1184.0" y="274.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Entrada</text>
+<text x="1522.0" y="274.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">PVC Ø140</text>
+<text x="1184.0" y="292.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Cabecera</text>
+<text x="1522.0" y="292.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">Ø90 · Ø110 · Ø75 · Ø63</text>
+<text x="1184.0" y="310.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Laterales</text>
+<text x="1522.0" y="310.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">PE 40 y PE 50</text>
+<text x="1184.0" y="330.0" font-size="9.5" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" font-style="italic" opacity="1">Dibujo sin escala, del plano a mano. Números 1–5 puestos por mí.</text>
+<text x="1174.0" y="372.0" font-size="10.5" font-weight="700" fill="#5d6b60" text-anchor="start" letter-spacing="1.2" opacity="1">LEYENDA</text>
+<g><circle cx="1186.0" cy="386.0" r="5.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M1182.6,382.6L1189.4,389.4M1189.4,382.6L1182.6,389.4" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
+<text x="1206.0" y="390.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Electroválvula</text>
+<line x1="1186.0" y1="397.0" x2="1186.0" y2="415.0" stroke="#c45a1c" stroke-width="3" stroke-linecap="round"/><g><circle cx="1186.0" cy="406.0" r="5.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M1182.6,402.6L1189.4,409.4M1189.4,402.6L1182.6,409.4" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g><line x1="1177.0" y1="412.0" x2="1195.0" y2="400.0" stroke="#1d2a1f" stroke-width="1.8" stroke-linecap="round"/>
+<text x="1206.0" y="410.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Electroválvula donde cambia la tubería</text>
+<line x1="1176.0" y1="426.0" x2="1196.0" y2="426.0" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="1206.0" y="430.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Tubería PE 40</text>
+<line x1="1176.0" y1="446.0" x2="1196.0" y2="446.0" stroke="#14508f" stroke-width="3.4" stroke-linecap="round"/>
+<text x="1206.0" y="450.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Tubería PE 50</text>
+<line x1="1176.0" y1="466.0" x2="1196.0" y2="466.0" stroke="#c45a1c" stroke-width="4.5" stroke-linecap="round"/>
+<text x="1206.0" y="470.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Tubería PVC</text>
+<rect x="1175" y="479" width="22" height="14" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1"/>
+<text x="1206.0" y="490.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Parcela</text><text x="1544" y="1068" font-size="9" fill="#5d6b60" text-anchor="end">Agro Fly Technology es una plataforma de propiedad exclusiva de J. J. Serrano. Su uso te autoriza a usarla, no a manipularla.</text></svg>

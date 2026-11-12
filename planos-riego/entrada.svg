@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 1600" width="1180" height="1600" font-family="Inter, 'Helvetica Neue', Arial, sans-serif"><title>Plano de riego de la entrada de los Metálicos</title><defs><marker id="flecha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#0aa3a3"/></marker></defs><rect width="1180" height="1600" fill="#f6f4ee"/><rect x="844.0" y="171.25" width="129.5" height="1408.75" fill="#d9d6cf" stroke="#9c978b"/>
+<line x1="908.8" y1="171.2" x2="908.8" y2="1580.0" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-dasharray="14 10"/>
+<path d="M878.75,291.25l0,60m-7,-12l7,12l7,-12" stroke="#fff" stroke-width="2.4" fill="none"/>
+<path d="M938.75,551.25l0,-60m-7,12l7,-12l7,12" stroke="#fff" stroke-width="2.4" fill="none"/>
+<path d="M878.75,691.25l0,60m-7,-12l7,12l7,-12" stroke="#fff" stroke-width="2.4" fill="none"/>
+<path d="M938.75,951.25l0,-60m-7,12l7,-12l7,12" stroke="#fff" stroke-width="2.4" fill="none"/>
+<text x="999.5" y="875.6" font-size="16" font-weight="700" fill="#5d6b60" text-anchor="middle" letter-spacing="6" opacity="1" transform="rotate(90 999.5 875.6)">AUTOVÍA</text>
+<polygon points="690.0,188.8 803.8,188.8 803.8,433.8 576.2,433.8" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="576.2,433.8 803.8,433.8 803.8,635.0 482.7,635.0" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="482.7,635.0 803.8,635.0 803.8,845.0 385.1,845.0" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="385.1,845.0 803.8,845.0 803.8,1041.0 294.0,1041.0" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="287.5,1063.8 803.8,1063.8 803.8,1230.0 301.5,1230.0 261.2,1174.0 261.2,1116.2" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="M301.5,1422.5L301.5,1286.0L795.0,1286.0L795.0,1422.5" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.4"/>
+<text x="548.2" y="1362.2" font-size="15" font-weight="700" fill="#1d2a1f" text-anchor="middle" letter-spacing="3" opacity="1">NAVE DE LOS METÁLICOS</text>
+<line x1="221.0" y1="1597.5" x2="221.0" y2="1055.0" stroke="#c45a1c" stroke-width="5" stroke-linecap="round"/>
+<line x1="221.0" y1="1055.0" x2="579.8" y2="1055.0" stroke="#c45a1c" stroke-width="5" stroke-linecap="round"/>
+<text x="209.0" y="1326.2" font-size="12" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 209.0 1326.2)">PVC Ø90</text>
+<text x="400.4" y="1046.0" font-size="12" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1">PVC Ø90</text>
+<line x1="579.8" y1="1041.0" x2="579.8" y2="845.0" stroke="#c45a1c" stroke-width="4.2" stroke-linecap="butt"/>
+<text x="569.8" y="943.0" font-size="11" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 569.8 943.0)">PVC Ø75</text>
+<line x1="579.8" y1="845.0" x2="579.8" y2="635.0" stroke="#c45a1c" stroke-width="3.6" stroke-linecap="butt"/>
+<text x="569.8" y="740.0" font-size="11" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 569.8 740.0)">PVC Ø63</text>
+<line x1="579.8" y1="635.0" x2="579.8" y2="433.8" stroke="#c45a1c" stroke-width="3" stroke-linecap="butt"/>
+<text x="569.8" y="534.4" font-size="11" font-weight="700" fill="#c45a1c" text-anchor="middle" letter-spacing="0" opacity="1" transform="rotate(-90 569.8 534.4)">PVC Ø50</text>
+<line x1="586.7" y1="447.8" x2="795.0" y2="447.8" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="687.4" y="467.8" font-size="11" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1">PE 40</text>
+<circle cx="579.75" cy="447.75" r="4" fill="#c45a1c"/>
+<line x1="493.2" y1="649.0" x2="795.0" y2="649.0" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="687.4" y="669.0" font-size="11" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1">PE 40</text>
+<circle cx="579.75" cy="649.0" r="4" fill="#c45a1c"/>
+<line x1="395.6" y1="859.0" x2="795.0" y2="859.0" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="687.4" y="879.0" font-size="11" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1">PE 40</text>
+<circle cx="579.75" cy="859.0" r="4" fill="#c45a1c"/>
+<line x1="277.0" y1="1076.0" x2="579.8" y2="1076.0" stroke="#14508f" stroke-width="3.4" stroke-linecap="round"/><line x1="579.8" y1="1076.0" x2="795.0" y2="1076.0" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="428.4" y="1096.0" font-size="11" font-weight="700" fill="#14508f" text-anchor="middle" letter-spacing="0" opacity="1">PE 50</text>
+<text x="687.4" y="1096.0" font-size="11" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1">PE 40</text>
+
+<line x1="579.8" y1="430.2" x2="694.0" y2="207.0" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="660.9" y="323.6" font-size="11" font-weight="700" fill="#2f80c9" text-anchor="middle" letter-spacing="0" opacity="1">PE 40</text>
+<text x="40.0" y="58.0" font-size="34" font-weight="700" fill="#1d2a1f" text-anchor="start" letter-spacing="2" opacity="1">ENTRADA</text>
+<text x="42.0" y="84.0" font-size="14" font-weight="600" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Zona de los Metálicos · entrada, junto a la autovía</text>
+<rect x="40" y="140" width="400" height="170" rx="10" fill="#fff" stroke="#1d2a1f" stroke-width="1.4"/>
+<rect x="40" y="140" width="400" height="34" rx="10" fill="#1d2a1f"/><rect x="40" y="160" width="400" height="14" fill="#1d2a1f"/>
+<text x="54.0" y="162.0" font-size="15" font-weight="700" fill="#fff" text-anchor="start" letter-spacing="0.6" opacity="1">ENTRADA DE LOS METÁLICOS</text>
+<text x="54.0" y="192.0" font-size="11.5" font-weight="600" fill="#5d6b60" text-anchor="start" letter-spacing="0.4" opacity="1">FINCA PINTA SANTOS</text>
+<text x="54.0" y="210.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Superficie útil</text>
+<text x="426.0" y="210.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">6.475 m²</text>
+<text x="54.0" y="228.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Tubería general</text>
+<text x="426.0" y="228.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">PVC Ø90</text>
+<text x="54.0" y="246.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Reparto</text>
+<text x="426.0" y="246.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">PVC Ø75 · Ø63 · Ø50</text>
+<text x="54.0" y="264.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Laterales</text>
+<text x="426.0" y="264.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">PE 40 y PE 50</text>
+<text x="54.0" y="282.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Electroválvulas</text>
+<text x="426.0" y="282.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">no vienen en el plano</text>
+<text x="54.0" y="302.0" font-size="9.5" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" font-style="italic" opacity="1">Dibujo sin escala, del plano a mano.</text>
+<text x="44.0" y="344.0" font-size="10.5" font-weight="700" fill="#5d6b60" text-anchor="start" letter-spacing="1.2" opacity="1">LEYENDA</text>
+<line x1="46.0" y1="358.0" x2="66.0" y2="358.0" stroke="#2f80c9" stroke-width="2.6" stroke-linecap="round"/>
+<text x="76.0" y="362.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Tubería PE 40</text>
+<line x1="46.0" y1="378.0" x2="66.0" y2="378.0" stroke="#14508f" stroke-width="3.4" stroke-linecap="round"/>
+<text x="76.0" y="382.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Tubería PE 50</text>
+<line x1="46.0" y1="398.0" x2="66.0" y2="398.0" stroke="#c45a1c" stroke-width="4.5" stroke-linecap="round"/>
+<text x="76.0" y="402.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Tubería general PVC</text>
+<rect x="45" y="411" width="22" height="14" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1"/>
+<text x="76.0" y="422.0" font-size="11" font-weight="400" fill="#1d2a1f" text-anchor="start" letter-spacing="0" opacity="1">Zona de cultivo</text><text x="1164" y="1588" font-size="9" fill="#5d6b60" text-anchor="end">Agro Fly Technology es una plataforma de propiedad exclusiva de J. J. Serrano. Su uso te autoriza a usarla, no a manipularla.</text></svg>
