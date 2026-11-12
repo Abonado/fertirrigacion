@@ -34,6 +34,9 @@ async def main():
         async with pg.expect_download() as dl: await pg.click('[data-act="hr-pdf"]')
         d = await dl.value; await d.save_as('pruebas/salida/t76.pdf'); print('PDF:', d.suggested_filename)
         assert open('pruebas/salida/t76.pdf', 'rb').read(5) == b'%PDF-'
+        if shutil.which('pdftotext'):   # aviso de propiedad al pie de la hoja de receta
+            tx = subprocess.run(['pdftotext', 'pruebas/salida/t76.pdf', '-'], capture_output=True, text=True).stdout
+            assert 'propiedad exclusiva de J. J. Serrano' in tx, tx[-300:]
         if shutil.which('pdftoppm'): subprocess.run(['pdftoppm', '-r', '110', '-png', 'pruebas/salida/t76.pdf', 'pruebas/salida/t76'], check=True)   # vista previa solo si está instalado (en GitHub no)
         # receta que empezó antes de hoy: «Apuntar» desde la hoja y fecha del cambio al guardar la receta
         r2 = await pg.evaluate("""(async()=>{const d=new Date();d.setDate(d.getDate()-1);const f=isoD(d);st.hrDesde=f;await hrApuntar();

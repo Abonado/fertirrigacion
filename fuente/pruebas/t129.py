@@ -21,7 +21,7 @@ async def main():
         await pg.click('[data-act="finca-go"][data-id="pinta"]'); await pg.wait_for_timeout(400)
         if await pg.evaluate("st.ov==='areas'"): await pg.click('[data-act="area-go"][data-a="riego"]'); await pg.wait_for_timeout(400)
         # 2) submenú de zonas
-        assert await pg.evaluate("st.ov") == 'zonas' and await pg.locator('.zcard').count() == 3
+        assert await pg.evaluate("st.ov") == 'zonas' and await pg.locator('.zcard').count() == 4   # con los Metálicos
         t = (await pg.text_content('#fincas')).upper(); assert 'ELIGE LA ZONA' in t and 'PLANOS' in t and 'GASOLINERA' in t and 'FRANCO' in t
         await pg.click('[data-act="zona-go"][data-z="fra"]'); await pg.wait_for_timeout(500)
         assert await pg.evaluate("[st.tab,st.cab,$('#fincas').hidden]") == ['hoy', 'fra', True]

@@ -1,104 +1,55 @@
-"""Arreglos urgentes (v204): el botón AGRO se aparta al bajar por la pantalla y no tapa botones ni casillas (se revisan todas las
-pantallas en un móvil); el service worker no espera más de 3 s a la red si hay guardado; y «Sugerencias y fallos»: cualquiera
-manda una idea o un fallo, los errores de la app llegan solos, y solo el administrador los lee."""
-import asyncio, sys, subprocess, json
+"""Corregir lo gastado en el almacén (v203): «Corregir gasto» deja cambiar lo que ha gastado cada zona este mes (y lo que queda
+sube o baja a la vez, con un movimiento «corrección» que se puede deshacer), y cada entrada, salida o ajuste se puede editar.
+Solo encargados y administrador; un trabajador solo edita lo suyo."""
+import asyncio, sys
 from playwright.async_api import async_playwright
-
-# 1) Service worker: con red lenta abre lo guardado a los 3 s y deja guardado lo nuevo; sin red y sin guardado, error; con red buena, lo nuevo
-r = subprocess.run(['node', '-e', r"""
-const fs=require('fs'),vm=require('vm');const src=fs.readFileSync('netlify/abonado/sw.js','utf8');
-const L={};const cache=new Map();const esperas=[];let lenta=0,falla=false;
-const caches={open:async()=>({put:async(q,r)=>cache.set(q.url||q,r),addAll:async()=>{}}),match:async q=>cache.get(q.url||q),keys:async()=>[],delete:async()=>true};
-const fetch=(q)=>new Promise((ok,ko)=>setTimeout(()=>falla?ko(new Error('red')):ok({ok:true,type:'basic',v:'nuevo',clone(){return{v:'nuevo'}}}),lenta));
-class Response{static error(){return{error:true}}}
-const ctx={self:{addEventListener:(n,f)=>L[n]=f,skipWaiting(){},clients:{claim(){}}},caches,fetch,Response,URL,Request:class{},location:{origin:'https://x.es'},setTimeout,clearTimeout,Promise,console};
-vm.createContext(ctx);vm.runInContext(src,ctx);
-const pide=async(url)=>{let p,w=[];L.fetch({request:{method:'GET',url,mode:'navigate'},respondWith:x=>p=x,waitUntil:x=>w.push(x)});const t0=Date.now();const r=await p;return{r,ms:Date.now()-t0,w}};
-(async()=>{const U='https://x.es/index.html';
-  lenta=50;let a=await pide(U);if(a.r.v!=='nuevo'||a.ms>1000)throw 'red buena: '+JSON.stringify(a);
-  cache.set(U,{v:'viejo'});lenta=6000;a=await pide(U);if(a.r.v!=='viejo'||a.ms<2900||a.ms>3600)throw 'red lenta: '+a.ms+' '+JSON.stringify(a.r);
-  await Promise.all(a.w);if(cache.get(U).v!=='nuevo')throw 'no guardó lo nuevo';
-  cache.clear();lenta=20;falla=true;a=await pide(U);if(!a.r.error)throw 'sin red ni guardado: '+JSON.stringify(a.r);
-  cache.set(U,{v:'viejo'});a=await pide(U);if(a.r.v!=='viejo')throw 'sin red con guardado';
-  console.log('SW OK')})().catch(e=>{console.log('SW MAL',e);process.exit(1)});
-"""], capture_output=True, text=True, timeout=60)
-print(r.stdout, r.stderr); assert 'SW OK' in r.stdout
-reglas = open('firestore.rules').read()
-assert 'match /abonado_buzon/{doc}' in reglas and "coleccion != 'abonado_buzon'" in reglas and "allow read, delete: if esAdmin();" in reglas
-
 MOCK = open('mock-firebase.js').read()
-TAPA = """(async()=>{   /* «tapado»: AGRO encima de su centro o de más de la mitad (una fila ancha se toca por otro lado) */
-const b=document.getElementById('agbtn');if(!b||b.hidden)return {n:-1};const tapados=new Set();const H=document.documentElement.scrollHeight;
-  const mira=()=>{if(getComputedStyle(b).pointerEvents==='none'||getComputedStyle(b).opacity==='0')return;const r=b.getBoundingClientRect();
-    document.querySelectorAll('#main button,#main input,#main select,#main textarea,#main a').forEach(e=>{const q=e.getBoundingClientRect();const w=Math.min(q.right,r.right)-Math.max(q.left,r.left),h=Math.min(q.bottom,r.bottom)-Math.max(q.top,r.top),cx=(q.left+q.right)/2,cy=(q.top+q.bottom)/2;
-    if(q.width&&w>4&&h>4&&((cx>r.left&&cx<r.right&&cy>r.top&&cy<r.bottom)||w*h>q.width*q.height/2))tapados.add((e.dataset.act||e.id||e.textContent||'').trim().slice(0,30))})};
-  await new Promise(r=>setTimeout(r,400));mira();
-  for(let y=0;y<=H;y+=150){scrollTo(0,y);await new Promise(r=>setTimeout(r,40));mira()}
-  scrollTo(0,0);await new Promise(r=>setTimeout(r,400));mira();   /* en reposo arriba: AGRO ya se ha recolocado */
-  return {n:tapados.size,cuales:[...tapados].slice(0,5)}})()"""
-
+src = open('pruebas/t141.py').read(); exec(src[src.index('async def abrir'):src.index('async def main')])
+def num(t): return float(t.replace('kg', '').replace('.', '').replace(',', '.').strip())
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch(); ctx = await b.new_context(service_workers='block', **p.devices['iPhone 13'], locale='es-ES', timezone_id='Europe/Madrid')
-        pg = await ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-        await ctx.route('https://www.gstatic.com/**', lambda r: r.fulfill(content_type='application/javascript', body=MOCK if 'app-compat' in r.request.url else ''))
-        await ctx.route('https://api.open-meteo.com/**', lambda r: r.abort()); await ctx.route('https://archive-api.open-meteo.com/**', lambda r: r.abort())
-        await pg.goto('http://localhost:8776/'); await pg.evaluate('localStorage.clear()')
-        await pg.evaluate("localStorage.setItem('mockfb',JSON.stringify({docs:{},users:{'juanjo.serrano3@gmail.com':'admin123','campo@demo.es':'campo123'},cur:null}))")
-        await pg.reload(); await pg.wait_for_timeout(700)
-        await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
-        await pg.evaluate("(async()=>{const a=NUBE.acc;a.emails=[...new Set([...a.emails,'campo@demo.es'])];a.info={...a.info,'campo@demo.es':{nombre:'Campo',areas:['campo']}};await NUBE.db.doc('acceso/usuarios').set(a);cerrarSplash()})()")
-        await pg.wait_for_timeout(400)
-        # 2) AGRO: se aparta al bajar, vuelve al subir y arriba
-        await pg.evaluate("st.finca='pinta';st.tab='cuentas';renderAll()"); await pg.wait_for_timeout(500)
-        assert not await pg.evaluate("document.getElementById('agbtn').hidden"), 'AGRO debería verse'
-        await pg.evaluate("scrollTo(0,400)"); await pg.wait_for_timeout(250)
-        assert await pg.evaluate("document.body.classList.contains('agfuera')"), 'al bajar AGRO se aparta'
-        assert await pg.evaluate("getComputedStyle(document.getElementById('agbtn')).pointerEvents") == 'none'
-        await pg.evaluate("scrollTo(0,300)"); await pg.wait_for_timeout(250)
-        assert not await pg.evaluate("document.body.classList.contains('agfuera')"), 'al subir AGRO vuelve'
-        await pg.evaluate("scrollTo(0,0)"); await pg.wait_for_timeout(250)
-        # en ninguna pantalla tapa un botón o una casilla mientras se recorre de arriba abajo
-        tabs = await pg.evaluate("TABS.map(t=>t[0]).filter(t=>VIEWS[t]&&tabPermitida(t))"); malos = []
-        for t in tabs:
-            await pg.evaluate(f"(()=>{{st.tab='{t}';renderAll();scrollTo(0,0)}})()"); await pg.wait_for_timeout(250)
-            d = await pg.evaluate(TAPA)
-            if d['n'] > 0: malos.append((t, d))
-        print('pantallas', len(tabs), 'con algo tapado por AGRO:', malos)
-        assert not malos, malos
-        # 3) Sugerencias y fallos: el administrador recibe; la persona de campo manda pero no lee
-        await pg.evaluate("st.tab='buzon';renderAll()"); await pg.wait_for_timeout(600)
-        assert 'Sugerencias y fallos' in await pg.text_content('#main') and 'Recibido' in await pg.text_content('#main')
-        await pg.evaluate("setTimeout(()=>Promise.reject(new Error('fallo de prueba 143')),0)"); await pg.wait_for_timeout(400)
-        await pg.evaluate("setTimeout(()=>Promise.reject(new Error('fallo de prueba 143')),0)"); await pg.wait_for_timeout(400)   # repetido: no se manda dos veces
-        docs = await pg.evaluate("Object.entries(JSON.parse(localStorage.getItem('mockfb')).docs).filter(([k])=>k.startsWith('abonado_buzon/')).map(([k,v])=>v)")
-        errores = [d for d in docs if d['tipo'] == 'error']; print('errores', errores)
-        assert len(errores) == 1 and errores[0]['txt'] == 'fallo de prueba 143' and errores[0]['de'] == 'juanjo.serrano3@gmail.com' and errores[0]['v'] == 'abonado-v204' and errores[0]['tab'] == 'buzon'
-        errs.clear()   # el error de prueba lo ve también Playwright: es lo esperado
-        await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
-        await pg.fill('#nb_em', 'campo@demo.es'); await pg.fill('#nb_pw', 'campo123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
-        await pg.evaluate("cerrarSplash()"); await pg.wait_for_timeout(300)
-        assert 'cbuzon' in await pg.evaluate("TABS.map(t=>t[0]).filter(t=>VIEWS[t]&&tabPermitida(t))")
-        await pg.evaluate("st.tab='cajustes';renderAll()"); await pg.wait_for_timeout(400)
-        await pg.click('[data-tab="cbuzon"]'); await pg.wait_for_timeout(500)
-        t = await pg.text_content('#main'); assert 'Sugerencias y fallos' in t and 'Recibido' not in t, t[:300]
-        await pg.click('[data-bz="tipo"][data-t="fallo"]'); await pg.wait_for_timeout(200)
-        await pg.click('[data-bz="enviar"]'); await pg.wait_for_timeout(300)
-        assert 'Escribe' in (await pg.text_content('#toast') or '')
-        await pg.fill('#bz_txt', 'Al fichar se queda pensando'); await pg.click('[data-bz="enviar"]'); await pg.wait_for_timeout(800)
-        assert 'Gracias' in (await pg.text_content('#toast') or '') and await pg.input_value('#bz_txt') == ''
-        docs = await pg.evaluate("Object.entries(JSON.parse(localStorage.getItem('mockfb')).docs).filter(([k])=>k.startsWith('abonado_buzon/')).map(([k,v])=>v)")
-        f = [d for d in docs if d['tipo'] == 'fallo']; print(f)
-        assert len(f) == 1 and f[0]['de'] == 'campo@demo.es' and f[0]['tab'] == 'cajustes' and f[0]['txt'] == 'Al fichar se queda pensando'
-        assert set(f[0]) <= {'tipo', 'txt', 'donde', 'de', 'nombre', 'v', 'tab', 'disp', 'ts', 'mod'}, 'solo los campos que dejan las reglas'
-        # el administrador lo ve y lo marca como visto
-        await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
-        await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
-        await pg.evaluate("cerrarSplash();st.bz=null;st.tab='buzon';renderAll()"); await pg.wait_for_timeout(800)
-        t = await pg.text_content('#main'); assert 'Al fichar se queda pensando' in t and 'fallo de prueba 143' in t and 'Sin ver (2)' in t, t[-600:]
-        await pg.locator('.bzi', has_text='Al fichar').locator('[data-bz="visto"]').click(); await pg.wait_for_timeout(500)
-        assert 'Sin ver (1)' in await pg.text_content('#main')
-        await pg.screenshot(path='pruebas/salida/t143-buzon.png')
-        ancho = await pg.evaluate("document.documentElement.scrollWidth"); assert ancho <= 390, ancho
+        b = await p.chromium.launch()
+        pg, errs, ctx = await abrir(b, 1280, 900)
+        await pg.evaluate("(async()=>{let i=0;for(const m of st.alm){if(!m.id){m.id='m'+(i++);await Store.setCol('almacen',m.id,m)}}renderMain()})()"); await pg.wait_for_timeout(500)
+        # 1) desde el stock: «Corregir» abre la corrección del gasto de este mes
+        await pg.click('.stt th [data-act="gc-edit"]'); await pg.wait_for_timeout(300)
+        assert await pg.locator('[data-gce]').count() > 2 and await pg.is_visible('[data-act="gc-save"]')
+        assert await pg.input_value('[data-gce="gas|kno3"]') == '20' and await pg.input_value('[data-gce="pla|kno3"]') == '10'
+        await pg.fill('[data-gce="gas|kno3"]', '25'); await pg.fill('[data-gce="pla|mkp"]', '2,5')
+        await pg.click('[data-act="gc-save"]'); await pg.wait_for_timeout(800)
+        cs = await pg.evaluate("st.alm.filter(m=>m.tipo==='correccion').map(m=>[m.cab,m.p,m.base,m.nuevo,m.qty,m.mes===hoy().slice(0,7)]).sort()"); print(cs)
+        assert cs == [['gas', 'kno3', 20, 25, -5, True], ['pla', 'mkp', 0, 2.5, -2.5, True]], cs
+        fk = await pg.evaluate("[...document.querySelectorAll('.gct tr[data-gp=\"kno3\"] td')].map(x=>x.textContent.trim())"); print(fk)
+        assert fk[1].startswith('25,0 kg') and 'corregido' in fk[1] and fk[3].startswith('35,0 kg'), fk
+        assert await pg.text_content('[data-stk="kno3"] .stq') == '407,5 kg', 'lo que queda baja a la vez'
+        assert '35,0 kg' in await pg.text_content('[data-stk="kno3"] td.g')
+        mv = await pg.text_content('#main'); assert 'corrección' in mv and 'de 20,0 a 25,0 kg' in mv
+        # se guarda en la nube
+        g = await pg.evaluate("Store.listCol('almacen',500).then(l=>l.filter(m=>m.tipo==='correccion').length)"); assert g == 2, g
+        # 2) volver a dejarlo como estaba borra la corrección
+        await pg.click('[data-act="gc-edit"]'); await pg.wait_for_timeout(300)
+        assert await pg.input_value('[data-gce="gas|kno3"]') == '25'
+        await pg.fill('[data-gce="gas|kno3"]', '20'); await pg.click('[data-act="gc-save"]'); await pg.wait_for_timeout(800)
+        assert await pg.evaluate("st.alm.filter(m=>m.tipo==='correccion').length") == 1
+        assert await pg.text_content('[data-stk="kno3"] .stq') == '412,5 kg'
+        # 3) editar una entrada y una salida
+        ent = await pg.evaluate("st.alm.find(m=>m.p==='kno3'&&m.tipo==='entrada').id")
+        await pg.click(f'[data-act="mv-edit"][data-id="{ent}"]'); await pg.wait_for_timeout(200)
+        assert await pg.input_value(f'#mvq_{ent}') == '712,5'
+        await pg.fill(f'#mvq_{ent}', '700'); await pg.click(f'[data-act="mv-ok"][data-id="{ent}"]'); await pg.wait_for_timeout(600)
+        m = await pg.evaluate(f"st.alm.find(m=>m.id==='{ent}')"); assert m['qty'] == 700 and m['editado']['antes'] == 712.5, m
+        assert await pg.text_content('[data-stk="kno3"] .stq') == '400,0 kg'
+        sal = await pg.evaluate("st.alm.find(m=>m.p==='mkp'&&m.tipo==='salida').id")
+        await pg.click(f'[data-act="mv-edit"][data-id="{sal}"]'); await pg.wait_for_timeout(200)
+        assert await pg.input_value(f'#mvq_{sal}') == '300'
+        await pg.fill(f'#mvq_{sal}', '250'); await pg.click(f'[data-act="mv-ok"][data-id="{sal}"]'); await pg.wait_for_timeout(600)
+        assert await pg.evaluate(f"st.alm.find(m=>m.id==='{sal}').qty") == -250
+        assert 'Corregido por' in await pg.text_content('#main') and 'antes 300,0 kg' in await pg.text_content('#main')
+        d = await pg.evaluate(f"Store.listCol('almacen',500).then(l=>l.find(m=>m.id==='{sal}').qty)"); assert d == -250, d
+        # 4) una salida automática corregida a mano no se pisa al rehacer las cuentas
+        src = await pg.evaluate("String(autoAlmacen)"); assert 'old.editado' in src and '!m.editado' in src
+        # 5) un trabajador no corrige el gasto ni edita lo de otros
+        await pg.evaluate("NUBE.user.admin=false;NUBE.user.encargado=false;st.gcEdit=false;renderMain()"); await pg.wait_for_timeout(300)
+        assert await pg.locator('[data-act="gc-edit"]').count() == 0 and await pg.locator('[data-act="mv-edit"]').count() == 0
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())
