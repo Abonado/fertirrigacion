@@ -65,7 +65,7 @@ async def main():
         assert 'Almacén' in await pg.text_content('#printhead')
         await pg.emulate_media(media='print'); await pg.wait_for_timeout(200)
         vis = await pg.evaluate("""[...document.querySelectorAll('#main section')].filter(e=>e.offsetParent!==null).map(e=>(e.querySelector('h3')||{}).textContent||e.className)"""); print(vis)
-        assert vis == ['Stock', 'Gasto por cabezal'], vis
+        assert vis == ['Stock', 'Gasto por cabezal', 'Gasto por día'], vis
         assert not await pg.is_visible('[data-act="alm-print"]') and not await pg.is_visible('[data-aper="7"]')
         await pg.pdf(path='pruebas/salida/t141-hoja.pdf', format='A4')
         await pg.emulate_media(media='screen')

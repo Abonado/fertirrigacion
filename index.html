@@ -368,7 +368,7 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .saj{display:grid;gap:0}.saj-f{display:grid;grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.saj-f:first-child{border-top:0}.saj-f .field{margin:0}.saj-f .inp.sm{width:104px}
 @media (max-width:520px){.saj-f{grid-template-columns:1fr 1fr}.saj-f>b{grid-column:1/-1}.stq{font-size:22px}.stt td,.stt th{padding-left:4px;padding-right:4px}.stt th{white-space:normal}.stt td.n b{font-size:.95rem}.gct td b{font-size:15px}.gct td,.gct th{padding-left:6px;padding-right:6px}.sts{font-size:12.5px;white-space:normal}.stg{font-size:16px}.stt td.n .pill{white-space:normal}}
 @media print{.stq{font-size:16pt}.stg{font-size:12pt}.stt td,.gct td{padding:5px 6px}.stt th,.gct th{padding:0 6px 5px}}
-.gct td.n{min-width:120px}.gct .gce{width:110px;margin-left:auto}@media (max-width:520px){.gct .gce{width:82px}.gct .gce input{min-width:0}.gct td.n{min-width:96px}}.gcorr{color:var(--warn-ink,#9a6700)!important}.stt th .lnk{margin-left:8px;font-size:11px;text-transform:none;letter-spacing:0}.gc-ayuda{margin:6px 0 10px}.stt td.n b,.gct td.n b{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
+.gct td.n{min-width:120px}.gct .gce{width:110px;margin-left:auto}@media (max-width:520px){.gct .gce{width:82px}.gct .gce input{min-width:0}.gct td.n{min-width:96px}}.gcorr{color:var(--warn-ink,#9a6700)!important}.stt th .lnk{margin-left:8px;font-size:11px;text-transform:none;letter-spacing:0}.gc-ayuda{margin:6px 0 10px}.gdt td,.gdt th{padding:8px 6px}.gdt th{white-space:normal;min-width:70px;font-size:10.5px}.gdt td.n b{font-size:.92rem;white-space:nowrap}.gdt tr.sc td{color:var(--muted)}.gdt tr.ed td{background:var(--surface-2)}.gdt td.cor{color:var(--warn-ink,#9a6700);font-weight:700}.gdt td.n .lnk{font-size:13px;color:var(--accent,#1e6b45);padding:2px 0}.gd-bt{display:flex;gap:6px;margin-top:6px}.gd-bt .btn{padding:6px 10px}.gdt td.n{position:sticky;left:0;background:var(--surface,#fff);z-index:1}.gdt .gce{width:76px}.gdt tfoot td{border-top:2px solid var(--line);font-weight:700}.stt td.n b,.gct td.n b{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
 .srow{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
 .srow:first-child{border-top:0}
 .yo{min-height:42px;display:flex;align-items:center;padding:0 12px;border-radius:8px;background:var(--ok-bg);color:var(--ok);font-size:16px}
@@ -2619,10 +2619,44 @@ const almPerTxt=per=>per==='mes'?'en '+new Date().toLocaleDateString('es-ES',{mo
 function gastoCabs(a,desde,sinCorr){const al=almById(a),cabs=al?al.cabezales.filter(c=>cabsVis().some(x=>x.id===c)):[],kg={},dias={};if(st.hist===null){loadHist();return null}
   const regs=(st.hist||[]).filter(r=>r.fecha>=desde&&r.fecha<=hoy());
   for(const c of cabs){kg[c]={};dias[c]=0;for(const r of regs){if(!r.m3||r.m3[c]==null)continue;dias[c]++;const k=kgCab(r,c);for(const p in k)kg[c][p]=(kg[c][p]||0)+k[p]}}
-  if(!sinCorr)for(const m of st.alm||[])if(m.tipo==='correccion'&&m.cab in kg&&almDeMov(m)===a&&m.fecha>=desde&&m.fecha<=hoy())kg[m.cab][m.p]=Math.max(0,(kg[m.cab][m.p]||0)-m.qty);
+  for(const m of st.alm||[])if(m.tipo==='correccion'&&!(sinCorr===true||(sinCorr==='mes'&&!m.dia))&&m.cab in kg&&almDeMov(m)===a&&m.fecha>=desde&&m.fecha<=hoy())kg[m.cab][m.p]=Math.max(0,(kg[m.cab][m.p]||0)-m.qty);
   const tot=p=>cabs.reduce((x,c)=>x+(kg[c][p]||0),0);return{cabs,kg,dias,tot}}
-const corrDe=(a,p,c,mes)=>(st.alm||[]).find(m=>m.tipo==='correccion'&&m.p===p&&m.cab===c&&m.mes===mes&&almDeMov(m)===a);
-async function gastoCorregir(){const a=almAct(),mes=hoy().slice(0,7),B=gastoCabs(a,almDesde('mes'),true),G=gastoCabs(a,almDesde('mes'));if(!B||!G)return;let n=0;
+const corrDe=(a,p,c,mes)=>(st.alm||[]).find(m=>m.tipo==='correccion'&&!m.dia&&m.p===p&&m.cab===c&&m.mes===mes&&almDeMov(m)===a);
+const corrDia=(a,p,c,d)=>(st.alm||[]).find(m=>m.tipo==='correccion'&&m.dia===d&&m.p===p&&m.cab===c&&almDeMov(m)===a);
+/* Salidas del almacén día a día este mes (llenados de bidones) de una zona: aquí se corrige un llenado mal apuntado o se añade el que no se guardó */
+const antD=f=>{const x=new Date(f+'T12:00:00');x.setDate(x.getDate()-1);return isoD(x)};
+const salCab=m=>{if(m.cab)return m.cab;const b=m.origen&&bid(m.origen);return b?b.cabezales[0]:null};
+function salidasDias(a,c){const desde=almDesde('mes'),out=[];
+  for(let d=hoy();d>=desde;d=antD(d)){const ms=(st.alm||[]).filter(m=>m.tipo==='salida'&&m.fecha===d&&almDeMov(m)===a&&salCab(m)===c),kg={},ed={};
+    for(const m of ms){kg[m.p]=(kg[m.p]||0)-m.qty;if(m.editado||m.manual)ed[m.p]=true}out.push({d,ms,kg,ed})}
+  return out}
+function gastoDiaHTML(a){const al=almById(a),cabs=al?al.cabezales.filter(c=>cabsVis().some(x=>x.id===c)):[];if(!cabs.length)return '';
+  if(!cabs.includes(st.gdCab))st.gdCab=cabs.includes(st.cab)?st.cab:cabs[0];const c=st.gdCab,D=salidasDias(a,c),ed=esGestor();
+  const recetaPs=new Set();for(const b of st.cfg.bidones||[])if((b.cabezales||[]).includes(c))for(const x of b.productos||[])if(x.dosis>0)recetaPs.add(x.p);
+  let ps=Object.keys(st.cfg.productos).filter(p=>D.some(x=>(x.kg[p]||0)>0.0001));if(st.gdEdit)for(const p of recetaPs)if(!ps.includes(p))ps.push(p);
+  if(!ps.length)ps=[...recetaPs];const tot=p=>D.reduce((x,r)=>x+(r.kg[p]||0),0);ps.sort((x,y)=>tot(y)-tot(x)||pn(x).localeCompare(pn(y)));
+  const fila=r=>{const e=st.gdEdit===r.d,hay=r.ms.length>0;
+    return `<tr data-gd="${r.d}" class="${hay?'':'sc'}${e?' ed':''}"><td class="n"><b>${esc(fFecha(r.d))}</b>${hay?`<small>${r.ms.filter(m=>m.origen).map(m=>m.origen).filter((x,i,A)=>A.indexOf(x)===i).map(x=>esc((bid(x)||{}).nombre||'')).filter(Boolean).join(', ')||'A mano'}</small>`:'<small>Sin llenados</small>'}${!ed?'':e?`<div class="gd-bt noprint"><button class="btn pri" data-act="gd-save" data-d="${r.d}">Guardar</button><button class="btn" data-act="gd-cancel">Cancelar</button></div>`:`<button class="lnk noprint" data-act="gd-edit" data-d="${r.d}">${hay?'Editar':'Añadir'}</button>`}</td>${ps.map(p=>{const v=r.kg[p]||0;
+      return e?`<td><div class="inp sm gce"><input data-gde="${p}" aria-label="${esc(pn(p))}" inputmode="decimal" value="${v>0.0001?inVal(+v.toFixed(2)):''}" placeholder="0"></div></td>`
+        :`<td class="${r.ed[p]?'cor':''}">${v>0.0001?fmt(v,1):'—'}${r.ed[p]?'<small class="gcorr">corregido</small>':''}</td>`}).join('')}
+</tr>`};
+  return `<section class="card gdia"><div class="tank-h"><div><h3>Gasto por día</h3><div class="sub">${esc(cabNombre(c))} · lo que ha salido del almacén cada día de ${esc(new Date().toLocaleDateString('es-ES',{month:'long'}))} al llenar los bidones${ed?' · si un llenado no se guardó o la cantidad no es la buena, pulsa «Editar» o «Añadir» en ese día':''}</div></div>
+    ${cabs.length>1?`<div class="row noprint">${cabs.map(x=>`<button class="chip" data-gdcab="${x}" aria-pressed="${x===c}">${esc(cabNombre(x))}</button>`).join('')}</div>`:''}</div>
+    ${ps.length?`<div class="tablewrap" style="overflow-x:auto"><table class="gct gdt"><thead><tr><th class="n">Día</th>${ps.map(p=>`<th>${esc(pn(p))}<small>${uCant(p)}</small></th>`).join('')}</tr></thead>
+      <tbody>${D.map(fila).join('')}</tbody><tfoot><tr><td class="n"><b>Total del mes</b></td>${ps.map(p=>`<td class="t"><b>${fmt(tot(p),1)}</b></td>`).join('')}</tr></tfoot></table></div>`
+      :'<div class="note">Esta zona no tiene abonos en sus bidones.</div>'}</section>`}
+/* Guardar el día: si ya hay una salida de ese abono se corrige (la última); si no la hay, se añade una a mano. Lo que queda se recalcula. */
+async function gastoDiaGuardar(d){const a=almAct(),c=st.gdCab,r=salidasDias(a,c).find(x=>x.d===d);if(!r)return;let n=0;
+  try{for(const el of document.querySelectorAll(`tr[data-gd="${d}"] [data-gde]`)){const p=el.dataset.gde,v=el.value.trim()===''?0:num(el.value);if(v==null||v<0)continue;
+    const ahora=r.kg[p]||0;if(Math.abs(v-ahora)<0.005)continue;const ms=r.ms.filter(m=>m.p===p);
+    if(!ms.length){const m={ts:d+'T12:00:00.000Z',fecha:d,tipo:'salida',alm:a,p,cab:c,qty:-v,manual:true,por:yoNombre(),porEmail:miEmail()};const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id})}
+    else{const m=ms.find(x=>x.manual)||ms[ms.length-1],resto=ahora+m.qty,nq=+(-(v-resto)).toFixed(3);
+      if(nq>0.0005){toast('No puede quedar en negativo: corrige los otros llenados del día en Movimientos');continue}
+      if(Math.abs(nq)<0.0005&&m.manual){await Store.delCol('almacen',m.id);st.alm=st.alm.filter(x=>x.id!==m.id)}
+      else{const patch={qty:nq,editado:{por:yoNombre(),porEmail:miEmail(),ts:new Date().toISOString(),antes:m.editado?m.editado.antes:m.qty}};await Store.updCol('almacen',m.id,patch);Object.assign(m,patch)}}
+    n++}
+  st.gdEdit=null;renderMain();toast(n?`Día corregido (${n})`:'No has cambiado nada')}catch(err){toast(errMsg(err))}}
+async function gastoCorregir(){const a=almAct(),mes=hoy().slice(0,7),B=gastoCabs(a,almDesde('mes'),'mes'),G=gastoCabs(a,almDesde('mes'));if(!B||!G)return;let n=0;
   try{for(const el of document.querySelectorAll('[data-gce]')){const[c,p]=el.dataset.gce.split('|'),v=num(el.value);if(v==null||v<0)continue;
     const ahora=G.kg[c][p]||0;if(Math.abs(v-ahora)<0.05)continue;const base=B.kg[c][p]||0,dif=+(v-base).toFixed(3),old=corrDe(a,p,c,mes);
     const m={ts:new Date().toISOString(),fecha:hoy(),tipo:'correccion',alm:a,p,cab:c,mes,qty:-dif,base:+base.toFixed(3),nuevo:v,por:yoNombre(),porEmail:miEmail()};
@@ -2673,6 +2707,7 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
   h+=`<section class="summary noprint" data-out="asum"><div class="stat"><span>Para pedir</span><b>${nb}</b><small>bajo mínimo o en negativo</small></div><div class="stat"><span>Entradas del mes</span><b>${ent.length}</b><small>albaranes</small></div><div class="stat"><span>Movimientos</span><b>${movA.length}</b><small>registrados</small></div></section>`;
   h+=stockHTML(ps,aid);
   h+=consumoCabHTML(aid);
+  h+=gastoDiaHTML(aid);
   h+=stockAjHTML(ps,aid);
   const e=st.ent;
   h+=`<section class="card noprint"><div><h3>Nueva entrada</h3><div class="sub">Pedido recibido en el almacén ${esc(alm.nombre)}</div></div><div class="frm">
@@ -2693,7 +2728,7 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
   const mv=movA.slice().sort((x,y)=>x.ts<y.ts?1:-1).slice(0,60);
   h+=`<section class="card noprint"><div><h3>Movimientos</h3><div class="sub">Entradas, salidas por llenado y ajustes</div></div>`+(mv.length?`<div class="msgs">`+mv.map(m=>{const o=m.origen&&bid(m.origen);
     return `<div class="msg"><div class="h"><span class="pill ${m.tipo==='entrada'?'ok':m.tipo==='salida'?'nd':'warn'}">${m.tipo==='correccion'?'corrección':m.tipo}</span><b>${m.qty>=0?'+':'−'}${fmt(Math.abs(m.qty),1)} ${uCant(m.p)}</b>${sacosTxt(m.p,Math.abs(m.qty))&&Math.abs(m.qty)>=sacoDe(m.p)?`<span>${sacosTxt(m.p,Math.abs(m.qty))}</span>`:''}<span>${esc(pn(m.p))}</span><span>${fFecha(m.fecha)}</span></div>
-    ${m.prov||m.alb?`<p>${esc([m.prov,m.alb?'Albarán '+m.alb:''].filter(Boolean).join(' · '))}</p>`:''}${m.tipo==='correccion'?`<p class="note">Gasto de ${esc(cabNombre(m.cab))} en ${esc(new Date(m.mes+'-15').toLocaleDateString('es-ES',{month:'long'}))}: de ${fmt(m.base,1)} a ${fmt(m.nuevo,1)} ${uCant(m.p)}</p>`:''}${m.editado?`<p class="note">Corregido por ${esc(m.editado.por||'')}: antes ${fmt(Math.abs(m.editado.antes),1)} ${uCant(m.p)}</p>`:''}${m.auto?`<p class="note">Llenado deducido de las cuentas del ${esc(fCorta(m.autoDe))} (${fmt(m.autoCm,1)} cm)</p>`:''}${o?`<p class="note">${esc(o.nombre)} · ${esc(o.cabezales.map(cabNombre).join(' + '))}</p>`:''}${adjHTML(m.adjuntos,false)}
+    ${m.prov||m.alb?`<p>${esc([m.prov,m.alb?'Albarán '+m.alb:''].filter(Boolean).join(' · '))}</p>`:''}${m.tipo==='correccion'?`<p class="note">Gasto de ${esc(cabNombre(m.cab))} ${m.dia?'del '+esc(fCorta(m.dia)):'en '+esc(new Date(m.mes+'-15').toLocaleDateString('es-ES',{month:'long'}))}: de ${fmt(m.base,1)} a ${fmt(m.nuevo,1)} ${uCant(m.p)}</p>`:''}${m.manual?`<p class="note">Llenado añadido a mano · ${esc(cabNombre(m.cab))}</p>`:''}${m.editado?`<p class="note">Corregido por ${esc(m.editado.por||'')}: antes ${fmt(Math.abs(m.editado.antes),1)} ${uCant(m.p)}</p>`:''}${m.auto?`<p class="note">Llenado deducido de las cuentas del ${esc(fCorta(m.autoDe))} (${fmt(m.autoCm,1)} cm)</p>`:''}${o?`<p class="note">${esc(o.nombre)} · ${esc(o.cabezales.map(cabNombre).join(' + '))}</p>`:''}${adjHTML(m.adjuntos,false)}
     <div class="row">${!esGestor()&&m.porEmail!==miEmail()?'':st.mvEdit===m.id?`<div class="inp sm"><input id="mvq_${m.id}" inputmode="decimal" value="${inVal(+(m.tipo==='ajuste'?m.qty:Math.abs(m.qty)).toFixed(3))}"><span class="u">${uCant(m.p)}</span></div><button class="btn pri" data-act="mv-ok" data-id="${m.id}">Guardar</button><button class="btn" data-act="mv-cancel">Cancelar</button>`:st.confirmMv===m.id?`<span class="note">¿Borrar movimiento?</span><button class="btn danger" data-act="mv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="mv-del-no">Cancelar</button>`:`${m.tipo!=='correccion'?`<button class="btn" data-act="mv-edit" data-id="${m.id}">Editar</button>`:''}<button class="btn" data-act="mv-del" data-id="${m.id}">Borrar</button>`}</div></div>`}).join('')+`</div>`:`<div class="note">Sin movimientos.</div>`)+`</section>`;
   return h}
 async function entSave(){const e=st.ent;if(!(e.qty>0)){toast('Escribe la cantidad');return}
@@ -5336,6 +5371,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.mfil){st.mFil=t.dataset.mfil;renderMain()}
   else if(t.dataset.almsel){st.almSel=t.dataset.almsel;st.confirmMv=null;renderMain()}
   else if(t.dataset.aper){st.almPer=t.dataset.aper==='mes'?'mes':+t.dataset.aper;renderMain()}
+  else if(t.dataset.gdcab){st.gdCab=t.dataset.gdcab;st.gdEdit=null;renderMain()}
   else if(t.dataset.act==='m-nuevo'){st.mf.open=true;if(!st.mf.finca&&st.finca)st.mf.finca=st.finca;renderMain();const i=$('#mf_art');if(i)i.focus()}
   else if(t.dataset.act==='m-cerrar'){st.mf.open=false;renderMain()}
   else if(t.dataset.act==='m-crear')crearMat();
@@ -5366,6 +5402,9 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='gc-edit'){st.almPer='mes';st.gcEdit=true;renderMain();const g=document.querySelector('.gcab');if(g)g.scrollIntoView({behavior:'smooth',block:'start'})}
   else if(t.dataset.act==='gc-cancel'){st.gcEdit=false;renderMain()}
   else if(t.dataset.act==='gc-save')gastoCorregir();
+  else if(t.dataset.act==='gd-edit'){st.gdEdit=t.dataset.d;renderMain();const i=document.querySelector(`tr[data-gd="${t.dataset.d}"] input`);if(i){i.focus();i.select()}}
+  else if(t.dataset.act==='gd-cancel'){st.gdEdit=null;renderMain()}
+  else if(t.dataset.act==='gd-save')gastoDiaGuardar(t.dataset.d);
   else if(t.dataset.act==='mv-del-no'){st.confirmMv=null;renderMain()}
   else if(t.dataset.act==='mv-del-yes')mvDel(t.dataset.id);
   else if(t.dataset.act==='inf-xlsx')exportXlsx();
@@ -7230,7 +7269,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v203';
+window.APP_V='abonado-v204';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
