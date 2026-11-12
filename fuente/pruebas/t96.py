@@ -20,10 +20,10 @@ async def main():
           cerrarSplash();st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()})()"""); await pg.wait_for_timeout(1500)
         z = '[data-nube="zon"][data-em="pepe@demo.es"]'
         print('zonas que se pueden elegir:', await pg.locator(z).all_inner_texts())
-        assert await pg.locator(f'{z}[data-f="pinta"]').count() == 3 and await pg.locator(f'{z}[data-f="fuente"]').count() == 0, 'solo las fincas que ve y con más de un cabezal'
-        assert await pg.locator(f'{z}[aria-pressed="true"]').count() == 3
+        assert await pg.locator(f'{z}[data-f="pinta"]').count() == 4 and await pg.locator(f'{z}[data-f="fuente"]').count() == 0, 'solo las fincas que ve y con más de un cabezal'
+        assert await pg.locator(f'{z}[aria-pressed="true"]').count() == 4   # con los Metálicos
         # quitarle Planos y Franco: solo Gasolinera
-        await pg.click(f'{z}[data-c="pla"]'); await pg.wait_for_timeout(800); await pg.click(f'{z}[data-c="fra"]'); await pg.wait_for_timeout(800)
+        await pg.click(f'{z}[data-c="pla"]'); await pg.wait_for_timeout(800); await pg.click(f'{z}[data-c="fra"]'); await pg.wait_for_timeout(800); await pg.click(f'{z}[data-c="met"]'); await pg.wait_for_timeout(800)
         i = await pg.evaluate("NUBE.db.doc('acceso/usuarios').get().then(s=>s.data().info['pepe@demo.es'])"); print('guardado:', i)
         assert i['cabs'] == ['gas']
         q = await pg.evaluate("[quienVeCab('gas').includes('pepe@demo.es'),quienVeCab('pla').includes('pepe@demo.es')]"); print('avisos al móvil (gas, planos):', q); assert q == [True, False]
@@ -34,7 +34,7 @@ async def main():
         await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
         await pg.fill('#nb_em', 'pepe@demo.es'); await pg.fill('#nb_pw', 'pepe1234'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         v = await pg.evaluate("[cabsVis().map(c=>c.id),fincasVis().map(f=>f.id+':'+f.cabezales.join(',')),st.cfg.fincas.find(f=>f.id==='pinta').cabezales.length]"); print('Pepe ve:', v)
-        assert v[0] == ['gas'] and v[1] == ['pinta:gas'] and v[2] == 3, 've solo Gasolinera y la configuración no se toca'
+        assert v[0] == ['gas'] and v[1] == ['pinta:gas'] and v[2] == 4, 've solo Gasolinera y la configuración no se toca'
         await pg.evaluate("cerrarSplash();st.finca='pinta';st.cab='gas';st.tab='cuentas';renderAll()"); await pg.wait_for_timeout(500)
         cabs = await pg.locator('#cabs [data-cab]').all_inner_texts() if await pg.locator('#cabs [data-cab]').count() else []
         print('botones de cabezal:', cabs); assert len(cabs) <= 1
@@ -44,7 +44,7 @@ async def main():
         await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash();st.tab='ajustes';st.ajAb=new Set(AJ_GR.map(g=>g[0]));renderAll()"); await pg.wait_for_timeout(800)
-        await pg.click(f'{z}[data-c="pla"]'); await pg.wait_for_timeout(800); await pg.click(f'{z}[data-c="fra"]'); await pg.wait_for_timeout(800)
+        await pg.click(f'{z}[data-c="pla"]'); await pg.wait_for_timeout(800); await pg.click(f'{z}[data-c="fra"]'); await pg.wait_for_timeout(800); await pg.click(f'{z}[data-c="met"]'); await pg.wait_for_timeout(800)
         i = await pg.evaluate("NUBE.db.doc('acceso/usuarios').get().then(s=>s.data().info['pepe@demo.es'])"); print('todas otra vez:', i); assert 'cabs' not in i
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

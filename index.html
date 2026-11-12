@@ -368,7 +368,7 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .saj{display:grid;gap:0}.saj-f{display:grid;grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.saj-f:first-child{border-top:0}.saj-f .field{margin:0}.saj-f .inp.sm{width:104px}
 @media (max-width:520px){.saj-f{grid-template-columns:1fr 1fr}.saj-f>b{grid-column:1/-1}.stq{font-size:22px}.stt td,.stt th{padding-left:4px;padding-right:4px}.stt th{white-space:normal}.stt td.n b{font-size:.95rem}.gct td b{font-size:15px}.gct td,.gct th{padding-left:6px;padding-right:6px}.sts{font-size:12.5px;white-space:normal}.stg{font-size:16px}.stt td.n .pill{white-space:normal}}
 @media print{.stq{font-size:16pt}.stg{font-size:12pt}.stt td,.gct td{padding:5px 6px}.stt th,.gct th{padding:0 6px 5px}}
-.gct td.n{min-width:120px}.gct .gce{width:110px;margin-left:auto}@media (max-width:520px){.gct .gce{width:82px}.gct .gce input{min-width:0}.gct td.n{min-width:96px}}.gcorr{color:var(--warn-ink,#9a6700)!important}.stt th .lnk{margin-left:8px;font-size:11px;text-transform:none;letter-spacing:0}.gc-ayuda{margin:6px 0 10px}.gdt td,.gdt th{padding:8px 6px}.gdt th{white-space:normal;min-width:70px;font-size:10.5px}.gdt td.n b{font-size:.92rem;white-space:nowrap}.gdt tr.sc td{color:var(--muted)}.gdt tr.ed td{background:var(--surface-2)}.gdt td.cor{color:var(--warn-ink,#9a6700);font-weight:700}.gdt td.n .lnk{font-size:13px;color:var(--accent,#1e6b45);padding:2px 0}.gd-bt{display:flex;gap:6px;margin-top:6px}.gd-mas{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin:8px 0 12px;display:grid;gap:8px}.gd-mas select,.gd-mas input:not([type]){min-height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font:inherit;max-width:100%}.gd-bt .btn{padding:6px 10px}.gdt td.n{position:sticky;left:0;background:var(--surface,#fff);z-index:1}
+.gct td.n{min-width:120px}.gct .gce{width:110px;margin-left:auto}@media (max-width:520px){.gct .gce{width:82px}.gct .gce input{min-width:0}.gct td.n{min-width:96px}}.gcorr{color:var(--warn-ink,#9a6700)!important}.stt th .lnk{margin-left:8px;font-size:11px;text-transform:none;letter-spacing:0}.gc-ayuda{margin:6px 0 10px}.gdt td,.gdt th{padding:8px 6px}.gdt th{white-space:normal;min-width:70px;font-size:10.5px}.gdt td.n b{font-size:.92rem;white-space:nowrap}.gdt tr.sc td{color:var(--muted)}.gdt tr.ed td{background:var(--surface-2)}.gdt td.cor{color:var(--warn-ink,#9a6700);font-weight:700}.gdt td.n .lnk{font-size:13px;color:var(--accent,#1e6b45);padding:2px 0}.gd-bt{display:flex;gap:6px;margin-top:6px}.rsuelo{display:grid;gap:12px}.rs-dep{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:8px}.rs-dep h4{margin:0;font:700 15px var(--f-display)}.rs-dep h4 small{font-weight:400;color:var(--muted)}table.suelo td:nth-child(n+2),table.suelo th:nth-child(n+2){text-align:right}.gd-mas{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin:8px 0 12px;display:grid;gap:8px}.gd-mas select,.gd-mas input:not([type]){min-height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font:inherit;max-width:100%}.gd-bt .btn{padding:6px 10px}.gdt td.n{position:sticky;left:0;background:var(--surface,#fff);z-index:1}
 .gdw{overflow:auto;max-height:min(70vh,640px);overscroll-behavior:contain;border-radius:10px}.gdt thead th{position:sticky;top:0;z-index:2;background:var(--surface,#fff);box-shadow:0 2px 0 var(--line)}.gdt thead th.n{left:0;z-index:3}.gdt tfoot td{position:sticky;bottom:0;background:var(--surface-2,#f3f5f2);z-index:2}.gdt tfoot td.n{left:0;z-index:3}
 .solo-print{display:none}.printpie{display:none}
 @media print{.solo-print{display:block!important}.gdw{max-height:none!important}.gdp{break-before:page;page-break-before:always;break-inside:auto!important;page-break-inside:auto!important;border:0!important;padding:0!important}
@@ -804,7 +804,8 @@ const PRODUCTOS = {
   ca:{n:'Solución cálcica',liq:true,ce:0.8,un:11.52},
   trad:{n:'Tradecorp calcio',liq:false,ce:0,un:0},
   fe:{n:'Microstep especial Fe',liq:false,ce:0,un:0},
-  hno3:{n:'Ácido nítrico',liq:true,ce:0,un:15}
+  hno3:{n:'Ácido nítrico',liq:true,ce:0,un:15},
+  sma:{n:'Sulfato monoamónico',liq:false,ce:0,un:0}
 };
 const POT=['kno3','k2so4','kcl','mkp','nacl','zn','mn','h3po4'];
 function pot(id,cabs,lpcm,kg,d,cmH,ej){return{id,nombre:'Depósito potásico',cabezales:cabs,lpcm,capacidad:5000,principal:'kno3',kgPrincipal:kg,venturis:2,reparto:true,cmHabitual:cmH,ejCm:ej,productos:POT.map((p,i)=>({p,dosis:d[i]}))}}
@@ -1703,8 +1704,22 @@ function scrollRaton(el){if(!el)return;
 scrollRaton($('#tabs'));scrollRaton($('#cabs'));
 function banner(){return ''}
 
+const esSuelo=c=>!!(c&&c.suelo);
+const pctDe=(b,x)=>conc(b,x)/10;   // % en el depósito (12 % = 120 kg por 1000 L)
+function pctPon(b,p,pct){const pp=b.productos.find(x=>x.p===b.principal),x=b.productos.find(y=>y.p===p);if(!pp||!x||!(pct>=0))return;
+  if(p===b.principal){const antes=b.productos.map(y=>[y,conc(b,y)]);if(!(pp.dosis>0))pp.dosis=1;b.kgPrincipal=pct*10;for(const[y,cc]of antes)if(y!==pp)y.dosis=b.kgPrincipal>0?cc*pp.dosis/b.kgPrincipal:y.dosis}
+  else x.dosis=b.kgPrincipal>0?pct*10*pp.dosis/b.kgPrincipal:0}
+/* Cuentas en suelo: los L gastados del depósito, y de cada producto lo gastado y por hectárea */
+function sueloCuentas(b,c){const L=litros(b,c.id),ha=c.ha||0;let h=nivelHTML(b);
+  h+=`<div class="tbl"><table class="suelo"><thead><tr><th>Producto</th><th>%</th><th>Gastado</th><th>Por hectárea${ha?` <small>(÷ ${fmt(ha,ha%1?1:0)} ha)</small>`:''}</th></tr></thead><tbody>`;
+  for(const x of b.productos){const q=L==null?null:L*conc(b,x)/1000;
+    h+=`<tr data-sp="${x.p}"><td>${esc(prod(x.p).n)}</td><td>${fmt(pctDe(b,x),pctDe(b,x)%1?1:0)} %</td><td><b>${q==null?'—':fmt(q,1)+' '+uCant(x.p)}</b></td><td><b>${q==null||!ha?'—':fmt(q/ha,2)+' '+uCant(x.p)+'/ha'}</b></td></tr>`}
+  return h+`</tbody></table></div><div class="note">${L==null?'Pon los cm gastados del depósito.':`${fmt(st.reg.cm[b.id]||0,(st.reg.cm[b.id]||0)%1?1:0)} cm × ${fmt(b.lpcm,b.lpcm%1?1:0)} L/cm = <b>${fmt(L,0)} L</b> del depósito`}</div>`}
+function sumSuelo(c){const m=st.reg.m3[c.id],ha=c.ha||0,kg=kgDia(c.id),ps=Object.keys(kg).filter(p=>kg[p]>0.0001);
+  return `<div class="stat"><span>Agua por hectárea</span><b>${m==null||!ha?'—':fmt(m/ha,1)+' m³/ha'}</b><small>${m==null?'faltan los m³':fmt(m,1)+' m³ en '+fmt(ha,1)+' ha'}</small></div>
+  ${ps.map(p=>`<div class="stat"><span>${esc(pn(p))}</span><b>${ha?fmt(kg[p]/ha,2)+' '+uCant(p)+'/ha':fmt(kg[p],1)+' '+uCant(p)}</b><small>${fmt(kg[p],1)} ${uCant(p)} hoy</small></div>`).join('')}`}
 function vCuentas(){const c=cabById(st.cab);let h=banner()+`<div data-out="pend" style="display:contents">${pendHTML()}${lvlBanner()}</div>`;
-  h+=`<section class="summary" data-out="sum">${sumCuentas()}</section>`;
+  h+=`<section class="summary" data-out="sum">${esSuelo(c)?sumSuelo(c):sumCuentas()}</section>`;
   h+=`<div class="card"><div class="tank-h"><div><h3>Agua regada</h3><div class="sub">${esc(c.nombre)} · total del día</div></div>
     <div class="field big"><label for="m3_${c.id}">m³ del cabezal</label><div class="inp"><input id="m3_${c.id}" data-k="reg.m3.${c.id}" inputmode="decimal" autocomplete="off"${sugPh('m3',c.id)} value="${inVal(st.reg.m3[c.id])}"><span class="u">m³</span></div>${st.reg.m3[c.id]==null&&sugDe('m3',c.id)!=null?`<button class="btn sm" data-act="sug-m3" data-id="${c.id}">Igual que el ${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(sugDe('m3',c.id)))} m³</button>`:''}${(()=>{const V=vlvDia(c.id,st.fecha);return V&&V.hay&&V.m3>0.005?`<button class="btn sm" data-act="vlv-m3" data-id="${c.id}" data-v="${V.m3.toFixed(2)}">Contador del cabezal: ${fmt(V.m3,2)} m³ (${V.riegos.length} riegos) · usar</button>`:''})()}</div></div></div>`;
   for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
@@ -1713,7 +1728,7 @@ function vCuentas(){const c=cabById(st.cab);let h=banner()+`<div data-out="pend"
       ${b.cabezales.length>1?`<div class="m3o"><div class="note">Depósito compartido: para repartir lo gastado hacen falta los m³ de hoy de ${b.cabezales.length>2?'los otros cabezales':'el otro cabezal'}.</div><div class="frm">${b.cabezales.filter(x=>x!==c.id).map(x=>`<div class="field"><label for="m3o_${b.id}_${x}">m³ de ${esc(cabById(x).nombre)} hoy</label><div class="inp"><input id="m3o_${b.id}_${x}" data-k="reg.m3.${x}" inputmode="decimal" autocomplete="off"${sugPh('m3',x)} value="${inVal(st.reg.m3[x])}"><span class="u">m³</span></div></div>`).join('')}</div></div>`:''}
       <div data-out="lec_${b.id}">${lecturaHTML(b)}</div>
       <div class="row"><button class="btn" data-act="llenar-arriba" data-id="${b.id}">He llenado hasta arriba</button></div>
-      <div data-out="t_${b.id}">${tankDose(b,c)}</div></section>`}
+      <div data-out="t_${b.id}">${esSuelo(c)?sueloCuentas(b,c):tankDose(b,c)}</div></section>`}
   return h}
 function sumCuentas(){let ok=0,tot=0,peor=null;for(const b of bidonesDe(st.cab))for(const x of b.productos){if(!x.dosis)continue;const r=dosisReal(b,x,st.cab);if(r==null)continue;tot++;const e=estado(r,x.dosis);if(e.c==='ok')ok++;if(!peor||Math.abs(e.d)>Math.abs(peor.e.d))peor={x,e}}
   const u=unidades(st.cab);
@@ -2017,7 +2032,13 @@ function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b)
   if(cm*b.lpcm>b.capacidad*1.05)h+=`<div class="step" style="color:var(--bad)"><span>Pasas de la capacidad del depósito</span><b></b></div>`;
   return h+fila('agua','Agua (cm de depósito)',`${fmt(cm-liqCm,1)} cm`,'water')+`</div>`}
 
-function vReceta(){const c=cabById(st.cab);let h=`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
+function recetaSuelo(c){const ed=esGestor(),bs=bidonesDe(c.id);
+  return `<section class="card rsuelo"><div><h3>Lo que pide el técnico</h3><div class="sub">${esc(c.nombre)} · cultivo en suelo · las cuentas van por % y por hectárea</div></div>
+    <div class="field"><label for="ha_${c.id}">Hectáreas</label><div class="inp sm"><input id="ha_${c.id}" data-sha="${c.id}" inputmode="decimal" value="${inVal(c.ha)}" ${ed?'':'disabled'}><span class="u">ha</span></div></div>
+    ${bs.map(b=>`<div class="rs-dep"><h4>${esc(b.nombre)} <small>${fmt(b.lpcm,1)} L/cm</small></h4>${b.productos.map(x=>`<div class="field"><label for="pct_${b.id}_${x.p}">${esc(prod(x.p).n)}</label><div class="inp sm"><input id="pct_${b.id}_${x.p}" data-spct="${b.id}|${x.p}" inputmode="decimal" value="${inVal(+pctDe(b,x).toFixed(2))}" ${ed?'':'disabled'}><span class="u">%</span></div></div>`).join('')}
+      <div class="note">Cuenta: cm × ${fmt(b.lpcm,1)} × (% × 10) ÷ 1000 = ${b.productos.map(x=>uCant(x.p)==='L'?'litros':'kilos').filter((v,i,A)=>A.indexOf(v)===i).join(' o ')} · ÷ ${fmt(c.ha||0,1)} ha = por hectárea</div></div>`).join('')}
+    ${ed?'<div class="note">Cambia el % cuando lo diga el técnico y pulsa «Guardar» abajo.</div>':''}</section>`}
+function vReceta(){const c=cabById(st.cab);if(esSuelo(c))return recetaSuelo(c);let h=`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
   if(esGestor())h+=`<section class="card"><div class="field"><label for="rec_f">Este cambio de receta empieza el</label><div class="inp"><input type="date" id="rec_f" data-hr="rfecha" max="${hoy()}" value="${st.recFecha||hoy()}"></div></div><div class="note">Si os dieron la receta otro día y la metéis más tarde, pon aquí ese día: así sale bien en la hoja de cambios de receta.</div></section>`;
   for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}Capacidad ${fmt(b.capacidad,0)} L</div></div>
@@ -4038,6 +4059,16 @@ document.addEventListener('click',e=>{if(st.tab!=='aparatos')return;const b=e.ta
 /* Todos los bidones de la finca se llenan cuando hace falta (no a diario): se pasan una sola vez a ese modo cuando entra un administrador */
 async function migModoManual(){try{if(!esAdminU()||(st.cfg.mig||{}).modoManual||st.dirtyCfg)return;const f=c=>{for(const b of c.bidones||[])if(b.modo&&b.modo!=='manual')b.modo='manual';c.mig={...(c.mig||{}),modoManual:1}};
   f(st.cfg);f(st.savedCfg);await Store.setConfig(clone(st.savedCfg));if(['cuentas','cmbid','rellenar','hoy'].includes(st.tab))renderMain()}catch(e){console.warn('modo de los bidones',e)}}
+/* Metálicos: cabezal de cultivo en suelo dentro de Pinta Santos, con almacén común con Franco. Sus cuentas van por % del técnico y por hectárea:
+   gasto = cm × L/cm × (% × 10) ÷ 1000 → kg o L; ÷ hectáreas → por ha. Depósito potásico (31 L/cm, nitrato al 12 %) y depósito ácido (20 L/cm, fosfórico y sulfato monoamónico al 10 %). */
+async function migMetalicos(){try{if(!esAdminU()||(st.cfg.mig||{}).metalicos||st.dirtyCfg)return;
+  const f=c=>{c.mig={...(c.mig||{}),metalicos:1};if((c.cabezales||[]).some(x=>x.id==='met'))return;
+    c.cabezales.push({id:'met',nombre:'Metálicos',suelo:true,ha:6.7,ejM3:0,sectores:[]});
+    const fi=(c.fincas||[]).find(x=>x.id==='pinta');if(fi&&!fi.cabezales.includes('met'))fi.cabezales.push('met');
+    const al=(c.almacenes||[]).find(x=>x.id==='fra')||(c.almacenes||[]).find(x=>(x.cabezales||[]).includes('fra'));if(al&&!al.cabezales.includes('met')){al.cabezales.push('met');if(al.nombre==='Franco')al.nombre='Franco y Metálicos'}
+    c.bidones.push({id:'pot_met',nombre:'Depósito potásico',cabezales:['met'],lpcm:31,capacidad:5000,principal:'kno3',kgPrincipal:120,venturis:1,reparto:false,cmHabitual:null,modo:'manual',productos:[{p:'kno3',dosis:1}]},
+      {id:'aci_met',nombre:'Depósito ácido',cabezales:['met'],lpcm:20,capacidad:3000,principal:'h3po4',kgPrincipal:100,venturis:1,reparto:false,cmHabitual:null,modo:'manual',productos:[{p:'h3po4',dosis:1},{p:'sma',dosis:1}]})};
+  f(st.cfg);f(st.savedCfg);await Store.setConfig(clone(st.savedCfg));renderAll()}catch(e){console.warn('alta de los Metálicos',e)}}
 async function migNavesGas(){try{if(!esAdminU()||!cabById('gas')||(st.cfg.mig||{}).gasNaves||st.dirtyCfg)return;
   const l=await Store.listCol('incidencias',0),hechos={};for(const i of l)if(i.cab==='gas'&&!i.navMig&&i.nave>=1&&i.nave<=6){await Store.updCol('incidencias',i.id,{nave:7-i.nave,navMig:1});hechos[i.id]=7-i.nave}
   const enMem=()=>{for(const x of st.inc||[])if(hechos[x.id]!=null&&!x.navMig){x.nave=hechos[x.id];x.navMig=1}};enMem();setTimeout(enMem,4000);
@@ -5299,6 +5330,9 @@ function imprimirVista(){const f=fincaAct(),tn=(TABS.find(t=>t[0]===st.tab)||[,'
   piePrepara();try{window.print()}catch(e){toast('Aquí no se puede imprimir: ábrela en el navegador')}setTimeout(fin,4000)}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#imprimir');if(b)imprimirVista()});
 document.addEventListener('change',e=>{const t=e.target;if(t&&t.id==='gd_mp'){const n=t.value==='__nuevo';for(const id of['gd_mn','gd_ml']){const x=document.getElementById(id);if(x)x.style.display=n?'':'none'}if(n){const i=document.getElementById('gd_mn');if(i)i.focus()}}});
+document.addEventListener('change',e=>{const t=e.target;if(!t||!t.dataset)return;
+  if(t.dataset.spct){const[bi,p]=t.dataset.spct.split('|'),b=bid(bi),v=num(t.value);if(!b||v==null||v<0)return toast('Escribe el %');pctPon(b,p,v);st.dirtyCfg=true;setTimeout(()=>{renderSave();renderMain()},0)}
+  else if(t.dataset.sha){const c=cabById(t.dataset.sha),v=num(t.value);if(!c||!(v>0))return toast('Escribe las hectáreas');c.ha=v;st.dirtyCfg=true;setTimeout(()=>{renderSave();renderMain()},0)}});
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.matches&&d.matches('details[data-saj]'))st.sajOpen=d.open},true);
 async function recargarApp(){const b=$('#recargar');if((st.dirtyReg||st.dirtyCfg)&&!confirm('Tienes cambios sin guardar. Si recargas se pierden. ¿Recargar igualmente?'))return;
   if(b)b.classList.add('gira');try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await Promise.race([r.update(),new Promise(z=>setTimeout(z,2500))])}catch(e){}
@@ -7302,7 +7336,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c);splashLogo()}}catch(e){}
-  st.ready=true;loadFich();migNavesGas().then(migModoManual);if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
+  st.ready=true;loadFich();migNavesGas().then(migModoManual).then(migMetalicos);if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}
   const ap=/[#&]ap=([\w-]+)/.exec(location.hash);if(ap){history.replaceState(null,'',location.pathname+location.search);if(esAdminU()){cerrarSplash();st.tab='aparatos';st.apSel=ap[1];renderAll()}else toast('Este aparato solo lo ve el administrador')}})();
@@ -7313,7 +7347,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v207';
+window.APP_V='abonado-v208';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
