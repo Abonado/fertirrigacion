@@ -368,7 +368,7 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .saj{display:grid;gap:0}.saj-f{display:grid;grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.saj-f:first-child{border-top:0}.saj-f .field{margin:0}.saj-f .inp.sm{width:104px}
 @media (max-width:520px){.saj-f{grid-template-columns:1fr 1fr}.saj-f>b{grid-column:1/-1}.stq{font-size:22px}.stt td,.stt th{padding-left:4px;padding-right:4px}.stt th{white-space:normal}.stt td.n b{font-size:.95rem}.gct td b{font-size:15px}.gct td,.gct th{padding-left:6px;padding-right:6px}.sts{font-size:12.5px;white-space:normal}.stg{font-size:16px}.stt td.n .pill{white-space:normal}}
 @media print{.stq{font-size:16pt}.stg{font-size:12pt}.stt td,.gct td{padding:5px 6px}.stt th,.gct th{padding:0 6px 5px}}
-.gct td.n{min-width:120px}.stt td.n b,.gct td.n b{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
+.gct td.n{min-width:120px}.gct .gce{width:110px;margin-left:auto}@media (max-width:520px){.gct .gce{width:82px}.gct .gce input{min-width:0}.gct td.n{min-width:96px}}.gcorr{color:var(--warn-ink,#9a6700)!important}.stt th .lnk{margin-left:8px;font-size:11px;text-transform:none;letter-spacing:0}.gc-ayuda{margin:6px 0 10px}.stt td.n b,.gct td.n b{hyphens:auto;-webkit-hyphens:auto;overflow-wrap:break-word}
 .srow{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
 .srow:first-child{border-top:0}
 .yo{min-height:42px;display:flex;align-items:center;padding:0 12px;border-radius:8px;background:var(--ok-bg);color:var(--ok);font-size:16px}
@@ -2439,10 +2439,10 @@ async function autoAlmacen(b,L){const mods=[],borrar=[];const alm=almDeCab(b.cab
   if(modoDep(b)==='diario'){cm=st.reg.cm[b.id];F=sigD(L);if((st.llen||[]).some(e=>e.bidon===b.id&&e.tipo==='llenado'&&e.fecha===F))cm=null}
   else if(modoDep(b)==='vacio'){const a=cmAuto(b);if(a&&a.relleno){cm=a.prev.raw;F=L;if((st.llen||[]).some(e=>e.bidon===b.id&&e.tipo==='llenado'&&e.fecha>a.prev.fecha&&e.fecha<=L))cm=null}}
   const nuevos={};if(cm>0)for(const x of b.productos){if(!x.dosis)continue;const q=+(cm*b.lpcm*conc(b,x)/1000).toFixed(2);if(q>0)nuevos[x.p]=q}
-  for(const m of ya)if(!(m.p in nuevos)){try{await Store.delCol('almacen',m.id)}catch(e){}}
+  for(const m of ya)if(!(m.p in nuevos)&&!m.editado){try{await Store.delCol('almacen',m.id)}catch(e){}}
   for(const[p,q]of Object.entries(nuevos)){const id=`auto_${b.id}_${L}_${p}`,m={ts:F+'T06:00:00.000Z',fecha:F,tipo:'salida',alm,p,qty:-q,origen:b.id,auto:true,autoDe:L,autoCm:cm,por:yoNombre(),porEmail:miEmail()};
-    const old=ya.find(x=>x.id===id);if(old&&old.qty===m.qty)continue;try{await Store.setCol('almacen',id,m);st.alm=(st.alm||[]).filter(x=>x.id!==id);st.alm.unshift({...m,id})}catch(e){console.warn('auto almacén',e)}}
-  st.alm=(st.alm||[]).filter(x=>!(ya.some(m=>m.id===x.id)&&!(x.p in nuevos)));if(Object.keys(nuevos).length)pushStock(Object.keys(nuevos),alm)}
+    const old=ya.find(x=>x.id===id);if(old&&(old.qty===m.qty||old.editado))continue;try{await Store.setCol('almacen',id,m);st.alm=(st.alm||[]).filter(x=>x.id!==id);st.alm.unshift({...m,id})}catch(e){console.warn('auto almacén',e)}}
+  st.alm=(st.alm||[]).filter(x=>!(ya.some(m=>m.id===x.id)&&!(x.p in nuevos)&&!x.editado));if(Object.keys(nuevos).length)pushStock(Object.keys(nuevos),alm)}
 /* cm gastados hoy = nivel de partida − nivel de hoy. La partida es la lectura anterior o, si después hubo un llenado o una medida
    (el mismo día de la lectura se entiende que fue después de leer), lo que quedó tras ese llenado/medida. Lo de hoy se entiende después de leer. */
 function cmAuto(b){const p=lecturaAnt(b,false),hr=st.reg.niv&&st.reg.niv[b.id];if(!p||hr==null)return null;const h=aNivel(b,hr);let base={fecha:p.fecha,v:p.v,raw:p.raw,tras:null},ul=null;
@@ -2616,19 +2616,40 @@ st.almPer=st.almPer||'mes';
 /* Lo gastado según las cuentas del día, por cabezal (zona), desde una fecha hasta hoy */
 const almDesde=per=>{if(per==='mes')return hoy().slice(0,7)+'-01';const d=new Date();d.setDate(d.getDate()-per+1);return isoD(d)};
 const almPerTxt=per=>per==='mes'?'en '+new Date().toLocaleDateString('es-ES',{month:'long',year:'numeric'}):'en los últimos '+per+' días';
-function gastoCabs(a,desde){const al=almById(a),cabs=al?al.cabezales.filter(c=>cabsVis().some(x=>x.id===c)):[],kg={},dias={};if(st.hist===null){loadHist();return null}
+function gastoCabs(a,desde,sinCorr){const al=almById(a),cabs=al?al.cabezales.filter(c=>cabsVis().some(x=>x.id===c)):[],kg={},dias={};if(st.hist===null){loadHist();return null}
   const regs=(st.hist||[]).filter(r=>r.fecha>=desde&&r.fecha<=hoy());
   for(const c of cabs){kg[c]={};dias[c]=0;for(const r of regs){if(!r.m3||r.m3[c]==null)continue;dias[c]++;const k=kgCab(r,c);for(const p in k)kg[c][p]=(kg[c][p]||0)+k[p]}}
+  if(!sinCorr)for(const m of st.alm||[])if(m.tipo==='correccion'&&m.cab in kg&&almDeMov(m)===a&&m.fecha>=desde&&m.fecha<=hoy())kg[m.cab][m.p]=Math.max(0,(kg[m.cab][m.p]||0)-m.qty);
   const tot=p=>cabs.reduce((x,c)=>x+(kg[c][p]||0),0);return{cabs,kg,dias,tot}}
+const corrDe=(a,p,c,mes)=>(st.alm||[]).find(m=>m.tipo==='correccion'&&m.p===p&&m.cab===c&&m.mes===mes&&almDeMov(m)===a);
+async function gastoCorregir(){const a=almAct(),mes=hoy().slice(0,7),B=gastoCabs(a,almDesde('mes'),true),G=gastoCabs(a,almDesde('mes'));if(!B||!G)return;let n=0;
+  try{for(const el of document.querySelectorAll('[data-gce]')){const[c,p]=el.dataset.gce.split('|'),v=num(el.value);if(v==null||v<0)continue;
+    const ahora=G.kg[c][p]||0;if(Math.abs(v-ahora)<0.05)continue;const base=B.kg[c][p]||0,dif=+(v-base).toFixed(3),old=corrDe(a,p,c,mes);
+    const m={ts:new Date().toISOString(),fecha:hoy(),tipo:'correccion',alm:a,p,cab:c,mes,qty:-dif,base:+base.toFixed(3),nuevo:v,por:yoNombre(),porEmail:miEmail()};
+    if(old&&Math.abs(dif)<0.001){await Store.delCol('almacen',old.id);st.alm=st.alm.filter(x=>x.id!==old.id)}
+    else if(old){await Store.updCol('almacen',old.id,m);Object.assign(old,m)}
+    else if(Math.abs(dif)>=0.001){const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id})}
+    n++}
+  st.gcEdit=false;renderMain();toast(n?`Gasto corregido (${n})`:'No has cambiado nada')}catch(err){toast(errMsg(err))}}
+/* Editar la cantidad de un movimiento (entrada, salida o ajuste) */
+async function mvGuardar(id){const m=st.alm.find(x=>x.id===id),el=document.getElementById('mvq_'+id);if(!m||!el)return;const v=num(el.value);
+  if(v==null||(m.tipo!=='ajuste'&&!(v>0))){toast('Escribe la cantidad');return}
+  const q=+(m.tipo==='entrada'?v:m.tipo==='salida'?-v:v).toFixed(3);if(Math.abs(q-m.qty)<0.0005){st.mvEdit=null;renderMain();return}
+  const patch={qty:q,editado:{por:yoNombre(),porEmail:miEmail(),ts:new Date().toISOString(),antes:m.qty}};
+  try{await Store.updCol('almacen',id,patch);Object.assign(m,patch);st.mvEdit=null;renderMain();toast('Movimiento corregido')}catch(err){toast(errMsg(err))}}
 const cantTxt=(p,v)=>`${fmt(v,1)} <span class="u">${uCant(p)}</span>`;
 /* Gasto por cabezal: una columna por zona y el total · se imprime en la hoja del almacén */
-function consumoCabHTML(a){const per=st.almPer,G=gastoCabs(a,almDesde(per));if(!G)return '<section class="card"><div class="note">Cargando las cuentas…</div></section>';const{cabs,kg,dias,tot}=G,varias=cabs.length>1;
-  const ps=Object.keys(st.cfg.productos).filter(p=>tot(p)>0.0001).sort((x,y)=>tot(y)-tot(x));
+function consumoCabHTML(a){const per=st.almPer,G=gastoCabs(a,almDesde(per)),ed=st.gcEdit&&per==='mes'&&esGestor();if(!G)return '<section class="card"><div class="note">Cargando las cuentas…</div></section>';const{cabs,kg,dias,tot}=G,varias=cabs.length>1&&!ed;
+  const ps=Object.keys(st.cfg.productos).filter(p=>tot(p)>0.0001||ed).sort((x,y)=>tot(y)-tot(x)||pn(x).localeCompare(pn(y)));
+  const corr=(c,p)=>per==='mes'&&corrDe(a,p,c,hoy().slice(0,7)),celda=(c,p)=>{const v=kg[c][p]||0;
+    if(ed)return `<td><div class="inp sm gce"><input data-gce="${c}|${p}" aria-label="${esc(pn(p)+' · '+cabNombre(c))}" inputmode="decimal" value="${v>0.0001?inVal(+v.toFixed(1)):''}" placeholder="0"><span class="u">${uCant(p)}</span></div></td>`;
+    return `<td>${v>0.0001?`<b>${cantTxt(p,v)}</b>${cabs.length>1?`<small>${fmt(v*100/tot(p),0)} %</small>`:''}`:'—'}${corr(c,p)?'<small class="gcorr">corregido</small>':''}</td>`};
   return `<section class="card gcab"><div class="tank-h"><div><h3>Gasto por cabezal</h3><div class="sub">Lo que ha gastado cada zona según las cuentas del día, ${esc(almPerTxt(per))}</div></div>
-    <div class="row">${[[7,'7 días'],[30,'30 días'],['mes','Este mes']].map(([k,t])=>`<button class="chip" data-aper="${k}" aria-pressed="${String(per)===String(k)}">${t}</button>`).join('')}</div></div>
+    <div class="row">${[[7,'7 días'],[30,'30 días'],['mes','Este mes']].map(([k,t])=>`<button class="chip" data-aper="${k}" aria-pressed="${String(per)===String(k)}">${t}</button>`).join('')}${esGestor()&&!ed?`<button class="btn noprint" data-act="gc-edit">Corregir gasto</button>`:''}</div></div>
+    ${ed?`<div class="note gc-ayuda">Escribe lo que de verdad ha gastado cada zona este mes. Lo que queda en el almacén sube o baja a la vez.</div>`:''}
     ${ps.length?`<div class="tablewrap" style="overflow-x:auto"><table class="gct"><thead><tr><th class="n">Abono</th>${cabs.map(c=>`<th data-gc="${c}">${esc(cabNombre(c))}<small>${dias[c]} ${dias[c]===1?'día':'días'}</small></th>`).join('')}${varias?'<th class="t">Total</th>':''}</tr></thead>
-      <tbody>${ps.map(p=>`<tr data-gp="${p}"><td class="n"><b>${esc(pn(p))}</b></td>${cabs.map(c=>`<td>${(kg[c][p]||0)>0.0001?`<b>${cantTxt(p,kg[c][p])}</b>${varias?`<small>${fmt(kg[c][p]*100/tot(p),0)} %</small>`:''}`:'—'}</td>`).join('')}${varias?`<td class="t"><b>${cantTxt(p,tot(p))}</b>${sacoDe(p)&&tot(p)>=sacoDe(p)?`<small>${sacosTxt(p,tot(p))}</small>`:''}</td>`:''}</tr>`).join('')}</tbody></table></div>`
-      :'<div class="note">Sin cuentas guardadas en este periodo.</div>'}</section>`}
+      <tbody>${ps.map(p=>`<tr data-gp="${p}"><td class="n"><b>${esc(pn(p))}</b></td>${cabs.map(c=>celda(c,p)).join('')}${varias?`<td class="t"><b>${cantTxt(p,tot(p))}</b>${sacoDe(p)&&tot(p)>=sacoDe(p)?`<small>${sacosTxt(p,tot(p))}</small>`:''}</td>`:''}</tr>`).join('')}</tbody></table></div>`
+      :'<div class="note">Sin cuentas guardadas en este periodo.</div>'}${ed?`<div class="row noprint" style="margin-top:12px"><button class="btn pri" data-act="gc-save">Guardar correcciones</button><button class="btn" data-act="gc-cancel">Cancelar</button></div>`:''}</section>`}
 /* Stock: abono · lo que queda (kilos o litros en grande, con los sacos al lado) · lo gastado este mes. Lo urgente arriba. */
 function stockHTML(ps,aid){const G=gastoCabs(aid,almDesde('mes'));
   const R=ps.map(p=>{const r={...stockRow(p)},g=G?G.tot(p):null;if(r.s<=0.001&&r.s>=-0.001&&!(r.c>0)&&r.min==null&&!(g>0)){r.k='nd';r.t='Sin stock'}return{p,r,g}}),ord={bad:0,warn:1,ok:2,nd:3};
@@ -2640,7 +2661,7 @@ function stockHTML(ps,aid){const G=gastoCabs(aid,almDesde('mes'));
   const nP=R.filter(x=>x.r.k==='bad').length,nW=R.filter(x=>x.r.k==='warn').length,mes=new Date().toLocaleDateString('es-ES',{month:'long'});
   return `<section class="card stock"><div class="tank-h"><div><h3>Stock</h3><div class="sub">Lo que queda en el almacén y lo gastado en ${esc(mes)} según las cuentas · lo urgente arriba</div></div>
     <div class="row">${nP?`<span class="pill bad">${nP} para pedir</span>`:''}${nW?`<span class="pill warn">${nW} con pocos días</span>`:''}${!nP&&!nW?'<span class="pill ok">Todo bien</span>':''}</div></div>
-    <div class="tablewrap" style="overflow-x:auto"><table class="stt"><thead><tr><th>Abono</th><th>Queda</th><th class="g">Gastado en ${esc(mes)}</th></tr></thead><tbody>${R.filter(x=>x.r.k!=='nd').map(fila).join('')}</tbody></table></div>${R.some(x=>x.r.k==='nd')?`<p class="note stnd">Sin existencias ni gasto este mes: ${R.filter(x=>x.r.k==='nd').map(x=>esc(pn(x.p))).join(', ')}</p>`:''}</section>`}
+    <div class="tablewrap" style="overflow-x:auto"><table class="stt"><thead><tr><th>Abono</th><th>Queda</th><th class="g">Gastado en ${esc(mes)}${esGestor()?`<button class="lnk noprint" data-act="gc-edit">Corregir</button>`:''}</th></tr></thead><tbody>${R.filter(x=>x.r.k!=='nd').map(fila).join('')}</tbody></table></div>${R.some(x=>x.r.k==='nd')?`<p class="note stnd">Sin existencias ni gasto este mes: ${R.filter(x=>x.r.k==='nd').map(x=>esc(pn(x.p))).join(', ')}</p>`:''}</section>`}
 /* Aparte: el mínimo para pedir y el tamaño del saco de cada abono */
 function stockAjHTML(ps,aid){return `<section class="card noprint saj-c"><details ${st.sajOpen?'open':''} data-saj><summary><h3 style="display:inline">Mínimo y tamaño del saco</h3><div class="sub">Cuándo avisar para pedir y de cuántos kilos es cada saco</div></summary>
   <div class="saj">${ps.map(p=>{const z=sacoDe(p),mn=minStock(p,aid);return `<div class="saj-f" data-saj="${p}"><b>${esc(pn(p))}</b>
@@ -2671,9 +2692,9 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
     <div class="row"><span class="note" data-out="ajn">En la app: ${fmt(stockDe(a.p,aid),1)} ${uCant(a.p)}${sacosTxt(a.p,stockDe(a.p,aid))?' ('+sacosTxt(a.p,stockDe(a.p,aid))+')':''}${a.real!=null?' · diferencia '+(a.real-stockDe(a.p,aid)>=0?'+':'')+fmt(a.real-stockDe(a.p,aid),1)+' '+uCant(a.p):''}</span><button class="btn pri" data-act="aj-save">Ajustar</button></div></section>`;
   const mv=movA.slice().sort((x,y)=>x.ts<y.ts?1:-1).slice(0,60);
   h+=`<section class="card noprint"><div><h3>Movimientos</h3><div class="sub">Entradas, salidas por llenado y ajustes</div></div>`+(mv.length?`<div class="msgs">`+mv.map(m=>{const o=m.origen&&bid(m.origen);
-    return `<div class="msg"><div class="h"><span class="pill ${m.tipo==='entrada'?'ok':m.tipo==='salida'?'nd':'warn'}">${m.tipo}</span><b>${m.qty>=0?'+':'−'}${fmt(Math.abs(m.qty),1)} ${uCant(m.p)}</b>${sacosTxt(m.p,Math.abs(m.qty))&&Math.abs(m.qty)>=sacoDe(m.p)?`<span>${sacosTxt(m.p,Math.abs(m.qty))}</span>`:''}<span>${esc(pn(m.p))}</span><span>${fFecha(m.fecha)}</span></div>
-    ${m.prov||m.alb?`<p>${esc([m.prov,m.alb?'Albarán '+m.alb:''].filter(Boolean).join(' · '))}</p>`:''}${m.auto?`<p class="note">Llenado deducido de las cuentas del ${esc(fCorta(m.autoDe))} (${fmt(m.autoCm,1)} cm)</p>`:''}${o?`<p class="note">${esc(o.nombre)} · ${esc(o.cabezales.map(cabNombre).join(' + '))}</p>`:''}${adjHTML(m.adjuntos,false)}
-    <div class="row">${!esGestor()&&m.porEmail!==miEmail()?'':st.confirmMv===m.id?`<span class="note">¿Borrar movimiento?</span><button class="btn danger" data-act="mv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="mv-del-no">Cancelar</button>`:`<button class="btn" data-act="mv-del" data-id="${m.id}">Borrar</button>`}</div></div>`}).join('')+`</div>`:`<div class="note">Sin movimientos.</div>`)+`</section>`;
+    return `<div class="msg"><div class="h"><span class="pill ${m.tipo==='entrada'?'ok':m.tipo==='salida'?'nd':'warn'}">${m.tipo==='correccion'?'corrección':m.tipo}</span><b>${m.qty>=0?'+':'−'}${fmt(Math.abs(m.qty),1)} ${uCant(m.p)}</b>${sacosTxt(m.p,Math.abs(m.qty))&&Math.abs(m.qty)>=sacoDe(m.p)?`<span>${sacosTxt(m.p,Math.abs(m.qty))}</span>`:''}<span>${esc(pn(m.p))}</span><span>${fFecha(m.fecha)}</span></div>
+    ${m.prov||m.alb?`<p>${esc([m.prov,m.alb?'Albarán '+m.alb:''].filter(Boolean).join(' · '))}</p>`:''}${m.tipo==='correccion'?`<p class="note">Gasto de ${esc(cabNombre(m.cab))} en ${esc(new Date(m.mes+'-15').toLocaleDateString('es-ES',{month:'long'}))}: de ${fmt(m.base,1)} a ${fmt(m.nuevo,1)} ${uCant(m.p)}</p>`:''}${m.editado?`<p class="note">Corregido por ${esc(m.editado.por||'')}: antes ${fmt(Math.abs(m.editado.antes),1)} ${uCant(m.p)}</p>`:''}${m.auto?`<p class="note">Llenado deducido de las cuentas del ${esc(fCorta(m.autoDe))} (${fmt(m.autoCm,1)} cm)</p>`:''}${o?`<p class="note">${esc(o.nombre)} · ${esc(o.cabezales.map(cabNombre).join(' + '))}</p>`:''}${adjHTML(m.adjuntos,false)}
+    <div class="row">${!esGestor()&&m.porEmail!==miEmail()?'':st.mvEdit===m.id?`<div class="inp sm"><input id="mvq_${m.id}" inputmode="decimal" value="${inVal(+(m.tipo==='ajuste'?m.qty:Math.abs(m.qty)).toFixed(3))}"><span class="u">${uCant(m.p)}</span></div><button class="btn pri" data-act="mv-ok" data-id="${m.id}">Guardar</button><button class="btn" data-act="mv-cancel">Cancelar</button>`:st.confirmMv===m.id?`<span class="note">¿Borrar movimiento?</span><button class="btn danger" data-act="mv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="mv-del-no">Cancelar</button>`:`${m.tipo!=='correccion'?`<button class="btn" data-act="mv-edit" data-id="${m.id}">Editar</button>`:''}<button class="btn" data-act="mv-del" data-id="${m.id}">Borrar</button>`}</div></div>`}).join('')+`</div>`:`<div class="note">Sin movimientos.</div>`)+`</section>`;
   return h}
 async function entSave(){const e=st.ent;if(!(e.qty>0)){toast('Escribe la cantidad');return}
   const m={ts:new Date().toISOString(),fecha:e.fecha||hoy(),tipo:'entrada',alm:almAct(),por:yoNombre(),porEmail:miEmail(),p:e.p,qty:e.qty,prov:e.prov.trim(),alb:e.alb.trim(),adjuntos:e.adj.filter(a=>!a.tmp)};
@@ -5338,7 +5359,13 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='ent-save')entSave();
   else if(t.dataset.act==='alm-print')imprimirVista();
   else if(t.dataset.act==='aj-save')ajSave();
-  else if(t.dataset.act==='mv-del'){st.confirmMv=t.dataset.id;renderMain()}
+  else if(t.dataset.act==='mv-del'){st.confirmMv=t.dataset.id;st.mvEdit=null;renderMain()}
+  else if(t.dataset.act==='mv-edit'){st.mvEdit=t.dataset.id;st.confirmMv=null;renderMain();const i=document.getElementById('mvq_'+t.dataset.id);if(i){i.focus();i.select()}}
+  else if(t.dataset.act==='mv-cancel'){st.mvEdit=null;renderMain()}
+  else if(t.dataset.act==='mv-ok')mvGuardar(t.dataset.id);
+  else if(t.dataset.act==='gc-edit'){st.almPer='mes';st.gcEdit=true;renderMain();const g=document.querySelector('.gcab');if(g)g.scrollIntoView({behavior:'smooth',block:'start'})}
+  else if(t.dataset.act==='gc-cancel'){st.gcEdit=false;renderMain()}
+  else if(t.dataset.act==='gc-save')gastoCorregir();
   else if(t.dataset.act==='mv-del-no'){st.confirmMv=null;renderMain()}
   else if(t.dataset.act==='mv-del-yes')mvDel(t.dataset.id);
   else if(t.dataset.act==='inf-xlsx')exportXlsx();
@@ -7203,7 +7230,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v202';
+window.APP_V='abonado-v203';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
