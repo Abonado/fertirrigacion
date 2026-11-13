@@ -75,7 +75,7 @@ async def main():
         errores = [d for d in docs if d['tipo'] == 'error']; print('errores', errores)
         assert len(errores) == 1 and errores[0]['txt'] == 'fallo de prueba 143' and errores[0]['de'] == 'juanjo.serrano3@gmail.com' and errores[0]['v'] == 'abonado-v213' and errores[0]['tab'] == 'buzon'
         errs.clear()   # el error de prueba lo ve también Playwright: es lo esperado
-        await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
+        await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(1000); await pg.goto("http://localhost:8776/"); await pg.wait_for_timeout(800)   # goto, no reload: al cerrar sesión la app puede estar navegando y reload choca
         await pg.fill('#nb_em', 'campo@demo.es'); await pg.fill('#nb_pw', 'campo123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash()"); await pg.wait_for_timeout(300)
         assert 'cbuzon' in await pg.evaluate("TABS.map(t=>t[0]).filter(t=>VIEWS[t]&&tabPermitida(t))")
@@ -92,7 +92,7 @@ async def main():
         assert len(f) == 1 and f[0]['de'] == 'campo@demo.es' and f[0]['tab'] == 'cajustes' and f[0]['txt'] == 'Al fichar se queda pensando'
         assert set(f[0]) <= {'tipo', 'txt', 'donde', 'de', 'nombre', 'v', 'tab', 'disp', 'ts', 'mod'}, 'solo los campos que dejan las reglas'
         # el administrador lo ve y lo marca como visto
-        await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
+        await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(1000); await pg.goto("http://localhost:8776/"); await pg.wait_for_timeout(800)   # goto, no reload: al cerrar sesión la app puede estar navegando y reload choca
         await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
         await pg.evaluate("cerrarSplash();st.bz=null;st.tab='buzon';renderAll()"); await pg.wait_for_timeout(800)
         t = await pg.text_content('#main'); assert 'Al fichar se queda pensando' in t and 'fallo de prueba 143' in t and 'Sin ver (2)' in t, t[-600:]
