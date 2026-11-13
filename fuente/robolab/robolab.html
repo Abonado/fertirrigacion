@@ -261,7 +261,7 @@ body.clean #guide, body.clean #tools, body.clean #tray, body.clean #card, body.c
 
 <div id="brand">
   <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="1.8"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/><circle cx="12" cy="12" r="2.2" fill="var(--accent)" stroke="none"/></svg></div>
-  <div><b>RoboLab <span>XXI</span></b><small id="brandSub">Laboratorio de electrónica</small></div>
+  <div><b>RoboLab <span>XXI</span></b><small>Laboratorio de electrónica</small></div>
 </div>
 
 <div id="topright">
@@ -326,6 +326,17 @@ body.clean #guide, body.clean #tools, body.clean #tray, body.clean #card, body.c
 <div id="toast" hidden></div>
 <div id="confirm" hidden><div class="panel"><h4 id="cfTitle"></h4><p id="cfText"></p><div class="row"><button class="ghost" id="cfNo">Cancelar</button><button class="ghost danger" id="cfYes">Sí, vaciar</button></div></div></div>
 
+<script>/* Agro Fly: RoboLab dentro de la app */
+window.EN_APP=(()=>{try{return window.parent!==window&&typeof parent.iaFotoJson==='function'}catch(e){return false}})();
+window.IA_N=window.EN_APP?'la IA':'Claude';
+if(window.EN_APP){
+  /* con la pestaña escondida no se dibuja (no gasta batería); se mira cada medio segundo si vuelve */
+  const raf=window.requestAnimationFrame.bind(window);
+  window.requestAnimationFrame=cb=>window.__pausa?setTimeout(()=>window.requestAnimationFrame(cb),500):raf(cb);
+  document.documentElement.classList.add('enapp');
+  addEventListener('DOMContentLoaded',()=>{const b=document.querySelector('#brand small');if(b)b.textContent='Laboratorio · Agro Fly'});
+}
+</script>
 <script type="importmap">
 {"imports":{"three":"./three/three.module.min.js","three/addons/controls/OrbitControls.js":"./three/OrbitControls.js","three/addons/environments/RoomEnvironment.js":"./three/RoomEnvironment.js"}}
 </script>
@@ -833,9 +844,6 @@ M({id:'vibrador',motor:true,name:'Motor de vibración',short:'como el del móvil
 M({id:'bomba',motor:true,name:'Bomba de agua',short:'mini 5 V',w:34,d:26,noPcb:true,color:'#000',rows2:motorPins(11),style:'female',
   info:{sub:'Mueve agua por un tubo',specs:[['Tensión','3–5 V'],['Caudal','~1,5 L/min']],text:'Para riego automático o fuentes. Se maneja con un relé o un MOSFET.'},
   decor:[['cx',8,24,0,-3,0,0x151515],['cz',2,8,10,-11,6,0x151515],['cx',2,6,-15,-3,6,0x151515],['spin',3,12.5,-3,8,'x',0x333333]]});
-M({id:'ev12',motor:true,valve:true,name:'Electroválvula 12 V',short:'riego 3/4"',w:44,d:34,noPcb:true,color:'#000',rows2:motorPins(14),style:'female',
-  info:{sub:'Abre y cierra el agua de un sector de riego',specs:[['Tensión','12 V DC'],['Rosca','3/4"']],text:'Es la que abre el riego de cada sector. Nunca va directa a un pin: se maneja con un relé (o un MOSFET) y una fuente de 12 V. Da igual qué cable vaya a cada borne.'},
-  decor:[['cx',4.5,42,0,-6,0,0xc9a13a,'m'],['b',16,11,14,0,-6,0,0xc9a13a,'m'],['c',6.5,13,0,-6,11,0x151515],['c',2.2,3,0,-6,24,0xd9dde1,'m']]});
 M({id:'stepper',gen:true,anim:'spin',spinSpeed:.6,name:'Motor paso a paso',short:'28BYJ-48 + ULN2003',w:36,d:34,color:'#1f6b3a',pins:'IN1:s IN2:s IN3:s IN4:s +:v −:g',
   info:{sub:'Gira a pasos exactos',specs:[['Pasos','2048 por vuelta'],['Tensión','5 V']],text:'Para relojes, cámaras que giran y máquinas precisas. Viene con su placa driver ULN2003.'},
   decor:[['b',10,3,19,0,-4,0,0x151515],['led',-12,-12],['led',-12,-8],['led',-12,-4],['led',-12,0],['c',14,19,0,-32,-1.6,0xc9ced3,'m'],['c',4.5,1.5,0,-32,17.4,0xd9dde1,'m'],['spin',2.5,0,-32,20,'y',0xf2c230]],
@@ -1184,6 +1192,9 @@ function fillThumbs(){ const job=++thumbJob; const imgs=[...document.querySelect
   const step=()=>{ if(job!==thumbJob) return; const t0=performance.now(); while(imgs.length&&performance.now()-t0<30){const im=imgs.shift(); const u=thumbFor(im.dataset.id); if(u&&u!=='none') im.src=u; im.removeAttribute('data-id')} if(imgs.length) setTimeout(step,16) }; step() }
 
 /* ---------- interfaz: bandeja ---------- */
+M({id:'ev12',motor:true,valve:true,name:'Electroválvula 12 V',short:'riego 3/4"',w:44,d:34,noPcb:true,color:'#000',rows2:motorPins(14),style:'female',
+  info:{sub:'Abre y cierra el agua de un sector de riego',specs:[['Tensión','12 V DC'],['Rosca','3/4"']],text:'Es la que abre el riego de cada sector. Nunca va directa a un pin: se maneja con un relé (o un MOSFET) y una fuente de 12 V. Da igual qué cable vaya a cada borne.'},
+  decor:[['cx',4.5,42,0,-6,0,0xc9a13a,'m'],['b',16,11,14,0,-6,0,0xc9a13a,'m'],['c',6.5,13,0,-6,11,0x151515],['c',2.2,3,0,-6,24,0xd9dde1,'m']]});
 const EXAMPLES=[
   {id:'af_suelo',name:'Agro Fly · Nodo de suelo',text:'ESP32 que mide la humedad y la temperatura del suelo de una nave y lo manda por radio LoRa a la pasarela.',
    parts:[['esp32',-60,0,0],['suelo',25,-70,0],['ds18b20',75,-45,0],['lora',50,45,0]],
@@ -1902,9 +1913,6 @@ function fixPlan(pl){
 
 /* Claude (si el visor lo permite) elige las piezas; si no, recetas locales */
 let sampleApi=null;
-const EN_APP=(()=>{ try{ return window.parent!==window && typeof parent.iaFotoJson==='function' }catch(e){ return false } })();
-const IA_N=EN_APP?'la IA':'Claude';
-if(EN_APP){ document.documentElement.classList.add('enapp'); const b=document.getElementById('brandSub'); if(b) b.textContent='Laboratorio · Agro Fly' }
 (async()=>{ try{ if(window.claude?.use){ sampleApi=await window.claude.use('sample'); }
   else if(EN_APP&&parent.iaModo&&parent.iaModo()){ sampleApi={json:(p,o)=>new Promise((ok,ko)=>{ o?.signal?.addEventListener('abort',()=>ko({code:'cancelled'})); parent.iaFotoJson(p,[]).then(ok,ko) })} } }catch(e){ sampleApi=null } renderAskSrc() })();
 function catalogText(){
@@ -2106,7 +2114,6 @@ $('#btnBig').onclick=()=>{ const on=document.body.classList.toggle('clean'); $('
 
 /* ---------- bucle ---------- */
 function frame(now){
-  if(window.__pausa){ setTimeout(()=>requestAnimationFrame(frame),500); return }
   requestAnimationFrame(frame);
   if(fly){const k=Math.min(1,(now-fly.t0)/700), e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2; controls.target.lerpVectors(fly.ft,fly.tt,e); camera.position.lerpVectors(fly.fp,fly.tp,e); if(k>=1) fly=null}
   for(const p of parts){

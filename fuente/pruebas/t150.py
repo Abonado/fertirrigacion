@@ -33,14 +33,14 @@ async def main():
         # marco encima del hueco de la pestaña
         r = await pg.evaluate("(()=>{const a=$('#rlslot').getBoundingClientRect(),b=$('#rlwrap').getBoundingClientRect();return [Math.round(a.top-b.top),Math.round(a.width-b.width),Math.round(a.height)]})()")
         assert r[0] == 0 and r[1] == 0 and r[2] >= 460, r
-        assert await f.evaluate("document.getElementById('brandSub').textContent") == 'Laboratorio · Agro Fly'
+        assert await f.evaluate("document.querySelector('#brand small').textContent") == 'Laboratorio · Agro Fly'
         # mesa nueva: sale el nodo de suelo de Agro Fly; en Ejemplos están los cuatro
         await f.evaluate("document.querySelector('#tabs button[data-t=\"ex\"]').click()"); await pg.wait_for_timeout(200)
         ej = await f.evaluate("[...document.querySelectorAll('#items .tray-item b')].map(x=>x.textContent)")
         assert ej[:4] == ['Agro Fly · Nodo de suelo', 'Agro Fly · Clima de la nave', 'Agro Fly · Electroválvula de un sector', 'Agro Fly · Nivel de bidón'], ej
         res = {}
         for i in range(4):
-            await f.evaluate(f"document.querySelectorAll('#items .tray-item')[{i}].click()"); await pg.wait_for_timeout(500)
+            await f.evaluate(f"document.querySelectorAll('#items .tray-item')[{i}].click()"); await pg.wait_for_timeout(1200)
             n = await f.evaluate("JSON.parse(localStorage.getItem('robolab-xxi')||'{}')")
             await f.evaluate("document.getElementById('play').click()"); await pg.wait_for_timeout(500)
             mon = await f.evaluate("[...document.querySelectorAll('#mbody .item')].map(x=>x.className.replace('item','').trim()+': '+x.querySelector('b').textContent)")
