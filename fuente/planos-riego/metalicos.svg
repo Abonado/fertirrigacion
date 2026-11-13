@@ -4,7 +4,8 @@
 <rect x="499.8" y="196" width="339.99999999999994" height="108.80000000000001" fill="#e9f1e4" stroke="#6f8a68" stroke-width="1.3" rx="2"/>
 <line x1="507.8" y1="296.8" x2="507.8" y2="204.0" stroke="#14508f" stroke-width="3.4" stroke-linecap="round"/><line x1="507.8" y1="204.0" x2="833.8" y2="204.0" stroke="#14508f" stroke-width="3.4" stroke-linecap="round"/>
 <g><circle cx="507.8" cy="296.8" r="5.5" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M504.4,293.4L511.2,300.2M511.2,293.4L504.4,300.2" stroke="#c0262d" stroke-width="1.6" stroke-linecap="round"/></g>
-<text x="669.8" y="256.4" font-size="14" font-weight="700" fill="#1d2a1f" text-anchor="middle" letter-spacing="1.2" opacity="1">NAVE 32 × 100 m</text>
+<text x="689.8" y="256.4" font-size="14" font-weight="700" fill="#1d2a1f" text-anchor="middle" letter-spacing="1.2" opacity="1">NAVE 0 · 32 × 100 m</text>
+<circle cx="577.8" cy="251.4" r="11" fill="#1d2a1f"/><text x="577.8" y="255.4" font-size="11" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0" opacity="1">0</text>
 <text x="669.8" y="222.0" font-size="10.5" font-weight="700" fill="#14508f" text-anchor="middle" letter-spacing="0" opacity="1">PE 50 · 100 m</text>
 <text x="521.8" y="276.4" font-size="10" font-weight="600" fill="#8a6d2b" text-anchor="start" letter-spacing="0" opacity="1">32 m</text>
 <rect x="424" y="318.24" width="34" height="34" rx="4" fill="#2d3a2f"/><path d="M424,352.24L458,318.24" stroke="#fff" stroke-width="1.6"/>
@@ -253,7 +254,7 @@
 <text x="919.8" y="288.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Sectores</text>
 <text x="1246.0" y="288.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">4 (por definir)</text>
 <text x="919.8" y="306.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Naves</text>
-<text x="1246.0" y="306.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">28</text>
+<text x="1246.0" y="306.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">28 (de la 0 a la 27)</text>
 <text x="919.8" y="324.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Superficie</text>
 <text x="1246.0" y="324.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">62.000 m²</text>
 <text x="919.8" y="342.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Electroválvulas</text>
@@ -262,7 +263,7 @@
 <text x="1246.0" y="360.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">13 · 24 m de ancho</text>
 <text x="919.8" y="378.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Naves a la derecha</text>
 <text x="1246.0" y="378.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">14 · 24 × 100 m</text>
-<text x="919.8" y="396.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Nave de arriba</text>
+<text x="919.8" y="396.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">Nave 0</text>
 <text x="1246.0" y="396.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">32 × 100 m</text>
 <text x="919.8" y="414.0" font-size="11" font-weight="400" fill="#5d6b60" text-anchor="start" letter-spacing="0" opacity="1">General</text>
 <text x="1246.0" y="414.0" font-size="11.5" font-weight="700" fill="#1d2a1f" text-anchor="end" letter-spacing="0" opacity="1">PVC Ø110 y Ø90</text>
