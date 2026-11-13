@@ -19,6 +19,7 @@ Todo lo necesario para rehacer la app desde cero. La web publicada (carpeta de a
 | `servidor/puente-worker.js` | Servidor puente de los sensores (Cloudflare): recibe de la pasarela casera (/p) y de The Things Network (/ttn), guarda en `abonado_lecturas`, pone el último dato en el aparato y avisa si uno deja de mandar (por el servidor de avisos, ruta `/interno`). Secretos: FIREBASE_SA, PUENTE_TOKEN, TTN_TOKEN, AVISOS_URL, INTERNO_TOKEN, ADMIN_EMAIL; Cron `*/30 * * * *` |
 | `libs/qrcode.js` | qrcode-generator (MIT): etiquetas QR de Mis aparatos |
 | `libs/manifold.js` + `manifold.wasm` | [Manifold](https://github.com/elalish/manifold) 3.5.3 (licencia Apache-2.0, en `libs/LICENSE-manifold.txt`): genera las cajas STL del taller |
+| Colección `abonado_buzon` | «Sugerencias y fallos» (Ajustes): cualquiera del equipo manda una idea o un fallo, y los errores de la app llegan solos (máx. 5 por sesión, sin repetir). Solo el administrador los lee, los marca como vistos o los borra. Tiene su propia regla en `firestore.rules`: **hay que pegar las reglas nuevas en la consola de Firebase** |
 | `firestore.rules` | Reglas de seguridad de Firebase (se pegan en la consola de Firebase) |
 | `mock-firebase.js` | Firebase de mentira para las pruebas |
 | `pruebas/` | Pruebas automáticas (`todas.py` las pasa todas) |
