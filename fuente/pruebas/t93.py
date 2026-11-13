@@ -20,7 +20,7 @@ async def main():
         assert tabs.index('Cálculo del aforo') == tabs.index('Receta') + 1 and tabs.index('Mapa de la finca') == tabs.index('Cálculo del aforo') + 1, 'aforo y mapa de la finca van después de receta'
         await pg.click('#tabs .tab:has-text("Mapa de la finca")'); await pg.wait_for_timeout(500); await pg.click('.mfsel [data-tab="instal"]'); await pg.wait_for_timeout(500)
         # 1. primero, toda la finca; al tocar un cabezal se abre su zona
-        assert await pg.locator('#infsvg').count() == 1 and await pg.locator('#infsvg [data-incab]').count() == 3
+        assert await pg.locator('#infsvg').count() == 1 and await pg.locator('#infsvg [data-incab]').count() == 4
         await pg.screenshot(path='pruebas/salida/t93-finca.png')
         await pg.locator('#infsvg [data-incab="gas"]').dispatch_event('click'); await pg.wait_for_timeout(400)
         assert await pg.locator('#insvg').count() == 1 and 'Gasolinera' in await pg.text_content('#main h3')

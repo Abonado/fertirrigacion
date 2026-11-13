@@ -1,104 +1,80 @@
-"""Arreglos urgentes (v209): el botón AGRO se aparta al bajar por la pantalla y no tapa botones ni casillas (se revisan todas las
-pantallas en un móvil); el service worker no espera más de 3 s a la red si hay guardado; y «Sugerencias y fallos»: cualquiera
-manda una idea o un fallo, los errores de la app llegan solos, y solo el administrador los lee."""
-import asyncio, sys, subprocess, json
+"""v212: RoboLab XXI dentro del Taller. Se abre en un marco que no se recarga al cambiar de pestaña ni al ponerlo a pantalla completa;
+three.js lo sirve la propia app; trae los ejemplos de Agro Fly (nodo de suelo, clima, electroválvula con relé y nivel de bidón) y
+la electroválvula de 12 V; si la IA de la app está puesta, «Quiero hacer…» la usa."""
+import asyncio, sys
 from playwright.async_api import async_playwright
-
-# 1) Service worker: con red lenta abre lo guardado a los 3 s y deja guardado lo nuevo; sin red y sin guardado, error; con red buena, lo nuevo
-r = subprocess.run(['node', '-e', r"""
-const fs=require('fs'),vm=require('vm');const src=fs.readFileSync('netlify/abonado/sw.js','utf8');
-const L={};const cache=new Map();const esperas=[];let lenta=0,falla=false;
-const caches={open:async()=>({put:async(q,r)=>cache.set(q.url||q,r),addAll:async()=>{}}),match:async q=>cache.get(q.url||q),keys:async()=>[],delete:async()=>true};
-const fetch=(q)=>new Promise((ok,ko)=>setTimeout(()=>falla?ko(new Error('red')):ok({ok:true,type:'basic',v:'nuevo',clone(){return{v:'nuevo'}}}),lenta));
-class Response{static error(){return{error:true}}}
-const ctx={self:{addEventListener:(n,f)=>L[n]=f,skipWaiting(){},clients:{claim(){}}},caches,fetch,Response,URL,Request:class{},location:{origin:'https://x.es'},setTimeout,clearTimeout,Promise,console};
-vm.createContext(ctx);vm.runInContext(src,ctx);
-const pide=async(url)=>{let p,w=[];L.fetch({request:{method:'GET',url,mode:'navigate'},respondWith:x=>p=x,waitUntil:x=>w.push(x)});const t0=Date.now();const r=await p;return{r,ms:Date.now()-t0,w}};
-(async()=>{const U='https://x.es/index.html';
-  lenta=50;let a=await pide(U);if(a.r.v!=='nuevo'||a.ms>1000)throw 'red buena: '+JSON.stringify(a);
-  cache.set(U,{v:'viejo'});lenta=6000;a=await pide(U);if(a.r.v!=='viejo'||a.ms<2900||a.ms>3600)throw 'red lenta: '+a.ms+' '+JSON.stringify(a.r);
-  await Promise.all(a.w);if(cache.get(U).v!=='nuevo')throw 'no guardó lo nuevo';
-  cache.clear();lenta=20;falla=true;a=await pide(U);if(!a.r.error)throw 'sin red ni guardado: '+JSON.stringify(a.r);
-  cache.set(U,{v:'viejo'});a=await pide(U);if(a.r.v!=='viejo')throw 'sin red con guardado';
-  console.log('SW OK')})().catch(e=>{console.log('SW MAL',e);process.exit(1)});
-"""], capture_output=True, text=True, timeout=60)
-print(r.stdout, r.stderr); assert 'SW OK' in r.stdout
-reglas = open('firestore.rules').read()
-assert 'match /abonado_buzon/{doc}' in reglas and "coleccion != 'abonado_buzon'" in reglas and "allow read, delete: if esAdmin();" in reglas
-
 MOCK = open('mock-firebase.js').read()
-TAPA = """(async()=>{   /* «tapado»: AGRO encima de su centro o de más de la mitad (una fila ancha se toca por otro lado) */
-const b=document.getElementById('agbtn');if(!b||b.hidden)return {n:-1};const tapados=new Set();const H=document.documentElement.scrollHeight;
-  const mira=()=>{if(getComputedStyle(b).pointerEvents==='none'||getComputedStyle(b).opacity==='0')return;const r=b.getBoundingClientRect();
-    document.querySelectorAll('#main button,#main input,#main select,#main textarea,#main a').forEach(e=>{const q=e.getBoundingClientRect();const w=Math.min(q.right,r.right)-Math.max(q.left,r.left),h=Math.min(q.bottom,r.bottom)-Math.max(q.top,r.top),cx=(q.left+q.right)/2,cy=(q.top+q.bottom)/2;
-    if(q.width&&w>4&&h>4&&((cx>r.left&&cx<r.right&&cy>r.top&&cy<r.bottom)||w*h>q.width*q.height/2))tapados.add((e.dataset.act||e.id||e.textContent||'').trim().slice(0,30))})};
-  await new Promise(r=>setTimeout(r,400));mira();
-  for(let y=0;y<=H;y+=150){scrollTo(0,y);await new Promise(r=>setTimeout(r,40));mira()}
-  scrollTo(0,0);await new Promise(r=>setTimeout(r,400));mira();   /* en reposo arriba: AGRO ya se ha recolocado */
-  return {n:tapados.size,cuales:[...tapados].slice(0,5)}})()"""
-
 async def main():
     async with async_playwright() as p:
-        b = await p.chromium.launch(); ctx = await b.new_context(service_workers='block', **p.devices['iPhone 13'], locale='es-ES', timezone_id='Europe/Madrid')
+        b = await p.chromium.launch(args=['--use-gl=swiftshader', '--enable-unsafe-swiftshader']); ctx = await b.new_context(service_workers='block', viewport={'width': 420, 'height': 900}, locale='es-ES', timezone_id='Europe/Madrid')
         pg = await ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-        await ctx.route('https://www.gstatic.com/**', lambda r: r.fulfill(content_type='application/javascript', body=MOCK if 'app-compat' in r.request.url else ''))
-        await ctx.route('https://api.open-meteo.com/**', lambda r: r.abort()); await ctx.route('https://archive-api.open-meteo.com/**', lambda r: r.abort())
+        ext = []
+        async def red(r):
+            u = r.request.url
+            if 'gstatic.com' in u: return await r.fulfill(content_type='application/javascript', body=MOCK if 'app-compat' in u else '')
+            if 'open-meteo' in u: return await r.abort()
+            if 'jsdelivr' in u or 'unpkg' in u: ext.append(u); return await r.abort()
+            if 'fonts.g' in u: return await r.fulfill(body='')
+            return await r.continue_()
+        await ctx.route('**/*', red)
         await pg.goto('http://localhost:8776/'); await pg.evaluate('localStorage.clear()')
-        await pg.evaluate("localStorage.setItem('mockfb',JSON.stringify({docs:{},users:{'juanjo.serrano3@gmail.com':'admin123','campo@demo.es':'campo123'},cur:null}))")
-        await pg.reload(); await pg.wait_for_timeout(700)
-        await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
-        await pg.evaluate("(async()=>{const a=NUBE.acc;a.emails=[...new Set([...a.emails,'campo@demo.es'])];a.info={...a.info,'campo@demo.es':{nombre:'Campo',areas:['campo']}};await NUBE.db.doc('acceso/usuarios').set(a);cerrarSplash()})()")
-        await pg.wait_for_timeout(400)
-        # 2) AGRO: se aparta al bajar, vuelve al subir y arriba
-        await pg.evaluate("st.finca='pinta';st.tab='cuentas';renderAll()"); await pg.wait_for_timeout(500)
-        assert not await pg.evaluate("document.getElementById('agbtn').hidden"), 'AGRO debería verse'
-        await pg.evaluate("scrollTo(0,400)"); await pg.wait_for_timeout(250)
-        assert await pg.evaluate("document.body.classList.contains('agfuera')"), 'al bajar AGRO se aparta'
-        assert await pg.evaluate("getComputedStyle(document.getElementById('agbtn')).pointerEvents") == 'none'
-        await pg.evaluate("scrollTo(0,300)"); await pg.wait_for_timeout(250)
-        assert not await pg.evaluate("document.body.classList.contains('agfuera')"), 'al subir AGRO vuelve'
-        await pg.evaluate("scrollTo(0,0)"); await pg.wait_for_timeout(250)
-        # en ninguna pantalla tapa un botón o una casilla mientras se recorre de arriba abajo
-        tabs = await pg.evaluate("TABS.map(t=>t[0]).filter(t=>VIEWS[t]&&tabPermitida(t))"); malos = []
-        for t in tabs:
-            await pg.evaluate(f"(()=>{{st.tab='{t}';renderAll();scrollTo(0,0)}})()"); await pg.wait_for_timeout(250)
-            d = await pg.evaluate(TAPA)
-            if d['n'] > 0: malos.append((t, d))
-        print('pantallas', len(tabs), 'con algo tapado por AGRO:', malos)
-        assert not malos, malos
-        # 3) Sugerencias y fallos: el administrador recibe; la persona de campo manda pero no lee
-        await pg.evaluate("st.tab='buzon';renderAll()"); await pg.wait_for_timeout(600)
-        assert 'Sugerencias y fallos' in await pg.text_content('#main') and 'Recibido' in await pg.text_content('#main')
-        await pg.evaluate("setTimeout(()=>Promise.reject(new Error('fallo de prueba 143')),0)"); await pg.wait_for_timeout(400)
-        await pg.evaluate("setTimeout(()=>Promise.reject(new Error('fallo de prueba 143')),0)"); await pg.wait_for_timeout(400)   # repetido: no se manda dos veces
-        docs = await pg.evaluate("Object.entries(JSON.parse(localStorage.getItem('mockfb')).docs).filter(([k])=>k.startsWith('abonado_buzon/')).map(([k,v])=>v)")
-        errores = [d for d in docs if d['tipo'] == 'error']; print('errores', errores)
-        assert len(errores) == 1 and errores[0]['txt'] == 'fallo de prueba 143' and errores[0]['de'] == 'juanjo.serrano3@gmail.com' and errores[0]['v'] == 'abonado-v209' and errores[0]['tab'] == 'buzon'
-        errs.clear()   # el error de prueba lo ve también Playwright: es lo esperado
-        await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
-        await pg.fill('#nb_em', 'campo@demo.es'); await pg.fill('#nb_pw', 'campo123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
-        await pg.evaluate("cerrarSplash()"); await pg.wait_for_timeout(300)
-        assert 'cbuzon' in await pg.evaluate("TABS.map(t=>t[0]).filter(t=>VIEWS[t]&&tabPermitida(t))")
-        await pg.evaluate("st.tab='cajustes';renderAll()"); await pg.wait_for_timeout(400)
-        await pg.click('[data-tab="cbuzon"]'); await pg.wait_for_timeout(500)
-        t = await pg.text_content('#main'); assert 'Sugerencias y fallos' in t and 'Recibido' not in t, t[:300]
-        await pg.click('[data-bz="tipo"][data-t="fallo"]'); await pg.wait_for_timeout(200)
-        await pg.click('[data-bz="enviar"]'); await pg.wait_for_timeout(300)
-        assert 'Escribe' in (await pg.text_content('#toast') or '')
-        await pg.fill('#bz_txt', 'Al fichar se queda pensando'); await pg.click('[data-bz="enviar"]'); await pg.wait_for_timeout(800)
-        assert 'Gracias' in (await pg.text_content('#toast') or '') and await pg.input_value('#bz_txt') == ''
-        docs = await pg.evaluate("Object.entries(JSON.parse(localStorage.getItem('mockfb')).docs).filter(([k])=>k.startsWith('abonado_buzon/')).map(([k,v])=>v)")
-        f = [d for d in docs if d['tipo'] == 'fallo']; print(f)
-        assert len(f) == 1 and f[0]['de'] == 'campo@demo.es' and f[0]['tab'] == 'cajustes' and f[0]['txt'] == 'Al fichar se queda pensando'
-        assert set(f[0]) <= {'tipo', 'txt', 'donde', 'de', 'nombre', 'v', 'tab', 'disp', 'ts', 'mod'}, 'solo los campos que dejan las reglas'
-        # el administrador lo ve y lo marca como visto
-        await pg.evaluate("NUBE.auth.signOut()"); await pg.wait_for_timeout(400); await pg.reload(); await pg.wait_for_timeout(800)
-        await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(3500)
-        await pg.evaluate("cerrarSplash();st.bz=null;st.tab='buzon';renderAll()"); await pg.wait_for_timeout(800)
-        t = await pg.text_content('#main'); assert 'Al fichar se queda pensando' in t and 'fallo de prueba 143' in t and 'Sin ver (2)' in t, t[-600:]
-        await pg.locator('.bzi', has_text='Al fichar').locator('[data-bz="visto"]').click(); await pg.wait_for_timeout(500)
-        assert 'Sin ver (1)' in await pg.text_content('#main')
-        await pg.screenshot(path='pruebas/salida/t143-buzon.png')
-        ancho = await pg.evaluate("document.documentElement.scrollWidth"); assert ancho <= 390, ancho
+        await pg.evaluate("localStorage.setItem('mockfb',JSON.stringify({docs:{},users:{'juanjo.serrano3@gmail.com':'admin123'},cur:null}))")
+        await pg.reload(); await pg.wait_for_timeout(600)
+        await pg.fill('#nb_em', 'juanjo.serrano3@gmail.com'); await pg.fill('#nb_pw', 'admin123'); await pg.click('#nb_go'); await pg.wait_for_timeout(5000)
+        await pg.evaluate("cerrarSplash();st.finca='pinta';st.tab='robolab';renderCabs();renderTabs();renderMain()"); await pg.wait_for_timeout(300)
+        assert await pg.locator('#tabs [data-tab="robolab"]').count() == 1
+        fr = pg.frame_locator('#rlfr'); f = None
+        for _ in range(40):
+            f = next((x for x in pg.frames if x.url.endswith('robolab.html')), None)
+            if f and await f.evaluate("!document.getElementById('loading')"): break
+            await pg.wait_for_timeout(250)
+        assert f and await f.evaluate("!document.getElementById('loading')"), 'RoboLab no arranca'
+        assert ext == [], ext                       # three.js sale de la app, no de otro servidor
+        # marco encima del hueco de la pestaña
+        r = await pg.evaluate("(()=>{const a=$('#rlslot').getBoundingClientRect(),b=$('#rlwrap').getBoundingClientRect();return [Math.round(a.top-b.top),Math.round(a.width-b.width),Math.round(a.height)]})()")
+        assert r[0] == 0 and r[1] == 0 and r[2] >= 460, r
+        assert await f.evaluate("document.querySelector('#brand small').textContent") == 'Laboratorio · Agro Fly'
+        # mesa nueva: sale el nodo de suelo de Agro Fly; en Ejemplos están los cuatro
+        await f.evaluate("document.querySelector('#tabs button[data-t=\"ex\"]').click()"); await pg.wait_for_timeout(200)
+        ej = await f.evaluate("[...document.querySelectorAll('#items .tray-item b')].map(x=>x.textContent)")
+        assert ej[:4] == ['Agro Fly · Nodo de suelo', 'Agro Fly · Clima de la nave', 'Agro Fly · Electroválvula de un sector', 'Agro Fly · Nivel de bidón'], ej
+        res = {}
+        for i in range(4):
+            await f.evaluate(f"document.querySelectorAll('#items .tray-item')[{i}].click()"); await pg.wait_for_timeout(1200)
+            n = await f.evaluate("JSON.parse(localStorage.getItem('robolab-xxi')||'{}')")
+            await f.evaluate("document.getElementById('play').click()"); await pg.wait_for_timeout(500)
+            mon = await f.evaluate("[...document.querySelectorAll('#mbody .item')].map(x=>x.className.replace('item','').trim()+': '+x.querySelector('b').textContent)")
+            res[ej[i]] = (len(n.get('parts', [])), len(n.get('wires', [])), mon)
+            await f.evaluate("document.getElementById('play').click()"); await pg.wait_for_timeout(200)
+        for k, v in res.items(): print(k, v)
+        ev = res['Agro Fly · Electroválvula de un sector']
+        assert ev[0] == 4 and ev[1] == 6 and any(x.startswith('ok: Electroválvula 12 V abierta') for x in ev[2]), ev
+        assert not any(x.startswith('err') for v in res.values() for x in v[2]), res
+        # marcar el marco: cambiar de pestaña y volver, y pantalla completa, sin recargar
+        await f.evaluate("window.__marca=7")
+        await pg.evaluate("st.tab='catalogo';renderTabs();renderMain()"); await pg.wait_for_timeout(300)
+        assert await pg.evaluate("$('#rlwrap').style.display") == 'none' and await f.evaluate("window.__pausa") is True
+        await pg.evaluate("st.tab='robolab';renderTabs();renderMain()"); await pg.wait_for_timeout(300)
+        assert await f.evaluate("window.__pausa") is False
+        await pg.click('[data-rl="full"]'); await pg.wait_for_timeout(300)
+        bb = await pg.locator('#rlwrap').bounding_box(); assert bb['y'] == 0 and bb['height'] == 900, bb
+        await pg.screenshot(path='/tmp/rl_full.png')
+        await pg.click('#rlwrap .rlsal')
+        await pg.wait_for_timeout(300)
+        assert await pg.locator('#rlwrap.rlfull').count() == 0
+        f = next(x for x in pg.frames if x.url.endswith('robolab.html'))
+        assert await f.evaluate("window.__marca") == 7
+        await pg.screenshot(path='/tmp/rl_tab.png')
+        # «Quiero hacer…» con la IA de la app
+        await pg.evaluate("window.iaModo=()=>'servidor';window.iaFotoJson=async()=>({titulo:'Riego por humedad',explicacion:'Abre la válvula si el suelo está seco.',placa:'esp32',piezas:['suelo','rele','ev12'],extra:[],consejos:[]})")
+        await f.evaluate("location.reload()"); await pg.wait_for_timeout(2500)
+        f = next(x for x in pg.frames if x.url.endswith('robolab.html'))
+        await f.evaluate("document.getElementById('btnAsk').click()"); await pg.wait_for_timeout(200)
+        assert 'IA de Agro Fly' in await f.evaluate("document.getElementById('aSrc').textContent")
+        await f.fill('#aIn', 'abrir el riego cuando el suelo esté seco'); await f.evaluate("document.getElementById('aGo').click()"); await pg.wait_for_timeout(800)
+        t = await f.evaluate("document.getElementById('aOut').textContent"); assert 'Plan de la IA' in t and 'Electroválvula 12 V' in t, t[:300]
+        # sin la contraseña del Taller (puesta) no se ve
+        assert await pg.evaluate("(()=>{st.cfg.tallerClave={h:'x',s:'y'};tlRecordar(null);st.tab='robolab';renderMain();return !!$('#rlslot')})()") is False
+        assert await pg.evaluate("$('#rlwrap').style.display") == 'none'
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

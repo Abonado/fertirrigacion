@@ -26,7 +26,7 @@ async def main():
         t = (await pg.text_content('#main')).upper(); assert 'PONLE CONTRASEÑA' not in t and 'TALLER ABIERTO EN ESTE MÓVIL' in t and 'CAMBIAR LA CONTRASEÑA' in t
         # --- cerrar con llave
         await pg.click('[data-tlk="cerrar"]'); await pg.wait_for_timeout(300)
-        t = (await pg.text_content('#main')).upper(); assert 'CERRADO CON LLAVE' in t and await pg.locator('.tl-as').count() == 0 and await pg.locator('.tlk-carp > button').count() == 4
+        t = (await pg.text_content('#main')).upper(); assert 'CERRADO CON LLAVE' in t and await pg.locator('.tl-as').count() == 0 and await pg.locator('.tlk-carp > button').count() == 5
         await pg.screenshot(path='pruebas/salida/t117-cerrado.png', full_page=True)
         await pg.click('.tlk-carp [data-tab="aparatos"]'); await pg.wait_for_timeout(200); assert await pg.evaluate("st.tab") == 'aparatos'
         for k in ('catalogo', 'aparatos', 'cajon'):

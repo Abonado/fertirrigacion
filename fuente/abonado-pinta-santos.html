@@ -351,6 +351,21 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .gct td,.gct th{text-align:right;white-space:nowrap}.gct td.n,.gct th.n{text-align:left;white-space:normal}.gct td.t,.gct th.t{font-weight:700;background:var(--surface-2)}.gct td b{font:600 17px var(--f-display)}
 .saj{display:grid;gap:0}.saj-f{display:grid;grid-template-columns:1fr auto auto;gap:8px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}.saj-f:first-child{border-top:0}.saj-f .field{margin:0}.saj-f .inp.sm{width:104px}
 @media (max-width:520px){.saj-f{grid-template-columns:1fr 1fr}.saj-f>b{grid-column:1/-1}.stq{font-size:22px}.stt td,.stt th{padding-left:4px;padding-right:4px}.stt th{white-space:normal}.stt td.n b{font-size:.95rem}.gct td b{font-size:15px}.gct td,.gct th{padding-left:6px;padding-right:6px}.sts{font-size:12.5px;white-space:normal}.stg{font-size:16px}.stt td.n .pill{white-space:normal}}
+.prpick{margin:2px 0 10px}.prpick .chip[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.prh{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}.przb{display:flex;gap:6px}.przb .btn{min-width:46px}
+.prv{overflow:auto;max-height:72vh;border:1px solid var(--line);border-radius:10px;background:#f6f4ee;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-x pan-y}
+.prin{min-width:100%}.prin .prsvg{display:block;width:100%;height:auto;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.prsvg text{text-transform:none}.prsvg [data-plano]{cursor:pointer;transition:fill-opacity .15s}.prsvg [data-plano]:hover{fill-opacity:.12}
+.prt{width:100%;border-collapse:collapse}.prt th,.prt td{border-bottom:0!important}.prt th{text-align:left;font-weight:600;color:var(--muted);padding:8px 12px 8px 0;vertical-align:top;width:36%}.prt td{padding:8px 0;font-weight:600;text-align:left}@media(max-width:560px){.prt th,.prt td{display:block;width:auto}.prt th{padding:9px 0 1px;font-size:12px}.prt td{padding:0 0 9px}.prt tr+tr td{border-top:0}}.prt tr+tr th,.prt tr+tr td{border-top:1px solid var(--line)}
+.prley{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:9px 18px}.prley li{display:flex;align-items:center;gap:10px}.prley svg{flex:none}
+#rlslot{height:calc(100dvh - 260px);min-height:460px;margin-top:10px;border-radius:12px;background:#dde4ea}
+#rlwrap{position:absolute;z-index:3;border-radius:12px;overflow:hidden;background:#dde4ea}
+#rlwrap iframe{display:block;width:100%;height:100%;border:0}
+#rlwrap .rlsal{display:none}
+#rlwrap.rlfull{position:fixed;inset:0!important;width:auto!important;height:auto!important;z-index:60;border-radius:0}
+#rlwrap.rlfull .rlsal{display:block;position:absolute;left:calc(54px + env(safe-area-inset-left,0px));top:calc(12px + env(safe-area-inset-top,0px));height:34px;white-space:nowrap;z-index:2;border:0;border-radius:999px;padding:8px 14px;font:600 12.5px system-ui,sans-serif;background:#16202a;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.25);opacity:.92}
+.dissvg{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}.diswrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#f4f1e8;max-height:78vh;margin-top:8px}.disin{min-width:100%}.distool{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;align-items:center}.dissel{font:inherit;font-size:13px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}.disfrm{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:8px 0}.disol{margin:6px 0 8px;padding-left:18px;font-size:14px;text-transform:none}.disol li{margin:0 0 5px}.dispan h4{margin:0 0 6px}.dispill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#2f7d4f;color:#fff;vertical-align:middle;letter-spacing:.5px}#dis3d .vvn>polygon:first-child{fill-opacity:.22}#dis3d .vvr{fill-opacity:.38}#dis3d .vvw{fill-opacity:.28}.dis3w{margin-top:8px}.dis3w svg{width:100%;height:auto;display:block}.prnada{padding:28px 12px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}.prmini{display:block;width:100%;padding:0;margin:10px 0;border:1px solid var(--line);border-radius:10px;background:#f6f4ee;overflow:hidden;cursor:pointer;text-align:center}.prmini img{display:block;width:100%;max-height:340px;object-fit:contain}.prmini span{display:block;padding:7px;font-size:13px;color:var(--muted);font-weight:600;text-transform:none}.prh4{margin:12px 0 4px;font-size:14px}.prpend ul{margin:0;padding-left:20px}.prpend li{margin:3px 0}
+@media print{.prv{max-height:none!important;overflow:visible!important;border:0!important;background:none!important}.prin{width:100%!important}.prcard .prsvg{width:auto!important;max-width:100%;max-height:19.5cm;margin:0 auto}.prcard.hz .prsvg{max-height:12cm}.prcard{gap:6px}}
 @media print{.stq{font-size:16pt}.stg{font-size:12pt}.stt td,.gct td{padding:5px 6px}.stt th,.gct th{padding:0 6px 5px}}
 .gct td.n{min-width:120px}.gct .gce{width:110px;margin-left:auto}@media (max-width:520px){.gct .gce{width:82px}.gct .gce input{min-width:0}.gct td.n{min-width:96px}}.gcorr{color:var(--warn-ink,#9a6700)!important}.stt th .lnk{margin-left:8px;font-size:11px;text-transform:none;letter-spacing:0}.gc-ayuda{margin:6px 0 10px}.gdt td,.gdt th{padding:8px 6px}.gdt th{white-space:normal;min-width:70px;font-size:10.5px}.gdt td.n b{font-size:.92rem;white-space:nowrap}.gdt tr.sc td{color:var(--muted)}.gdt tr.ed td{background:var(--surface-2)}.gdt td.cor{color:var(--warn-ink,#9a6700);font-weight:700}.gdt td.n .lnk{font-size:13px;color:var(--accent,#1e6b45);padding:2px 0}.gd-bt{display:flex;gap:6px;margin-top:6px}.rsuelo{display:grid;gap:12px}.rs-dep{border-top:1px solid var(--line);padding-top:10px;display:grid;gap:8px}.rs-dep h4{margin:0;font:700 15px var(--f-display)}.rs-dep h4 small{font-weight:400;color:var(--muted)}table.suelo td:nth-child(n+2),table.suelo th:nth-child(n+2){text-align:right}.gd-mas{border:1px dashed var(--line);border-radius:12px;padding:10px 12px;margin:8px 0 12px;display:grid;gap:8px}.gd-mas select,.gd-mas input:not([type]){min-height:40px;border:1px solid var(--line);border-radius:10px;padding:0 10px;font:inherit;max-width:100%}.gd-bt .btn{padding:6px 10px}.gdt td.n{position:sticky;left:0;background:var(--surface,#fff);z-index:1}
 .gdw{overflow:auto;max-height:min(70vh,640px);overscroll-behavior:contain;border-radius:10px}.gdt thead th{position:sticky;top:0;z-index:2;background:var(--surface,#fff);box-shadow:0 2px 0 var(--line)}.gdt thead th.n{left:0;z-index:3}.gdt tfoot td{position:sticky;bottom:0;background:var(--surface-2,#f3f5f2);z-index:2}.gdt tfoot td.n{left:0;z-index:3}
@@ -946,7 +961,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['otrat','Tratamientos'],['cotrat','Tratamientos'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['buzon','Sugerencias y fallos'],['cbuzon','Sugerencias y fallos'],['catalogo','Catálogo'],['taller','Taller de sensores'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
+const TABS=[['hoy','Hoy'],['mas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['planriego','Planos de riego'],['diseno','Diseño a mano'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['otrat','Tratamientos'],['cotrat','Tratamientos'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['buzon','Sugerencias y fallos'],['cbuzon','Sugerencias y fallos'],['catalogo','Catálogo'],['taller','Taller de sensores'],['robolab','RoboLab XXI'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -1091,12 +1106,12 @@ function navGuarda(){try{const raiz=!$('#fincas').hidden&&st.ov==='fincas';if(ra
 window.addEventListener('popstate',()=>{try{if(volver())navGuarda()}catch(e){console.warn('atrás',e)}});
 /* Menú en 5 apartados */
 const IC_HOY='<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',IC_MAS='<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>';
-const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','cmbid','drenaje','ajriego','rellenar','receta','aforo','instal','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
+const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','cmbid','drenaje','ajriego','rellenar','receta','aforo','instal','planriego','diseno','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
   {id:'equipo',n:'Equipo',tabs:['tareas','otrat','mensajes','ubic'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['m3mes','climanv','cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
-  {id:'lab',n:'Taller',tabs:['catalogo','taller','aparatos','cajon'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
+  {id:'lab',n:'Taller',tabs:['catalogo','taller','robolab','aparatos','cajon'],ic:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 0 5.4-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>'},
   {id:'ajustes',n:'Ajustes',tabs:['ajustes','estructura','buzon'],ic:'<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'},
   {id:'mas',n:'Más',tabs:['mas'],ic:IC_MAS}];
 /* Personal de campo: su propio menú (de momento, las collas) */
@@ -1109,9 +1124,9 @@ const CAMPO=new Set(GRUPOS_CAMPO.flatMap(g=>g.tabs));
 const areaDe=t=>CAMPO.has(t)?'campo':'riego';
 function gruposAct(){if(areaDe(st.tab)!=='campo')return GRUPOS_RIEGO.filter(g=>g.id!=='lab'||tabPermitida('taller'));const G=GRUPOS_CAMPO.filter(g=>g.tabs.some(tabPermitida));return G.length?G:[GRUPOS_CAMPO[0]]}
 /* Mapa de la finca: incidencias, en vivo e instalación en una sola pantalla */
-const MF_VISTAS=['mapa','vivo','instal','estres','plagas'];
+const MF_VISTAS=['mapa','vivo','instal','planriego','diseno','estres','plagas'];
 function mfHead(){const n=(()=>{try{return incAbiertas().filter(i=>i.cab===st.cab).length}catch(e){return 0}})(),a=(()=>{try{return inAlertas(st.cab)}catch(e){return 0}})();
-  return `<div data-out="mfsel">${plzBanner(((fincaAct()||{}).cabezales||[]).length?fincaAct().cabezales:[st.cab])}<div class="mfsel" role="tablist" aria-label="Mapa de la finca">${[['mapa','Incidencias',n],['vivo','En vivo',0],['instal','Instalación',a],['estres','Clima y estrés',(()=>{try{return esZonas(st.cab).zs.filter(z=>{const R=esCalc(esDato(st.cab,z.k),esU());return R&&R.niv===2}).length}catch(e){return 0}})()],['plagas','Plagas',(()=>{try{return esZonas(st.cab).zs.filter(z=>plMax(st.cab,z)===2).length}catch(e){return 0}})()]].filter(([k])=>tabPermitida(k)).map(([k,t,c])=>`<button class="mfb" role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${t}${c?`<i>${c}</i>`:''}</button>`).join('')}</div></div>`}
+  return `<div data-out="mfsel">${plzBanner(((fincaAct()||{}).cabezales||[]).length?fincaAct().cabezales:[st.cab])}<div class="mfsel" role="tablist" aria-label="Mapa de la finca">${[['mapa','Incidencias',n],['vivo','En vivo',0],['instal','Instalación',a],['planriego','Planos de riego',0],['diseno','Diseño a mano',0],['estres','Clima y estrés',(()=>{try{return esZonas(st.cab).zs.filter(z=>{const R=esCalc(esDato(st.cab,z.k),esU());return R&&R.niv===2}).length}catch(e){return 0}})()],['plagas','Plagas',(()=>{try{return esZonas(st.cab).zs.filter(z=>plMax(st.cab,z)===2).length}catch(e){return 0}})()]].filter(([k])=>tabPermitida(k)).map(([k,t,c])=>`<button class="mfb" role="tab" data-tab="${k}" aria-selected="${st.tab===k}">${t}${c?`<i>${c}</i>`:''}</button>`).join('')}</div></div>`}
 const grupoDe=tab=>{const G=gruposAct();return G.find(g=>g.tabs.includes(tab))||G[0]};
 st.ultTab=st.ultTab||{};
 function insignias(){const n={};try{n.riego=depsBajos().length}catch(e){}try{if(ptRevisa()&&st.partes)n.riego=(n.riego||0)+ptPend().length}catch(e){}
@@ -1636,10 +1651,10 @@ const HOY_IC={cmbid:'<path d="M7 3h10v18H7z"/><path d="M7 7h3M7 11h4M7 15h3M7 19
   historial:'<circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/>',graficas:'<path d="M4 20h16"/><path d="M5 16l4-5 4 3 6-8"/>',cuaderno:'<path d="M6 3.5h11v17H6z"/><path d="M9 3.5v17M11.5 8h3.5M11.5 11.5h3.5"/>',
   diagnostico:'<circle cx="10" cy="10" r="5"/><path d="M14 14l6 6M8 10h4M10 8v4"/>',chatia:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/>',
   tiempo:'<path d="M7 18a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.3 3.3 0 0 1 17 18z"/>',satelite:'<path d="M5 19l4-4M9 9l6 6M7 7l3-3 4 4-3 3zM14 14l3-3 4 4-3 3z"/>',
-  catalogo:'<path d="M4 5h7v14H4zM13 5h7v14h-7z"/>',aparatos:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 17h4"/>',cajon:'<path d="M4 9h16v10H4z"/><path d="M4 9l2-4h12l2 4M10 13h4"/>'};
+  catalogo:'<path d="M4 5h7v14H4zM13 5h7v14h-7z"/>',aparatos:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 17h4"/>',cajon:'<path d="M4 9h16v10H4z"/><path d="M4 9l2-4h12l2 4M10 13h4"/>',robolab:'<rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>'};
 /* Orden de los cuadros: primero lo de todos los días */
 const HOY_ORD={riego:['cuentas','rellenar','drenaje','cmbid','parte','ajriego','receta','aforo','instal','solucion','partes','global'],equipo:['tareas','otrat','mensajes'],almacen:['almacen','material','montaje'],
-  datos:['informe','climanv','m3mes','historial','graficas','cultivo','cuaderno','tiempo','satelite','diagnostico','chatia'],lab:['catalogo','taller','aparatos','cajon']};
+  datos:['informe','climanv','m3mes','historial','graficas','cultivo','cuaderno','tiempo','satelite','diagnostico','chatia'],lab:['catalogo','taller','robolab','aparatos','cajon']};
 const HOY_FILAS=[['riego','Riego'],['equipo','Equipo'],['almacen','Almacén'],['datos','Datos'],['lab','Taller']];
 function hoyFilas(cl){const G=gruposAct(),ic=k=>(HOY_T.find(x=>x[0]===k)||[])[2]||HOY_IC[k]||IC_MAS,nom=k=>k==='instal'?'Mapa de la finca':k==='mapa'?'Mapa de la finca':((HOY_T.find(x=>x[0]===k)||[])[1]||(TABS.find(x=>x[0]===k)||[])[1]||k);
   let nb=0;try{nb=depsBajos().length}catch(e){}
@@ -1817,20 +1832,22 @@ function inIncs(cab,x){return (st.inc||[]).filter(i=>i.cab===cab&&i.estado!=='re
 function inAlertas(cab){const I=inCfg(cab),R=st.reg.pre||{},c=cabById(cab);let n=0;
   for(const s of c.sectores)for(const p of I.pts)if(inEst(R[inPid(p,s.id)]??null,p.min,p.max)==='bad')n++;
   for(const x of I.el)if(inLee(x)&&inEst(R[x.id]??null,x.min,x.max)==='bad')n++;return n}
-function inSVG(cab){const Z=inZonas(cab),I=inCfg(cab),c=cabById(cab),[vx,vy,vw,vh]=Z.vb,E=st.in,R=st.reg.pre||{},k=Math.max(vw,vh)/1000;
+function inSVG(cab){const Z=inZonas(cab),I=inCfg(cab),c=cabById(cab),[vx,vy,vw,vh]=Z.vb,E=st.in,R=st.reg.pre||{},k=Math.max(vw,vh)/1000*((Z.M&&Z.M.ek)||1);
   let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg insvg${E.modo!=='ver'||E.mover?' inpon':''}" id="insvg" role="img" aria-label="Mapa de la instalación de ${esc(c.nombre)}"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f7f3e8"/>`;
-  if(Z.M&&Z.M.fondo)s+=Z.M.fondo();
+  if(Z.M&&Z.M.fondo)s+=Z.M.fondo({inst:1});
   for(const z of Z.zonas){
     if(!Z.M){const col=inSecCol(cab,z.sid);s+=`<polygon points="${inPP(z.p)}" fill="${col}" fill-opacity=".3" stroke="${col}" stroke-width="4"/><text x="${z.c[0]}" y="${z.c[1]}" text-anchor="middle" font-size="22" font-weight="800" fill="#1b2f4a">${esc(z.lab)}</text>`;continue}
     const fr=inFranjas(cab,z.nv),sids=new Set();s+=`<clipPath id="inclip${z.nave}"><polygon points="${inPP(z.p)}"/></clipPath><polygon points="${inPP(z.p)}" fill="#eef2f6"/>`;
     for(const f of fr){const sid=inSid(I,z.nave,f.num),col=inSecCol(cab,sid);if(sid)sids.add(sid);if(col)s+=`<polygon points="${inPP(f.p)}" fill="${col}" fill-opacity=".38" clip-path="url(#inclip${z.nave})"/>`}
-    for(const l of pasLineas(cab,z.nv)){const segs=z.nv.q?clipLinea(l.p1,l.p2,z.nv.p):[[l.p1,l.p2]];if(!segs.length)continue;
+    const PLn=pasLineas(cab,z.nv),[QA,,,QD]=navQ(z.nv),SPn=Math.hypot(QA[0]-QD[0],QA[1]-QD[1])/(PLn.length+1),PR8=Math.max(3*k,Math.min(8*k,SPn*.45)),PV=n=>SPn>=16*k||n===1||n===PLn.length||n%(SPn>=8*k?2:4)===0;
+    for(const l of PLn){const segs=z.nv.q?clipLinea(l.p1,l.p2,z.nv.p):[[l.p1,l.p2]];if(!segs.length)continue;
       for(const[q1,q2]of segs)s+=`<line x1="${q1[0].toFixed(1)}" y1="${q1[1].toFixed(1)}" x2="${q2[0].toFixed(1)}" y2="${q2[1].toFixed(1)}" stroke="#8fa6bd" stroke-width="${1.4*k}"/>`;
-      const e1=segs[0][0],e2=segs[segs.length-1][1],q=lerp(e1,e2,.06);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)})"><circle r="${8*k}" fill="#fff" stroke="#7f98b2" stroke-width="1"/><text y="${3.6*k}" text-anchor="middle" font-size="${9.5*k}" font-weight="800" fill="#1b2f4a">${l.num}</text></g>`}
+      const e1=segs[0][0],e2=segs[segs.length-1][1],q=lerp(e1,e2,.06);if(PV(l.num))s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)})"><circle r="${PR8.toFixed(2)}" fill="#fff" stroke="#7f98b2" stroke-width="1"/><text y="${(PR8*.45).toFixed(2)}" text-anchor="middle" font-size="${(PR8*1.19).toFixed(2)}" font-weight="800" fill="#1b2f4a">${l.num}</text></g>`}
     s+=`<polygon points="${inPP(z.p)}" fill="none" stroke="#1b2f4a" stroke-width="${3*k}" stroke-linejoin="round"/>`;
     const sn=[...sids].map(x=>inSecNom(cab,x).replace(/^Sector\s*/i,'S')).join(' · ');
     s+=`<g transform="translate(${z.c[0].toFixed(1)} ${z.c[1].toFixed(1)}) rotate(${Z.M.ang||0})"><rect x="${-44*k}" y="${-15*k}" width="${88*k}" height="${30*k}" rx="${15*k}" fill="#1b2f4a" opacity=".85"/><text y="${6*k}" text-anchor="middle" font-size="${16*k}" font-weight="800" fill="#fff">${esc(z.lab)}</text>${sn?`<text y="${32*k}" text-anchor="middle" font-size="${14*k}" font-weight="800" fill="#1b2f4a" stroke="#fff" stroke-width="${4*k}" paint-order="stroke">${esc(sn)}</text>`:''}</g>`}
-  const cp=inCabPos(cab,Z);for(const x of I.el.filter(x=>x.t==='ev'))s+=`<line x1="${cp[0]}" y1="${cp[1]}" x2="${x.x}" y2="${x.y}" stroke="#1f78c1" stroke-width="${3*k}" stroke-dasharray="${10*k} ${7*k}" opacity=".5"/>`;
+  if(Z.M&&PLAN_RED[cab]&&E.red!==false)s+=redSVG(cab,k,!I.el.some(x=>x.plano));
+  const cp=inCabPos(cab,Z);for(const x of I.el.filter(x=>x.t==='ev'&&!(x.plano&&PLAN_RED[cab]&&E.red!==false)))s+=`<line x1="${cp[0]}" y1="${cp[1]}" x2="${x.x}" y2="${x.y}" stroke="#1f78c1" stroke-width="${3*k}" stroke-dasharray="${10*k} ${7*k}" opacity=".5"/>`;
   const al=inAlertas(cab);
   s+=`<g class="incab" transform="translate(${cp[0]} ${cp[1]})"><rect x="${-70*k}" y="${-26*k}" width="${140*k}" height="${52*k}" rx="${8*k}" fill="#1b2f4a" stroke="${al?'#c0392b':'#fff'}" stroke-width="${3*k}"/><text y="${7*k}" text-anchor="middle" font-size="${17*k}" font-weight="800" fill="#fff" letter-spacing="1">CABEZAL</text>${al?`<circle cx="${68*k}" cy="${-24*k}" r="${13*k}" fill="#c0392b"/><text x="${68*k}" y="${-19*k}" text-anchor="middle" font-size="${15*k}" font-weight="800" fill="#fff">${al}</text>`:''}</g>`;
   for(const x of I.el){const t=IN_T[x.t]||IN_T.otro,sel=E.sel===x.id,es=inLee(x)?inEst(R[x.id]??null,x.min,x.max):'nd',r=(sel?22:17)*k,ni=inIncs(cab,x).length;
@@ -1843,7 +1860,7 @@ function inSVG(cab){const Z=inZonas(cab),I=inCfg(cab),c=cabById(cab),[vx,vy,vw,v
     s+=`</g>`}
   return s+`</svg>`}
 /* Mapa de toda la finca (vista de arriba): se toca un cabezal para abrir su zona */
-function inFincaSVG(d){const[vx,vy,vw,vh]=d.vb,naves=vvFincaGeo(d),cols={gas:'#2f8fd6',pla:'#59a14f',fra:'#e15759'};
+function inFincaSVG(d){const[vx,vy,vw,vh]=d.vb,naves=vvFincaGeo(d),cols={gas:'#2f8fd6',pla:'#59a14f',fra:'#e15759',met:'#f28e2b'};
   let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg insvg" id="infsvg" role="img" aria-label="Mapa de toda la finca ${esc(d.nombre)}"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f2efe4"/>`;
   for(const r of d.ctras)s+=`<polyline points="${inPP(r.p)}" fill="none" stroke="#d6cfbd" stroke-width="16" stroke-linejoin="round" stroke-linecap="round"/>${r.n?`<text x="${r.e[0]}" y="${r.e[1]}" font-size="20" font-weight="800" fill="#9c8f73">${esc(r.n)}</text>`:''}`;
   for(const z of d.zonas)s+=`<polygon points="${inPP(z.p)}" fill="${z.c}" fill-opacity=".14" stroke="${z.c}" stroke-width="4" stroke-dasharray="12 8"/>`;
@@ -1852,8 +1869,9 @@ function inFincaSVG(d){const[vx,vy,vw,vh]=d.vb,naves=vvFincaGeo(d),cols={gas:'#2
     const cx=ns.reduce((t,n)=>t+n.c[0],0)/ns.length,cy=ns.reduce((t,n)=>t+n.c[1],0)/ns.length;
     s+=`<g class="infcab" data-incab="${cab}" role="button" aria-label="Abrir ${esc(cabNombre(cab))}">${ns.map(n=>`<polygon points="${inPP(n.p)}" fill="${col}" fill-opacity=".55" stroke="#1b2f4a" stroke-width="2"/>`).join('')}
       <g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)})"><rect x="-80" y="-24" width="160" height="${ne?62:48}" rx="12" fill="#1b2f4a" stroke="${al?'#c0392b':'#fff'}" stroke-width="3"/><text y="7" text-anchor="middle" font-size="22" font-weight="800" fill="#fff">${esc(cabNombre(cab).toUpperCase())}</text>${ne?`<text y="30" text-anchor="middle" font-size="14" fill="#cfe0f0">${ne} ${ne===1?'elemento':'elementos'}</text>`:''}${al?`<circle cx="78" cy="-22" r="14" fill="#c0392b"/><text x="78" y="-17" text-anchor="middle" font-size="16" font-weight="800" fill="#fff">${al}</text>`:''}</g></g>`}
-  for(const z of d.zonas){const c=[centro(z.p)[0],Math.min(...z.p.map(q=>q[1]))+30];s+=`<text x="${c[0].toFixed(0)}" y="${c[1].toFixed(0)}" text-anchor="middle" font-size="22" font-weight="800" fill="${z.c}" stroke="#f2efe4" stroke-width="5" paint-order="stroke">${esc(z.n.toUpperCase())}</text>`}
+  for(const z of d.zonas.filter(z=>z.n)){const c=[centro(z.p)[0],Math.min(...z.p.map(q=>q[1]))+30];s+=`<text x="${c[0].toFixed(0)}" y="${c[1].toFixed(0)}" text-anchor="middle" font-size="22" font-weight="800" fill="${z.c}" stroke="#f2efe4" stroke-width="5" paint-order="stroke">${esc(z.n.toUpperCase())}</text>`}
   return s+`</svg>`}
+const P_PR=cab=>{const P=PR.find(x=>x.id===PR_CAB[cab]);return P&&P.f?`<button class="chip" type="button" data-inact="plano" data-v="${P.id}">Ver el plano de riego</button>`:''};
 function inPunto(e,id){const svg=$('#'+(id||'insvg'));if(!svg)return null;const p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const m=svg.getScreenCTM();if(!m)return null;const q=p.matrixTransform(m.inverse());return[q.x,q.y]}
 function inLecturaHTML(id,min,max){const v=(st.reg.pre||{})[id],u=inUltimo(id),es=inEst(v??null,min,max);
   return `<div class="inp sm"><input id="inp_${id.replace(/@/g,'_')}" data-inp="${id}" inputmode="decimal" autocomplete="off" aria-label="Presión" value="${inVal(v)}"><span class="u">bar</span></div>
@@ -1897,8 +1915,9 @@ function vInstal(){const cab=st.cab,c=cabById(cab);if(!c)return '';if(st.hist===
     if(E.modo==='sect')h+=`<div class="pick">${c.sectores.map(s=>`<button class="chip" type="button" data-inact="sec" data-v="${s.id}" aria-pressed="${E.secSel===s.id}"><i class="insw" style="background:${inSecCol(cab,s.id)}"></i>${esc(s.nombre)}</button>`).join('')}</div>
       <div class="pick">${[['pas','Toco un pasillo'],['nave','Toco la nave entera']].map(([k,t])=>`<button class="chip" type="button" data-inact="secpor" data-v="${k}" aria-pressed="${E.secPor===k}">${t}</button>`).join('')}</div><div class="note">Elige el sector y toca sus pasillos (o la nave entera). Tocar otra vez lo quita.</div>`;
     if(E.modo==='cab')h+=`<div class="note">Toca en el mapa dónde está el cabezal.</div>`}
+  if(M&&PLAN_RED[cab])h+=`<div class="pick"><button class="chip" type="button" data-inact="red" aria-pressed="${E.red!==false}">Tuberías del plano de riego</button>${P_PR(cab)}</div>`;
   h+=`<div class="mapwrap"><div class="mapin" style="width:${E.z*100}%" data-out="inmapa">${inSVG(cab)}</div></div>
-    <div class="inley">${c.sectores.map(s=>`<span><i style="background:${inSecCol(cab,s.id)}"></i>${esc(s.nombre)}</span>`).join('')}${Object.values(IN_T).filter(t=>t.l!=='·').map(t=>`<span><b class="indot sm" style="background:${t.c}">${t.l}</b>${t.n}</span>`).join('')}</div>
+    <div class="inley">${M&&PLAN_RED[cab]&&E.red!==false?[['pvc','General y reparto (PVC)'],['pe50','PE 50 / colector'],['pe40','PE 40'],['pe25','Agua buena o goma (PE 25)']].map(([k,t])=>`<span><i style="background:${RED_COL[k]}"></i>${t}</span>`).join(''):''}${c.sectores.map(s=>`<span><i style="background:${inSecCol(cab,s.id)}"></i>${esc(s.nombre)}</span>`).join('')}${Object.values(IN_T).filter(t=>t.l!=='·').map(t=>`<span><b class="indot sm" style="background:${t.c}">${t.l}</b>${t.n}</span>`).join('')}</div>
     ${!M?'<div class="note">Este cabezal no tiene plano de naves: sale un esquema con un recuadro por sector.</div>':''}</section>`;
   const sx=I.el.find(x=>x.id===E.sel);if(sx)h+=inElHTML(cab,sx);
   // un apartado por sector: presiones del cabezal para ese sector y lo que hay en el campo
@@ -1927,7 +1946,8 @@ $('#main').addEventListener('change',e=>{const t=e.target;if(!t.dataset)return;c
   if(t.tagName==='SELECT')renderMain();else softUpdate()});
 document.addEventListener('click',e=>{if(st.tab!=='instal')return;const E=st.in,cab=st.cab,b=e.target.closest&&e.target.closest('[data-inact]');
   if(b){const a=b.dataset.inact;
-    if(a==='modo'){E.modo=b.dataset.v;E.mover=null}else if(a==='tipo')E.tipo=b.dataset.v;else if(a==='sec')E.secSel=b.dataset.v;else if(a==='secpor')E.secPor=b.dataset.v;
+    if(a==='red'){E.red=E.red===false}else if(a==='plano'){st.pr=b.dataset.v;st.prz=1;st.tab='planriego';renderTabs();renderMain();window.scrollTo(0,0);return}
+    else if(a==='modo'){E.modo=b.dataset.v;E.mover=null}else if(a==='tipo')E.tipo=b.dataset.v;else if(a==='sec')E.secSel=b.dataset.v;else if(a==='secpor')E.secPor=b.dataset.v;
     else if(a==='z')E.z=Math.max(1,Math.min(3,E.z+(+b.dataset.z)*.5));else if(a==='cerrar'){E.sel=null;E.borrar=null;E.mover=null}
     else if(a==='finca'){E.vista='finca';E.sel=null;E.mover=null;E.modo='ver';E.z=1}
     else if(a==='abrir'){E.vista='cab';E.sel=null;E.z=1;if(b.dataset.cab!==st.cab){st.cab=b.dataset.cab;renderCabs()}}
@@ -2324,7 +2344,7 @@ const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';i
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
 const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
-function tabPermitida(k){if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
+function tabPermitida(k){if(k==='diseno')return veRiego()&&esAdminU();if(k==='planriego')return veRiego()&&prHay();if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||(fincasVis().some(f=>f.id===m.finca)&&cabOk(m.cab));
@@ -3147,7 +3167,7 @@ function esCausa(cab,z,R,U){if(!R||R.dt==null||R.dt<=U.dtAm)return '';const D=es
   else if(D.ce!=null&&ceMax!=null&&D.ce>ceMax)t=`CE de drenaje alta (${uS(D.ce)} µS/cm): la raíz no absorbe por salinidad. Baja la CE de la receta o lava.`;
   else{t=`Drenaje${D.pc!=null?' '+fmt(D.pc,1)+' %':''} y CE${D.ce!=null?' '+uS(D.ce)+' µS/cm':''} normales: mira la raíz y los goteros.`;inc=true}
   return `<div class="escausa"><b>Causa probable</b><span>${esc(t)}${esc(ds)}</span>${inc&&z.nave!=null?`<button class="btn" type="button" data-esact="incid">Apuntar incidencia en esta nave</button>`:''}</div>`}
-function esSVG(cab){const{Z,zs}=esZonas(cab),[vx,vy,vw,vh]=Z.vb,U=esU(),k=Math.max(vw,vh)/1000;
+function esSVG(cab){const{Z,zs}=esZonas(cab),[vx,vy,vw,vh]=Z.vb,U=esU(),k=Math.max(vw,vh)/1000*((Z.M&&Z.M.ek)||1);
   let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg essvg" id="essvg" role="img" aria-label="Estrés por nave"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f7f3e8"/>`;if(Z.M&&Z.M.fondo)s+=Z.M.fondo();
   for(const x of zs){const R=esCalc(esDato(cab,x.k),U),col=R?ES_COL[R.niv]:'#cfd8e3',sel=st.es.z===x.k,c=x.z.c;
     s+=`<g data-esz="${x.k}" style="cursor:pointer"><polygon points="${inPP(x.z.p)}" fill="${col}" fill-opacity="${R?.55:.5}" stroke="${sel?'#1b2f4a':'#5d6f84'}" stroke-width="${(sel?6:2.5)*k}" stroke-linejoin="round"/>
@@ -3287,7 +3307,7 @@ function plOrden(){if(st.fecha!==hoy())return[];const{af}=plRugCtx();if(!Object.
   for(const cab of Object.keys(MAPAS))for(const i of vvItems(cab,hoy())){if(i.hecha)continue;const w=i.cid?'c:'+i.cid:'p:'+i.nombre;(by[w]=by[w]||{nom:i.nombre,ks:new Set()}).ks.add(cab+':n'+i.nave)}
   return Object.values(by).map(x=>({nom:x.nom,af:[...x.ks].filter(k=>af[k]),ok:[...x.ks].filter(k=>!af[k])})).filter(x=>x.af.length&&x.ok.length)}
 const plMax=(cab,z)=>{try{return Math.max(...plRiesgos(cab,z).map(r=>r.n))}catch(e){return 0}};
-function plSVG(cab){const{Z,zs}=esZonas(cab),[vx,vy,vw,vh]=Z.vb,k=Math.max(vw,vh)/1000;
+function plSVG(cab){const{Z,zs}=esZonas(cab),[vx,vy,vw,vh]=Z.vb,k=Math.max(vw,vh)/1000*((Z.M&&Z.M.ek)||1);
   let s=`<svg viewBox="${vx} ${vy} ${vw} ${vh}" class="mapsvg essvg" id="plsvg" role="img" aria-label="Riesgo de plagas por nave"><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f7f3e8"/>`;if(Z.M&&Z.M.fondo)s+=Z.M.fondo();
   for(const x of zs){const n=plMax(cab,x),sel=st.es.z===x.k,c=x.z.c;
     s+=`<g data-plz="${x.k}" style="cursor:pointer"><polygon points="${inPP(x.z.p)}" fill="${ES_COL[n]}" fill-opacity=".5" stroke="${sel?'#1b2f4a':'#5d6f84'}" stroke-width="${(sel?6:2.5)*k}" stroke-linejoin="round"/>
@@ -3712,20 +3732,20 @@ const apFalta=(cada,ult,inst)=>cada?cada-diasEntre(ult||inst||hoy(),hoy()):null;
 function apPend(a){if(a.estado==='retirado')return [];const P=[];for(const m of a.mant||[]){const f=apFalta(m.cada,m.ult,a.inst);if(f!=null&&f<=0)P.push(m.t)}
   if(a.calib&&a.calib.cada){const f=apFalta(a.calib.cada,a.calib.ult,a.inst);if(f!=null&&f<=0)P.push('Calibrar')}return P}
 const apPendTotal=()=>(st.ap||[]).reduce((s,a)=>s+apPend(a).length,0);
-const apDonde=a=>{const c=cabById(a.cab),f=c&&(st.cfg.fincas||[]).find(x=>x.cabezales.includes(c.id));return [f&&f.nombre,c&&c.nombre,a.nave?'Nave '+a.nave:''].filter(Boolean).join(' · ')||'Sin sitio'};
+const apDonde=a=>{const c=cabById(a.cab),f=c&&(st.cfg.fincas||[]).find(x=>x.cabezales.includes(c.id));return [f&&f.nombre,c&&c.nombre,(a.nave!=null&&a.nave!=='')?'Nave '+a.nave:''].filter(Boolean).join(' · ')||'Sin sitio'};
 /* Batería: la que manda la placa viene en voltios; la apuntada a mano, en % */
 const apBat=b=>b==null?'':b<=5?fmt(b,2)+' V':Math.round(b)+' %';const apBatMal=b=>b!=null&&(b<=5?b<3.5:b<25);
 const apHace=ts=>{const m=Math.round((Date.now()-Date.parse(ts))/60000);return m<60?'hace '+Math.max(0,m)+' min':m<1440?'hace '+Math.round(m/60)+' h':'hace '+Math.round(m/1440)+' días'};
 async function apGuarda(a,msg){a.mod=new Date().toISOString();const i=(st.ap||[]).findIndex(x=>x.id===a.id);if(i>=0)st.ap[i]=a;else st.ap.unshift(a);renderGrupos();renderMain();
   try{const {id,...doc}=a;if(a._nuevo){delete doc._nuevo;delete a._nuevo;await Store.setCol('aparatos',a.id,doc)}else{if(doc.dato&&doc.dato.auto)delete doc.dato;await Store.updCol('aparatos',a.id,doc)}if(msg)toast(msg);apProgramar()}catch(e){toast(errMsg(e))}}
-function apNuevo(o){o=o||{};const t=apTipo(o.tipo||'N4');return {tipo:t[0],nombre:o.nombre||'',cab:o.cab||st.cab||'',nave:o.nave||'',inst:hoy(),nota:'',diseno:o.diseno||'',dev:o.dev||''}}
+function apNuevo(o){o=o||{};const t=apTipo(o.tipo||'N4');return {tipo:t[0],nombre:o.nombre||'',cab:o.cab||st.cab||'',nave:o.nave??'',inst:hoy(),nota:'',diseno:o.diseno||'',dev:o.dev||''}}
 function vAparatos(){apCargar();
   if(st.ap===null)return `<section class="card"><div class="note">Cargando tus aparatos…</div></section>`;
   if(st.apF)return apForm();if(st.apInf&&!st.apSel)return apInformeHTML();if(st.apSel){const a=st.ap.find(x=>x.id===st.apSel);if(a)return apFicha(a);st.apSel=null}
   const act=st.ap.filter(a=>a.estado!=='retirado'),ret=st.ap.filter(a=>a.estado==='retirado'),pend=apPendTotal();
   const grupos={};for(const a of act){const k=apDonde(a).split(' · ').slice(0,2).join(' · ');(grupos[k]=grupos[k]||[]).push(a)}
   lecCargar();const sueltas=apSueltas(),sin=act.filter(apSinDatos);
-  const fila=a=>{const P=apPend(a),t=apTipo(a.tipo),sd=apSinDatos(a);return `<button class="aprow" type="button" data-apver="${a.id}"><span><b>${esc(a.nombre||t[1])}</b><small>${esc(t[1])}${a.nave?' · Nave '+esc(a.nave):''}</small>
+  const fila=a=>{const P=apPend(a),t=apTipo(a.tipo),sd=apSinDatos(a);return `<button class="aprow" type="button" data-apver="${a.id}"><span><b>${esc(a.nombre||t[1])}</b><small>${esc(t[1])}${a.nave!=null&&a.nave!==''?' · Nave '+esc(a.nave):''}</small>
     <small>${a.dato?esc(a.dato.txt||'')+(a.dato.bat!=null?' · batería '+apBat(a.dato.bat):'')+' · '+apHace(a.dato.ts):'Sin datos todavía'}</small></span>
     <span class="pill ${P.length||sd?'bad':'ok'}">${sd?'Sin datos'+(a.dato?' desde hace '+apHace(a.dato.ts).replace('hace ',''):''):P.length?'Toca: '+esc(P[0])+(P.length>1?' y '+(P.length-1)+' más':''):'Al día'}</span></button>`};
   return `<section class="card"><div><h3>Mis aparatos</h3><div class="sub">Lo que tienes montado e instalado: dónde está, su mantenimiento y sus datos</div></div>
@@ -3789,7 +3809,7 @@ document.addEventListener('click',e=>{if(st.tab!=='aparatos'&&st.tab!=='taller')
   if(q('[data-apcal]')){a.calib.ult=hoy();apHist(a,'Calibrado');apGuarda(a,'Calibración apuntada');return}
   if(q('[data-apdato]')){const t=$('#ap_dt').value.trim(),bt=$('#ap_db').value.trim();if(!t&&!bt){toast('Escribe lo que marca');return}a.dato={ts:new Date().toISOString(),txt:t,bat:bt?Math.max(0,Math.min(100,parseInt(bt,10)||0)):null,manual:true};apGuarda(a,'Dato apuntado');return}
   if(q('[data-aphist]')){const t=$('#ap_h').value.trim();if(!t){toast('Escribe qué ha pasado');return}apHist(a,t);apGuarda(a,'Apuntado en el historial');return}
-  if(q('[data-apedit]')){st.apF={id:a.id,tipo:a.tipo,nombre:a.nombre||'',cab:a.cab||'',nave:a.nave||'',inst:a.inst||'',nota:a.nota||'',diseno:a.diseno||'',dev:a.dev||''};renderMain();window.scrollTo(0,0);return}
+  if(q('[data-apedit]')){st.apF={id:a.id,tipo:a.tipo,nombre:a.nombre||'',cab:a.cab||'',nave:a.nave??'',inst:a.inst||'',nota:a.nota||'',diseno:a.diseno||'',dev:a.dev||''};renderMain();window.scrollTo(0,0);return}
   if(q('[data-apret]')){a.estado=a.estado==='retirado'?'activo':'retirado';apHist(a,a.estado==='retirado'?'Retirado':'Instalado de nuevo');apGuarda(a);return}
   if(q('[data-apdel]')){st.apDel=a.id;renderMain();return}
   if(q('[data-apdelno]')){st.apDel=null;renderMain();return}
@@ -3861,7 +3881,7 @@ function apEtiquetas(lista){const w=window.open('','_blank');if(!w){toast('Deja 
   if(window.qrcode)go();else cargaJs('qrcode.js',go)}
 /* Tarea de mantenimiento para alguien del equipo: cuando la marca hecha, se apunta en el aparato */
 async function apMandar(a,i,para){const m=a.mant[i];if(!m)return;const dest=personas().find(u=>u.email===para),c=cabById(a.cab),f=c&&(st.cfg.fincas||[]).find(x=>x.cabezales.includes(c.id));
-  const t={ts:new Date().toISOString(),titulo:m.t+' · '+(a.nombre||apTipo(a.tipo)[1]),finca:f?f.id:'',cab:a.cab||'',nave:a.nave?+a.nave:null,maq:'',of:'',np:1,para:dest?dest.email:'',paraNombre:dest?dest.nombre.replace(/ \(yo\)$/,''):'',fecha:hoy(),urg:false,rep:'',
+  const t={ts:new Date().toISOString(),titulo:m.t+' · '+(a.nombre||apTipo(a.tipo)[1]),finca:f?f.id:'',cab:a.cab||'',nave:a.nave!=null&&a.nave!==''?+a.nave:null,maq:'',of:'',np:1,para:dest?dest.email:'',paraNombre:dest?dest.nombre.replace(/ \(yo\)$/,''):'',fecha:hoy(),urg:false,rep:'',
     det:'Mantenimiento de «'+(a.nombre||apTipo(a.tipo)[1])+'» ('+apDonde(a)+'). Al marcarla hecha se apunta sola en el aparato.',adjuntos:[],hecha:false,creadaPor:yoNombre(),creadaEmail:miEmail(),apId:a.id,apMant:m.t};
   try{const id=await Store.addCol('tareas',t);if(st.tareas)st.tareas.unshift({...t,id});m.tarea=id;apHist(a,'Mandado a '+(t.paraNombre||'el equipo')+': '+m.t);await apGuarda(a,dest?'Tarea mandada a '+t.paraNombre:'Tarea para el equipo');
     pushEnviar(t.para?[t.para]:t.cab?quienVeCab(t.cab):quienVeFinca(t.finca),'Tarea nueva: '+t.titulo,fFecha(t.fecha)+' · de '+(t.creadaPor||''),'tarea-'+id,'tareas')}catch(e){toast(errMsg(e))}}
@@ -4111,6 +4131,69 @@ async function migNavesGas(){try{if(!esAdminU()||!cabById('gas')||(st.cfg.mig||{
   if(st.dirtyCfg)return;f(st.cfg);f(st.savedCfg);await Store.setConfig(clone(st.savedCfg));if(['mapa','instal'].includes(st.tab))renderMain()}
   catch(e){console.warn('naves de Gasolinera',e)}}
 /* Gasolinera: 6 naves trazadas sobre la foto aérea, la 1 arriba y la 6 abajo; los pasillos van en vertical (de arriba abajo de cada nave) */
+/* ---------- Medidas de los planos de riego de Pinta Santos (v210): con ellas se dibujan las naves de Planos, Franco y Metálicos,
+   sus tuberías y sus electroválvulas (En vivo, Mapa de la finca e Instalación). ---------- */
+const PLA_S=3.116,PLA_IZQ=[18,18,24,24,24,24,24,24,24,24,24,24,24,24,38.7],PLA_DER=[20,21,24,24,24,24,24,24,24,24,40.8],PLA_OFF=73.1;
+const PLA_GRUPOS=[[1],[2,3],[4,5],[6,7],[8,9],[10],[11,12],[13,14,15],[16,17],[18,19],[20,21],[22,23],[24],[25,26]];
+const PLA_EVN=g=>g.length>1?`EV naves ${g[0]}-${g[g.length-1]}`:`EV nave ${g[0]}`;
+const PLA_GEN=v=>{const m=v.p[0][1]/PLA_S;return m<78?'PVC Ø75':m<174?'PVC Ø90':'PVC Ø125'};
+const FRA_PAR=[[[272,205],[450,205],[450,305],[285,305]],[[290,320],[450,320],[450,420],[300,420]],[[308,440],[450,440],[450,592],[335,595]],
+  [[474,205],[668,205],[668,305],[474,305]],[[474,318],[672,318],[672,415],[474,415]],[[474,435],[565,435],[565,590],[478,590]],
+  [[480,598],[684,598],[684,710],[482,710]],[[482,720],[687,720],[687,830],[484,830]],[[488,842],[692,842],[692,950],[500,950]],[[508,968],[696,968],[696,1085],[525,1085]],[[536,1100],[640,1100],[611,1228],[565,1228]]];
+const FRA_M2=['3.974 m²','3.626 m²','4.581 m²','4.875 m²','4.875 m²','3.353 m²','5.168 m²','5.148 m²','5.068 m²','4.438 m²','1.870 m²'];
+const fraT=p=>[380+.78*(p[0]-461),750+.78*(p[1]-205)];   // del plano de Franco al dibujo de Franco
+const MET_Y1=33.6,MET_IZQ=[[52.70,66.20],[65.50,71.00],[71.50,75.00],[75.50,78.30],[78.80,81.30],[81.80,84.50],[85.00,88.20],[88.40,92.00],[92.50,95.00],[95.00,89.50],[87.30,84.00],[84.00,78.00],[78.00,51.60]];
+const metEnFra=()=>vvSim([7,0],[7,781],[560,250],[525,728]);   // del dibujo de los Metálicos al de Franco (quedan al norte)
+/* Tuberías, electroválvulas y llaves de cada plano, en las coordenadas del dibujo de su cabezal */
+const PLAN_RED={
+  met(){const U=2,L=[],E=[],m=(x,y)=>[x*U,y*U];
+    L.push({p:[m(-3.5,38.9),m(0.9,38.9),m(0.9,32.8),m(112.5,32.8),m(112.5,45)],t:'pvc',w:6,n:'General PVC Ø110'});
+    L.push({p:[m(112.5,45),m(112.5,396)],t:'pvc',w:5,n:'General PVC Ø90'});
+    L.push({p:[m(0.9,38.9),m(0.9,393)],t:'pvc',w:6,n:'Ramal de la general'});
+    L.push({p:[m(5.5,402),m(5.5,41),m(-3.5,41)],t:'pe25',w:2.4,n:'Agua buena PE 25'});
+    E.push({x:9.9*U,y:29.6*U,nave:0,n:'EV nave 0'});L.push({p:[m(9.9,29.6),m(9.9,32.8)],t:'pvc',w:2.6});L.push({p:[m(9.9,29.6),m(9.9,2.4),m(105,2.4)],t:'pe50',w:3.2,n:'PE 50'});
+    for(let i=0;i<14;i++){const y=MET_Y1+i*25.6+2,n=14+i;E.push({x:104.9*U,y:y*U,nave:n,n:'EV nave '+n});
+      L.push({p:[m(104.9,y),m(112.5,y)],t:'pvc',w:2.6},{p:[m(9.5,y),m(57.5,y)],t:'pe40',w:2.6},{p:[m(57.5,y),m(104.9,y)],t:'pe50',w:3.2})}
+    MET_IZQ.forEach(([la,lb],i)=>{const y=MET_Y1+(i+1)*25.6+2,n=i+1,xo=-0.5-(la+(lb-la)*2/24)+2,xm=(xo-3.1)/2;E.push({x:-3.1*U,y:y*U,nave:n,n:'EV nave '+n});
+      L.push({p:[m(-3.1,y),m(0.9,y)],t:'pvc',w:2.6},{p:[m(xo,y),m(xm,y)],t:'pe40',w:2.6},{p:[m(xm,y),m(-3.1,y)],t:'pe50',w:3.2})});
+    for(const e of E)e.nota=e.nave===0?'Al principio de la nave 0, junto al pasillo · laterales PE 50':e.nave>=14?`Al final de la nave ${e.nave}, por dentro · laterales PE 40 y PE 50 · la general PVC Ø90 baja por fuera`:`Junto al pasillo, por dentro de la nave ${e.nave} · laterales PE 40 y PE 50 · ramal de la general por el pasillo`;
+    return{lin:L,ev:E,llaves:[{x:112.5*U,y:398*U,n:'Llave de desagüe (general de la derecha)'},{x:0.9*U,y:395*U,n:'Llave de desagüe (ramal del pasillo)'}],cab:[-17,82]}},
+  pla(){const S=PLA_S,M=MAPAS.pla,L=[],E=[],y0=n=>M.naves.find(v=>v.n===n).p[0][1],X=247.5;
+    L.push({p:[[X,-40],[X,78*S]],t:'pvc',w:4,n:'General PVC Ø75'},{p:[[X,78*S],[X,174*S]],t:'pvc',w:5,n:'General PVC Ø90'},{p:[[X,174*S],[X,376.4*S]],t:'pvc',w:6.5,n:'General PVC Ø125'});
+    const ys=y0(20)+2;L.push({p:[[X,ys],[545,ys]],t:'pvc',w:6.5,n:'PVC Ø125 · sigue a otra zona',flecha:1});
+    for(const g of PLA_GRUPOS){const izq=g[0]<=15,xe=izq?213:282,xo=izq?5:460,yA=y0(g[0])+5,yB=y0(g[g.length-1])+5;
+      E.push({x:xe,y:yA,nave:g[0],naves:g,n:PLA_EVN(g),nota:`Riega ${g.length>1?'las naves '+g.join(', ').replace(/, (\d+)$/,' y $1'):'la nave '+g[0]}${g.length>1?' · colector PVC 50':''} · laterales PE 40`});
+      L.push({p:[[X,yA],[xe,yA]],t:'pvc',w:3});if(g.length>1)L.push({p:[[xe,yA],[xe,yB]],t:'pe50',w:3.2,n:'PVC 50'});
+      for(const n of g){const y=y0(n)+5;L.push({p:[[xe,y],[xo,y]],t:'pe40',w:2.6})}}
+    const ya=y0(13)+16*S;L.push({p:[[X,ya-4*S],[213,ya],[-30,ya]],t:'pe25',w:2.4,n:'Agua buena PE 25',flecha:1});
+    return{lin:L,ev:E,llaves:[{x:-40,y:ya,n:'Llave de PVC del agua buena (10-4-2003)'}],cab:null}},
+  fra(){const L=[],E=[],seg=(pts,t,w,n)=>L.push({p:pts.map(fraT),t,w,n});
+    seg([[30,160],[250,168],[250,195],[368,195]],'pvc',6,'Entrada PVC Ø140');seg([[368,195],[568,195]],'pvc',5.4,'PVC Ø125');
+    for(const[a,b,n,w]of[[195,310,'PVC Ø110',5],[310,430,'PVC Ø90',4.6],[430,505,'PVC Ø75',4],[505,595,'PVC Ø63',3.6]])seg([[368,a],[368,b]],'pvc',w,n);
+    seg([[568,195],[568,520]],'pvc',5.4,'PVC Ø125');
+    seg([[456,195],[456,600],[588,600]],'pvc',5,'General por la carretera');
+    for(const[a,b,n,w]of[[600,840,'PVC Ø110',5],[840,965,'PVC Ø90',4.6],[965,1095,'PVC Ø75',4],[1095,1232,'PVC Ø63',3.6]])seg([[588,a],[588,b]],'pvc',w,n);
+    seg([[469,200],[469,835]],'pe25',2.4,'Goma del agua');
+    const lat=(x0,xm,x1,y,todo40)=>{const q1=(x0+xm)/2,q3=(xm+x1)/2;if(todo40){seg([[x0,y],[x1,y]],'pe40',2.4);return}seg([[x0,y],[q1,y]],'pe40',2.4);seg([[q1,y],[xm,y]],'pe50',3);if(x1>xm+5){seg([[xm,y],[q3,y]],'pe50',3);seg([[q3,y],[x1,y]],'pe40',2.4)}};
+    for(const[y,x0,x1]of[[213,275,448],[262,280,448],[330,292,448],[385,296,448],[447,312,448],[515,325,448]])lat(x0,368,x1,y);
+    for(const[y,x0,x1]of[[212,477,666],[260,477,666],[324,477,670],[372,477,670],[450,478,568],[510,478,568]])lat(x0,568,x1,y);
+    for(const[y,x0,x1]of[[602,482,682],[652,484,682],[722,485,685],[774,486,685],[846,492,690],[898,496,690],[972,512,694],[1025,518,694]])lat(x0,588,x1,y);
+    for(const[y,x0,x1]of[[1104,541,635],[1162,557,619]])lat(x0,588,x1,y,1);
+    const col={368:'bajante de la izquierda (Ø110 → Ø63)',568:'bajante de la derecha (PVC Ø125)',588:'bajante del sector 2 (Ø110 → Ø63)'};let k=0;
+    for(const[x,ys,par]of[[368,[210,260,328,383,443,515],[1,1,2,2,3,3]],[568,[210,262,322,370,440,508],[4,4,5,5,6,6]],[588,[602,652,722,772,845,897,972,1024,1102,1162],[7,7,8,8,9,9,10,10,11,11]]])
+      ys.forEach((y,i)=>{k++;const q=fraT([x,y]),p=par[i];E.push({x:q[0],y:q[1],nave:p,n:'EV '+k,col:col[x],sec:p<=6?1:2,nota:`Parcela ${p} · sector ${p<=6?1:2} · ${col[x]} · laterales ${p===11?'PE 40':'PE 40 y PE 50'}`})});
+    return{lin:L,ev:E,llaves:[],cab:null}}};
+const RED_COL={pvc:'#c45a1c',pe50:'#14508f',pe40:'#2f80c9',pe25:'#0aa3a3'};
+/* Dibujo de las tuberías del plano encima de un mapa de naves (k = tamaño de las letras y las líneas) */
+function redSVG(cab,k,conEv){const F=PLAN_RED[cab];if(!F||!MAPAS[cab])return '';const R=F();let s='<g class="inred" pointer-events="none">';
+  for(const l of R.lin){const d='M'+l.p.map(q=>q[0].toFixed(1)+' '+q[1].toFixed(1)).join('L');s+=`<path d="${d}" fill="none" stroke="${RED_COL[l.t]}" stroke-width="${(l.w*k*.9).toFixed(2)}" stroke-linejoin="round" stroke-linecap="${l.t==='pvc'?'butt':'round'}"/>`;
+    if(l.flecha){const a=l.p[l.p.length-2],b=l.p[l.p.length-1],an=Math.atan2(b[1]-a[1],b[0]-a[0])*180/Math.PI;s+=`<path transform="translate(${b[0].toFixed(1)} ${b[1].toFixed(1)}) rotate(${an.toFixed(1)}) scale(${k.toFixed(2)})" d="M0 -8L14 0L0 8Z" fill="${RED_COL[l.t]}"/>`}}
+  for(const l of R.lin)if(l.n){let b=null;for(let i=0;i+1<l.p.length;i++){const a=l.p[i],c=l.p[i+1],L=Math.hypot(c[0]-a[0],c[1]-a[1]);if(!b||L>b.L)b={a,c,L}}if(!b||b.L<70*k)continue;
+    const m=lerp(b.a,b.c,.5);let an=Math.atan2(b.c[1]-b.a[1],b.c[0]-b.a[0])*180/Math.PI;if(an>90)an-=180;if(an<-90)an+=180;
+    s+=`<text transform="translate(${m[0].toFixed(1)} ${m[1].toFixed(1)}) rotate(${an.toFixed(1)}) translate(0 ${(-8*k).toFixed(1)})" text-anchor="middle" font-size="${(11*k).toFixed(1)}" font-weight="800" fill="${RED_COL[l.t]}" stroke="#fff" stroke-width="${(3*k).toFixed(1)}" paint-order="stroke">${esc(l.n)}</text>`}
+  if(conEv){for(const e of R.ev)s+=`<g transform="translate(${e.x.toFixed(1)} ${e.y.toFixed(1)}) scale(${k.toFixed(2)})"><circle r="7" fill="#fff" stroke="#c0262d" stroke-width="2"/><path d="M-4.4 -4.4L4.4 4.4M4.4 -4.4L-4.4 4.4" stroke="#c0262d" stroke-width="1.8"/></g>`;
+    for(const l of R.llaves)s+=`<g transform="translate(${l.x.toFixed(1)} ${l.y.toFixed(1)}) scale(${k.toFixed(2)})"><path d="M-8 -5.6L8 5.6V-5.6L-8 5.6Z" fill="#fff" stroke="#c45a1c" stroke-width="2" stroke-linejoin="round"/></g>`}
+  return s+'</g>'}
 const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633],[275,775],[213,905]],Q=[[826,152],[757,290],[690,438],[622,582],[556,727],[432,852],[335,948]];
   const naves=[];for(let i=0;i<6;i++){const k=5-i;naves.push({n:6-i,p:[P[k+1],Q[k+1],Q[k],P[k]],vert:true})}naves.sort((a,b)=>a.n-b.n);   // la 6 abajo y la 1 arriba
   return{titulo:'Gasolinera',finca:'Pinta Santos',vb:[150,20,930,985],naves,ang:24,nota:'6 naves · la 1 arriba y la 6 abajo',fondo(){let s='';
@@ -4130,27 +4213,83 @@ const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633]
   // caseta
   s+=`<g><rect x="858" y="446" width="48" height="64" fill="url(#mpHatch)" stroke="#5f5644" stroke-width="2"/><text x="882" y="530" text-anchor="middle" font-size="14" fill="#5f5644" font-weight="700">CASETA</text></g>`;
   return s}}})(),
-  /* Planos: dibujado girado para que las naves queden en vertical (la flecha marca el norte real).
-     Columna izquierda: 3 naves (1-3); derecha: una pequeña arriba (4) y una grande (5). Las líneas de cada nave son sus pasillos. */
-  pla:(()=>{const R=(x0,y0,x1,y1)=>[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];   // pasillos de lado a lado de la nave
-    const naves=[{n:1,p:R(0,0,225,375),pas:4},{n:2,p:R(0,395,225,790),pas:4},{n:3,p:R(0,810,225,1200),pas:4},{n:4,p:R(270,245,465,395),pas:1},{n:5,p:R(270,415,465,1190),pas:8}];
-    return{titulo:'Planos',finca:'Pinta Santos',vb:[-80,-110,860,1380],naves,ang:0,rayas:11,pasInv:true,norte:[710,-50],norteAng:39,nota:'5 naves · pasillos numerados de arriba abajo',
+  /* Planos (v210): las 26 naves del plano de riego, en el mismo dibujo de antes (la flecha marca el norte real).
+     A la izquierda del pasillo, de arriba abajo, la 1 a la 15 (70 m de largo); a la derecha, la 16 a la 26 (66 m). La última de cada lado, en trapecio.
+     Las líneas de cada nave son sus pasillos de cultivo. */
+  pla:(()=>{const S=PLA_S,naves=[];let y=0;
+    PLA_IZQ.forEach((w,i)=>{const y0=y*S,ult=i===PLA_IZQ.length-1;naves.push({n:i+1,w,lar:70,p:ult?[[0,y0],[225,y0],[225,y0+16.5*S],[0,y0+38.7*S]]:[[0,y0],[225,y0],[225,(y+w)*S],[0,(y+w)*S]],pas:ult?15:Math.round(w/2)});y+=w+1.6});
+    y=PLA_OFF;PLA_DER.forEach((w,i)=>{const y0=y*S,ult=i===PLA_DER.length-1,x1=i===0?462:465;naves.push({n:16+i,w,lar:i===0?65:66,p:ult?[[270,y0],[465,y0],[465,y0+19.9*S],[270,y0+40.8*S]]:[[270,y0],[x1,y0],[x1,(y+w)*S],[270,(y+w)*S]],pas:ult?16:Math.round(w/2)});y+=w+1.6});
+    return{titulo:'Planos',finca:'Pinta Santos',vb:[-80,-110,860,1380],naves,ang:0,ek:.6,rayas:11,norte:[710,-50],norteAng:39,nota:'26 naves · la 1-15 a la izquierda y la 16-26 a la derecha',
       fondo(){let s='';
         s+=`<rect x="520" y="-60" width="260" height="1320" fill="#efe6cf" opacity=".7"/><g stroke="#e2d6b8" stroke-width="1.2">${[...Array(13).keys()].map(k=>`<line x1="${525+k*20}" y1="-60" x2="${525+k*20}" y2="1260"/>`).join('')}</g>`;
         const cam='M-30 -30H495V1225H-30Z';s+=`<path d="${cam}" fill="none" stroke="#bdb5a3" stroke-width="30" stroke-linejoin="round"/><path d="${cam}" fill="none" stroke="#e6e0d2" stroke-width="22" stroke-linejoin="round"/>`;
-        s+=`<rect x="225" y="-15" width="45" height="1225" fill="#ece5d6"/><text transform="translate(253 820) rotate(-90)" font-size="15" font-weight="700" fill="#8a7d62" letter-spacing="3">PASILLO CENTRAL</text>`;
-        const puerta=(x,y,dir)=>`<g transform="translate(${x} ${y})"><rect x="${dir>0?0:-8}" y="-9" width="8" height="18" fill="#8a5a2b"/><path d="M${dir>0?8:-8} -9 a18 18 0 0 ${dir>0?1:0} ${dir>0?14:-14} 14" fill="none" stroke="#8a5a2b" stroke-width="1.5" stroke-dasharray="3 2"/></g>`;
-        for(const[x0,x1,y]of[[0,225,385],[0,225,800],[270,465,405],[270,465,235]]){s+=`<rect x="${x0}" y="${y-10}" width="${x1-x0}" height="20" fill="#ece5d6"/>`+puerta(x0,y,-1)+puerta(x1,y,1)}
+        s+=`<rect x="225" y="-15" width="45" height="1225" fill="#ece5d6"/><text transform="translate(262 820) rotate(-90)" font-size="15" font-weight="700" fill="#8a7d62" letter-spacing="3">PASILLO CENTRAL</text>`;
         s+=`<g><rect x="330" y="110" width="100" height="70" fill="url(#mpHatch)" stroke="#5f5644" stroke-width="2"/><text x="380" y="200" text-anchor="middle" font-size="13" fill="#5f5644" font-weight="700">CASETA</text></g>`;
         s+=`<path d="M495 700H560" stroke="#e6e0d2" stroke-width="18"/><g><rect x="556" y="600" width="210" height="190" rx="18" fill="none" stroke="#e8a33a" stroke-width="3" stroke-dasharray="8 6"/>
           <rect x="570" y="620" width="110" height="80" fill="url(#mpHatch)" stroke="#5f5644" stroke-width="2.5"/>
           <g>${[0,1,2,3].map(k=>`<rect x="${690+k*16}" y="626" width="13" height="70" fill="#2c4a6e" stroke="#9fb4c9" stroke-width="1"/>`).join('')}</g>
           <text x="661" y="735" text-anchor="middle" font-size="18" font-weight="800" fill="#b5741a">CABEZAL</text><text x="661" y="756" text-anchor="middle" font-size="12" fill="#5f5644">con placas solares</text></g>`;
-        return s}}})(),
-  /* Franco: dibujado siguiendo los invernaderos de la foto aérea (norte arriba).
-     p = contorno del invernadero; q = cuadrilátero que da la dirección de las líneas de cultivo (pasillos); div = separaciones entre bloques */
-  fra:(()=>{const L=(x,y,m)=>[[x-400,y-400*m],[x+400,y+400*m]];   // recta por (x,y) con pendiente m
-    const naves=[
+        return s},
+      info(n){const v=this.naves.find(x=>x.n===n);if(!v)return [];const g=PLA_GRUPOS.find(q=>q.includes(n)),ult=n===15||n===26;
+        return [['Medidas',ult?(n===15?'Trapecio: 70 m de largo, 38,70 m por fuera y 16,5 m junto al pasillo':'Trapecio: 66 m de largo, 40,80 m junto al pasillo y 19,90 m por fuera'):`${fmt(v.lar,0)} × ${fmt(v.w,0)} m`],
+          ['Lado',n<=15?'A la izquierda del pasillo':'A la derecha del pasillo'],
+          ['Electroválvula',g?`${PLA_EVN(g)}: riega ${g.length>1?'las naves '+g.join(', ').replace(/, (\d+)$/,' y $1'):'esta nave'}`:'—'],
+          ['Colector',g&&g.length>1?'PVC 50 por el borde de dentro de la nave':'Sale directo de la electroválvula'],['Laterales','PE 40'],
+          ['General',`Por el pasillo: ${PLA_GEN(v)}`]]}}})(),
+  /* Franco (v210): las 11 parcelas del plano de riego (malla de 1991). Sector 1: la 1-3 a la izquierda de la carretera y la 4-6 a la derecha;
+     sector 2: la 7-11 en fila. Mismo dibujo de fondo de antes (norte arriba); los Metálicos quedan al norte, con un pasillo entre medias. */
+  fra:(()=>{const naves=FRA_PAR.map((p,i)=>{const q=p.map(fraT),h=Math.max(...p.map(z=>z[1]))-Math.min(...p.map(z=>z[1]));const xs=q.map(z=>z[0]),ys=q.map(z=>z[1]),x0=Math.min(...xs),x1=Math.max(...xs);return{n:i+1,p:q,c:[x0+(x1-x0)*(i===10?.22:.27),(Math.min(...ys)+Math.max(...ys))/2],pas:Math.max(4,Math.round(h/12.5)),sec:i<6?1:2,m2:FRA_M2[i]}});
+    return{titulo:'Franco',finca:'Pinta Santos',vb:[120,600,600,990],naves,ang:0,ek:.55,norte:[670,650],norteAng:0,nota:'11 parcelas · sector 1: 1-6 · sector 2: 7-11',
+      fondo(){let s='';
+        // bancales de cultivo al oeste
+        s+=`<g fill="#dfe8cf" stroke="#c9d6b3" stroke-width="1.5">${[[40,20,130,455],[40,480,80,850],[40,1080,300,1190],[40,1210,300,1330],[40,1350,300,1460],[40,1480,300,1590]].map(([x0,y0,x1,y1])=>`<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" rx="6"/>`).join('')}</g>`;
+        // Los Metálicos, al norte (sus naves, en gris: tienen su propio plano)
+        if(MAPAS.met){const f=metEnFra();s+=`<g fill="#7f8c8d" fill-opacity=".14" stroke="#9aa5a6" stroke-width="1.3">${MAPAS.met.naves.map(v=>`<polygon points="${ptsS(v.p.map(f))}"/>`).join('')}</g><text x="560" y="480" text-anchor="middle" font-size="24" font-weight="800" fill="#5d6d7e" letter-spacing="2">LOS METÁLICOS</text>`}
+        // La Valla: donde se guardan los tractores, junto al cabezal de Franco y Metálicos
+        s+=`<g><rect x="492" y="150" width="96" height="70" rx="6" fill="none" stroke="#8a5a2b" stroke-width="2.5" stroke-dasharray="7 5"/><text x="540" y="140" text-anchor="middle" font-size="15" font-weight="800" fill="#8a5a2b">LA VALLA</text></g>`;
+        // carretera RM-11
+        const ctra='M1030 -125C935 120 852 330 792 520C762 620 746 700 730 800C712 900 692 990 672 1080C654 1170 634 1260 616 1340C600 1420 588 1500 576 1600';
+        s+=`<path d="${ctra}" stroke="#d9c58f" stroke-width="70" fill="none"/><path d="${ctra}" stroke="#efe2b8" stroke-width="60" fill="none"/><path d="${ctra}" stroke="#fff" stroke-width="2" stroke-dasharray="18 14" fill="none"/>
+          <g transform="translate(768 640) rotate(-74)"><rect x="-44" y="-14" width="88" height="28" rx="6" fill="#e8a33a"/><text y="6" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">RM-11</text></g>`;
+        // camino de La Valla a Franco y carretera de la finca entre las dos columnas del sector 1
+        const cam='M600 120L520 210L400 270L372 600L383 745L383 1056L388 1560';
+        s+=`<path d="${cam}" stroke="#bdb5a3" stroke-width="20" fill="none" stroke-linejoin="round"/><path d="${cam}" stroke="#e6e0d2" stroke-width="14" fill="none" stroke-linejoin="round"/>
+          <text transform="translate(386 905) rotate(-90)" text-anchor="middle" font-size="11" font-weight="800" fill="#8a7d62" letter-spacing="2">CARRETERA</text>`;
+        // casa Franco
+        {const q=fraT([612,500]);s+=`<g><rect x="${(q[0]-22).toFixed(0)}" y="${(q[1]-34).toFixed(0)}" width="44" height="68" fill="url(#mpHatch)" stroke="#5f5644" stroke-width="2"/><text transform="translate(${(q[0]+34).toFixed(0)} ${q[1].toFixed(0)}) rotate(90)" text-anchor="middle" font-size="12" fill="#5f5644" font-weight="700">CASA FRANCO</text></g>`}
+        // rótulos de los sectores
+        {const a=fraT([270,190]),b=fraT([712,600]);s+=`<text x="${a[0].toFixed(0)}" y="${a[1].toFixed(0)}" font-size="16" font-weight="800" fill="#1b2f4a">SECTOR 1 · 6 PARCELAS</text><text x="${b[0].toFixed(0)}" y="${b[1].toFixed(0)}" font-size="16" font-weight="800" fill="#1b2f4a">SECTOR 2 · 5</text>`}
+        return s},
+      info(n){const v=this.naves.find(x=>x.n===n);if(!v)return [];const ev=(PLAN_RED.fra?PLAN_RED.fra().ev:[]).filter(e=>e.nave===n);
+        return [['Sector',`Sector ${v.sec}`],['Superficie',v.m2],['Sitio',n<=3?'Columna izquierda, al oeste de la carretera':n<=6?'Columna derecha, al este de la carretera':'Sector 2, en fila al sur del sector 1'],
+          ['Electroválvulas',ev.length?ev.map(e=>e.n).join(' y ')+(ev[0].col?' · '+ev[0].col:''):'—'],['Laterales',n>=11?'PE 40':'PE 40 por los extremos y PE 50 en el centro'],
+          ['General',n<=3?'PVC Ø140 por arriba y bajante de la izquierda (Ø110 → Ø63)':n<=6?'PVC Ø125 por arriba y bajante Ø125':'General por la carretera hasta la bajante del sector 2 (Ø110 → Ø63)']]}}})(),
+  /* Metálicos (v210): las 28 naves del plano de riego, en metros × 2 (norte arriba). Pasillo central de 7 m; la 0 (32 × 100 m) arriba a la derecha;
+     la 14 a la 27 a la derecha (24 × 100 m); la 1 a la 13 a la izquierda (24 m de ancho, el lado de fuera inclinado). */
+  met:(()=>{const U=2,naves=[{n:0,p:[[15,0],[215,0],[215,64],[15,64]],pas:16}];
+    for(let i=0;i<14;i++){const y0=(MET_Y1+i*25.6)*U;naves.push({n:14+i,p:[[15,y0],[215,y0],[215,y0+48],[15,y0+48]],pas:12})}
+    MET_IZQ.forEach(([la,lb],i)=>{const y0=(MET_Y1+(i+1)*25.6)*U;naves.push({n:i+1,p:[[-1-la*U,y0],[-1,y0],[-1,y0+48],[-1-lb*U,y0+48]],pas:12,la,lb})});
+    naves.sort((a,b)=>a.n-b.n);
+    return{titulo:'Metálicos',finca:'Pinta Santos',vb:[-260,-270,600,1110],naves,ang:0,ek:.6,norte:[290,-230],norteAng:0,nota:'28 naves · la 0 arriba, la 1-13 a la izquierda y la 14-27 a la derecha',
+      fondo(o){let s='';
+        s+=`<rect x="-260" y="-36" width="274" height="20" fill="#e6e0d2" stroke="#bdb5a3" stroke-width="2"/><text x="-125" y="-21" text-anchor="middle" font-size="12" font-weight="800" fill="#8a7d62" letter-spacing="2">CAMINO DE ENTRADA</text>`;
+        s+=`<rect x="0" y="-36" width="14" height="830" fill="#ece5d6"/><text transform="translate(10 600) rotate(-90)" font-size="11" font-weight="700" fill="#8a7d62" letter-spacing="3">PASILLO</text>`;
+        s+=`<path d="M15 -12H215V-32L120 -96H15Z" fill="#dfe8cf" stroke="#9fb48a" stroke-width="2"/><text x="85" y="-46" text-anchor="middle" font-size="14" font-weight="800" fill="#5f7d4f">ENTRADA</text>`;
+        const ctra='M300 -270L285 120L262 820';s+=`<path d="${ctra}" stroke="#d9c58f" stroke-width="44" fill="none"/><path d="${ctra}" stroke="#efe2b8" stroke-width="36" fill="none"/><path d="${ctra}" stroke="#fff" stroke-width="2" stroke-dasharray="14 12" fill="none"/>
+          <g transform="translate(282 300) rotate(-88)"><rect x="-36" y="-11" width="72" height="22" rx="5" fill="#e8a33a"/><text y="5" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">AUTOVÍA</text></g>`;
+        if(!(o&&o.inst))s+=`<g><rect x="-27" y="72" width="20" height="20" rx="3" fill="#2d3a2f"/><path d="M-27 92L-7 72" stroke="#fff" stroke-width="1.6"/><text x="-31" y="86" text-anchor="end" font-size="13" font-weight="800" fill="#1b2f4a">CABEZAL</text></g>`;
+        s+=`<g><rect x="-150" y="0" width="40" height="30" fill="url(#mpHatch)" stroke="#5f5644" stroke-width="2"/><text x="-130" y="46" text-anchor="middle" font-size="11" fill="#5f5644" font-weight="700">CASETA</text></g>`;
+        return s},
+      info(n){const v=this.naves.find(x=>x.n===n);if(!v)return [];
+        if(n===0)return [['Medidas','32 × 100 m (era el semillero; ahora es una nave más)'],['Sitio','Arriba a la derecha, junto al camino de entrada'],['Electroválvula','Junto al pasillo, al principio de la nave'],['Laterales','PE 50'],['General','PVC Ø110, que pasa entre esta nave y la 14']];
+        if(n>=14)return [['Medidas','24 × 100 m'],['Sitio','A la derecha del pasillo'],['Electroválvula','Al final de la nave, por dentro'],['Laterales','PE 40 y luego PE 50'],['General','PVC Ø90, que baja por fuera de las naves de la derecha hasta la llave de desagüe']];
+        return [['Medidas',`24 m de ancho · ${fmt(v.la,2)} m de largo arriba y ${fmt(v.lb,2)} m abajo`],['Sitio','A la izquierda del pasillo'],['Electroválvula','Junto al pasillo, por dentro'],['Laterales','PE 40 y luego PE 50'],['General','Ramal que baja por el pasillo, junto a las naves 1 a 13, hasta la llave de desagüe']]}}})(),
+};
+/* ---------- v210: Planos y Franco pasan de los bloques de la foto aérea a las naves de sus planos de riego.
+   MAPAS_ANT guarda cómo eran antes solo para pasar lo apuntado (incidencias, tareas, aparatos, sectores e instalación) a la nave nueva.
+   Lo que tiene sitio en el dibujo (x, y) va a la nave que cae ahí; lo que solo tenía nave y pasillo, al centro de ese pasillo. ---------- */
+const MAPAS_ANT={pla:(()=>{const R=(x0,y0,x1,y1)=>[[x0,y0],[x1,y0],[x1,y1],[x0,y1]];return{rayas:11,pasInv:true,naves:[{n:1,p:R(0,0,225,375),pas:4},{n:2,p:R(0,395,225,790),pas:4},{n:3,p:R(0,810,225,1200),pas:4},{n:4,p:R(270,245,465,395),pas:1},{n:5,p:R(270,415,465,1190),pas:8}]}})(),
+  fra:(()=>{const L=(x,y,m)=>[[x-400,y-400*m],[x+400,y+400*m]];return{naves:[
       {n:1,p:[[405,758],[535,790],[688,826],[652,975],[572,990],[556,1062],[390,1058]],q:[[398,752],[700,834],[620,1120],[385,1056]],c:[470,890],
         div:[[[535,790],[484,1060]],L(402,845,.27),L(398,935,.27),[[394,1025],[484,1050]]]},
       {n:2,p:[[455,1080],[605,1103],[597,1150],[565,1310],[530,1430],[512,1515],[452,1552],[420,1545],[410,1380],[415,1240]],q:[[440,1075],[620,1105],[560,1565],[400,1540]],c:[490,1300],
@@ -4158,28 +4297,54 @@ const MAPAS={gas:(()=>{const P=[[605,62],[548,197],[478,345],[410,490],[343,633]
       {n:3,p:[[225,492],[300,505],[355,590],[340,720],[335,890],[330,1040],[310,1056],[90,882],[240,660],[242,515]],q:[[228,490],[345,535],[330,1060],[60,960]],c:[250,820],
         div:[L(200,583,.37),L(200,675,.37),L(200,767,.37),L(200,860,.37),L(200,952,.37)]},
       {n:4,p:[[140,135],[258,42],[470,280],[392,540],[205,462]],q:[[120,140],[300,45],[470,325],[205,465]],c:[300,300],
-        div:[L(170,210,-.52),L(170,293,-.52),L(170,373,-.52),L(170,453,-.52)]}];
-    return{titulo:'Franco',finca:'Pinta Santos',vb:[30,-125,1010,1720],naves,ang:0,norte:[975,-60],norteAng:0,nota:'4 naves · norte arriba',
-      fondo(){let s='';
-        // bancales de cultivo al oeste
-        s+=`<g fill="#dfe8cf" stroke="#c9d6b3" stroke-width="1.5">${[[40,20,130,455],[40,480,80,850],[40,930,200,1040],[40,1080,300,1190],[40,1210,300,1330],[40,1350,300,1460],[40,1480,300,1590]].map(([x0,y0,x1,y1])=>`<rect x="${x0}" y="${y0}" width="${x1-x0}" height="${y1-y0}" rx="6"/>`).join('')}</g>`;
-        // Los Metálicos (al norte de Franco, entre el camino y la RM-11) y otros invernaderos vecinos: solo contorno
-        s+=`<g fill="none" stroke="#cbbf9f" stroke-width="1.5" stroke-dasharray="6 5"><path d="M440 560L640 230L800 250L730 730L430 735Z"/><path d="M300 20L580 0L480 230Z"/></g><path d="M440 560L640 230L800 250L730 730L430 735Z" fill="#7f8c8d" opacity=".12"/><text x="612" y="500" text-anchor="middle" font-size="24" font-weight="800" fill="#5d6d7e" letter-spacing="2">LOS METÁLICOS</text>`;
-        // La Valla: donde se guardan los tractores, junto al cabezal de Franco y Metálicos
-        s+=`<g><rect x="492" y="170" width="96" height="70" rx="6" fill="none" stroke="#8a5a2b" stroke-width="2.5" stroke-dasharray="7 5"/><text x="540" y="160" text-anchor="middle" font-size="15" font-weight="800" fill="#8a5a2b">LA VALLA</text></g>`;
-        // carretera RM-11 (punto kilométrico 24 al sur)
-        const ctra='M1030 -125C935 120 852 330 792 520C762 620 746 700 730 800C712 900 692 990 672 1080C654 1170 634 1260 616 1340C600 1420 588 1500 576 1600';
-        s+=`<path d="${ctra}" stroke="#d9c58f" stroke-width="70" fill="none"/><path d="${ctra}" stroke="#efe2b8" stroke-width="60" fill="none"/><path d="${ctra}" stroke="#fff" stroke-width="2" stroke-dasharray="18 14" fill="none"/>
-          <g transform="translate(768 640) rotate(-74)"><rect x="-44" y="-14" width="88" height="28" rx="6" fill="#e8a33a"/><text y="6" text-anchor="middle" font-size="17" font-weight="700" fill="#fff">RM-11</text></g><g transform="translate(640 1480)"><rect x="-20" y="-14" width="40" height="28" rx="5" fill="#f2d36b" stroke="#c9a640"/><text y="6" text-anchor="middle" font-size="15" font-weight="700" fill="#5f5644">24</text></g><g transform="translate(740 1520)"><text x="80" y="-12" text-anchor="middle" font-size="14" font-weight="700" fill="#5f5644">100 m (aprox.)</text><path d="M0 0H160M0 -8V8M80 -5V5M160 -8V8" stroke="#5f5644" stroke-width="2.5" fill="none"/><rect y="-3" width="80" height="6" fill="#5f5644"/></g>`;
-        // camino entre las naves
-        const cam='M600 120L478 282L398 525L366 700L356 1050L400 1068L408 1300L420 1560';
-        s+=`<path d="${cam}" stroke="#bdb5a3" stroke-width="20" fill="none" stroke-linejoin="round"/><path d="${cam}" stroke="#e6e0d2" stroke-width="14" fill="none" stroke-linejoin="round"/>`;
-        // arbolado junto al camino
-        let sd=11;const rnd=()=>(sd=(sd*9301+49297)%233280)/233280;s+=`<g>`;for(let k=0;k<40;k++){const t=rnd(),x=392-t*28+(rnd()-.5)*18,y=560+t*420;const r=5+rnd()*6;s+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(1)}" fill="#7fae74" opacity=".5"/>`}s+=`</g>`;
-        // caseta y arbolado al sureste de la nave 1
-        s+=`<g><circle cx="615" cy="1030" r="20" fill="#7fae74" opacity=".55"/><circle cx="640" cy="1005" r="14" fill="#7fae74" opacity=".55"/><rect x="582" y="1000" width="38" height="46" fill="url(#mpHatch)" stroke="#5f5644" stroke-width="2"/><text x="601" y="1064" text-anchor="middle" font-size="12" fill="#5f5644" font-weight="700">CASETA</text></g>`;
-        return s}}})(),
-};
+        div:[L(170,210,-.52),L(170,293,-.52),L(170,373,-.52),L(170,453,-.52)]}]}})()};
+function pasLineasAnt(cab,nv,mapas){const M=MAPAS_ANT[cab],c=((mapas||{})[cab]||{})[nv.n]||{},n=c.n>0?c.n:nv.pas||(M.rayas||12)-1,inv=!!M.pasInv!==!!c.inv,[a,b,cc,d]=navQ(nv),L=[];
+  for(let k=1;k<=n;k++){const t=k/(n+1);L.push({num:inv?n+1-k:k,p1:lerp(d,a,t),p2:lerp(cc,b,t)})}return L}
+function pasDeAnt(cab,nv,pt,mapas){let best=null,bd=1e9;for(const l of pasLineasAnt(cab,nv,mapas)){const[x1,y1]=l.p1,[x2,y2]=l.p2,dx=x2-x1,dy=y2-y1,t=Math.max(0,Math.min(1,((pt[0]-x1)*dx+(pt[1]-y1)*dy)/(dx*dx+dy*dy||1))),q=[x1+t*dx,y1+t*dy],dd=Math.hypot(pt[0]-q[0],pt[1]-q[1]);if(dd<bd){bd=dd;best=l.num}}return best}
+function naveNueva(cab,pt){const M=MAPAS[cab];if(!pt||!M)return null;const d=M.naves.find(v=>dentro(pt,v.p));if(d)return d;let b=null,bd=1e9;
+  for(const v of M.naves){const c=centro(v.p),q=Math.hypot(c[0]-pt[0],c[1]-pt[1]);if(q<bd){bd=q;b=v}}return bd<90?b:null}
+/* Lo que hay en el plano de riego como elementos de Instalación: electroválvulas (con su nave y su sector) y llaves */
+function planInst(cab,c){const F=PLAN_RED[cab];if(!F||!MAPAS[cab])return [];const R=F(),cb=((c.cabezales||[]).find(x=>x.id===cab))||{sectores:[]},I=((c.inst||{})[cab])||{};
+  const sec=k=>{const s=(cb.sectores||[]).find(x=>new RegExp('(^|\\D)'+k+'(\\D|$)').test(x.nombre||''));return s?s.id:''};
+  const el=R.ev.map((e,i)=>{const v=MAPAS[cab].naves.find(w=>w.n===e.nave);return{id:cab+'_pev'+(i+1),t:'ev',n:e.n,sid:((I.naves||{})[e.nave])||(e.sec&&sec(e.sec))||'',nave:e.nave,pas:v?pasDe(cab,v,[e.x,e.y]):null,
+    x:+e.x.toFixed(1),y:+e.y.toFixed(1),min:null,max:null,nota:e.nota||'',sk:'',bj:'',plano:1}});
+  R.llaves.forEach((l,i)=>el.push({id:cab+'_pll'+(i+1),t:'lla',n:l.n,sid:'',nave:null,pas:null,x:+l.x.toFixed(1),y:+l.y.toFixed(1),min:null,max:null,nota:'Del plano de riego',sk:'',bj:'',plano:1}));
+  return el}
+async function migNavesPlanos(){try{if(!esAdminU()||(st.cfg.mig||{}).navesPlanos||st.dirtyCfg)return;
+  const cabs=['pla','fra'].filter(c=>cabById(c)),mapAnt=clone(st.savedCfg.mapas||{});
+  // 1) configuración: sectores de cada nave nueva, instalación y pasillos (lo de antes queda guardado en mig.navesAntes)
+  const f=c=>{const ant={inst:{},mapas:{}};c.mapas=c.mapas||{};c.inst=c.inst||{};
+    for(const cab of cabs){ant.mapas[cab]=c.mapas[cab]||null;c.mapas[cab]={};const I=c.inst[cab];if(I)ant.inst[cab]=clone(I);
+      const J=I?clone(I):{el:[],naves:{},pas:{}},naves={};
+      if(I)for(const v of MAPAS[cab].naves){const pt=centro(v.p),o=MAPAS_ANT[cab].naves.find(w=>dentro(pt,w.p));if(!o)continue;const ps=pasDeAnt(cab,o,pt,mapAnt),k=o.n+':'+ps;
+        const sid=I.pas&&Object.prototype.hasOwnProperty.call(I.pas,k)?I.pas[k]:(I.naves||{})[o.n];if(sid)naves[v.n]=sid}
+      if(cab==='fra'){const cb=(c.cabezales||[]).find(x=>x.id==='fra')||{sectores:[]},sec=k=>{const s=(cb.sectores||[]).find(x=>new RegExp('(^|\\D)'+k+'(\\D|$)').test(x.nombre||''));return s?s.id:''};
+        if(sec(1)&&sec(2)&&!Object.keys(naves).length)for(const v of MAPAS.fra.naves)naves[v.n]=sec(v.sec)}
+      J.naves=naves;J.pas={};J.el=(J.el||[]).filter(x=>x.t!=='ev'&&!x.plano).map(x=>{const v=naveNueva(cab,[x.x,x.y]);return{...x,nave:v?v.n:null,pas:null}});
+      c.inst[cab]=J;J.el=[...J.el,...planInst(cab,c)]}
+    if((c.cabezales||[]).some(x=>x.id==='met')){const J=c.inst.met||{el:[],naves:{},pas:{}};if(!(J.el||[]).some(x=>x.t==='ev')){J.el=[...(J.el||[]),...planInst('met',c)];if(!J.cab)J.cab=PLAN_RED.met().cab}c.inst.met=J}
+    c.mig={...(c.mig||{}),navesPlanos:1,navesAntes:ant}};
+  f(st.cfg);f(st.savedCfg);
+  // 2) lo apuntado en las naves de antes
+  const punto=(cab,r)=>{if(r.x!=null&&r.y!=null&&!isNaN(+r.x)&&!isNaN(+r.y))return[+r.x,+r.y];const nv=MAPAS_ANT[cab].naves.find(v=>v.n===+r.nave);if(!nv)return null;
+    if(r.pasillo!=null){const l=pasLineasAnt(cab,nv,mapAnt).find(q=>q.num===+r.pasillo);if(l)return lerp(l.p1,l.p2,.5)}return nv.c||centro(nv.p)};
+  const cambio=(r,conPas)=>{if(!r||!cabs.includes(r.cab)||r.navMig2||r.nave==null||r.nave==='')return null;const pt=punto(r.cab,r),v=naveNueva(r.cab,pt),o={nave:v?v.n:null,naveAntes:r.nave,navMig2:1};
+    if(conPas)o.pasillo=v&&pt?pasDe(r.cab,v,pt):null;return o};
+  for(const[col,conPas,mem]of[['incidencias',1,'inc'],['tareas',0,'tareas'],['aparatos',0,'ap'],['cincid',1,'cinc'],['ctareas',0,'ctar']]){let l;try{l=await Store.listCol(col,0)}catch(e){continue}
+    for(const r of l||[]){const o=cambio(r,conPas);if(!o)continue;try{await Store.updCol(col,r.id,o)}catch(e){continue}const x=(st[mem]||[]).find(z=>z&&z.id===r.id);if(x)Object.assign(x,o)}}
+  if(st.dirtyCfg)return;await Store.setConfig(clone(st.savedCfg));if(['mapa','instal','vivo','cvivo'].includes(st.tab))renderMain()}
+  catch(e){console.warn('naves de los planos de riego',e)}}
+/* ---------- Toda la finca: al tocar una nave o un cabezal sale su plano de riego (tuberías, electroválvulas y lo que hay en la nave) ---------- */
+const PR_CAB={met:'metalicos',pla:'planos',fra:'franco',gas:'gasolinera'};
+const prFilas=f=>`<table class="prt">${f.map(([a,b])=>`<tr><th scope="row">${esc(a)}</th><td>${esc(b)}</td></tr>`).join('')}</table>`;
+function prCabCard(cab,n){const c=cabById(cab),M=MAPAS[cab];if(!c)return '';const P=PR.find(x=>x.id===PR_CAB[cab]),nv=M&&n!=null?M.naves.find(v=>v.n===n):null,I=nv&&M.info?M.info(n):[],R=PLAN_RED[cab]?PLAN_RED[cab]():null;
+  const evN=nv&&R?R.ev.filter(e=>e.nave===n||(e.naves||[]).includes(n)):[];
+  let h=`<section class="card prfcab" id="vvfcab"><div class="tank-h"><div><div class="eyebrow">Toda la finca · plano de riego</div><h3>${esc(c.nombre)}${nv?' · nave '+n:''}</h3><div class="sub">${esc(P?P.s:'')}${R?` · ${R.ev.length} electroválvulas${R.llaves.length?` · ${R.llaves.length} ${R.llaves.length===1?'llave':'llaves'}`:''}`:''}</div></div><button class="btn sm" data-act="vv-fcerrar">Cerrar</button></div>`;
+  if(I.length)h+=`<h4 class="prh4">Esta nave</h4>${prFilas(evN.length?[...I,['En el plano',evN.map(e=>e.n).join(' y ')]]:I)}`;
+  if(P&&P.f)h+=`<button class="prmini" type="button" data-act="vv-plano" data-p="${P.id}"><img src="${PR_DIR+P.f}" alt="Plano de riego de ${esc(P.t)}" loading="lazy"><span>Toca para ver el plano de riego en grande</span></button>`;
+  if(P)h+=`<h4 class="prh4">Qué hay en el plano de ${esc(c.nombre)}</h4>${prFilas(P.filas)}`;
+  h+=`<div class="row"><button class="btn pri" data-act="vv-cab" data-c="${cab}">Ver ${esc(c.nombre)} de cerca</button>${P&&P.f?`<button class="btn" data-act="vv-plano" data-p="${P.id}">Plano de riego</button>`:''}<button class="btn" data-act="vv-inst" data-c="${cab}">Instalación</button></div></section>`;
+  return h}
 const ITIPOS={plaga:['Plaga','#c0392b','P'],enfermedad:['Enfermedad','#7d3c98','E'],riego:['Riego / goteo','#1f78c1','R'],estructura:['Estructura / plástico','#d35400','S'],nutricion:['Nutrición','#8a9a1b','N'],otro:['Otro','#566573','O']};
 const IPRIO={alta:['Alta','bad'],media:['Media','warn'],baja:['Baja','ok']};
 st.inc=null;st.mz=1;st.mSel=null;st.mNueva=null;st.mapFil='abiertas';st.mRes=null;
@@ -4215,10 +4380,11 @@ function planoSVG(cab,incs){const M=MAPAS[cab],[vx,vy,vw,vh]=M.vb;let s=`<svg vi
     s+=`<g class="nave" data-nave="${nv.n}"><polygon points="${ptsS(nv.p)}" fill="${alta?'#f7dcd6':tiene.length?'#fbecc9':'#e3ecf4'}" stroke="#1b2f4a" stroke-width="3" stroke-linejoin="round"/>`;
     // bloques del invernadero (separaciones que se ven en la foto)
     for(const dv of nv.div||[])for(const[q1,q2]of clipLinea(dv[0],dv[1],nv.p))s+=`<line x1="${q1[0].toFixed(1)}" y1="${q1[1].toFixed(1)}" x2="${q2[0].toFixed(1)}" y2="${q2[1].toFixed(1)}" stroke="#1b2f4a" stroke-width="3.2" opacity=".8"/>`;
-    for(const l of pasLineas(cab,nv)){const segs=nv.q?clipLinea(l.p1,l.p2,nv.p):[[l.p1,l.p2]];if(!segs.length)continue;const e1=segs[0][0],e2=segs[segs.length-1][1],lg=Math.hypot(e2[0]-e1[0],e2[1]-e1[1]),fr=Math.min(.12,14/Math.max(lg,1));
+    const PLn=pasLineas(cab,nv),[QA,,,QD]=navQ(nv),SPn=Math.hypot(QA[0]-QD[0],QA[1]-QD[1])/(PLn.length+1),PR9=Math.max(3.4,Math.min(9,SPn*.45)),PV=n=>SPn>=18||n===1||n===PLn.length||n%(SPn>=8?2:4)===0,NS=Math.min(1,Math.hypot(QA[0]-QD[0],QA[1]-QD[1])/52);
+    for(const l of PLn){const segs=nv.q?clipLinea(l.p1,l.p2,nv.p):[[l.p1,l.p2]];if(!segs.length)continue;const e1=segs[0][0],e2=segs[segs.length-1][1],lg=Math.hypot(e2[0]-e1[0],e2[1]-e1[1]),fr=Math.min(.12,14/Math.max(lg,1));
       for(const[q1,q2]of segs)s+=`<line x1="${q1[0].toFixed(1)}" y1="${q1[1].toFixed(1)}" x2="${q2[0].toFixed(1)}" y2="${q2[1].toFixed(1)}" stroke="#9fb4c9" stroke-width="1.6"/>`;
-      for(const f of (nv.q?[fr,1-fr]:[0.05,0.95])){const q=nv.q?lerp(e1,e2,f):lerp(l.p1,l.p2,f);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)})"><circle r="9" fill="#fff" stroke="#7f98b2" stroke-width="1"/><text y="4" text-anchor="middle" font-size="11" font-weight="800" fill="#1b2f4a">${l.num}</text></g>`}}
-    const[cx,cy]=nv.c||centro(nv.p);s+=`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${M.ang})"><rect x="-46" y="-17" width="92" height="34" rx="17" fill="#1b2f4a" opacity=".92"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#fff" letter-spacing="1">NAVE ${nv.n}</text>${tiene.length?`<circle cx="50" cy="-15" r="13" fill="${alta?'#c0392b':'#e2a32a'}"/><text x="50" y="-10" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${tiene.length}</text>`:''}</g></g>`}
+      if(PV(l.num))for(const f of (nv.q?[fr,1-fr]:[0.05,0.95])){const q=nv.q?lerp(e1,e2,f):lerp(l.p1,l.p2,f);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)})"><circle r="${PR9.toFixed(1)}" fill="#fff" stroke="#7f98b2" stroke-width="1"/><text y="${(PR9*.44).toFixed(1)}" text-anchor="middle" font-size="${(PR9*1.22).toFixed(1)}" font-weight="800" fill="#1b2f4a">${l.num}</text></g>`}}
+    const[cx,cy]=nv.c||centro(nv.p);s+=`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${M.ang}) scale(${NS.toFixed(2)})"><rect x="-46" y="-17" width="92" height="34" rx="17" fill="#1b2f4a" opacity=".92"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#fff" letter-spacing="1">NAVE ${nv.n}</text>${tiene.length?`<circle cx="50" cy="-15" r="13" fill="${alta?'#c0392b':'#e2a32a'}"/><text x="50" y="-10" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${tiene.length}</text>`:''}</g></g>`}
   // focos de plaga y enfermedad: mancha de color alrededor (más grande y más roja cuanto más grave)
   for(const i of incs.filter(plgFoco))s+=`<circle class="foco" cx="${i.x.toFixed(1)}" cy="${(i.y-8).toFixed(1)}" r="${i.prio==='alta'?78:i.prio==='media'?60:46}" fill="url(#mpFoco${i.prio==='alta'?'A':i.prio==='baja'?'B':'M'})" pointer-events="none"/>`;
   // incidencias
@@ -4315,6 +4481,21 @@ const edMarca=()=>{st.dirtyCfg=true;renderSave()};
 function edArreglarCab(){const ok=st.cfg.cabezales.map(c=>c.id);if(!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}
 function edInp(attrs,val,extra){return `<div class="inp ${extra&&extra.sm?'sm':''}"><input ${attrs} value="${esc(val??'')}" autocomplete="off" ${extra&&extra.num?'inputmode="decimal"':'style="text-transform:none"'}>${extra&&extra.u?`<span class="u">${extra.u}</span>`:''}</div>`}
 const edBtnDel=(k,txt)=>st.edConf===k?`<span class="row" style="gap:6px"><button class="btn danger sm" data-ed="del-yes" data-k="${esc(k)}">Sí, borrar</button><button class="btn sm" data-ed="del-no">No</button></span>`:`<button class="btn sm" data-ed="del" data-k="${esc(k)}">${txt||'Borrar'}</button>`;
+/* RoboLab XXI (Taller): el laboratorio de electrónica en 3D es su propia página (robolab.html, con three.js servido por la app).
+   Va en un marco que se crea una sola vez y se coloca encima del hueco de la pestaña: al cambiar de pestaña solo se esconde, así no se
+   recarga ni se pierde lo que hay en la mesa. Dentro, «Quiero hacer…» usa la IA de la app (Ajustes) si está puesta. */
+let RL=null;
+function vRobolab(){return `<section class="card"><div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:nowrap"><div><h3>RoboLab XXI</h3><div class="sub">Laboratorio de electrónica en 3D: placas, sensores, cables, prueba y código. En «Ejemplos» están los de Agro Fly: nodo de suelo, clima de la nave, electroválvula de un sector y nivel de bidón.</div></div><button class="btn" type="button" data-rl="full">Pantalla completa</button></div><div id="rlslot"></div></section>`}
+function rlColocar(){const s=$('#rlslot');
+  const fw=()=>{try{return RL.querySelector('iframe').contentWindow}catch(e){return null}};
+  if(!s){if(RL){RL.style.display='none';RL.classList.remove('rlfull');const w=fw();if(w)w.__pausa=true}return}
+  if(!RL){RL=document.createElement('div');RL.id='rlwrap';RL.innerHTML='<iframe id="rlfr" src="robolab.html" title="RoboLab XXI" allow="fullscreen; clipboard-write"></iframe><button type="button" class="rlsal" data-rl="salir">✕ Salir</button>';document.body.appendChild(RL);
+    try{new ResizeObserver(()=>rlColocar()).observe(document.body)}catch(e){}window.addEventListener('resize',()=>rlColocar())}
+  RL.style.display='';{const w=fw();if(w)w.__pausa=false}if(RL.classList.contains('rlfull'))return;const r=s.getBoundingClientRect();
+  Object.assign(RL.style,{left:r.left+scrollX+'px',top:r.top+scrollY+'px',width:r.width+'px',height:r.height+'px'})}
+function rlPantalla(si){if(!RL)return;RL.classList.toggle('rlfull',si);rlColocar();try{$('#rlfr').focus()}catch(e){}}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-rl]');if(b)rlPantalla(b.dataset.rl==='full')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&RL&&RL.classList.contains('rlfull'))rlPantalla(false)});
 /* Taller de sensores (solo el administrador): el código vive en taller.js y se carga al abrir la pestaña */
 function vTaller(){if(window.TALLER)return TALLER.vista();
   if(!st.tlCarga){st.tlCarga=1;const sc=document.createElement('script');sc.src='taller.js';sc.onload=()=>{if(st.tab==='taller')renderMain()};sc.onerror=()=>{st.tlCarga=0;sc.remove();toast('No se ha podido abrir el taller: necesitas conexión la primera vez')};document.head.appendChild(sc)}
@@ -4962,11 +5143,12 @@ const maqDe=id=>maquinas().find(m=>m.id===id);
 const VV_RUTA={
   gas:{base:[838,500],cas:[858,446,48,64],cam:[[300,1005],[432,872],[566,742],[700,452],[800,250],[858,140],[920,124],[1010,150]]},
   pla:{base:[462,150],cas:[330,110,100,70],cam:[[-30,-30],[495,-30],[495,1225],[-30,1225],[-30,-30]]},
-  fra:{base:[540,252],cas:[520,190,40,36],cam:[[600,120],[478,282],[398,525],[366,700],[356,1050],[400,1068],[408,1300],[420,1560]]}};
+  fra:{base:[420,650],cas:[400,612,44,30],cam:[[372,600],[383,745],[383,1056],[388,1560]]},
+  met:{base:[-130,40],cas:[-150,0,40,30],cam:[[-130,40],[-130,-26],[7,-26],[7,790]]}};
 const vvDia=()=>{if(st.vv.dia!=='man')return hoy();const d=new Date();d.setDate(d.getDate()+1);return isoD(d)};
 /* Qué tareas cuentan para el día: hoy, las pendientes (también atrasadas) y las hechas hoy; mañana, las previstas */
 const vvToca=(t,F)=>F===hoy()?(t.hecha?(t.hechaTs||'').slice(0,10)===F:t.fecha<=F):(!t.hecha&&t.fecha===F);
-function vvDonde(t){const m=t.maq&&maqDe(t.maq);return (OFICIOS[t.of]?`<span>${ofiTxt(t.of,+t.np||1)}${+t.np>1?' · '+t.np:''}</span>`:'')+(t.cab&&t.nave?`<span>${esc(cabNombre(t.cab))} · nave ${esc(String(t.nave))}</span>`:'')+(m?`<span>Con ${esc(m.n)}</span>`:'')}
+function vvDonde(t){const m=t.maq&&maqDe(t.maq);return (OFICIOS[t.of]?`<span>${ofiTxt(t.of,+t.np||1)}${+t.np>1?' · '+t.np:''}</span>`:'')+(t.cab&&t.nave!=null&&t.nave!==''?`<span>${esc(cabNombre(t.cab))} · nave ${esc(String(t.nave))}</span>`:'')+(m?`<span>Con ${esc(m.n)}</span>`:'')}
 function vvNaveSel(id,attr,cab,val){const M=MAPAS[cab];if(!M)return '';
   return `<div class="field"><label for="${id}">Nave</label><div class="inp"><select id="${id}" ${attr}="nave"><option value="">Sin indicar</option>${M.naves.map(x=>`<option value="${x.n}" ${String(val)===String(x.n)?'selected':''}>Nave ${x.n}</option>`).join('')}</select></div></div>`}
 function vvMaqSel(id,attr,val){if(!maquinas().length)return '';
@@ -4979,12 +5161,12 @@ function vvOfiSel(id,attr,val,np){return `<div class="field"><label for="${id}">
   +(np===null?'':`<div class="field"><label for="${id}_n">Personas</label><div class="inp sm"><input id="${id}_n" ${attr}="np" inputmode="numeric" value="${esc(String(np||1))}"></div></div>`)}
 function vvNomT(t){const n=+t.np||1,o=ofiTxt(t.of,n);return o?o+(t.paraNombre?' · '+t.paraNombre:n>1?'':''):(t.paraNombre||'Equipo')}
 function vvItems(cab,F){const it=[],M=MAPAS[cab];if(!M)return it;const hay=n=>M.naves.some(x=>x.n===n);
-  for(const t of st.ctar||[]){const n=+t.nave;if(t.cab!==cab||!hay(n)||!vvToca(t,F))continue;const c=collaDe(t.colla);
+  for(const t of st.ctar||[]){const n=+t.nave;if(t.cab!==cab||t.nave==null||t.nave===''||!hay(n)||!vvToca(t,F))continue;const c=collaDe(t.colla);
     it.push({cab,k:'ct:'+t.id,tipo:'colla',t,nave:n,colla:c,cid:t.colla,of:t.of,nombre:t.collaNombre||(c&&c.nombre)||'Colla',maq:t.maq,hecha:!!t.hecha,titulo:t.titulo})}
-  for(const t of (st.tareas||[]).filter(tVisible)){const n=+t.nave;if(t.cab!==cab||!hay(n)||!vvToca(t,F))continue;
+  for(const t of (st.tareas||[]).filter(tVisible)){const n=+t.nave;if(t.cab!==cab||t.nave==null||t.nave===''||!hay(n)||!vvToca(t,F))continue;
     it.push({cab,k:'t:'+t.id,tipo:'tarea',t,nave:n,of:t.of,nombre:vvNomT(t),maq:t.maq,hecha:!!t.hecha,titulo:t.titulo})}
   if(F===hoy()){const con=new Set(it.filter(i=>i.cid).map(i=>i.cid));
-    for(const j of jornadas().filter(j=>j.fecha===F&&!con.has(j.colla))){const tr=(j.trabajos||[]).find(x=>x.cab===cab&&hay(+x.nave));if(!tr)continue;const c=collaDe(j.colla);con.add(j.colla);
+    for(const j of jornadas().filter(j=>j.fecha===F&&!con.has(j.colla))){const tr=(j.trabajos||[]).find(x=>x.cab===cab&&x.nave!=null&&x.nave!==''&&hay(+x.nave));if(!tr)continue;const c=collaDe(j.colla);con.add(j.colla);
       it.push({cab,k:'jo:'+j.id,tipo:'colla',j,nave:+tr.nave,colla:c,cid:j.colla,nombre:j.collaNombre||(c&&c.nombre)||'Colla',hecha:false,titulo:(LAB[tr.labor]||tr.txt||'Trabajo')+' (según el parte del día)'})}}
   return it}
 /* Cuántas personas dibujar: las que asisten hoy según el parte; si no hay parte, la gente activa de la colla */
@@ -5077,7 +5259,7 @@ function vvSVG(cab,F){const M=MAPAS[cab],R=VV_RUTA[cab],P=vvProj(M),[vx,vy,vw,vh
   return s+'</svg>'}
 function vvDetalle(cab,F,items){const sel=st.vv.sel;if(!sel)return '';const M=MAPAS[cab]||{titulo:'la finca'},lug=(n,c)=>`${esc((MAPAS[c]||M).titulo)} · nave ${n}`;
   if(sel.startsWith('nave:')){const n=+sel.slice(5),its=items.filter(i=>i.nave===n),ni=(st.inc||[]).filter(i=>i.cab===cab&&i.nave===n&&i.estado!=='resuelta').length;
-    return `<section class="card" id="vvdet"><div><h3>Nave ${n} · ${esc(M.titulo)}</h3><div class="sub">${its.length?its.length+(its.length===1?' trabajo':' trabajos'):'Nadie trabajando aquí'}${F===hoy()?' hoy':' mañana'} · ${ni?ni+(ni===1?' incidencia abierta':' incidencias abiertas'):'sin incidencias abiertas'}</div></div>
+    return `<section class="card" id="vvdet"><div><h3>Nave ${n} · ${esc(M.titulo)}</h3><div class="sub">${its.length?its.length+(its.length===1?' trabajo':' trabajos'):'Nadie trabajando aquí'}${F===hoy()?' hoy':' mañana'} · ${ni?ni+(ni===1?' incidencia abierta':' incidencias abiertas'):'sin incidencias abiertas'}</div></div>${M.info?prFilas(M.info(n)):''}
       ${its.map(i=>`<button class="vvfila" data-vv="${i.k}"><i style="background:${i.colla?vvCol(i.cid):'#2f6f9f'}"></i><b>${esc(i.nombre)}</b><span>${esc(i.titulo)}</span></button>`).join('')}
       <div class="row">${veRiego()?'<button class="btn" data-tab="mapa">Ver incidencias en el mapa</button>':''}${esGestor()||algunaColla()?`<button class="btn" data-tab="${algunaColla()?'ctareas':'tareas'}">Mandar un trabajo</button>`:''}</div></section>`}
   if(sel.startsWith('maq:')){const m=maqDe(sel.slice(4));if(!m)return '';const it=items.find(i=>i.maq===m.id&&!i.hecha);
@@ -5090,16 +5272,16 @@ function vvDetalle(cab,F,items){const sel=st.vv.sel;if(!sel)return '';const M=MA
 /* ---------- Finca en vivo · toda la finca: las zonas y los cabezales juntos ----------
    Plano esquemático sacado de la foto de zonas (no a escala). Cada cabezal de La Valla se coloca con dos puntos:
    anc = [punto A de su plano, punto B de su plano, dónde cae A, dónde cae B]. */
-const VV_FINCA={pinta:{nombre:'Pinta Santos',cabs:['gas','pla','fra'],vb:[260,20,920,1360],
+const VV_FINCA={pinta:{nombre:'Pinta Santos',cabs:['gas','pla','fra','met'],vb:[260,20,920,1360],
   zonas:[{n:'Zona 1 · El Molino',c:'#e2b62c',p:[[985,35],[992,100],[975,150],[930,230],[880,300],[835,375],[808,425],[780,432],[735,418],[690,385],[678,358],[720,322],[790,268],[850,205],[900,140],[945,80]]},
     {n:'Zona 2 · Campo de Tiro',c:'#56b13a',p:[[785,490],[852,496],[1058,583],[1005,740],[975,830],[950,900],[935,1060],[850,1062],[760,1110],[640,1175],[590,1150],[560,1110],[590,1000],[640,880],[680,820],[720,740],[755,640],[775,560]]},
     {n:'Zona 3 · La Valla',c:'#2f8fd6',valla:true,p:[[498,560],[640,505],[690,555],[700,640],[662,760],[600,850],[545,905],[505,1000],[485,1150],[455,1340],[420,1345],[392,1200],[298,1150],[295,900],[300,800],[355,780],[430,700],[470,600]]},
-    {n:'Los Metálicos',c:'#7f8c8d',p:[[530,860],[552,865],[532,935],[514,990],[503,1052],[404,1052],[408,1000],[430,940],[480,890]]}],
+    {n:'',c:'#7f8c8d',p:[[530,860],[552,865],[532,935],[514,990],[503,1052],[404,1052],[408,1000],[430,940],[480,890]]}],
   balsas:[[[512,532],[545,530],[547,578],[514,580]],[[580,512],[632,512],[630,570],[582,572]],[[860,930],[930,940],[905,1062],[842,1050]]],
   ctras:[{n:'RM-11',p:[[430,20],[455,100],[500,200],[560,280],[640,340],[720,410],[762,462],[775,500],[772,590],[752,660],[712,735],[655,810],[600,880],[560,950],[530,1030],[505,1120],[483,1210],[462,1300],[448,1360]],e:[585,868]},
     {n:'RM-332',p:[[805,450],[860,400],[930,330],[1000,240],[1080,160],[1140,125],[1180,120]],e:[905,350]},{n:'',p:[[683,703],[700,600],[690,500],[640,430],[560,330],[520,260]]}],
   base:[492,872],cam:[[650,690],[610,760],[560,830],[492,872],[470,910],[405,985],[387,1060],[380,1180],[400,1335]],
-  anc:{gas:[[274,926],[715,107],[520,822],[628,640]],pla:[[232,0],[232,1200],[377,602],[503,758]],fra:[[90,42],[700,1558],[295,790],[516,1340]]}}};
+  anc:{gas:[[274,926],[715,107],[520,822],[628,640]],pla:[[232,0],[232,1200],[377,602],[503,758]],fra:[[90,42],[700,1558],[295,790],[516,1340]],met:[[7,0],[7,781],[465.4,865.5],[452.7,1038.9]]}}};
 const vvFincaDe=cab=>Object.values(VV_FINCA).find(d=>d.cabs.includes(cab));
 function vvSim(a1,a2,b1,b2){const ax=a2[0]-a1[0],ay=a2[1]-a1[1],bx=b2[0]-b1[0],by=b2[1]-b1[1],s=Math.hypot(bx,by)/Math.hypot(ax,ay),t=Math.atan2(by,bx)-Math.atan2(ay,ax),c=Math.cos(t)*s,n=Math.sin(t)*s;
   return p=>[b1[0]+c*(p[0]-a1[0])-n*(p[1]-a1[1]),b1[1]+n*(p[0]-a1[0])+c*(p[1]-a1[1])]}
@@ -5131,17 +5313,18 @@ function vvFincaSVG(d,F,items){const P=vvProj(d),bx=vvFincaCaja(d),x0=bx.x0,y0=b
   // naves de los cabezales
   const ocup=new Set(items.map(i=>i.cab+':'+i.nave));
   for(const nv of naves.slice().sort((a,b)=>P.dep(...a.c)-P.dep(...b.c))){const on=ocup.has(nv.cab+':'+nv.n);
-    s+=`<g class="vvn${on?' on':''}" data-vv="cab:${nv.cab}"><polygon points="${pp(nv.p,0)}" fill="#c4d8a6"/>`;
+    const fs=st.vv.fcab&&st.vv.fcab.cab===nv.cab&&(st.vv.fcab.n==null||st.vv.fcab.n===nv.n);
+    s+=`<g class="vvn${on?' on':''}" data-vv="fcab:${nv.cab}:${nv.n}"><polygon points="${pp(nv.p,0)}" fill="#c4d8a6"/>`;
     const ws=nv.p.map((a,k)=>{const b=nv.p[(k+1)%nv.p.length];return{a,b,d:P.dep((a[0]+b[0])/2,(a[1]+b[1])/2)}}).sort((u,v)=>u.d-v.d);
     for(const w of ws){const A=P.p(...w.a),B=P.p(...w.b);s+=`<polygon class="vvw" points="${pp([w.a,w.b],0)} ${pp([w.b,w.a],H)}" fill="${B[0]>A[0]?'#f3f7f9':'#d9e4ea'}" stroke="#7e97ad" stroke-width=".6"/>`}
-    s+=`<polygon class="vvr" points="${pp(nv.p,H)}" fill="#eef4f7" stroke="#5f7d99" stroke-width=".9"/>`;
+    s+=`<polygon class="vvr" points="${pp(nv.p,H)}" fill="${fs?'#fff6df':'#eef4f7'}" stroke="${fs?'#e2a32a':'#5f7d99'}" stroke-width="${fs?2.4:.9}"/>`;
     for(const[a,b]of nv.segs){const A=P.p(a[0],a[1],H),B=P.p(b[0],b[1],H);s+=`<line class="vvrl" x1="${A[0].toFixed(1)}" y1="${A[1].toFixed(1)}" x2="${B[0].toFixed(1)}" y2="${B[1].toFixed(1)}" stroke="#b5c6d3" stroke-width=".7"/>`}
     s+=`</g>`}
   // carteles de zonas y cabezales
-  for(const z of d.zonas)if(!z.valla){const q=P.p(...centro(z.p),4);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)}) scale(${K.toFixed(3)})"><rect x="${-(z.n.length*2.9+8)}" y="-8" width="${z.n.length*5.8+16}" height="14" rx="7" fill="#fff" stroke="${z.c}" stroke-width="1.5"/><text y="2.5" text-anchor="middle" font-size="8" font-weight="800" fill="#1b2f4a">${esc(z.n)}</text></g>`}
+  for(const z of d.zonas)if(!z.valla&&z.n){const q=P.p(...centro(z.p),4);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)}) scale(${K.toFixed(3)})"><rect x="${-(z.n.length*2.9+8)}" y="-8" width="${z.n.length*5.8+16}" height="14" rx="7" fill="#fff" stroke="${z.c}" stroke-width="1.5"/><text y="2.5" text-anchor="middle" font-size="8" font-weight="800" fill="#1b2f4a">${esc(z.n)}</text></g>`}
   {const z=d.zonas.find(z=>z.valla);if(z){const q=P.p(...z.p.reduce((a,b)=>P.dep(...a)<P.dep(...b)?a:b));s+=`<g transform="translate(${q[0].toFixed(1)} ${(q[1]-6*K).toFixed(1)}) scale(${K.toFixed(3)})"><text text-anchor="middle" font-size="8.5" font-weight="800" fill="#1f5f99" stroke="#fff" stroke-width="2.5" paint-order="stroke">${esc(z.n)}</text></g>`}}
   for(const cab of d.cabs){const ns=naves.filter(n=>n.cab===cab);if(!ns.length)continue;const c=centro(ns.map(n=>n.c)),q=P.p(c[0],c[1],H),its=items.filter(i=>i.cab===cab),np=its.reduce((a,i)=>a+(i.tipo==='tarea'&&i.maq&&maqDe(i.maq)?0:vvGente(i)),0),nm=cabNombre(cab).toUpperCase();
-    s+=`<g data-vv="cab:${cab}" class="vvact" transform="translate(${q[0].toFixed(1)} ${(q[1]-30*K).toFixed(1)}) scale(${K.toFixed(3)})"><rect x="${-(nm.length*3.3+10)}" y="-10" width="${nm.length*6.6+20}" height="17" rx="8.5" fill="#1b2f4a"/><text y="2.5" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff" letter-spacing=".5">${esc(nm)}</text>${np?`<circle cx="${nm.length*3.3+10}" cy="-9" r="8" fill="#e2a32a"/><text x="${nm.length*3.3+10}" y="-5.5" text-anchor="middle" font-size="9" font-weight="800" fill="#fff">${np}</text>`:''}</g>`}
+    s+=`<g data-vv="fcab:${cab}:" class="vvact" transform="translate(${q[0].toFixed(1)} ${(q[1]-30*K).toFixed(1)}) scale(${K.toFixed(3)})"><rect x="${-(nm.length*3.3+10)}" y="-10" width="${nm.length*6.6+20}" height="17" rx="8.5" fill="#1b2f4a"/><text y="2.5" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff" letter-spacing=".5">${esc(nm)}</text>${np?`<circle cx="${nm.length*3.3+10}" cy="-9" r="8" fill="#e2a32a"/><text x="${nm.length*3.3+10}" y="-5.5" text-anchor="middle" font-size="9" font-weight="800" fill="#fff">${np}</text>`:''}</g>`}
   // la gente, en su nave
   const capa=[],porNave={};for(const it of items)(porNave[it.cab+':'+it.nave]=porNave[it.cab+':'+it.nave]||[]).push(it);
   for(const[k0,its]of Object.entries(porNave)){const nv=naves.find(n=>n.cab+':'+n.n===k0);if(!nv)continue;
@@ -5172,13 +5355,13 @@ function vvResumen(items,F){const gente=items.reduce((a,i)=>a+(i.tipo==='tarea'&
 function vvFincaHTML(d){if(st.vv.cabG!=='finca:'+d.nombre){st.vv.cabG='finca:'+d.nombre;st.vv.rot=vvGiroFinca(d);st.vv.sel=null}
   if(!st.vv.listo){vvCargar();return '<section class="card"><div class="note">Preparando el dibujo de la finca…</div></section>'}
   const F=vvDia(),items=vvTodoItems(d,F);
-  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>En vivo · ${esc(d.nombre)}</h3><div class="sub">${vvResumen(items,F)} · toca un cabezal para verlo de cerca</div></div>${vvBotones()}</div>
+  let h=`<section class="card mapcard"><div class="tank-h"><div><h3>En vivo · ${esc(d.nombre)}</h3><div class="sub">${vvResumen(items,F)} · toca una nave o un cabezal para ver su plano de riego</div></div>${vvBotones()}</div>
     <div class="pick">${vvChips(d,'todo')}</div>
     <div class="mapwrap vvwrap" id="vvwrap"><div class="mapin" style="width:${st.vv.z*100}%">${vvFincaSVG(d,F,items)}</div></div>
     <div class="note">Dibujo orientativo sacado de la foto aérea: no es un plano a escala.</div>
     ${items.length?`<div class="vvlista">${items.map(i=>{const m=i.maq&&maqDe(i.maq);return `<button class="vvfila${st.vv.sel===i.k?' sel':''}" data-vv="${i.k}"><i style="background:${OFICIOS[i.of]?OFICIOS[i.of][2]:i.colla?vvCol(i.cid):'#2f6f9f'}"></i><b>${esc(cabNombre(i.cab))} · ${i.nave}</b><span>${i.hecha?'✓ ':''}${esc(i.nombre)} · ${esc(i.titulo)}${m?' · '+esc(m.n):''}</span></button>`}).join('')}</div>`
       :`<div class="note">Para que salgan aquí, al crear la tarea (de una colla o general) elige el cabezal y la nave${maquinas().length?', y la máquina si hace falta':''}.</div>`}</section>`;
-  const si=items.find(i=>i.k===st.vv.sel);h+=vvDetalle(si?si.cab:'_finca',F,items);
+  if(st.vv.fcab)h+=prCabCard(st.vv.fcab.cab,st.vv.fcab.n);const si=items.find(i=>i.k===st.vv.sel);h+=vvDetalle(si?si.cab:'_finca',F,items);
   return h+vvMaqPanel()}
 function vVivo(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
   if(!M)return `<section class="card"><div><h3>En vivo · ${esc(c?c.nombre:'')}</h3><div class="sub">Este cabezal todavía no tiene las naves dibujadas</div></div><div class="row">${Object.keys(MAPAS).filter(k=>cabsVis().some(x=>x.id===k)).map(k=>`<button class="btn" data-cab="${k}">Ver ${esc(cabNombre(k))}</button>`).join('')}</div></section>`;
@@ -5202,6 +5385,7 @@ function vvMaqPanel(){if(!esGestor())return '';return `<section class="card"><di
 function vvAbrirCab(c){if(!MAPAS[c])return;st.cab=c;try{renderCabs()}catch(e){}st.vv.todo=false;st.vv.sel=null;renderMain();const w=$('#vvwrap');if(w)w.closest('section').scrollIntoView({block:'start'})}
 async function vvGuardarMaq(l){for(const c of [st.cfg,st.savedCfg])c.maquinas=clone(l);try{await Store.setConfig(st.savedCfg);renderMain();return true}catch(e){toast(errMsg(e));return false}}
 document.addEventListener('click',async e=>{if(st.tab!=='vivo'&&st.tab!=='cvivo')return;const b=e.target.closest('[data-vv],[data-act^="vv-"]');if(!b||!b.closest('#main'))return;
+  if(b.dataset.vv&&b.dataset.vv.startsWith('fcab:')){const[,c,n]=b.dataset.vv.split(':');st.vv.fcab={cab:c,n:n===''?null:+n};st.vv.sel=null;renderMain();const d=$('#vvfcab');if(d)d.scrollIntoView({block:'nearest',behavior:'smooth'});return}
   if(b.dataset.vv&&b.dataset.vv.startsWith('cab:')){vvAbrirCab(b.dataset.vv.slice(4));return}
   if(b.dataset.vv&&b.dataset.vv.startsWith('ap:')){st.apSel=b.dataset.vv.slice(3);st.apF=null;st.tab='aparatos';renderAll();window.scrollTo(0,0);return}
   if(b.dataset.vv){st.vv.sel=st.vv.sel===b.dataset.vv&&b.closest('svg')?null:b.dataset.vv;renderMain();if(st.vv.sel){const d=$('#vvdet');if(d&&!b.closest('#vvdet'))d.scrollIntoView({block:'nearest',behavior:'smooth'})}return}
@@ -5209,7 +5393,10 @@ document.addEventListener('click',async e=>{if(st.tab!=='vivo'&&st.tab!=='cvivo'
   if(a==='vv-rot'){st.vv.rot=(st.vv.rot+(+b.dataset.d)+4)%4;renderMain()}
   else if(a==='vv-z'){const zs=[1,1.5,2,3],i=zs.indexOf(st.vv.z);st.vv.z=zs[Math.max(0,Math.min(zs.length-1,(i<0?0:i)+(+b.dataset.z)))];renderMain()}
   else if(a==='vv-todo'){st.vv.todo=true;st.vv.sel=null;renderMain()}
-  else if(a==='vv-cab'){vvAbrirCab(b.dataset.c)}
+  else if(a==='vv-cab'){st.vv.fcab=null;vvAbrirCab(b.dataset.c)}
+  else if(a==='vv-fcerrar'){st.vv.fcab=null;renderMain()}
+  else if(a==='vv-plano'){st.pr=b.dataset.p;st.prz=1;st.tab='planriego';renderTabs();renderMain();window.scrollTo(0,0)}
+  else if(a==='vv-inst'){st.cab=b.dataset.c;st.in.vista='cab';st.in.sel=null;st.tab='instal';try{renderCabs()}catch(e){}renderTabs();renderMain();window.scrollTo(0,0)}
   else if(a==='vv-dia'){st.vv.dia=b.dataset.d;st.vv.sel=null;renderMain()}
   else if(a==='vv-mq-add'){const n=($('#vv_mqn').value||'').trim(),t=$('#vv_mqt').value;if(!n){toast('Escribe el nombre de la máquina');return}if(maquinas().some(m=>m.n.toLowerCase()===n.toLowerCase())){toast('Ya hay una máquina con ese nombre');return}
     if(await vvGuardarMaq([...maquinas(),{id:'mq'+Date.now().toString(36),n,tipo:t}]))toast(n+' añadida')}
@@ -5288,12 +5475,12 @@ document.addEventListener('change',e=>{if(st.tab!=='montaje')return;const t=e.ta
    hace falta la contraseña que pone el administrador. En la configuración solo se guarda su huella (SHA-256 con sal), nunca la contraseña.
    Abierto una vez, sigue abierto en este móvil hasta cerrar la app o pulsar «Cerrar con llave». Si cambia la contraseña, se cierra en todos.
    Es un cerrojo de la app: no cambia los permisos de la base de datos. Sin contraseña puesta, solo entra el administrador (y se le pide que la ponga). */
-const TL_TABS=['catalogo','taller','aparatos','cajon'],TL_OK='abono.tlok';
+const TL_TABS=['catalogo','taller','robolab','aparatos','cajon'],TL_OK='abono.tlok';
 const tlClave=()=>{const c=st.cfg&&st.cfg.tallerClave;return c&&c.h&&c.s?c:null};
 function tlAbierto(){const c=tlClave();if(!c)return esAdminU();try{return sessionStorage.getItem(TL_OK)===c.h}catch(e){return !!st.tlOk&&st.tlOk===c.h}}
 function tlRecordar(h){st.tlOk=h;try{h?sessionStorage.setItem(TL_OK,h):sessionStorage.removeItem(TL_OK)}catch(e){}}
 async function tlHuella(pw,sal){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(sal+'|'+pw));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
-const TL_CARP=[['catalogo','Catálogo','Sensores, robots, drones y control, con guías de montaje'],['taller','Taller de sensores','Diseña hablando, piezas, cables, caja 3D e instalar'],['aparatos','Mis aparatos','Lo instalado, sus datos, batería y mantenimiento'],['cajon','Cajón y compra','Las piezas que tienes y la lista de compra']];
+const TL_CARP=[['catalogo','Catálogo','Sensores, robots, drones y control, con guías de montaje'],['taller','Taller de sensores','Diseña hablando, piezas, cables, caja 3D e instalar'],['robolab','RoboLab XXI','Laboratorio de electrónica en 3D: monta y prueba circuitos'],['aparatos','Mis aparatos','Lo instalado, sus datos, batería y mantenimiento'],['cajon','Cajón y compra','Las piezas que tienes y la lista de compra']];
 function vTlLlave(){const c=tlClave(),t=(TABS.find(([k])=>k===st.tab)||[])[1]||'Taller';
   const carp=`<div class="tlk-carp">${TL_CARP.map(([k,n,d])=>`<button type="button" data-tab="${k}" class="${k===st.tab?'on':''}"><b>🔒 ${n}</b><small>${d}</small></button>`).join('')}</div>`;
   if(!c)return `<section class="card"><div><h3>Taller</h3><div class="sub">Cerrado con llave</div></div>${carp}<div class="note">El administrador aún no ha puesto la contraseña del Taller. Pídesela cuando la tenga.</div></section>`;
@@ -5314,16 +5501,308 @@ async function tlPoner(){if(!esAdminU())return;const a=($('#tlk_n1')||{}).value|
   const s=[...crypto.getRandomValues(new Uint8Array(12))].map(x=>x.toString(16).padStart(2,'0')).join(''),h=await tlHuella(a,s);
   st.cfg.tallerClave={h,s,ts:new Date().toISOString()};tlRecordar(h);
   if(st.dirtyCfg){renderSave();toast('Pulsa «Guardar» abajo para que quede puesta');renderMain()}else{st.dirtyCfg=true;renderMain();saveCfg().then(()=>{if(!st.dirtyCfg)toast('Contraseña del Taller puesta')})}}
-document.addEventListener('click',e=>{if(!TL_TABS.includes(st.tab))return;const b=e.target.closest&&e.target.closest('[data-tlk]');if(!b)return;const a=b.dataset.tlk;
+document.addEventListener('click',e=>{if(!TL_TABS.includes(st.tab)&&st.tab!=='diseno')return;const b=e.target.closest&&e.target.closest('[data-tlk]');if(!b)return;const a=b.dataset.tlk;
   if(a==='abrir')tlAbrir();else if(a==='poner')tlPoner();else if(a==='cerrar'){tlRecordar('');renderMain();window.scrollTo(0,0);toast('Taller cerrado con llave')}});
 document.addEventListener('keydown',e=>{if(e.key!=='Enter'||!e.target||e.target.id!=='tlk_pw')return;e.preventDefault();tlAbrir()});
-const VIEWS={buzon:vBuzon,cbuzon:vBuzon,cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,otrat:vOtrat,cotrat:vOtrat,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,catalogo:vCatalogo};
+/* ---------- Planos de riego de Pinta Santos: el mapa de la finca (se toca una zona) y el plano de riego de cada zona,
+   con zoom (botones, pellizco o Ctrl + rueda), lo que hay en cada plano, cómo se leen los símbolos y lo que falta por confirmar ---------- */
+const PR_DIR='planos-riego/';
+const PR=[
+ {id:'finca',c:'Finca',f:'finca.svg',t:'Finca Pinta Santos',s:'Esquema general de las zonas',hz:true,
+  filas:[['Zonas','5: Franco, Metálicos, Rambla (el Alto y el Encañe), Planos y Gasolinera'],['Franco','Sector 1: 6 naves (3 y 3) · sector 2: 5 naves'],['Metálicos','Naves y entrada, junto a la autovía; su cabezal está enfrente de la nave 14'],['Rambla','El Alto (5 parcelas) y, a su lado, el Encañe, junto a Planos'],['Planos','26 naves a los dos lados del pasillo'],['Gasolinera','6 módulos (antes era la Torre)'],['Cabezales','El de los Metálicos y otro entre Planos y la Gasolinera'],['Entre Franco y los Metálicos','Un pasillo']],
+  pend:['Qué zonas riega el cabezal que está entre Planos y la Gasolinera','Si la parcela en punta, entre el Alto y el Encañe, va con el Encañe']},
+ {id:'metalicos',c:'Metálicos',f:'metalicos.svg',t:'Metálicos',s:'Naves de la zona de los Metálicos',cab:'met',
+  filas:[['Naves','28: la 0 arriba (32 × 100 m, era el semillero), la 1 a la 13 a la izquierda del pasillo y la 14 a la 27 a la derecha'],['Superficie','62.000 m²'],['Naves de la izquierda','13 · 24 m de ancho, cada una con su largo (el lado de fuera va inclinado)'],['Naves de la derecha','14 · 24 × 100 m'],['Electroválvulas','28, una por nave y por dentro: en las de la derecha al final de la nave; en las de la izquierda y la 0, junto al pasillo'],['Laterales','PE 40 y luego PE 50 (la rayita marca el paso de uno a otro)'],['Cabezal','A la izquierda del pasillo, a la altura de la nave 14'],['General','PVC Ø110: sale del cabezal, pasa entre la nave de arriba y la 14 y baja por fuera de las naves de la derecha en Ø90'],['Ramal de la izquierda','Baja por el pasillo, junto a las naves 1 a 13'],['Llaves de desagüe','2, al final de cada ramal'],['Agua buena','PE 25 por el centro del pasillo; entra por abajo'],['Sectores','4, por definir']],
+  pend:['Los 4 sectores','El diámetro del ramal de la izquierda']},
+ {id:'entrada',c:'Entrada',f:'entrada.svg',t:'Entrada de los Metálicos',s:'Junto a la autovía',cab:'met',
+  filas:[['Superficie útil','6.475 m²'],['Tubería general','PVC Ø90: sube por la izquierda y entra por arriba del bloque de abajo'],['Reparto','Por el centro, de abajo arriba: PVC Ø75, Ø63 y Ø50'],['Laterales','PE 40 en cada franja; PE 50 y PE 40 en el bloque de abajo'],['Electroválvulas','No vienen en el plano']],
+  pend:['Dónde van las electroválvulas de la entrada']},
+ {id:'planos',c:'Planos',f:'planos.svg',t:'Planos',s:'Invernaderos planos de 1973',cab:'pla',
+  filas:[['Naves','26: 15 a la izquierda (70 m) y 11 a la derecha (66 m)'],['Superficie','42.000 m²'],['Construcción','1973'],['Electroválvulas','14; cada una riega las naves que une su colector (EV nave 1, EV naves 2-3, …)'],['General','Por el pasillo: PVC Ø75, luego Ø90 y Ø125'],['Salida','PVC Ø125 hacia otra zona, por la nave 20'],['Colectores','PVC 50, por el borde de dentro de las naves'],['Laterales','PE 40'],['Agua buena','PE 25 por la nave 13, con llave de PVC'],['Cabezal','Arriba del pasillo']],
+  pend:['Qué es el cuadro con la diagonal de arriba a la derecha']},
+ {id:'alto',c:'El Alto',f:'alto.svg',t:'Rambla · el Alto',s:'Emparrado nuevo',hz:true,
+  filas:[['Parcelas','5, cada una más corta; la 5 con el pico'],['Superficie útil','26.500 m²'],['Electroválvulas','26, todas dentro de las parcelas'],['Entrada','PVC Ø140, sube desde abajo entre la 3 y la 4'],['Cabecera','Por fuera, arriba: PVC Ø90, Ø110, Ø75 y Ø63'],['En cada parcela','Una bajante de PVC que se va haciendo más pequeña, con su PE 40 al lado'],['Parcela 1','Ø90, Ø75 y Ø63'],['Parcela 2','Ø75, Ø63 y PE Ø50'],['Parcelas 3, 4 y 5','Ø63 y PE Ø50'],['Electroválvula con raya','Además de electroválvula, marca dónde cambia el tamaño de la tubería']],pend:[]},
+ {id:'encane',c:'El Encañe',f:'encane.svg',t:'Rambla · el Encañe',s:'Hoja «Semis nuevos», junto a Planos',
+  filas:[['Parcelas','5: A, B, C, D y E (la E en punta, junto al camino)'],['Electroválvulas','19, todas dentro de las parcelas'],['Tubería general','PVC Ø140 que viene de Planos; arriba sigue en Ø110 y Ø90'],['Por debajo de A','PVC Ø110 y Ø125'],['Por debajo de C','PVC Ø110'],['Reparto','Columnas de PVC Ø90, Ø75, Ø63 y Ø50'],['Laterales','PE 50; PE 40 por los bordes inclinados y en la E']],
+  pend:['Si la parcela en punta (E) va con el Encañe o con el Alto']},
+ {id:'franco',c:'Franco',f:'franco.svg',t:'Franco',s:'Paloma «Pinta Santos» · malla de 1991',cab:'fra',
+  filas:[['Superficie cubierta','46.997 m²'],['Parcelas','11 en 2 sectores, numeradas de la 1 a la 11'],['Sector 1','6 parcelas (3 y 3) con la carretera en medio: la 1, 2 y 3 a la izquierda; la 4, 5 y 6 a la derecha'],['Sector 2','5 parcelas en fila, de la 7 a la 11; la 11, de 1.870 m²'],['Electroválvulas','22, dos por parcela (EV 1 a EV 22), todas dentro de las parcelas'],['Entrada','PVC Ø140 por la izquierda'],['Cabecera','PVC Ø140 y Ø125'],['Columnas','Izquierda Ø110 → Ø63 · derecha Ø125 · sector 2 Ø110 → Ø63'],['General al sector 2','Baja por la carretera y entra en la columna del sector 2'],['Goma del agua','Baja por la carretera en línea recta'],['Escala del original','1/1.000']],
+  pend:['El diámetro de la general que baja por la carretera']},
+ {id:'gasolinera',c:'Gasolinera',f:null,t:'Gasolinera',s:'6 módulos (antes era la Torre)',cab:'gas',
+  filas:[['Módulos','6'],['Plano de riego','Todavía no está pasado'],['Plano de naves','En Mapa de la finca › Incidencias']],pend:['El plano de riego de la Gasolinera']}];
+const prI=b=>`<svg viewBox="0 0 28 16" width="28" height="16" aria-hidden="true">${b}</svg>`,PR_V='<circle cx="14" cy="8" r="6" fill="#fff" stroke="#c0262d" stroke-width="1.8"/><path d="M10.3 4.3l7.4 7.4M17.7 4.3l-7.4 7.4" stroke="#c0262d" stroke-width="1.6"/>';
+const PR_SIM=[[prI(PR_V),'Electroválvula'],[prI(PR_V+'<path d="M5 13.5L23 2.5" stroke="#1d2a1f" stroke-width="1.8"/>'),'Electroválvula donde cambia el tamaño de la tubería'],
+ [prI('<path d="M1 8h26" stroke="#c45a1c" stroke-width="4.5"/>'),'Tubería general y de reparto (PVC)'],[prI('<path d="M1 8h26" stroke="#14508f" stroke-width="3.4"/>'),'Tubería PE 50'],
+ [prI('<path d="M1 8h26" stroke="#2f80c9" stroke-width="2.6"/>'),'Tubería PE 40'],[prI('<path d="M1 8h13" stroke="#2f80c9" stroke-width="2.6"/><path d="M14 8h13" stroke="#14508f" stroke-width="3.4"/><path d="M14 2v12" stroke="#1d2a1f" stroke-width="1.8"/>'),'Paso de PE 40 a PE 50'],
+ [prI('<path d="M1 8h26" stroke="#0aa3a3" stroke-width="2.4"/>'),'Agua buena o goma del agua (PE 25)'],[prI('<rect x="7" y="1" width="14" height="14" rx="2" fill="#2d3a2f"/><path d="M7 15L21 1" stroke="#fff" stroke-width="1.4"/>'),'Cabezal'],
+ [prI('<path d="M7 3.5L21 12.5V3.5L7 12.5z" fill="#fff" stroke="#c45a1c" stroke-width="1.6" stroke-linejoin="round"/>'),'Llave de desagüe'],[prI('<rect x="1" y="4" width="26" height="8" fill="#e2ddd0" stroke="#b9b19c"/>'),'Camino, pasillo o carretera'],
+ [prI('<rect x="1" y="2" width="26" height="12" fill="#e9f1e4" stroke="#6f8a68"/>'),'Nave o parcela']];
+let PR_FINCA=null,PR_CARGA=false,PR_ARR=false,prP=null,prD=null;
+const prHay=()=>{const f=fincaAct();if(f)return f.id==='pinta';return (st.cfg.fincas||[]).some(x=>x.id==='pinta'&&x.cabezales.includes(st.cab))};
+const prPlano=()=>PR.find(x=>x.id===st.pr)||PR[0],prHz=()=>!!prPlano().hz;
+function prCarga(){if(PR_FINCA!==null||PR_CARGA)return;PR_CARGA=true;
+  fetch(PR_DIR+'finca.svg').then(r=>{if(!r.ok)throw 0;return r.text()}).then(t=>{PR_FINCA=t.slice(t.indexOf('<svg')).replace(/<svg ([^>]*?) width="\d+" height="\d+"/,'<svg class="prsvg" $1 role="img" aria-label="Mapa de la finca Pinta Santos: toca una zona"')})
+    .catch(()=>{PR_FINCA=''}).finally(()=>{PR_CARGA=false;if(st.tab==='planriego')renderMain()})}
+function vPlanRiego(){if(!prHay())return `<section class="card"><h3>Planos de riego</h3><div class="note">Los planos de riego son de la finca Pinta Santos.</div></section>`;
+  const P=prPlano(),z=st.prz||1;if(P.id==='finca')prCarga();
+  let h=`<div class="pick noprint prpick" role="tablist" aria-label="Planos de riego">${PR.map(x=>`<button class="chip" role="tab" data-prsel="${x.id}" aria-selected="${x.id===P.id}" aria-pressed="${x.id===P.id}">${esc(x.c)}</button>`).join('')}</div>`;
+  const cont=!P.f?'<div class="prnada">El plano de riego de esta zona todavía no está pasado.</div>'
+    :P.id!=='finca'?`<img class="prsvg" src="${PR_DIR+P.f}" alt="Plano de riego de ${esc(P.t)}" draggable="false">`
+    :PR_FINCA===null?'<div class="note">Cargando el mapa…</div>':PR_FINCA===''?'<div class="note">No se ha podido cargar el mapa. Comprueba la conexión. <button class="btn" data-act="pr-otra">Probar otra vez</button></div>':PR_FINCA;
+  h+=`<section class="card prcard${P.hz?' hz':''}"><div class="prh"><div><div class="eyebrow">Planos de riego · Pinta Santos</div><h3>${esc(P.t)}</h3><div class="sub">${esc(P.s)}</div></div>${P.f?'<div class="przb noprint" role="group" aria-label="Acercar o alejar"><button class="btn" data-przoom="-" aria-label="Alejar">−</button><button class="btn" data-przoom="0">Ajustar</button><button class="btn" data-przoom="+" aria-label="Acercar">+</button></div>':''}</div>
+    ${P.id==='finca'?'<div class="note noprint">Toca una zona del mapa para ver su plano de riego.</div>':P.f?'<div class="note noprint">Acerca con + o pellizcando con dos dedos, y arrastra para moverte por el plano.</div>':''}
+    ${P.f?`<div class="prv" id="prv"><div class="prin" style="width:${z*100}%">${cont}</div></div>`:cont}
+    <div class="row noprint">${P.f?'<button class="btn" data-act="pr-print">Imprimir plano</button>':''}${P.f&&P.id!=='finca'?`<a class="btn" href="${PR_DIR+P.f}" target="_blank" rel="noopener">Abrir en grande</a>`:''}${P.id!=='finca'?'<button class="btn" data-prsel="finca">Volver al mapa de la finca</button>':''}</div></section>`;
+  h+=`<section class="card"><h3>Qué hay en este plano</h3><table class="prt">${P.filas.map(([a,b])=>`<tr><th scope="row">${esc(a)}</th><td>${esc(b)}</td></tr>`).join('')}</table>${P.cab&&cabById(P.cab)?`<div class="row noprint">${P.id==='gasolinera'?`<button class="btn" data-prcab="${P.cab}" data-prtab="mapa">Ver el plano de naves</button>`:''}<button class="btn" data-prcab="${P.cab}" data-prtab="cuentas">Cuentas de ${esc(cabNombre(P.cab))}</button></div>`:''}</section>`;
+  if(P.f)h+=`<section class="card"><h3>Cómo se lee el plano</h3><ul class="prley">${PR_SIM.map(([i,t])=>`<li>${i}<span>${esc(t)}</span></li>`).join('')}</ul></section>`;
+  if(P.pend.length&&esGestor())h+=`<section class="card prpend noprint"><h3>Falta por confirmar</h3><ul>${P.pend.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><div class="note">Esto solo lo ven el encargado y el administrador.</div></section>`;
+  return h}
+function prZoom(){const v=document.getElementById('prv');if(!v)return;const i=v.firstElementChild,w0=i.offsetWidth||1,h0=i.offsetHeight||1,cx=(v.scrollLeft+v.clientWidth/2)/w0,cy=(v.scrollTop+v.clientHeight/2)/h0;
+  i.style.width=(st.prz||1)*100+'%';v.scrollLeft=cx*i.offsetWidth-v.clientWidth/2;v.scrollTop=cy*i.offsetHeight-v.clientHeight/2}
+const prLim=z=>Math.max(1,Math.min(6,z));
+document.addEventListener('click',e=>{if(st.tab!=='planriego'||!e.target.closest)return;const t=e.target;let b;
+  if((b=t.closest('[data-plano]'))){if(PR_ARR)return;st.pr=b.dataset.plano;st.prz=1;renderMain();try{document.querySelector('.prpick').scrollIntoView({block:'start'})}catch(_){}return}
+  if((b=t.closest('[data-prsel]'))){st.pr=b.dataset.prsel;st.prz=1;renderMain();return}
+  if((b=t.closest('[data-przoom]'))){const v=b.dataset.przoom;st.prz=v==='0'?1:prLim((st.prz||1)*(v==='+'?1.5:1/1.5));prZoom();return}
+  if((b=t.closest('[data-prcab]'))){st.cab=b.dataset.prcab;st.tab=b.dataset.prtab;renderCabs();renderTabs();renderMain();window.scrollTo(0,0);return}
+  if(t.closest('[data-act="pr-print"]')){imprimirVista();return}
+  if(t.closest('[data-act="pr-otra"]')){PR_FINCA=null;renderMain()}});
+document.addEventListener('touchstart',e=>{if(st.tab!=='planriego'||e.touches.length!==2||!e.target.closest||!e.target.closest('#prv'))return;const[a,b]=e.touches;prP={d:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)||1,z:st.prz||1}},{passive:true});
+document.addEventListener('touchmove',e=>{if(!prP||e.touches.length!==2)return;e.preventDefault();const[a,b]=e.touches;st.prz=prLim(prP.z*Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)/prP.d);prZoom()},{passive:false});
+document.addEventListener('touchend',e=>{if(e.touches.length<2)prP=null},{passive:true});
+document.addEventListener('wheel',e=>{if(st.tab!=='planriego'||!e.ctrlKey||!e.target.closest||!e.target.closest('#prv'))return;e.preventDefault();st.prz=prLim((st.prz||1)*(e.deltaY<0?1.15:1/1.15));prZoom()},{passive:false});
+document.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||st.tab!=='planriego'||!e.target.closest)return;const v=e.target.closest('#prv');if(!v||(st.prz||1)<=1)return;prD={x:e.clientX,y:e.clientY,l:v.scrollLeft,t:v.scrollTop,v,m:false}});
+document.addEventListener('pointermove',e=>{if(!prD)return;const dx=e.clientX-prD.x,dy=e.clientY-prD.y;if(Math.abs(dx)+Math.abs(dy)>4)prD.m=true;if(prD.m){prD.v.scrollLeft=prD.l-dx;prD.v.scrollTop=prD.t-dy}});
+document.addEventListener('pointerup',()=>{if(prD&&prD.m){PR_ARR=true;setTimeout(()=>{PR_ARR=false},0)}prD=null});
+/* ---------- v211 · Diseño a mano (solo el administrador, con la contraseña del Taller) ----------
+   Mapa de la finca › Diseño a mano: se dibujan a mano las naves (invernaderos), las zonas, las tuberías y las electroválvulas
+   y demás elementos de cada zona (cabezal), se alargan o se acortan arrastrando o con los metros exactos, y se ven en 3D.
+   Se guarda en la configuración (cfg.diseno[cabezal]). Con «Usar este diseño en la app» pasa a ser el plano de esa zona en
+   Incidencias, En vivo, Instalación, Clima y Plagas (lo de antes se queda guardado y se puede volver a ello).
+   Las medidas van en las mismas coordenadas del dibujo de la zona; «upm» son las unidades por metro (se puede calibrar). */
+const DIS_UPM={pla:3.116,met:2,fra:1.56,gas:1.6};
+const DIS_TUB={pvc:'PVC',pe50:'PE 50',pe40:'PE 40',pe25:'PE 25'};
+const DIS_DIAM=['Ø160','Ø140','Ø125','Ø110','Ø90','Ø75','Ø63','Ø50','Ø40','Ø32','Ø25'];
+const DIS_ZCOL=['#59a14f','#4e79a7','#f28e2b','#e15759','#b07aa1','#9c755f','#76b7b2','#edc948'];
+const MAPAS_ORIG={},RED_ORIG={};let DIS_KEY='';
+const disAncho=t=>{const m=/Ø\s*(\d+)/.exec(t.d||t.n||'');if(t.t!=='pvc')return t.t==='pe50'?3.2:t.t==='pe40'?2.6:2.4;const d=m?+m[1]:90;return Math.max(3,Math.min(7,2+d/28))};
+const disOrig=cab=>(cab in MAPAS_ORIG)?MAPAS_ORIG[cab]:MAPAS[cab];
+const disRedOrig=cab=>(cab in RED_ORIG)?RED_ORIG[cab]:PLAN_RED[cab];
+const disId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const disLen=p=>{let L=0;for(let i=1;i<p.length;i++)L+=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]);return L};
+const disNaveEn=(D,pt)=>{const v=D.naves.find(n=>dentro(pt,n.p));return v?v.n:null};
+function disEk(D){const[,,vw,vh]=D.vb,k=Math.max(vw,vh)/1000,s=D.naves.map(n=>Math.min(Math.hypot(n.p[1][0]-n.p[0][0],n.p[1][1]-n.p[0][1]),Math.hypot(n.p[n.p.length-1][0]-n.p[0][0],n.p[n.p.length-1][1]-n.p[0][1]))).sort((a,b)=>a-b);
+  if(!s.length)return 1;const m=s[Math.floor(s.length/2)];return Math.max(.3,Math.min(1,m*.22/(17*k)))}
+/* El diseño como plano de la app */
+function disMapa(cab,D){const O=disOrig(cab);return{titulo:O?O.titulo:cabNombre(cab),finca:O?O.finca:'',vb:D.vb.slice(),naves:D.naves.map(n=>({n:n.n,p:n.p.map(q=>q.slice()),pas:n.pas||11})).sort((a,b)=>a.n-b.n),
+  ang:O?O.ang||0:0,ek:disEk(D),upm:D.upm,norte:O&&O.norte,norteAng:O&&O.norteAng,rayas:O?O.rayas:12,pasInv:O?!!O.pasInv:false,nota:`${D.naves.length} naves · dibujado a mano`,aMano:1,
+  fondo(o){return (D.conFondo&&O&&O.fondo?O.fondo(o):'')+disZonasSVG(D,Math.max(D.vb[2],D.vb[3])/1000)},
+  info(n){const v=D.naves.find(x=>x.n===n);if(!v)return [];const[a,b,,d]=v.p,c=(cabById(cab)||{sectores:[]}).sectores.find(s=>s.id===v.sec),ev=D.el.filter(e=>e.t==='ev'&&dentro([e.x,e.y],v.p)),
+    tub=[...new Set(D.tub.filter(t=>t.p.some((q,i)=>dentro(q,v.p)||(i&&dentro(lerp(t.p[i-1],q,.5),v.p)))).map(t=>`${DIS_TUB[t.t]}${t.t==='pvc'&&t.d?' '+t.d:''}`))];
+    return [['Medidas',v.p.length===4?`${fmt(Math.hypot(b[0]-a[0],b[1]-a[1])/D.upm,1)} × ${fmt(Math.hypot(d[0]-a[0],d[1]-a[1])/D.upm,1)} m`:'Forma a mano'],['Sector',c?c.nombre:'—'],
+      ['Electroválvulas',ev.length?ev.map(e=>e.n||'EV').join(', '):'—'],['Tuberías',tub.length?tub.join(', '):'—'],['Dibujo','A mano en «Diseño a mano»']]}}}
+function disRed(D){return{lin:D.tub.map(t=>({p:t.p,t:t.t,w:disAncho(t),n:t.n||`${DIS_TUB[t.t]}${t.t==='pvc'&&t.d?' '+t.d:''}`})),ev:D.el.filter(e=>e.t==='ev').map(e=>({x:e.x,y:e.y,nave:e.nave,n:e.n||'EV',nota:e.nota||''})),
+  llaves:D.el.filter(e=>e.t==='lla').map(e=>({x:e.x,y:e.y,n:e.n||'Llave'})),cab:D.cab||null}}
+function disSync(){const Ds=(st.cfg&&st.cfg.diseno)||{},key=JSON.stringify(Object.entries(Ds).filter(([c,d])=>d&&d.act).map(([c,d])=>[c,d.ts]));if(key===DIS_KEY)return;DIS_KEY=key;
+  for(const c of Object.keys(MAPAS_ORIG)){if(MAPAS_ORIG[c])MAPAS[c]=MAPAS_ORIG[c];else delete MAPAS[c];if(RED_ORIG[c])PLAN_RED[c]=RED_ORIG[c];else delete PLAN_RED[c];delete MAPAS_ORIG[c];delete RED_ORIG[c]}
+  for(const[c,D]of Object.entries(Ds))if(D&&D.act&&D.naves&&cabById(c)){MAPAS_ORIG[c]=MAPAS[c]||null;RED_ORIG[c]=PLAN_RED[c]||null;MAPAS[c]=disMapa(c,D);PLAN_RED[c]=()=>disRed(D)}}
+/* Instalación sigue al diseño: mismos elementos (por su id), sus sitios y los sectores de cada nave */
+function disInst(c,cab,D){c.inst=c.inst||{};const I=c.inst[cab]||{el:[],naves:{},pas:{}},by=Object.fromEntries((I.el||[]).map(x=>[x.id,x])),ns=new Set(D.naves.map(n=>String(n.n)));
+  I.el=D.el.map(e=>{const o=by[e.id];return o?{...o,t:e.t,n:e.n,x:e.x,y:e.y,nave:e.nave??null,nota:e.nota??o.nota}:{id:e.id,t:e.t,n:e.n||'',sid:'',nave:e.nave??null,pas:null,x:e.x,y:e.y,min:null,max:null,nota:e.nota||'',sk:'',bj:'',plano:1}});
+  I.naves=Object.fromEntries(D.naves.filter(n=>n.sec).map(n=>[n.n,n.sec]));I.pas=Object.fromEntries(Object.entries(I.pas||{}).filter(([k])=>ns.has(k.split(':')[0])));if(D.cab)I.cab=D.cab;c.inst[cab]=I}
+/* Empezar: con lo que hay ahora en la app, o en blanco */
+function disDesdeAhora(cab){const O=disOrig(cab),F=disRedOrig(cab),R=F?F():null,I=((st.cfg.inst||{})[cab])||{el:[],naves:{}};
+  const D={v:1,upm:DIS_UPM[cab]||(O&&O.upm)||1,vb:O?O.vb.slice():[-20,-20,260,200],conFondo:!!(O&&O.fondo),act:false,naves:[],tub:[],el:[],zon:[],cab:I.cab||null};
+  if(O)D.naves=O.naves.map(v=>({id:'n'+v.n,n:v.n,p:v.p.map(q=>q.slice()),pas:v.pas||((O.rayas||12)-1),sec:(I.naves||{})[v.n]||''}));
+  if(R)D.tub=R.lin.map((l,i)=>({id:'t'+i,t:l.t,d:(/Ø\s*\d+/.exec(l.n||'')||[''])[0],n:l.n||'',p:l.p.map(q=>q.slice())}));
+  D.el=(I.el||[]).map(x=>({id:x.id,t:x.t,n:x.n||'',x:+x.x,y:+x.y,nave:x.nave??null,nota:x.nota||''}));
+  if(!D.el.length&&R){R.ev.forEach((e,i)=>D.el.push({id:cab+'_pev'+(i+1),t:'ev',n:e.n,x:e.x,y:e.y,nave:e.nave,nota:e.nota||''}));R.llaves.forEach((l,i)=>D.el.push({id:cab+'_pll'+(i+1),t:'lla',n:l.n,x:l.x,y:l.y,nave:null,nota:''}))}
+  return D}
+function disBlanco(cab){const O=disOrig(cab);return{v:1,upm:DIS_UPM[cab]||1,vb:O?O.vb.slice():[-20,-20,260,200],conFondo:!!(O&&O.fondo),act:false,naves:[],tub:[],el:[],zon:[],cab:null}}
+/* Estado del editor */
+st.dis=st.dis||{cab:null,D:null,modo:'sel',sel:null,dib:null,z:1,v3:false,rot:0,tel:'ev',recta:true,hist:[],dirty:false,conf:false,vi:null};
+function disEstado(){const E=st.dis;if(E.cab!==st.cab){const g=(st.cfg.diseno||{})[st.cab];Object.assign(E,{cab:st.cab,D:g?clone(g):null,modo:'sel',sel:null,dib:null,z:1,hist:[],dirty:false,conf:false,vi:null})}return E}
+function disHist(){const E=st.dis;E.hist.push(JSON.stringify(E.D));if(E.hist.length>60)E.hist.shift();E.dirty=true}
+const disObj=(D,s)=>s?(s.k==='nave'?D.naves:s.k==='tub'?D.tub:s.k==='el'?D.el:D.zon).find(x=>x.id===s.id):null;
+/* Dibujo de las zonas (también va de fondo en la app cuando el diseño está en uso) */
+function disZonasSVG(D,k){return (D.zon||[]).map(z=>{const c=centro(z.p);return `<polygon points="${ptsS(z.p)}" fill="${z.col||'#59a14f'}" fill-opacity=".16" stroke="${z.col||'#59a14f'}" stroke-width="${(2*k).toFixed(2)}" stroke-dasharray="${(8*k).toFixed(1)} ${(5*k).toFixed(1)}"/>`+(z.n?`<text x="${c[0].toFixed(1)}" y="${c[1].toFixed(1)}" text-anchor="middle" font-size="${(16*k).toFixed(1)}" font-weight="800" fill="${z.col||'#59a14f'}" stroke="#fff" stroke-width="${(3*k).toFixed(1)}" paint-order="stroke">${esc(z.n)}</text>`:'')}).join('')}
+function disTubSVG(D,k,sel){let s='';for(const t of D.tub){const on=sel&&sel.k==='tub'&&sel.id===t.id,w=disAncho(t)*k*.9;
+    s+=`<g data-dk="tub" data-id="${t.id}"><polyline points="${ptsS(t.p)}" fill="none" stroke="transparent" stroke-width="${(w+14*k).toFixed(1)}"/><polyline points="${ptsS(t.p)}" fill="none" stroke="${RED_COL[t.t]||'#c45a1c'}" stroke-width="${w.toFixed(2)}" stroke-linejoin="round" stroke-linecap="round"${on?` filter="drop-shadow(0 0 ${(3*k).toFixed(1)}px #e2a32a)"`:''}/></g>`;
+    let b=null;for(let i=1;i<t.p.length;i++){const L=Math.hypot(t.p[i][0]-t.p[i-1][0],t.p[i][1]-t.p[i-1][1]);if(!b||L>b.L)b={a:t.p[i-1],c:t.p[i],L}}
+    const nm=t.n||(t.t==='pvc'?`PVC${t.d?' '+t.d:''}`:'');if(nm&&b&&b.L>60*k){const m=lerp(b.a,b.c,.5);let an=Math.atan2(b.c[1]-b.a[1],b.c[0]-b.a[0])*180/Math.PI;if(an>90)an-=180;if(an<-90)an+=180;
+      s+=`<text pointer-events="none" transform="translate(${m[0].toFixed(1)} ${m[1].toFixed(1)}) rotate(${an.toFixed(1)}) translate(0 ${(-8*k).toFixed(1)})" text-anchor="middle" font-size="${(11*k).toFixed(1)}" font-weight="800" fill="${RED_COL[t.t]}" stroke="#fff" stroke-width="${(3*k).toFixed(1)}" paint-order="stroke">${esc(nm)}</text>`}}
+  return s}
+function disElSVG(D,k,sel){return D.el.map(e=>{const t=IN_T[e.t]||IN_T.otro,on=sel&&sel.k==='el'&&sel.id===e.id,r=(on?20:15)*k;
+  return `<g data-dk="el" data-id="${e.id}" transform="translate(${e.x.toFixed(1)} ${e.y.toFixed(1)})"><circle r="${(r+8*k).toFixed(1)}" fill="transparent"/><circle r="${r.toFixed(1)}" fill="${t.c}" stroke="${on?'#e2a32a':'#fff'}" stroke-width="${(3*k).toFixed(1)}"/><text y="${(4.6*k).toFixed(1)}" text-anchor="middle" font-size="${((t.l.length>1?11:14)*k).toFixed(1)}" font-weight="800" fill="#fff" pointer-events="none">${t.l}</text></g>`}).join('')}
+/* Editor en 2D */
+function disSVG(cab){const E=st.dis,D=E.D,O=disOrig(cab),[vx,vy,vw,vh]=D.vb,k=Math.max(vw,vh)/1000,sel=E.sel;let s=`<svg id="dissvg" viewBox="${vx} ${vy} ${vw} ${vh}" class="dissvg" role="img" aria-label="Diseño a mano de ${esc(cabNombre(cab))}">
+  <defs><pattern id="mpHatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="8" stroke="#9c8f73" stroke-width="1.2"/></pattern>
+  <pattern id="disRej" width="${(10*D.upm).toFixed(2)}" height="${(10*D.upm).toFixed(2)}" patternUnits="userSpaceOnUse"><path d="M${(10*D.upm).toFixed(2)} 0H0V${(10*D.upm).toFixed(2)}" fill="none" stroke="#d9d3c2" stroke-width="${(.8*k).toFixed(2)}"/></pattern></defs>
+  <rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="#f4f1e8"/><rect x="${vx}" y="${vy}" width="${vw}" height="${vh}" fill="url(#disRej)" data-dk="fondo"/>`;
+  if(D.conFondo&&O&&O.fondo)s+=`<g opacity=".5" pointer-events="none">${O.fondo({inst:1})}</g>`;
+  s+=`<g pointer-events="none">${disZonasSVG(D,k)}</g>`;
+  for(const z of D.zon)s+=`<polygon data-dk="zon" data-id="${z.id}" points="${ptsS(z.p)}" fill="transparent" stroke="${sel&&sel.k==='zon'&&sel.id===z.id?'#e2a32a':'transparent'}" stroke-width="${(4*k).toFixed(1)}"/>`;
+  for(const v of D.naves){const on=sel&&sel.k==='nave'&&sel.id===v.id,c=centro(v.p),q=v.p.length===4?v.p:null;
+    s+=`<g data-dk="nave" data-id="${v.id}"><polygon points="${ptsS(v.p)}" fill="${on?'#fff2d6':'#e3ecd6'}" stroke="${on?'#e2a32a':'#7f9a68'}" stroke-width="${((on?3:1.6)*k).toFixed(2)}"/>`;
+    if(q){const n=v.pas||11;for(let i=1;i<=n;i++){const t=i/(n+1),a=lerp(q[3],q[0],t),b=lerp(q[2],q[1],t);s+=`<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}" stroke="#b8c9a4" stroke-width="${(.8*k).toFixed(2)}" pointer-events="none"/>`}}
+    s+=`<text x="${c[0].toFixed(1)}" y="${(c[1]+5*k).toFixed(1)}" text-anchor="middle" font-size="${(14*k*Math.min(1,disEk(D)*1.4)).toFixed(1)}" font-weight="800" fill="#1b2f4a" pointer-events="none">NAVE ${v.n}</text></g>`}
+  s+=disTubSVG(D,k,sel)+disElSVG(D,k,sel);
+  if(D.cab)s+=`<g pointer-events="none" transform="translate(${D.cab[0]} ${D.cab[1]})"><rect x="${-10*k}" y="${-10*k}" width="${20*k}" height="${20*k}" rx="${3*k}" fill="#2d3a2f"/><path d="M${-10*k} ${10*k}L${10*k} ${-10*k}" stroke="#fff" stroke-width="${1.6*k}"/></g>`;
+  // tiradores de lo elegido: esquinas, alargar (L) y ensanchar (A)
+  const o=disObj(D,sel),h=(x,y,id,cl,form)=>form==='sq'?`<rect data-dh="${id}" x="${(x-9*k).toFixed(1)}" y="${(y-9*k).toFixed(1)}" width="${(18*k).toFixed(1)}" height="${(18*k).toFixed(1)}" rx="${(3*k).toFixed(1)}" fill="${cl}" stroke="#fff" stroke-width="${(2*k).toFixed(1)}"/>`:`<circle data-dh="${id}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(8*k).toFixed(1)}" fill="${cl}" stroke="#fff" stroke-width="${(2*k).toFixed(1)}"/>`;
+  if(o&&sel.k==='nave'){o.p.forEach((q,i)=>s+=h(q[0],q[1],'v'+i,'#e2a32a'));if(o.p.length===4){const L=lerp(o.p[1],o.p[2],.5),A=lerp(o.p[2],o.p[3],.5);s+=h(L[0],L[1],'L','#1f78c1','sq')+h(A[0],A[1],'A','#8e44ad','sq')}}
+  if(o&&(sel.k==='tub'||sel.k==='zon')){o.p.forEach((q,i)=>s+=h(q[0],q[1],'v'+i,'#e2a32a'));const n=o.p.length;for(let i=1;i<(sel.k==='zon'?n+1:n);i++){const m=lerp(o.p[i-1],o.p[i%n],.5);s+=`<circle data-dh="m${i}" cx="${m[0].toFixed(1)}" cy="${m[1].toFixed(1)}" r="${(5*k).toFixed(1)}" fill="#fff" stroke="#e2a32a" stroke-width="${(2*k).toFixed(1)}"/>`}}
+  if(E.dib&&E.dib.length)s+=`<polyline points="${ptsS(E.dib)}" fill="none" stroke="${E.modo==='zon'?'#59a14f':(RED_COL[E.dt||'pvc'])}" stroke-width="${(4*k).toFixed(1)}" stroke-dasharray="${(6*k).toFixed(1)} ${(4*k).toFixed(1)}"/>`+E.dib.map(q=>`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${(5*k).toFixed(1)}" fill="#e2a32a"/>`).join('');
+  return s+'</svg>'}
+/* En 3D: con el mismo dibujo de En vivo; el plástico se ve transparente para ver las tuberías del suelo */
+function dis3D(cab){const D=st.dis.D,O=disOrig(cab),k=Math.max(D.vb[2],D.vb[3])/1000;
+  const M={titulo:'Diseño a mano',vb:D.vb,naves:D.naves.map(n=>({n:n.n,p:n.p,pas:n.pas||11})),ang:0,rayas:12,fondo:()=>(D.conFondo&&O&&O.fondo?O.fondo({inst:1}):'')+disZonasSVG(D,k)+disTubSVG(D,k,null)+disElSVG(D,k,null)};
+  if(!M.naves.length)return '<div class="prnada">Pon al menos una nave para verlo en 3D.</div>';
+  const rot=st.vv.rot,sel=st.vv.sel;MAPAS._dis=M;st.vv.rot=st.dis.rot||0;st.vv.sel=null;let s='';try{s=vvSVG('_dis',hoy())}catch(e){s='<div class="note">No se ha podido dibujar en 3D.</div>'}finally{delete MAPAS._dis;st.vv.rot=rot;st.vv.sel=sel}
+  return s.replace('id="vvsvg"','id="dis3d"').replace(/data-vv="/g,'data-x="').replace(/scale\(([\d.]+)\)"><rect x="-23" y="-9"/g,(m,k)=>`scale(${(+k*.62).toFixed(3)})"><rect x="-23" y="-9"`)}
+/* Panel de lo elegido */
+function disPanel(cab){const E=st.dis,D=E.D,o=disObj(D,E.sel),u=D.upm,m=v=>fmt(v/u,1),c=cabById(cab)||{sectores:[]},inp=(k,v,t,ex)=>`<input data-dv="${k}" type="${t||'text'}" value="${esc(v??'')}"${ex||''}>`;
+  if(E.dib)return `<section class="card dispan"><h4>${E.modo==='zon'?'Dibujando una zona':'Dibujando una tubería'}</h4><div class="sub">Toca el plano para poner cada punto (${E.dib.length} puestos). ${E.recta?'«Recto» está puesto: los tramos casi rectos se enderezan solos.':''}${E.modo==='tub'?' Si tocas cerca de otra tubería, se engancha a ella.':''}</div>
+    <div class="row"><button class="btn pri" data-dis="fin"${E.dib.length<(E.modo==='zon'?3:2)?' disabled':''}>Terminar</button><button class="btn" data-dis="quitapunto"${E.dib.length?'':' disabled'}>Quitar el último punto</button><button class="btn" data-dis="cancel">Cancelar</button></div></section>`;
+  if(!o)return `<section class="card dispan"><h4>Cómo se usa</h4><ol class="disol"><li><b>Elegir y mover:</b> toca una nave, tubería, elemento o zona para elegirla; arrastra para moverla. Con nada elegido, arrastra el fondo para moverte por el plano.</li>
+    <li><b>Alargar o acortar una nave:</b> arrastra el cuadrado azul (largo) o el morado (ancho), o escribe los metros. Los puntos naranjas mueven cada esquina.</li>
+    <li><b>Tuberías:</b> «+ Tubería», elige tipo y diámetro y toca punto a punto. Luego arrastra sus puntos para alargarla o acortarla; los puntos blancos añaden un codo.</li>
+    <li><b>Electroválvulas y elementos:</b> elige qué es en «+ Elemento» y toca donde va.</li><li><b>3D:</b> «Ver en 3D» para verlo como en En vivo.</li>
+    <li>Pulsa <b>«Guardar el diseño»</b>. No se ve en la app hasta que pulses «Usar este diseño en la app».</li></ol>
+    <div class="sub">${D.naves.length} naves · ${D.tub.length} tuberías (${fmt(D.tub.reduce((a,t)=>a+disLen(t.p),0)/u,0)} m) · ${D.el.filter(e=>e.t==='ev').length} electroválvulas · ${D.el.filter(e=>e.t!=='ev').length} elementos más · ${D.zon.length} zonas</div></section>`;
+  let h=`<section class="card dispan">`;
+  if(E.sel.k==='nave'){const q=o.p,L=q.length===4?Math.hypot(q[1][0]-q[0][0],q[1][1]-q[0][1]):0,A=q.length===4?Math.hypot(q[3][0]-q[0][0],q[3][1]-q[0][1]):0,ang=q.length===4?Math.round(Math.atan2(q[1][1]-q[0][1],q[1][0]-q[0][0])*180/Math.PI):0;
+    h+=`<h4>Nave ${o.n}</h4><div class="frm disfrm"><div class="field"><label>Número</label><div class="inp">${inp('n',o.n,'number',' inputmode="numeric"')}</div></div>`;
+    if(q.length===4)h+=`<div class="field"><label>Largo (m)</label><div class="inp">${inp('L',m(L).replace(',','.'),'number',' step="0.1" inputmode="decimal"')}</div></div><div class="field"><label>Ancho (m)</label><div class="inp">${inp('A',m(A).replace(',','.'),'number',' step="0.1" inputmode="decimal"')}</div></div><div class="field"><label>Giro (°)</label><div class="inp">${inp('ang',ang,'number',' inputmode="numeric"')}</div></div>`;
+    h+=`<div class="field"><label>Pasillos</label><div class="inp">${inp('pas',o.pas||11,'number',' inputmode="numeric"')}</div></div><div class="field"><label>Sector</label><div class="inp"><select data-dv="sec"><option value="">Sin sector</option>${c.sectores.map(s=>`<option value="${s.id}"${o.sec===s.id?' selected':''}>${esc(s.nombre)}</option>`).join('')}</select></div></div></div>
+    <div class="row"><button class="btn" data-dis="gira" data-v="-5">⟲ −5°</button><button class="btn" data-dis="gira" data-v="5">⟳ +5°</button><button class="btn" data-dis="dup">Duplicar al lado</button></div>
+    <div class="frm disfrm"><div class="field"><label>Hacer una fila: cuántas naves más</label><div class="inp"><input id="dis_fn" type="number" value="4" min="1" max="60" inputmode="numeric"></div></div><div class="field"><label>Separación (m)</label><div class="inp"><input id="dis_fs" type="number" value="1.6" step="0.1" inputmode="decimal"></div></div>
+      <div class="field"><label>Hacia</label><div class="inp"><select id="dis_fl"><option value="1">Un lado</option><option value="-1">El otro lado</option></select></div></div></div>
+    <div class="row"><button class="btn" data-dis="fila">Hacer la fila</button><button class="btn" data-dis="borrar">Borrar la nave</button></div>`}
+  else if(E.sel.k==='tub'){h+=`<h4>Tubería · ${fmt(disLen(o.p)/u,1)} m</h4><div class="frm disfrm"><div class="field"><label>Tipo</label><div class="inp"><select data-dv="t">${Object.entries(DIS_TUB).map(([k,n])=>`<option value="${k}"${o.t===k?' selected':''}>${n}</option>`).join('')}</select></div></div>
+      <div class="field"><label>Diámetro</label><div class="inp"><select data-dv="d"><option value="">—</option>${DIS_DIAM.map(d=>`<option${o.d===d?' selected':''}>${d}</option>`).join('')}</select></div></div><div class="field"><label>Nombre (opcional)</label><div class="inp">${inp('nn',o.n)}</div></div></div>
+    <div class="sub">Arrastra los puntos naranjas para alargarla o acortarla; los blancos añaden un codo. ${o.p.length} puntos.</div>
+    <div class="row"><button class="btn" data-dis="sigue">Seguir dibujándola</button><button class="btn" data-dis="quitav"${o.p.length>2?'':' disabled'}>Quitar el último punto</button><button class="btn" data-dis="borrar">Borrar la tubería</button></div>`}
+  else if(E.sel.k==='el'){h+=`<h4>${esc((IN_T[o.t]||IN_T.otro).n)}${o.nave!=null?' · nave '+o.nave:''}</h4><div class="frm disfrm"><div class="field"><label>Qué es</label><div class="inp"><select data-dv="t">${Object.entries(IN_T).map(([k,t])=>`<option value="${k}"${o.t===k?' selected':''}>${t.n}</option>`).join('')}</select></div></div>
+      <div class="field"><label>Nombre</label><div class="inp">${inp('nn',o.n)}</div></div><div class="field"><label>Nota</label><div class="inp">${inp('nota',o.nota)}</div></div></div>
+    <div class="row"><button class="btn" data-dis="borrar">Borrar</button></div>`}
+  else if(E.sel.k==='zon'){h+=`<h4>Zona</h4><div class="frm disfrm"><div class="field"><label>Nombre</label><div class="inp">${inp('nn',o.n)}</div></div></div><div class="pick">${DIS_ZCOL.map(cl=>`<button class="chip" data-dis="zcol" data-v="${cl}" aria-pressed="${o.col===cl}"><i style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${cl}"></i></button>`).join('')}</div>
+    <div class="row"><button class="btn" data-dis="borrar">Borrar la zona</button></div>`}
+  return h+`<div class="row"><button class="btn" data-dis="nosel">Dejar de elegir</button></div></section>`}
+function vDiseno(){const cab=st.cab,c=cabById(cab);let h='';
+  if(!esAdminU())return h+`<section class="card"><h3>Diseño a mano</h3><div class="note">Solo para el administrador.</div></section>`;
+  if(!tlAbierto())return h+`<section class="card tlk"><div><h3>Diseño a mano</h3><div class="sub">Cerrado con llave · es la misma contraseña del Taller</div></div><div class="frm"><div class="field"><label for="tlk_pw">Contraseña</label><div class="inp"><input id="tlk_pw" type="password" autocomplete="current-password" style="text-transform:none;text-align:left"></div></div></div><div class="row"><button class="btn pri" type="button" data-tlk="abrir">Abrir</button></div></section>`;
+  const E=disEstado(),D=E.D,g=(st.cfg.diseno||{})[cab];
+  if(!D)return h+`<section class="card"><div><div class="eyebrow">Solo tú · ${esc(c?c.nombre:'')}</div><h3>Diseño a mano</h3><div class="sub">Dibuja tú las naves, zonas, sectores, tuberías y electroválvulas de esta zona, con sus medidas exactas, y míralo en 3D.</div></div>
+    <div class="row"><button class="btn pri" data-dis="ahora">Empezar con lo que hay ahora</button><button class="btn" data-dis="blanco">Empezar en blanco</button></div>
+    <div class="note">«Con lo que hay ahora» copia las naves, las tuberías del plano de riego y los elementos de Instalación de esta zona, para corregirlos. No cambia nada en la app hasta que lo pongas en uso.</div></section>`;
+  const tl=Object.entries(IN_T).map(([k,t])=>`<option value="${k}"${E.tel===k?' selected':''}>${t.n}</option>`).join('');
+  h+=`<section class="card disc"><div class="tank-h"><div><div class="eyebrow">Solo tú · Diseño a mano</div><h3>${esc(c?c.nombre:'')}${g&&g.act?' <span class="dispill">EN USO EN LA APP</span>':''}</h3><div class="sub">${E.dirty?'Hay cambios sin guardar':'Guardado'} · escala ${fmt(D.upm,2)} unidades por metro</div></div>
+      <div class="row"><button class="btn pri" data-dis="guardar"${E.dirty?'':' disabled'}>Guardar el diseño</button></div></div>
+    <div class="distool" role="toolbar" aria-label="Herramientas">
+      <button class="chip" data-dis="modo" data-v="sel" aria-pressed="${E.modo==='sel'&&!E.dib}">Elegir y mover</button><button class="chip" data-dis="modo" data-v="nave" aria-pressed="${E.modo==='nave'}">+ Nave</button>
+      <button class="chip" data-dis="modo" data-v="tub" aria-pressed="${E.modo==='tub'}">+ Tubería</button><select class="dissel" data-dv="dt" aria-label="Tipo de tubería">${Object.entries(DIS_TUB).map(([k,n])=>`<option value="${k}"${(E.dt||'pvc')===k?' selected':''}>${n}</option>`).join('')}</select><select class="dissel" data-dv="dd" aria-label="Diámetro">${DIS_DIAM.map(d=>`<option${(E.dd||'Ø90')===d?' selected':''}>${d}</option>`).join('')}</select>
+      <button class="chip" data-dis="modo" data-v="el" aria-pressed="${E.modo==='el'}">+ Elemento</button><select class="dissel" data-dv="tel" aria-label="Qué elemento">${tl}</select>
+      <button class="chip" data-dis="modo" data-v="zon" aria-pressed="${E.modo==='zon'}">+ Zona</button><button class="chip" data-dis="modo" data-v="cab" aria-pressed="${E.modo==='cab'}">Situar el cabezal</button>
+      <button class="chip" data-dis="recta" aria-pressed="${E.recta}">Recto</button><button class="chip" data-dis="fondo" aria-pressed="${!!D.conFondo}">Dibujo de fondo</button>
+      <button class="chip" data-dis="deshacer"${E.hist.length?'':' disabled'}>↶ Deshacer</button><button class="chip" data-dis="v3" aria-pressed="${E.v3}">Ver en 3D</button></div>`;
+  if(E.v3)h+=`<div class="row"><button class="btn sm" data-dis="rot" data-v="-1">⟲</button><button class="btn sm" data-dis="rot" data-v="1">⟳</button></div><div class="vvwrap dis3w">${dis3D(cab)}</div>`;
+  else h+=`<div class="row"><button class="btn sm" data-dis="zoom" data-v="-1" aria-label="Alejar">−</button><button class="btn sm" data-dis="zoom" data-v="1" aria-label="Acercar">+</button><button class="btn sm" data-dis="ajustar">Ajustar el lienzo al dibujo</button><button class="btn sm" data-dis="lienzo">Lienzo más grande</button></div>
+    <div class="diswrap" id="diswrap"><div class="disin" id="disvista" style="width:${E.z*100}%">${disSVG(cab)}</div></div>`;
+  h+=`</section>`+disPanel(cab);
+  h+=`<section class="card"><h4>Usar en la app</h4>${g&&g.act?`<div class="sub">Este diseño es ahora el plano de ${esc(c?c.nombre:'')} en Incidencias, En vivo, Instalación, Clima y Plagas.</div><div class="row"><button class="btn" data-dis="nousar">Volver al plano de antes</button></div>`:
+    E.conf?`<div class="note">Las naves, tuberías y elementos de este diseño pasan a ser los de ${esc(c?c.nombre:'')} en la app. Lo apuntado con número de nave sigue con ese número. Puedes volver al plano de antes cuando quieras.</div><div class="row"><button class="btn pri" data-dis="usar">Sí, usarlo en la app</button><button class="btn" data-dis="noconf">Cancelar</button></div>`:
+    `<div class="sub">Cuando lo tengas como quieres, guárdalo y ponlo en uso.</div><div class="row"><button class="btn" data-dis="conf"${g?'':' disabled'}>Usar este diseño en la app</button></div>`}
+    <div class="row"><button class="btn" data-dis="calib">Calibrar la escala con la nave elegida</button><button class="btn" data-dis="borrartodo">Tirar este diseño</button></div></section>`;
+  return h}
+/* Cambios en el diseño */
+function disRedibujar(){const v=$('#disvista');if(v)v.innerHTML=disSVG(st.cab)}
+function disPt(e){const sv=$('#dissvg');if(!sv)return null;const p=sv.createSVGPoint();p.x=e.clientX;p.y=e.clientY;const q=p.matrixTransform(sv.getScreenCTM().inverse());return[q.x,q.y]}
+function disSnap(D,pt,prev,ign){const k=Math.max(D.vb[2],D.vb[3])/1000;let best=null,bd=12*k;
+  for(const t of D.tub)if(t.id!==ign)for(const q of t.p){const d=Math.hypot(q[0]-pt[0],q[1]-pt[1]);if(d<bd){bd=d;best=q}}
+  if(best)return best.slice();if(st.dis.recta&&prev){const dx=pt[0]-prev[0],dy=pt[1]-prev[1];if(Math.abs(dy)<Math.abs(dx)*.18)return[pt[0],prev[1]];if(Math.abs(dx)<Math.abs(dy)*.18)return[prev[0],pt[1]]}return pt}
+function disNaveNueva(D,pt){const u=D.upm,L=100*u,A=24*u,n=D.naves.reduce((a,v)=>Math.max(a,v.n),0)+1;return{id:disId('n'),n,p:[[pt[0]-L/2,pt[1]-A/2],[pt[0]+L/2,pt[1]-A/2],[pt[0]+L/2,pt[1]+A/2],[pt[0]-L/2,pt[1]+A/2]],pas:12,sec:''}}
+function disMedida(o,campo,val){const q=o.p;if(q.length!==4||!(val>0))return;const u=st.dis.D.upm,a=q[0],b=q[1],d=q[3],L=Math.hypot(b[0]-a[0],b[1]-a[1]),A=Math.hypot(d[0]-a[0],d[1]-a[1]);
+  if(campo==='L'){const ux=(b[0]-a[0])/L,uy=(b[1]-a[1])/L,dl=val*u-L;q[1]=[b[0]+ux*dl,b[1]+uy*dl];q[2]=[q[2][0]+ux*dl,q[2][1]+uy*dl]}
+  else{const vx=(d[0]-a[0])/A,vy=(d[1]-a[1])/A,dl=val*u-A;q[3]=[d[0]+vx*dl,d[1]+vy*dl];q[2]=[q[2][0]+vx*dl,q[2][1]+vy*dl]}}
+function disGira(o,grados){const c=centro(o.p),t=grados*Math.PI/180,co=Math.cos(t),si=Math.sin(t);o.p=o.p.map(([x,y])=>[c[0]+(x-c[0])*co-(y-c[1])*si,c[1]+(x-c[0])*si+(y-c[1])*co])}
+function disNaves(D){for(const e of D.el)e.nave=disNaveEn(D,[e.x,e.y])}
+async function disGuardar(){const E=st.dis,cab=st.cab,D=E.D;D.ts=Date.now();disNaves(D);
+  for(const c of [st.cfg,st.savedCfg]){c.diseno={...(c.diseno||{}),[cab]:clone(D)};if(D.act)disInst(c,cab,D)}
+  try{await Store.setConfig(clone(st.savedCfg));E.dirty=false;toast('Diseño guardado')}catch(e){toast('No se ha podido guardar: '+(e.message||e))}renderMain()}
+async function disUsar(si){const E=st.dis,cab=st.cab,D=E.D;D.act=!!si;D.ts=Date.now();disNaves(D);
+  for(const c of [st.cfg,st.savedCfg]){c.diseno={...(c.diseno||{}),[cab]:clone(D)};if(si){c.mig={...(c.mig||{})};c.mig.disAntes={...(c.mig.disAntes||{})};if(!c.mig.disAntes[cab])c.mig.disAntes[cab]=clone(((c.inst||{})[cab])||null);disInst(c,cab,D)}
+    else if(c.mig&&c.mig.disAntes&&cab in c.mig.disAntes){c.inst=c.inst||{};if(c.mig.disAntes[cab])c.inst[cab]=clone(c.mig.disAntes[cab]);else delete c.inst[cab];c.mig.disAntes={...c.mig.disAntes};delete c.mig.disAntes[cab]}}
+  E.conf=false;try{await Store.setConfig(clone(st.savedCfg));E.dirty=false;toast(si?'Diseño en uso en la app':'Vuelve el plano de antes')}catch(e){toast('No se ha podido guardar: '+(e.message||e))}renderAll()}
+document.addEventListener('click',async e=>{if(st.tab!=='diseno'||!e.target.closest)return;const b=e.target.closest('[data-dis]');if(!b||b.disabled)return;const a=b.dataset.dis,E=st.dis,D=E.D,cab=st.cab,o=D?disObj(D,E.sel):null;
+  if(a==='ahora'){E.D=disDesdeAhora(cab);E.hist=[];E.dirty=true}else if(a==='blanco'){E.D=disBlanco(cab);E.hist=[];E.dirty=true}
+  else if(a==='modo'){E.modo=b.dataset.v;E.dib=(E.modo==='tub'||E.modo==='zon')?[]:null;E.sel=null;E.dt=E.dt||'pvc';E.dd=E.dd||'Ø90'}
+  else if(a==='fin'){if(E.dib&&E.dib.length>=(E.modo==='zon'?3:2)){disHist();if(E.modo==='zon'){const z={id:disId('z'),n:'Zona '+(D.zon.length+1),col:DIS_ZCOL[D.zon.length%DIS_ZCOL.length],p:E.dib};D.zon.push(z);E.sel={k:'zon',id:z.id}}
+    else if(E.vi){const t=D.tub.find(x=>x.id===E.vi);if(t){t.p=E.dib;E.sel={k:'tub',id:t.id}}}else{const t={id:disId('t'),t:E.dt||'pvc',d:(E.dt||'pvc')==='pvc'?(E.dd||'Ø90'):'',n:'',p:E.dib};D.tub.push(t);E.sel={k:'tub',id:t.id}}}E.dib=null;E.vi=null;E.modo='sel'}
+  else if(a==='quitapunto'){if(E.dib)E.dib.pop()}else if(a==='cancel'){E.dib=null;E.vi=null;E.modo='sel'}
+  else if(a==='sigue'&&o){E.modo='tub';E.vi=o.id;E.dib=o.p.map(q=>q.slice());E.sel=null}
+  else if(a==='quitav'&&o&&o.p.length>2){disHist();o.p.pop()}
+  else if(a==='nosel')E.sel=null;else if(a==='recta')E.recta=!E.recta;else if(a==='fondo'){disHist();D.conFondo=!D.conFondo}
+  else if(a==='deshacer'){const j=E.hist.pop();if(j){E.D=JSON.parse(j);E.sel=null;E.dirty=true}}
+  else if(a==='v3')E.v3=!E.v3;else if(a==='rot')E.rot=((E.rot||0)+ +b.dataset.v+4)%4;
+  else if(a==='zoom'){E.z=Math.max(1,Math.min(6,E.z*(+b.dataset.v>0?1.4:1/1.4)))}
+  else if(a==='lienzo'){disHist();const[x,y,w,h]=D.vb;D.vb=[x-w*.15,y-h*.15,w*1.3,h*1.3]}
+  else if(a==='ajustar'){const pts=[...D.naves.flatMap(n=>n.p),...D.tub.flatMap(t=>t.p),...D.el.map(x=>[x.x,x.y]),...D.zon.flatMap(z=>z.p)];if(pts.length){disHist();const xs=pts.map(q=>q[0]),ys=pts.map(q=>q[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),m=Math.max(x1-x0,y1-y0)*.08;D.vb=[x0-m,y0-m,x1-x0+2*m,y1-y0+2*m].map(v=>+v.toFixed(1))}}
+  else if(a==='gira'&&o){disHist();disGira(o,+b.dataset.v)}
+  else if(a==='dup'&&o){disHist();const q=o.p,A=q.length===4?Math.hypot(q[3][0]-q[0][0],q[3][1]-q[0][1]):0,v=A?[(q[3][0]-q[0][0])/A,(q[3][1]-q[0][1])/A]:[0,1],off=(A||24*D.upm)+1.6*D.upm,n={...clone(o),id:disId('n'),n:D.naves.reduce((x,w)=>Math.max(x,w.n),0)+1,p:q.map(([x,y])=>[x+v[0]*off,y+v[1]*off])};D.naves.push(n);E.sel={k:'nave',id:n.id}}
+  else if(a==='fila'&&o){const N=Math.max(1,Math.min(60,+($('#dis_fn')||{}).value||1)),sep=num(($('#dis_fs')||{}).value)||0,lado=+($('#dis_fl')||{}).value||1,q=o.p;if(q.length!==4)return;disHist();
+    const A=Math.hypot(q[3][0]-q[0][0],q[3][1]-q[0][1]),v=[(q[3][0]-q[0][0])/A*lado,(q[3][1]-q[0][1])/A*lado];let n=D.naves.reduce((x,w)=>Math.max(x,w.n),0);
+    for(let i=1;i<=N;i++){const off=i*(A+sep*D.upm);D.naves.push({...clone(o),id:disId('n'),n:++n,p:q.map(([x,y])=>[x+v[0]*off,y+v[1]*off])})}}
+  else if(a==='borrar'&&o){disHist();const L=E.sel.k==='nave'?D.naves:E.sel.k==='tub'?D.tub:E.sel.k==='el'?D.el:D.zon;L.splice(L.indexOf(o),1);E.sel=null}
+  else if(a==='zcol'&&o){disHist();o.col=b.dataset.v}
+  else if(a==='guardar'){await disGuardar();return}
+  else if(a==='conf')E.conf=true;else if(a==='noconf')E.conf=false;
+  else if(a==='usar'){if(E.dirty)await disGuardar();await disUsar(true);return}else if(a==='nousar'){await disUsar(false);return}
+  else if(a==='calib'){if(!o||E.sel.k!=='nave'||o.p.length!==4){toast('Elige primero una nave de 4 lados de la que sepas el largo');return}
+    const L=Math.hypot(o.p[1][0]-o.p[0][0],o.p[1][1]-o.p[0][1]),r=prompt('¿Cuántos metros mide de largo la nave '+o.n+'?',fmt(L/D.upm,1));const mm=num(r);if(mm>0){disHist();D.upm=+(L/mm).toFixed(4)}}
+  else if(a==='borrartodo'){if(!confirm('¿Tirar este diseño? Lo que hay ahora en la app no cambia.'))return;const g=(st.cfg.diseno||{})[cab];if(g&&g.act){toast('Primero vuelve al plano de antes');return}
+    for(const c of [st.cfg,st.savedCfg]){c.diseno={...(c.diseno||{})};delete c.diseno[cab]}try{await Store.setConfig(clone(st.savedCfg))}catch(e){}E.D=null;E.cab=null}
+  renderMain()});
+document.addEventListener('change',e=>{if(st.tab!=='diseno'||!e.target.dataset)return;const k=e.target.dataset.dv;if(!k)return;const E=st.dis,D=E.D,o=D?disObj(D,E.sel):null,v=e.target.value;
+  if(k==='dt'){E.dt=v;return}if(k==='dd'){E.dd=v;return}if(k==='tel'){E.tel=v;E.modo='el';E.dib=null;renderMain();return}if(!o)return;disHist();
+  if(k==='n'){const n=parseInt(v,10);if(!isNaN(n)&&!D.naves.some(x=>x!==o&&x.n===n))o.n=n;else toast('Ese número de nave ya está')}
+  else if(k==='L'||k==='A')disMedida(o,k,num(v));else if(k==='ang'){const q=o.p,cur=Math.atan2(q[1][1]-q[0][1],q[1][0]-q[0][0])*180/Math.PI;disGira(o,(num(v)||0)-cur)}
+  else if(k==='pas')o.pas=Math.max(1,Math.min(60,parseInt(v,10)||1));else if(k==='sec')o.sec=v;else if(k==='t')o.t=v;else if(k==='d')o.d=v;else if(k==='nn')o.n=v.trim();else if(k==='nota')o.nota=v.trim();
+  if(E.hist.length&&E.hist[E.hist.length-1]===JSON.stringify(D))E.hist.pop();
+  renderMain()});
+/* Tocar y arrastrar en el plano */
+let disArr=null;
+document.addEventListener('pointerdown',e=>{if(st.tab!=='diseno'||!e.target.closest||!e.target.closest('#dissvg'))return;const E=st.dis,D=E.D;if(!D)return;const pt=disPt(e);if(!pt)return;e.preventDefault();
+  if(E.modo==='nave'){disHist();const n=disNaveNueva(D,pt);D.naves.push(n);E.sel={k:'nave',id:n.id};E.modo='sel';renderMain();return}
+  if(E.modo==='el'){disHist();const x={id:disId('e'),t:E.tel||'ev',n:'',x:+pt[0].toFixed(1),y:+pt[1].toFixed(1),nave:disNaveEn(D,pt),nota:''};D.el.push(x);E.sel={k:'el',id:x.id};E.modo='sel';renderMain();return}
+  if(E.modo==='cab'){disHist();D.cab=[+pt[0].toFixed(1),+pt[1].toFixed(1)];E.modo='sel';renderMain();return}
+  if(E.dib){const q=disSnap(D,pt,E.dib[E.dib.length-1],E.vi);E.dib.push([+q[0].toFixed(1),+q[1].toFixed(1)]);disRedibujar();const pn=document.querySelector('.dispan');if(pn)pn.outerHTML=disPanel(st.cab);return}
+  const h=e.target.closest('[data-dh]'),g=e.target.closest('[data-dk]');
+  if(h&&E.sel){disArr={t:'h',h:h.dataset.dh,ini:JSON.stringify(D),p0:pt,o0:clone(disObj(D,E.sel)),mov:false}}
+  else if(g&&g.dataset.dk!=='fondo'){E.sel={k:g.dataset.dk,id:g.dataset.id};const o=disObj(D,E.sel);disArr={t:'mv',ini:JSON.stringify(D),p0:pt,o0:clone(o),mov:false,els:g.dataset.dk==='nave'&&o?D.el.filter(x=>dentro([x.x,x.y],o.p)).map(x=>({id:x.id,x:x.x,y:x.y})):[]};disRedibujar()}
+  else{const w=$('#diswrap');disArr={t:'pan',x:e.clientX,y:e.clientY,sl:w?w.scrollLeft:0,stp:w?w.scrollTop:0,mov:false}}
+  try{e.target.setPointerCapture(e.pointerId)}catch(_){}});
+document.addEventListener('pointermove',e=>{if(!disArr||st.tab!=='diseno')return;const E=st.dis,D=E.D;
+  if(disArr.t==='pan'){const w=$('#diswrap');if(!w)return;const dx=e.clientX-disArr.x,dy=e.clientY-disArr.y;if(Math.abs(dx)+Math.abs(dy)>4)disArr.mov=true;w.scrollLeft=disArr.sl-dx;w.scrollTop=disArr.stp-dy;return}
+  const pt=disPt(e);if(!pt)return;const o=disObj(D,E.sel),o0=disArr.o0;if(!o||!o0)return;const dx=pt[0]-disArr.p0[0],dy=pt[1]-disArr.p0[1];if(!disArr.mov&&Math.hypot(dx,dy)<2*Math.max(D.vb[2],D.vb[3])/1000)return;disArr.mov=true;
+  if(disArr.t==='mv'){if(o.p)o.p=o0.p.map(([x,y])=>[x+dx,y+dy]);else{o.x=o0.x+dx;o.y=o0.y+dy}for(const z of disArr.els||[]){const x=D.el.find(w=>w.id===z.id);if(x){x.x=z.x+dx;x.y=z.y+dy}}}
+  else{const h=disArr.h;
+    if(h[0]==='v'){const i=+h.slice(1),prev=o.p[i-1]||(E.sel.k==='zon'?o.p[o.p.length-1]:null);o.p[i]=E.sel.k==='tub'?disSnap(D,[o0.p[i][0]+dx,o0.p[i][1]+dy],prev,o.id):[o0.p[i][0]+dx,o0.p[i][1]+dy]}
+    else if(h[0]==='m'){const i=+h.slice(1);if(!disArr.ins){o.p.splice(i,0,lerp(o0.p[i-1],o0.p[i%o0.p.length],.5));disArr.ins=1;disArr.h='v'+i;disArr.o0=clone(o);disArr.p0=pt}}
+    else if(h==='L'||h==='A'){const q=o0.p,a=q[0],b=h==='L'?q[1]:q[3],len=Math.hypot(b[0]-a[0],b[1]-a[1]),u=[(b[0]-a[0])/len,(b[1]-a[1])/len],dl=dx*u[0]+dy*u[1],nl=Math.max(D.upm,len+dl),dd=nl-len;
+      o.p=q.map(z=>z.slice());if(h==='L'){o.p[1]=[q[1][0]+u[0]*dd,q[1][1]+u[1]*dd];o.p[2]=[q[2][0]+u[0]*dd,q[2][1]+u[1]*dd]}else{o.p[3]=[q[3][0]+u[0]*dd,q[3][1]+u[1]*dd];o.p[2]=[q[2][0]+u[0]*dd,q[2][1]+u[1]*dd]}}}
+  disRedibujar()});
+document.addEventListener('pointerup',e=>{if(!disArr||st.tab!=='diseno')return;const E=st.dis,a=disArr;disArr=null;
+  if(a.t==='pan'){if(!a.mov&&E.sel){E.sel=null;renderMain()}return}
+  if(a.mov){E.hist.push(a.ini);if(E.hist.length>60)E.hist.shift();E.dirty=true;for(const z of a.els||[]){const x=E.D.el.find(w=>w.id===z.id);if(x){x.x=+x.x.toFixed(1);x.y=+x.y.toFixed(1)}}const o=disObj(E.D,E.sel);if(o&&o.p)o.p=o.p.map(q=>[+q[0].toFixed(1),+q[1].toFixed(1)]);if(o&&o.x!=null){o.x=+o.x.toFixed(1);o.y=+o.y.toFixed(1);o.nave=disNaveEn(E.D,[o.x,o.y])}}
+  renderMain()});
+const VIEWS={buzon:vBuzon,cbuzon:vBuzon,diseno:vDiseno,planriego:vPlanRiego,cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,otrat:vOtrat,cotrat:vOtrat,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,robolab:vRobolab,catalogo:vCatalogo};
 for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);
 const vistaTab=()=>{const fn=VIEWS[st.tab];return st.reg&&st.reg.receta&&st.fecha<hoy()&&RECETA_DIA.has(st.tab)?conReceta(st.reg,fn):fn()};
-function renderMain(){if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=vistaTab();if(st.tab==='ajustes')ajAgrupar($('#main'));if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar();if(st.tab==='taller'&&window.TALLER)TALLER.tras();const ib=$('#imprimir');if(ib)ib.hidden=!TABS_DOC.has(st.tab);document.body.classList.toggle('conimp',TABS_DOC.has(st.tab))}
+function renderMain(){try{disSync()}catch(e){console.warn('diseño',e)}if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?'casist':'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=vistaTab();if(st.tab==='ajustes')ajAgrupar($('#main'));if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar();if(st.tab==='taller'&&window.TALLER)TALLER.tras();rlColocar();const ib=$('#imprimir');if(ib)ib.hidden=!TABS_DOC.has(st.tab);document.body.classList.toggle('conimp',TABS_DOC.has(st.tab))}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
 /* Ajustes por apartados: cada tarjeta va a su grupo según su título; se abren y cierran tocando la cabecera */
@@ -5343,19 +5822,19 @@ function softUpdate(){const tmp=document.createElement('div');tmp.innerHTML=vist
    Si hay cambios sin guardar, avisa antes para no perderlos. */
 /* ---------- Imprimir: las pantallas que son documentos (informe, cuaderno, M³ del mes, historial, receta…) se imprimen limpias,
    sin menús ni botones, con una cabecera de la finca, el apartado y la fecha. En el ordenador también sirve para guardar en PDF. */
-const TABS_DOC=new Set(['ajriego','informe','cuaderno','m3mes','historial','receta','global','parte','partes','coparte','solucion','almacen','material','climanv','cultivo','graficas','cmbid','cuentas','corend','casist','drenaje','plagas','estres','tareas','ctareas','aforo','rellenar']);
+const TABS_DOC=new Set(['planriego','ajriego','informe','cuaderno','m3mes','historial','receta','global','parte','partes','coparte','solucion','almacen','material','climanv','cultivo','graficas','cmbid','cuentas','corend','casist','drenaje','plagas','estres','tareas','ctareas','aforo','rellenar']);
 const AVISO_PROP='Agro Fly Technology es una plataforma de propiedad exclusiva de J. J. Serrano. Su uso te autoriza a usarla, no a manipularla.',TABS_PARTE=new Set(['parte','partes','coparte']);
 /* Aviso de propiedad al pie de cada hoja impresa, menos los partes. Chrome y Edge lo ponen abajo en cada página; Safari, al final de lo impreso. */
 const pieMargen=()=>{const u=navigator.userAgent,m=/(?:Chrome|Edg)\/(\d+)/.exec(u);return !!m&&+m[1]>=131&&!/iPhone|iPad|CriOS|EdgiOS/.test(u)};
 function piePrepara(){const sin=TABS_PARTE.has(st.tab),mg=pieMargen();let el=document.getElementById('pieStyle');if(!el){el=document.createElement('style');el.id='pieStyle';document.head.appendChild(el)}
-  el.textContent=(st.tab==='almacen'?'@page{size:A4 landscape}':'')+(!sin&&mg?'@page{@bottom-center{content:"'+AVISO_PROP+'";font:7.5pt/1.2 Arial,sans-serif;color:#555}}':'');
+  el.textContent=(st.tab==='almacen'||(st.tab==='planriego'&&prHz())?'@page{size:A4 landscape}':'')+(!sin&&mg?'@page{@bottom-center{content:"'+AVISO_PROP+'";font:7.5pt/1.2 Arial,sans-serif;color:#555}}':'');
   const pie=document.getElementById('printpie');if(pie)pie.textContent=AVISO_PROP;document.documentElement.classList.toggle('pie-fin',!sin&&!mg)}
 window.addEventListener('beforeprint',piePrepara);
 /* En los PDF (informe, cuaderno, hoja de receta) va abajo en cada página */
 async function pdfAviso(doc,L){const f=await doc.embedFont(L.StandardFonts.Helvetica);for(const pg of doc.getPages()){const{width}=pg.getSize();let z=6.5;while(z>5&&f.widthOfTextAtSize(AVISO_PROP,z)>width-40)z-=.25;
   pg.drawText(AVISO_PROP,{x:(width-f.widthOfTextAtSize(AVISO_PROP,z))/2,y:9,size:z,font:f,color:L.rgb(.4,.4,.4)})}}
-function imprimirVista(){const f=fincaAct(),tn=(TABS.find(t=>t[0]===st.tab)||[,''])[1],cab=CAMPO.has(st.tab)||['global','almacen','material','informe','cuaderno','m3mes'].includes(st.tab)?'':cabNombre(st.cab);
-  const cuando=new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}),dia=st.fecha&&!['m3mes','informe','cuaderno','global','almacen'].includes(st.tab)?fLarga(st.fecha):'';
+function imprimirVista(){const f=fincaAct(),tn=(TABS.find(t=>t[0]===st.tab)||[,''])[1],cab=CAMPO.has(st.tab)||['global','almacen','material','informe','cuaderno','m3mes','planriego'].includes(st.tab)?'':cabNombre(st.cab);
+  const cuando=new Date().toLocaleDateString('es-ES',{day:'numeric',month:'long',year:'numeric'}),dia=st.fecha&&!['m3mes','informe','cuaderno','global','almacen','planriego'].includes(st.tab)?fLarga(st.fecha):'';
   $('#printhead').innerHTML=`<div class="phm">Agro Fly Technology</div><div class="pht">${esc(tn)}</div><div class="phs">${esc([f&&f.nombre,cab,dia].filter(Boolean).join(' · '))}</div><div class="phd">Impreso el ${esc(cuando)}${st.autor?' · '+esc(st.autor):''}</div>`;
   const t0=document.title;document.title=[tn,f&&f.nombre,cab].filter(Boolean).join(' - ');
   const fin=()=>{document.title=t0;window.removeEventListener('afterprint',fin)};window.addEventListener('afterprint',fin);
@@ -5744,7 +6223,7 @@ function coRendHTML(){const d=coDatos(),vis=collasVis();
 async function coXlsx(){const d=coDatos(),r1=[['Fecha','Colla','Persona','Estado','Entrada','Salida','Descanso (min)','Horas']],r2=[['Fecha','Colla','Labor','Detalle','Cabezal','Nave','Pasillos','Personas','Horas-persona','Matas','Kg','Cajas','Matas/h','Kg/h','Cajas/h']];
   const n2=v=>v==null||!isFinite(v)?'':+v.toFixed(2);
   for(const j of d.js.slice().reverse()){for(const p of Object.keys(j.gente).sort((a,b)=>j.gente[a].n.localeCompare(j.gente[b].n))){const g=j.gente[p];r1.push([j.fecha,j.collaNombre||'',g.n,COEST[g.e][1],g.e==='pre'?g.ent||'':'',g.e==='pre'?g.sal||'':'',g.e==='pre'?+j.pau||0:'',g.e==='pre'?n2(horasP(j,p)):''])}
-    for(const t of j.trabajos||[]){const hp=horasTrab(j,t),q=u=>cantT(t,u);r2.push([j.fecha,j.collaNombre||'',LAB[t.labor]||'',t.txt||'',t.cab?cabNombre(t.cab):'',t.nave||'',(t.pas||[]).join(', '),enTrabajo(j,t).length,n2(hp),n2(q('matas')),n2(q('kg')),n2(q('cajas')),q('matas')&&hp?n2(q('matas')/hp):'',q('kg')&&hp?n2(q('kg')/hp):'',q('cajas')&&hp?n2(q('cajas')/hp):''])}}
+    for(const t of j.trabajos||[]){const hp=horasTrab(j,t),q=u=>cantT(t,u);r2.push([j.fecha,j.collaNombre||'',LAB[t.labor]||'',t.txt||'',t.cab?cabNombre(t.cab):'',t.nave??'',(t.pas||[]).join(', '),enTrabajo(j,t).length,n2(hp),n2(q('matas')),n2(q('kg')),n2(q('cajas')),q('matas')&&hp?n2(q('matas')/hp):'',q('kg')&&hp?n2(q('kg')/hp):'',q('cajas')&&hp?n2(q('cajas')/hp):''])}}
   const r3=[['Persona','Colla','Días','Horas','Faltas','Justificadas','Baja','Vacaciones',...LABORES.flatMap(([k,n])=>k==='recolectar'?[n+' h',n+' kg/h',n+' cajas/h']:[n+' h',n+' matas/h'])]];
   for(const x of d.per)r3.push([x.n,x.colla,x.dias,n2(x.h),x.fal||0,x.jus||0,x.baja||0,x.vac||0,...LABORES.flatMap(([k])=>{const a=x.lab[k];if(!a)return k==='recolectar'?['','','']:['',''];return k==='recolectar'?[n2(a.h),a.kg&&a.h?n2(a.kg/a.h):'',a.cajas&&a.h?n2(a.cajas/a.h):'']:[n2(a.h),a.matas&&a.h?n2(a.matas/a.h):'']})]);
   const r4=[['Labor','Colla','Días','Horas','Matas','Matas/h','Kg','Kg/h','Cajas','Cajas/h']];for(const L of d.lab)r4.push([LAB[L.labor]||'',L.colla,L.dias.size,n2(L.h),n2(L.matas)||'',L.matas&&L.h?n2(L.matas/L.h):'',n2(L.kg)||'',L.kg&&L.h?n2(L.kg/L.h):'',n2(L.cajas)||'',L.cajas&&L.h?n2(L.cajas/L.h):'']);
@@ -7352,7 +7831,7 @@ document.addEventListener('keydown',e=>{if(st.tab==='chatia'&&e.target.id==='ch_
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c);splashLogo()}}catch(e){}
-  st.ready=true;loadFich();migNavesGas().then(migModoManual).then(migMetalicos);if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
+  st.ready=true;loadFich();migNavesGas().then(migModoManual).then(migMetalicos).then(migNavesPlanos);if(!veRiego()){st.tab='casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}
   const ap=/[#&]ap=([\w-]+)/.exec(location.hash);if(ap){history.replaceState(null,'',location.pathname+location.search);if(esAdminU()){cerrarSplash();st.tab='aparatos';st.apSel=ap[1];renderAll()}else toast('Este aparato solo lo ve el administrador')}})();
