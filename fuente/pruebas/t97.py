@@ -25,7 +25,7 @@ async def main():
         await pg.click('#grupos [data-grupo="riego"]'); await pg.wait_for_timeout(300)
         await pg.click('#tabs .tab:has-text("Mapa de la finca")'); await pg.wait_for_timeout(600)
         assert await pg.evaluate("st.tab") == 'mapa'
-        vis = await pg.locator('.mfsel .mfb').all_inner_texts(); print('vistas:', vis); assert len(vis) == 6 and '1' in vis[0] and 'PLANOS DE RIEGO' in vis
+        vis = await pg.locator('.mfsel .mfb').all_inner_texts(); print('vistas:', vis); assert len(vis) == 7 and '1' in vis[0] and 'PLANOS DE RIEGO' in vis and 'DISEÑO A MANO' in vis   # v211: el administrador ve «Diseño a mano»
         assert 'Incidencias · ' in await pg.text_content('#main h3')
         await pg.click('.mfsel [data-tab="vivo"]'); await pg.wait_for_timeout(800)
         assert await pg.evaluate("st.tab") == 'vivo' and 'En vivo · ' in await pg.text_content('#main h3')
