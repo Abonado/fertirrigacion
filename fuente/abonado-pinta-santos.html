@@ -364,6 +364,17 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 #rlwrap .rlsal{display:none}
 #rlwrap.rlfull{position:fixed;inset:0!important;width:auto!important;height:auto!important;z-index:60;border-radius:0}
 #rlwrap.rlfull .rlsal{display:block;position:absolute;left:calc(54px + env(safe-area-inset-left,0px));top:calc(12px + env(safe-area-inset-top,0px));height:34px;white-space:nowrap;z-index:2;border:0;border-radius:999px;padding:8px 14px;font:600 12.5px system-ui,sans-serif;background:#16202a;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.25);opacity:.92}
+.cpbar{position:relative;height:14px;border-radius:7px;overflow:hidden;background:var(--line,#dde3dc);margin:10px 0 4px}
+.cpbar span{position:absolute;top:0;bottom:0}
+.cpbar i{position:absolute;top:-2px;bottom:-2px;width:3px;margin-left:-1px;background:#16202a;border-radius:2px;box-shadow:0 0 0 2px #fff}
+.cpleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--muted)}.cpleg b{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.cph{margin:14px 0 6px;font:700 13px var(--f-display);letter-spacing:.05em;text-transform:uppercase}
+.cpit{border:1px solid var(--line,#dde3dc);border-radius:10px;padding:8px 10px;margin:0 0 6px;background:var(--card,#fff)}
+.cpit .cpt{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.cpit .cpd{font-size:12.5px;color:var(--muted);margin-top:2px}
+.cpit p{margin:4px 0 0;font-size:13px;line-height:1.4;text-transform:none}.cpit .row{margin-top:6px}
+.cpit.fut{opacity:.85}.cpit.pas{opacity:.55}
+.cpz .zdot{width:12px;height:12px;border-radius:50%;background:var(--zc);flex:none}
+.cpz select{min-width:210px}
 .dissvg{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}.diswrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#f4f1e8;max-height:78vh;margin-top:8px}.disin{min-width:100%}.distool{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;align-items:center}.dissel{font:inherit;font-size:13px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}.disfrm{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:8px 0}.disol{margin:6px 0 8px;padding-left:18px;font-size:14px;text-transform:none}.disol li{margin:0 0 5px}.dispan h4{margin:0 0 6px}.dispill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#2f7d4f;color:#fff;vertical-align:middle;letter-spacing:.5px}#dis3d .vvn>polygon:first-child{fill-opacity:.22}#dis3d .vvr{fill-opacity:.38}#dis3d .vvw{fill-opacity:.28}.dis3w{margin-top:8px}.dis3w svg{width:100%;height:auto;display:block}.prnada{padding:28px 12px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}.prmini{display:block;width:100%;padding:0;margin:10px 0;border:1px solid var(--line);border-radius:10px;background:#f6f4ee;overflow:hidden;cursor:pointer;text-align:center}.prmini img{display:block;width:100%;max-height:340px;object-fit:contain}.prmini span{display:block;padding:7px;font-size:13px;color:var(--muted);font-weight:600;text-transform:none}.prh4{margin:12px 0 4px;font-size:14px}.prpend ul{margin:0;padding-left:20px}.prpend li{margin:3px 0}
 @media print{.prv{max-height:none!important;overflow:visible!important;border:0!important;background:none!important}.prin{width:100%!important}.prcard .prsvg{width:auto!important;max-width:100%;max-height:19.5cm;margin:0 auto}.prcard.hz .prsvg{max-height:12cm}.prcard{gap:6px}}
 @media print{.stq{font-size:16pt}.stg{font-size:12pt}.stt td,.gct td{padding:5px 6px}.stt th,.gct th{padding:0 6px 5px}}
@@ -954,7 +965,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['hoy','Hoy'],['mas','Más'],['choy','Hoy'],['cmas','Más'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['planriego','Planos de riego'],['diseno','Diseño a mano'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['otrat','Tratamientos'],['cotrat','Tratamientos'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['robolab','RoboLab XXI'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
+const TABS=[['hoy','Hoy'],['mas','Más'],['choy','Hoy'],['cmas','Más'],['ccamp','Campaña'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['planriego','Planos de riego'],['diseno','Diseño a mano'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['otrat','Tratamientos'],['cotrat','Tratamientos'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['robolab','RoboLab XXI'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -1111,7 +1122,7 @@ const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Rie
 /* Personal de campo: el mismo menú que el de riego. Abajo: Hoy, Personal, Trabajo, Finca y Más (Mensajes, Notas y Ajustes van dentro de Más) */
 const GRUPOS_CAMPO=[{id:'choy',n:'Hoy',tabs:['choy'],ic:IC_HOY},
   {id:'cpersonal',n:'Personal',tabs:['casist','corend','coparte','cogente'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
-  {id:'ctrabajo',n:'Trabajo',tabs:['ctareas','cotrat','cincid'],ic:'<path d="M9 5h11M9 12h11M9 19h11"/><path d="M3.5 5.5l1.5 1.5 2.5-3M3.5 12.5l1.5 1.5 2.5-3"/><path d="M4 19h2"/>'},
+  {id:'ctrabajo',n:'Trabajo',tabs:['ccamp','ctareas','cotrat','cincid'],ic:'<path d="M9 5h11M9 12h11M9 19h11"/><path d="M3.5 5.5l1.5 1.5 2.5-3M3.5 12.5l1.5 1.5 2.5-3"/><path d="M4 19h2"/>'},
   {id:'cfinca',n:'Finca',tabs:['cubic','cvivo','ctiempo'],ic:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>'},
   {id:'cmsg',n:'Mensajes',tabs:['cmensajes'],ic:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>'},
   {id:'cnotasg',n:'Notas',tabs:['cnotas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
@@ -1680,19 +1691,113 @@ function vHoy(){lecCargar();const av=hoyAvisos(),cl=hoyClima(),ab=!!st.hoyAv,mal
 window.addEventListener('scroll',()=>document.body.classList.toggle('scrolled',window.scrollY>4),{passive:true});
 new MutationObserver(()=>{for(const r of document.querySelectorAll('.hoyrow:not([data-sr])')){r.dataset.sr=1;scrollRaton(r)}}).observe(document.getElementById('main')||document.body,{childList:true,subtree:true});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-hoyav]');if(!b||(st.tab!=='hoy'&&st.tab!=='choy'))return;st.hoyAv=!st.hoyAv;renderMain()});
+/* ---------- Campaña (Personal de campo › Trabajo): cada año se pone la fecha de plantación de cada zona y la app organiza el año
+   con el plan de tomate de invernadero (preparar, arranque, producción, final y el hueco de primavera). Cada trabajo de campo se puede
+   mandar a la colla como tarea; lo de riego sale para que se sepa, pero lo lleva el personal de riego.
+   Se guarda en la configuración: cfg.campanas[año][zona] = {plant, fin, hueco}. Solo el gestor cambia las fechas. */
+const CP_FASES=[['prep','Preparar','#8a6d3b'],['arr','Arranque','#c27c0e'],['prod','Producción','#2f7d4f'],['fin','Final','#a8432f'],['hue','Primavera','#5d6b7a']];
+const CP_PLAN=[
+  {id:'planta',f:'prep',a:['P',-100],b:['P',-70],ar:'campo',t:'Encargar la planta',d:'Mejor injertada: en agosto el suelo pasa de 28 °C y la resistencia a nematodos de muchas variedades deja de funcionar. Resistente a virus de cuchara (TYLCV) y, si se puede, a ToBRFV.'},
+  {id:'restos',f:'prep',a:['P',-56],b:['P',-49],ar:'campo',t:'Limpieza a fondo',d:'Fuera restos de la campaña anterior, rafias y malas hierbas, dentro y alrededor del invernadero.'},
+  {id:'solar',f:'prep',a:['P',-56],b:['P',-14],ar:'campo',t:'Solarización',d:'Suelo húmedo y tapado con plástico de 4 a 6 semanas.'},
+  {id:'analisis',f:'prep',a:['P',-50],b:['P',-40],ar:'riego',t:'Análisis de suelo y agua',d:'Y mirar nematodos (agallas) en las raíces de la campaña anterior.'},
+  {id:'goteros',f:'prep',a:['P',-21],b:['P',-7],ar:'riego',t:'Revisar el riego',d:'Limpiar goteros y tuberías con ácido, comprobar caudales y depósitos.'},
+  {id:'mallas',f:'prep',a:['P',-21],b:['P',-3],ar:'campo',t:'Mallas, puertas y blanqueo',d:'Mallas antiinsectos de las bandas sin rotos, doble puerta y blanquear el techo para el calor.'},
+  {id:'hierbas',f:'prep',a:['P',-14],b:['P',-1],ar:'campo',t:'Quitar malas hierbas alrededor',d:'Son el refugio de la mosca blanca y de los virus.'},
+  {id:'receta1',f:'prep',a:['P',-3],b:['P',0],ar:'riego',t:'Receta de arranque',d:'Más fósforo y calcio para enraizar, con la CE moderada.'},
+  {id:'plantar',f:'arr',a:['P',0],b:['P',2],ar:'campo',t:'Plantar',d:'A primera hora o al atardecer, con el suelo regado de antes.'},
+  {id:'trampas',f:'arr',a:['P',0],b:['P',3],ar:'campo',t:'Poner las trampas',d:'Amarillas para la mosca blanca y de feromona para la Tuta absoluta.'},
+  {id:'riegos',f:'arr',a:['P',0],b:['P',15],ar:'riego',t:'Riegos cortos y frecuentes',d:'Los primeros 10–15 días, para que enraíce.'},
+  {id:'virus',f:'arr',a:['P',0],b:['P',50],ar:'campo',sem:1,t:'Revisar mosca blanca y virus',d:'Cada 2–3 días. Arrancar y sacar en bolsa cualquier planta con síntomas de virus.'},
+  {id:'entutorar',f:'arr',a:['P',14],b:['P',21],ar:'campo',t:'Entutorar',d:'Y empezar a quitar los chupones.'},
+  {id:'abejorros',f:'arr',a:['P',21],b:['P',28],ar:'campo',t:'Poner los abejorros',d:'Cuando abran las primeras flores.'},
+  {id:'potasio',f:'arr',a:['P',35],b:['P',42],ar:'riego',t:'Subir el potasio',d:'Al cuajar los primeros frutos.'},
+  {id:'rutina',f:'prod',a:['P',21],b:['F',-58],ar:'campo',sem:1,t:'Destallar, entutorar y deshojar',d:'Quitar chupones, bajar o liar la planta y deshojar por debajo del ramillete que se cosecha. Sacar del invernadero las hojas quitadas.'},
+  {id:'cosecha',f:'prod',a:['P',70],b:['F',-1],ar:'campo',sem:1,t:'Cosecha',d:'Según la variedad, desde mediados o finales de octubre. El pico de trabajo va de noviembre a enero.'},
+  {id:'humedad',f:'prod',a:['P',80],b:['F',-35],ar:'campo',sem:1,t:'Controlar la humedad',d:'Ventilar por la mañana para secar el ambiente y vigilar botritis y mildiu.'},
+  {id:'invierno',f:'prod',a:['P',90],b:['P',97],ar:'riego',t:'Receta de invierno',d:'Más potasio y CE algo más alta (sabor y firmeza); drenaje del 20–30 % para que no se acumulen sales.'},
+  {id:'despunte',f:'fin',a:['F',-65],b:['F',-58],ar:'campo',t:'Despuntar',d:'Cortar la punta: en invierno un ramillete tarda 8–10 semanas de flor a cosecha y lo que cuaje después no llega.'},
+  {id:'bajar',f:'fin',a:['F',-21],b:['F',-14],ar:'riego',t:'Bajar riego y abono',d:'Solo para terminar lo que queda.'},
+  {id:'arranque',f:'fin',a:['F',0],b:['F',3],ar:'campo',t:'Quitar las matas',d:'Cortar, dejar secar 2–3 días y sacar todo, plantas y rafias.'},
+  {id:'restosf',f:'fin',a:['F',3],b:['F',8],ar:'campo',t:'Sacar todos los restos',d:'No dejar nada: es el refugio de la mosca blanca y la Tuta para la campaña siguiente.'},
+  {id:'corto1',f:'hue',h:'corto',a:['F',10],b:['F',16],ar:'campo',t:'Plantar el cultivo corto',d:'Melón, sandía, calabacín o judía.'},
+  {id:'corto2',f:'hue',h:'corto',a:['F',75],b:['F',85],ar:'campo',t:'Quitar el cultivo corto',d:'Antes del 1 de julio, para que dé tiempo a solarizar.'},
+  {id:'descanso',f:'hue',h:'descanso',a:['F',8],b:['F',30],ar:'campo',t:'Descanso sanitario',d:'Limpieza y abono orgánico; después, solarización larga en junio y julio.'}];
+const cpD=(iso,n)=>{const d=new Date(iso+'T12:00:00');d.setDate(d.getDate()+n);return isoD(d)};
+const cpDias=(a,b)=>Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5);
+const cpCorta=iso=>new Date(iso+'T12:00:00').toLocaleDateString('es-ES',{day:'numeric',month:'short'}).replace('.','');
+st.cp=st.cp||{y:null,todo:{},colla:null};
+function cpDe(y,z){const C=(((st.cfg.campanas||{})[y]||{})[z])||null;if(!C||!C.plant)return null;return {plant:C.plant,fin:C.fin||cpD(C.plant,238),hueco:C.hueco||'descanso',auto:!C.fin}}
+function cpAnoAct(){const h=hoy(),Y=+h.slice(0,4),ys=Object.keys(st.cfg.campanas||{}).map(Number).filter(y=>cabsFinca().some(z=>{const C=cpDe(y,z.id);return C&&cpD(C.plant,-100)<=h})).sort((a,b)=>b-a);return ys[0]||(+h.slice(5,7)>=5?Y:Y-1)}
+function cpItems(C){const an=([k,n])=>cpD(k==='P'?C.plant:C.fin,n);return CP_PLAN.filter(i=>!i.h||i.h===C.hueco).map(i=>({...i,ini:an(i.a),fin:an(i.b)}))}
+function cpFase(C,d){d=d||hoy();if(d<cpD(C.plant,-60))return null;if(d<C.plant)return 'prep';if(d<=cpD(C.plant,50))return 'arr';if(d<cpD(C.fin,-65))return 'prod';if(d<=cpD(C.fin,8))return 'fin';if(d<=cpD(C.fin,125))return 'hue';return null}
+function cpSemana(){const h=hoy(),w=(new Date(h+'T12:00:00').getDay()+6)%7,lun=cpD(h,-w);return {lun,dom:cpD(lun,6)}}
+const cpClave=(y,z,i,S)=>`${y}|${z}|${i.id}${i.sem?'|'+S.lun:''}`;
+const cpTarea=k=>(st.ctar||[]).find(t=>t.cp===k);
+function cpEstaSemana(y,z,C){const S=cpSemana();return cpItems(C).filter(i=>i.ini<=S.dom&&i.fin>=S.lun)}
+function cpPendientes(){if(!st.cfg.campanas)return 0;const S=cpSemana();let n=0;for(const z of cabsFinca()){const y=cpAnoAct(),C=cpDe(y,z.id);if(!C)continue;n+=cpEstaSemana(y,z.id,C).filter(i=>i.ar==='campo'&&!cpTarea(cpClave(y,z.id,i,S))).length}return n}
+function cpBarra(C){const a=cpD(C.plant,-60),b=cpD(C.fin,125),T=cpDias(a,b),x=d=>Math.max(0,Math.min(100,cpDias(a,d)*100/T));
+  const tramos=[['prep',a,C.plant],['arr',C.plant,cpD(C.plant,51)],['prod',cpD(C.plant,51),cpD(C.fin,-65)],['fin',cpD(C.fin,-65),cpD(C.fin,9)],['hue',cpD(C.fin,9),b]];
+  const h=hoy(),pos=h>=a&&h<=b?x(h):null;
+  return `<div class="cpbar">${tramos.map(([f,i,j])=>{const F=CP_FASES.find(q=>q[0]===f);return `<span style="left:${x(i)}%;width:${x(j)-x(i)}%;background:${F[2]}" title="${F[1]}"></span>`}).join('')}${pos!=null?`<i style="left:${pos}%"></i>`:''}</div>
+    <div class="cpleg">${CP_FASES.map(([f,n,c])=>`<span><b style="background:${c}"></b>${n}</span>`).join('')}</div>`}
+function cpItemHTML(y,z,i,S,ges){const k=cpClave(y,z,i,S),t=i.ar==='campo'?cpTarea(k):null,F=CP_FASES.find(q=>q[0]===i.f);
+  const est=i.ar==='riego'?'<span class="pill">Lo hace riego</span>':t?(t.hecha?'<span class="pill ok">Hecha</span>':'<span class="pill warn">Mandada a '+esc(t.collaNombre||'la colla')+'</span>'):'';
+  const puede=i.ar==='campo'&&!t&&collasVis().length;
+  return `<div class="cpit"><div class="cpt"><b>${esc(i.t)}</b>${i.sem?'<span class="pill">Cada semana</span>':''}${est}</div><div class="cpd"><span style="color:${F[2]}">●</span> ${i.ini===i.fin?cpCorta(i.ini):cpCorta(i.ini)+' – '+cpCorta(i.fin)}</div><p>${esc(i.d)}</p>${puede?`<div class="row"><button class="btn" type="button" data-act="cp-mandar" data-y="${y}" data-z="${z}" data-i="${i.id}">Mandar a la colla</button></div>`:''}</div>`}
+function vCCamp(){if(st.collas===null)loadCollas();if(st.ctar===null&&!cLoading&&algunaColla())loadCampo();
+  const y=st.cp.y||cpAnoAct(),Z=cabsFinca(),ges=esGestor(),S=cpSemana(),vis=collasVis();
+  let h=`<section class="card"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:nowrap"><button class="btn" type="button" data-act="cp-ano" data-d="-1" aria-label="Campaña anterior">‹</button><div style="text-align:center"><h3>Campaña ${y}/${String(y+1).slice(2)}</h3><div class="sub">${ges?'Pon cada año la fecha de plantación de cada zona y la app organiza el año.':'La organización del año de cada zona.'}</div></div><button class="btn" type="button" data-act="cp-ano" data-d="1" aria-label="Campaña siguiente">›</button></div>
+    ${vis.length>1?`<div class="field"><label for="cp_col">Las tareas se mandan a</label><div class="inp"><select id="cp_col" data-cpc="1">${vis.map(c=>`<option value="${c.id}" ${c.id===(st.cp.colla||vis[0].id)?'selected':''}>${esc(c.nombre)}</option>`).join('')}</select></div></div>`:''}</section>`;
+  if(!Z.length)return h+'<section class="card"><div class="note">Esta finca no tiene zonas.</div></section>';
+  for(const z of Z){const C=cpDe(y,z.id),R=(((st.cfg.campanas||{})[y]||{})[z.id])||{};
+    h+=`<section class="card cpz" style="--zc:${zonaCol(z.id)}"><div class="row" style="align-items:center;gap:8px"><span class="zdot" aria-hidden="true"></span><h3>${esc(z.nombre)}</h3>${C?(()=>{const f=cpFase(C);const F=f&&CP_FASES.find(q=>q[0]===f);return F?`<span class="pill" style="background:${F[2]};color:#fff">${F[1]}</span>`:''})():''}</div>`;
+    if(ges)h+=`<div class="frm"><div class="field"><label>Plantación</label><div class="inp"><input type="date" data-cp="plant" data-y="${y}" data-z="${z.id}" value="${esc(R.plant||'')}"></div></div>
+      <div class="field"><label>Quitar matas</label><div class="inp"><input type="date" data-cp="fin" data-y="${y}" data-z="${z.id}" value="${esc(R.fin||'')}" ${R.plant?'':'disabled'}></div></div>
+      <div class="field"><label>Después, en primavera</label><div class="inp"><select data-cp="hueco" data-y="${y}" data-z="${z.id}" ${R.plant?'':'disabled'}><option value="descanso" ${(R.hueco||'descanso')==='descanso'?'selected':''}>Descanso sanitario</option><option value="corto" ${R.hueco==='corto'?'selected':''}>Cultivo corto</option></select></div></div></div>
+      ${C&&C.auto?`<div class="note">Sin fecha de quitar matas: cuento con el ${cpCorta(C.fin)} (unos 8 meses). Cámbiala si no.</div>`:''}`;
+    if(!C){h+=`<div class="note">${ges?'Pon la fecha de plantación de esta campaña.':'Todavía no está puesta la fecha de plantación de esta campaña.'}</div></section>`;continue}
+    if(!ges)h+=`<div class="sub">Plantación ${esc(fFecha(C.plant))} · quitar matas ${esc(fFecha(C.fin))} · después: ${C.hueco==='corto'?'cultivo corto':'descanso sanitario'}</div>`;
+    const dd=cpDias(C.plant,hoy());h+=cpBarra(C)+`<div class="sub" style="margin-top:4px">${dd>=0&&hoy()<=C.fin?'Día '+dd+' desde la plantación':dd<0?'Faltan '+(-dd)+' días para plantar':'Campaña terminada'}</div>`;
+    const sem=cpEstaSemana(y,z.id,C),prox=cpItems(C).filter(i=>i.ini>S.dom&&i.ini<=cpD(S.dom,14));
+    const sinM=sem.filter(i=>i.ar==='campo'&&!cpTarea(cpClave(y,z.id,i,S)));
+    h+=`<h4 class="cph">Esta semana</h4>${sem.length?sem.map(i=>cpItemHTML(y,z.id,i,S,ges)).join(''):'<div class="note">Nada especial esta semana.</div>'}
+      ${sinM.length>1&&vis.length?`<div class="row"><button class="btn pri" type="button" data-act="cp-todas" data-y="${y}" data-z="${z.id}">Mandar las ${sinM.length} de esta semana a la colla</button></div>`:''}
+      ${prox.length?`<h4 class="cph">Lo que viene (2 semanas)</h4>${prox.map(i=>`<div class="cpit fut"><div class="cpt"><b>${esc(i.t)}</b>${i.ar==='riego'?'<span class="pill">Riego</span>':''}</div><div class="cpd">Desde el ${cpCorta(i.ini)}</div></div>`).join('')}`:''}
+      <div class="row"><button class="btn" type="button" data-act="cp-todo" data-z="${z.id}">${st.cp.todo[z.id]?'Ocultar el plan completo':'Ver el plan completo del año'}</button></div>`;
+    if(st.cp.todo[z.id])h+=CP_FASES.map(([f,n,c])=>{const L=cpItems(C).filter(i=>i.f===f);return L.length?`<h4 class="cph" style="color:${c}">${n}</h4>${L.map(i=>`<div class="cpit ${i.fin<hoy()?'pas':''}"><div class="cpt"><b>${esc(i.t)}</b>${i.ar==='riego'?'<span class="pill">Riego</span>':''}${i.sem?'<span class="pill">Cada semana</span>':''}</div><div class="cpd">${i.ini===i.fin?cpCorta(i.ini):cpCorta(i.ini)+' – '+cpCorta(i.fin)}</div><p>${esc(i.d)}</p></div>`).join('')}`:''}).join('');
+    h+='</section>'}
+  return h}
+async function cpGuardar(y,z,k,v){if(!esGestor())return;for(const c of [st.cfg,st.savedCfg]){c.campanas=c.campanas||{};c.campanas[y]=c.campanas[y]||{};const R=c.campanas[y][z]=c.campanas[y][z]||{};if(v)R[k]=v;else delete R[k];if(k==='plant'&&!v)delete c.campanas[y][z]}
+  try{await Store.setConfig(clone(st.savedCfg));toast('Campaña guardada')}catch(e){toast('No se ha podido guardar: '+(e.message||e))}renderMain();renderGrupos()}
+async function cpMandar(y,z,ids){const C=cpDe(y,z),vis=collasVis(),c=vis.find(x=>x.id===st.cp.colla)||vis[0];if(!C||!c){toast('No hay colla a la que mandarla');return}const S=cpSemana(),zn=(st.cfg.cabezales.find(x=>x.id===z)||{}).nombre||'';let n=0;
+  for(const i of cpItems(C).filter(i=>ids.includes(i.id)&&i.ar==='campo')){const k=cpClave(y,z,i,S);if(cpTarea(k))continue;
+    const t={ts:new Date().toISOString(),titulo:i.t+(zn?' · '+zn:''),colla:c.id,collaNombre:c.nombre,jefeEmail:c.jefeEmail||'',finca:c.finca||st.finca||'',fecha:i.ini>hoy()?i.ini:hoy(),cab:z,nave:null,maq:'',of:'',det:i.d+(i.sem?' (esta semana)':'')+` · Campaña ${y}/${String(y+1).slice(2)}`,urg:false,adjuntos:[],hecha:false,creadaPor:yoNombre(),creadaEmail:miEmail(),cp:k};
+    try{const id=await Store.addCol('ctareas',t);(st.ctar=st.ctar||[]).unshift({...t,id});n++}catch(e){toast(errMsg(e));break}}
+  if(n){if(c.jefeEmail&&c.jefeEmail!==miEmail())pushEnviar([c.jefeEmail],n===1?'Tarea nueva de la campaña':n+' tareas nuevas de la campaña',`${c.nombre} · de ${yoNombre()}`,'ctar-cp-'+Date.now(),'ctareas');toast(n===1?'Tarea mandada':n+' tareas mandadas')}renderMain();renderGrupos()}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-act^="cp-"]');if(!b)return;const d=b.dataset;
+  if(d.act==='cp-ano'){st.cp.y=(st.cp.y||cpAnoAct())+(+d.d);renderMain()}
+  else if(d.act==='cp-todo'){st.cp.todo[d.z]=!st.cp.todo[d.z];renderMain()}
+  else if(d.act==='cp-mandar')cpMandar(+d.y,d.z,[d.i]);
+  else if(d.act==='cp-todas'){const C=cpDe(+d.y,d.z),S=cpSemana();cpMandar(+d.y,d.z,cpEstaSemana(+d.y,d.z,C).filter(i=>i.ar==='campo'&&!cpTarea(cpClave(+d.y,d.z,i,S))).map(i=>i.id))}});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.cp)cpGuardar(+t.dataset.y,t.dataset.z,t.dataset.cp,t.value);else if(t.dataset&&t.dataset.cpc){st.cp.colla=t.value}});
+function hoyCamp(){try{if(!tabPermitida('ccamp'))return '';const y=cpAnoAct(),L=cabsFinca().map(z=>[z,cpDe(y,z.id)]).filter(x=>x[1]);if(!L.length)return esGestor()?`<section class="card hoycol"><h3>Campaña</h3><div class="hoycl"><button class="hoyai warn" type="button" data-tab="ccamp"><i></i><span>Pon la fecha de plantación de cada zona</span><b>›</b></button></div></section>`:'';
+  return `<section class="card hoycol"><h3>Campaña ${y}/${String(y+1).slice(2)}</h3><div class="hoycl">${L.map(([z,C])=>{const f=cpFase(C),F=f&&CP_FASES.find(q=>q[0]===f),n=cpEstaSemana(y,z.id,C).length,dd=cpDias(C.plant,hoy());
+    return `<button class="hoyai" type="button" data-tab="ccamp"><i style="background:${F?F[2]:'var(--line)'}"></i><span><b>${esc(z.nombre)}</b> · ${F?F[1]:'Sin empezar'}${dd>=0&&hoy()<=C.fin?' · día '+dd:''}${n?` · ${n} cosa${n>1?'s':''} esta semana`:''}</span><b>›</b></button>`}).join('')}</div></section>`}catch(e){return ''}}
 /* ---------- Hoy del personal de campo: avisos, fichar y los cuadros de cada apartado, como el Hoy de riego ---------- */
-const HOY_IC_C={casist:'<circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8 1.3 0 2.5.4 3.4 1.1"/><path d="M14.5 17l2 2 4-4.5"/>',corend:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',
+const HOY_IC_C={ccamp:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/><path d="M12 13c1.6 1.8 2.4 3 2.4 4a2.4 2.4 0 0 1-4.8 0c0-1 .8-2.2 2.4-4z"/>',casist:'<circle cx="9" cy="8" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8 1.3 0 2.5.4 3.4 1.1"/><path d="M14.5 17l2 2 4-4.5"/>',corend:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>',
   coparte:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 12l2 2 3.5-4"/>',cogente:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>',
   ctareas:'<path d="M4 6h3M4 12h3M4 18h3"/><path d="M10 6h10M10 12h10M10 18h10"/>',cotrat:'<path d="M9 3h6M10 3v4l-4 6v7a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-7l-4-6V3"/><path d="M6 14h12"/>',
   cincid:'<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>',cubic:'<path d="M12 21s-6-6-6-11a6 6 0 1 1 12 0c0 5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',
   cvivo:'<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',ctiempo:'<path d="M7 18a4 4 0 0 1-.5-8 5.5 5.5 0 0 1 10.6 1.5A3.3 3.3 0 0 1 17 18z"/>',
   cmensajes:'<path d="M4 5h16v11H9l-5 4z"/><path d="M8 9.5h8M8 12.5h5"/>',cnotas:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'};
-const HOY_FILAS_C=[['Personal',['casist','coparte','corend','cogente']],['Trabajo',['ctareas','cotrat','cincid']],['Finca',['cubic','cvivo','ctiempo']],['Mensajes y notas',['cmensajes','cnotas']]];
+const HOY_FILAS_C=[['Personal',['casist','coparte','corend','cogente']],['Trabajo',['ccamp','ctareas','cotrat','cincid']],['Finca',['cubic','cvivo','ctiempo']],['Mensajes y notas',['cmensajes','cnotas']]];
 function hoyAvisosC(){const av=[],n=(k,a,b)=>k+' '+(k===1?a:b),vis=new Set((()=>{try{return cmCollas().filter(enFinca).map(c=>c.id)}catch(e){return []}})());
   try{const sin=misCollas().filter(enFinca).filter(c=>st.jorDias&&!st.jor[jorKey(c.id,hoy())]);if(sin.length)av.push([new Date().getHours()>=13?'bad':'warn',sin.length===1?'Parte de hoy de '+sin[0].nombre+' sin guardar':n(sin.length,'parte','partes')+' de colla de hoy sin guardar','casist'])}catch(e){}
   try{const k=(st.cinc||[]).filter(i=>i.estado!=='resuelta'&&i.urg&&vis.has(i.colla)).length;if(k)av.push(['bad',n(k,'incidencia urgente','incidencias urgentes')+' sin resolver','cincid'])}catch(e){}
   try{const k=(st.cinc||[]).filter(i=>i.estado!=='resuelta'&&!i.urg&&vis.has(i.colla)).length;if(k)av.push(['warn',n(k,'incidencia abierta','incidencias abiertas'),'cincid'])}catch(e){}
   try{const k=(st.ctar||[]).filter(t=>!t.hecha&&t.fecha<=hoy()&&vis.has(t.colla)).length;if(k)av.push(['warn',n(k,'tarea','tareas')+' para hoy o atrasadas','ctareas'])}catch(e){}
+  try{const k=collasVis().length?cpPendientes():0;if(k)av.push(['warn',n(k,'trabajo','trabajos')+' de la campaña de esta semana sin mandar a la colla','ccamp'])}catch(e){}
   try{const k=cmTotalNo();if(k)av.push(['warn',n(k,'mensaje','mensajes')+' sin leer','cmensajes'])}catch(e){}
   try{const k=ntTocan().length;if(k)av.push(['warn',n(k,'nota','notas')+' para hoy','cnotas'])}catch(e){}
   return av.filter(a=>tabPermitida(a[2]))}
@@ -1707,7 +1812,7 @@ function vCHoy(){if(st.collas===null)loadCollas();if(st.cinc===null&&!cLoading)l
   return `<button class="hoynot ${av.length?(urg?'bad':'warn'):'ok'}" type="button" data-hoyav="1" aria-expanded="${ab}" ${av.length?'':'disabled'}><span class="hoyic">${BELL}</span><span class="hoytx"><b>${av.length?'Para mirar':'Todo en orden'}</b><small>${av.length?`${av.length} aviso${av.length>1?'s':''}${urg?` · ${urg} urgente${urg>1?'s':''}`:''}`:'Nada pendiente por ahora'}</small></span>${av.length?'<span class="hoych" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></span>':''}</button>
   ${ab&&av.length?`<div class="hoyav">${av.map(([k,t,tab])=>`<button class="hoyai ${k}" type="button" data-tab="${tab}"><i></i><span>${esc(t)}</span><b>›</b></button>`).join('')}</div>`:''}
   ${fich?`<div class="hoyfich"><button class="btn pri" type="button" data-tab="${fich}">Fichar hoy</button></div>`:''}
-  ${hoyColla()}${filas}`}
+  ${hoyColla()}${hoyCamp()}${filas}`}
 /* ---------- Más: Equipo, Notas, Taller y Ajustes ---------- */
 function vMas(){const G=gruposAct().filter(g=>masDe().L.includes(g.id)),ins=insignias();
   return G.map(g=>{const ts=TABS.filter(([k])=>g.tabs.includes(k)&&tabPermitida(k));if(!ts.length)return '';
@@ -2323,7 +2428,7 @@ const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';i
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
 const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
-function tabPermitida(k){if(k==='diseno')return veRiego()&&esAdminU();if(k==='planriego')return veRiego()&&prHay();if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo'||k==='choy'||k==='cmas')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
+function tabPermitida(k){if(k==='diseno')return veRiego()&&esAdminU();if(k==='planriego')return veRiego()&&prHay();if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cvivo'||k==='choy'||k==='cmas'||k==='ccamp')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||(fincasVis().some(f=>f.id===m.finca)&&cabOk(m.cab));
@@ -5775,7 +5880,7 @@ document.addEventListener('pointerup',e=>{if(!disArr||st.tab!=='diseno')return;c
   if(a.t==='pan'){if(!a.mov&&E.sel){E.sel=null;renderMain()}return}
   if(a.mov){E.hist.push(a.ini);if(E.hist.length>60)E.hist.shift();E.dirty=true;for(const z of a.els||[]){const x=E.D.el.find(w=>w.id===z.id);if(x){x.x=+x.x.toFixed(1);x.y=+x.y.toFixed(1)}}const o=disObj(E.D,E.sel);if(o&&o.p)o.p=o.p.map(q=>[+q[0].toFixed(1),+q[1].toFixed(1)]);if(o&&o.x!=null){o.x=+o.x.toFixed(1);o.y=+o.y.toFixed(1);o.nave=disNaveEn(E.D,[o.x,o.y])}}
   renderMain()});
-const VIEWS={choy:vCHoy,cmas:vMas,diseno:vDiseno,planriego:vPlanRiego,cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,otrat:vOtrat,cotrat:vOtrat,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,robolab:vRobolab,catalogo:vCatalogo};
+const VIEWS={ccamp:vCCamp,choy:vCHoy,cmas:vMas,diseno:vDiseno,planriego:vPlanRiego,cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,otrat:vOtrat,cotrat:vOtrat,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,robolab:vRobolab,catalogo:vCatalogo};
 for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
