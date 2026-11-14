@@ -749,6 +749,20 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .printhead{display:none}
 @media print{
   @page{margin:12mm 10mm}
+  /* Parte diario impreso en 3 hojas: 1) parte, cultivo y cambios de receta; 2) cuentas del día; 3) agua y drenaje + receta */
+  .parteimp{font-size:8.5pt}
+  .parteimp .pb{break-before:page;page-break-before:always}
+  .parteimp .card,.parteimp .summary{break-inside:auto!important;page-break-inside:auto!important}
+  .parteimp .gdp{break-before:auto!important;page-break-before:auto!important}
+  .parteimp .card{padding:5px 8px!important;margin:0 0 4px!important;gap:4px!important}
+  .parteimp h3{font-size:11.5pt!important;margin:0!important;line-height:1.2}
+  .parteimp .sub,.parteimp .note{font-size:7.5pt!important;line-height:1.25}
+  .parteimp .pcab .note,.parteimp .ptipo,.parteimp .field,.parteimp details,.parteimp .pcab .banner{display:none!important}
+  .parteimp table{font-size:7.5pt!important}
+  .parteimp th,.parteimp td{padding:1px 4px!important;line-height:1.2}
+  .parteimp .summary{gap:4px!important;margin:0 0 4px!important}.parteimp .summary .stat{padding:3px 6px!important}
+  .parteimp .summary .stat b{font-size:12pt!important}
+  .parteimp .tbl{margin:1px 0 3px!important}
   html,body{background:#fff!important;color:#000}
   body{padding:0!important;font-size:11pt}
   .top,.bnav,.savebar,.agbtn,.agp,.splash,.carga,.fincas,#toast,.toast,#main button,#main .btn,#main .tabs,.noprint{display:none!important}
@@ -1904,7 +1918,14 @@ function tankDose(b,c){const shared=b.cabezales.length>1,cm=cmCab(b,c.id),L=litr
 const IN_PTS=[['pc','PC'],['bomba','Bomba de abono'],['bypass','By-pass'],['pared','Pared'],['ent','Entrada'],['sal','Salida']];
 const IN_T={ev:{n:'Electroválvula',c:'#1f78c1',l:'EV'},man:{n:'Manómetro',c:'#8e44ad',l:'P'},bdj:{n:'Bandeja de drenaje',c:'#0e8f8f',l:'BD'},sen:{n:'Sensor',c:'#16a085',l:'S'},
   fil:{n:'Filtro',c:'#7f8c8d',l:'F'},con:{n:'Contador',c:'#d35400',l:'C'},lla:{n:'Llave',c:'#2c3e50',l:'V'},ven:{n:'Ventosa',c:'#5d9cec',l:'VE'},reg:{n:'Regulador de presión',c:'#a0522d',l:'RP'},
-  bom:{n:'Bomba',c:'#c0392b',l:'B'},pro:{n:'Programador',c:'#34495e',l:'PR'},dep:{n:'Depósito / balsa',c:'#2471a3',l:'D'},ant:{n:'Antirretorno',c:'#6c3483',l:'AR'},fin:{n:'Final de ramal',c:'#7d6608',l:'FR'},otro:{n:'Otro',c:'#566573',l:'·'}};
+  bom:{n:'Bomba',c:'#c0392b',l:'B'},pro:{n:'Programador',c:'#34495e',l:'PR'},dep:{n:'Depósito / balsa',c:'#2471a3',l:'D'},ant:{n:'Antirretorno',c:'#6c3483',l:'AR'},fin:{n:'Final de ramal',c:'#7d6608',l:'FR'},
+  /* de la finca (no de riego): salen también en el Mapa de la finca */
+  bano:{n:'Baño / aseo',c:'#0b7285',l:'WC',f:1},pant:{n:'Pantano / balsa',c:'#1c7ed6',l:'PA',f:1},cas:{n:'Caseta / almacén',c:'#8d6e63',l:'CA',f:1},agua:{n:'Punto de agua / grifo',c:'#339af0',l:'AG',f:1},
+  res:{n:'Contenedor / residuos',c:'#5c940d',l:'RS',f:1},boti:{n:'Botiquín',c:'#e03131',l:'+',f:1},ext:{n:'Extintor',c:'#c92a2a',l:'EX',f:1},enc:{n:'Punto de encuentro',c:'#2b8a3e',l:'PE',f:1},
+  elec:{n:'Cuadro eléctrico',c:'#f08c00',l:'EL',f:1},apar:{n:'Aparcamiento',c:'#495057',l:'AP',f:1},desc:{n:'Zona de descanso / comedor',c:'#ae3ec9',l:'ZD',f:1},puer:{n:'Puerta / entrada',c:'#364fc7',l:'PU',f:1},
+  otro:{n:'Otro',c:'#566573',l:'·'}};
+/* opciones de «Qué es» separadas en riego y finca */
+const inTOpts=sel=>[['Riego',k=>!IN_T[k].f&&k!=='otro'],['Finca',k=>IN_T[k].f||k==='otro']].map(([g,f])=>`<optgroup label="${g}">${Object.keys(IN_T).filter(f).map(k=>`<option value="${k}"${sel===k?' selected':''}>${IN_T[k].n}</option>`).join('')}</optgroup>`).join('');
 const IN_SK={hum:'Humedad de suelo',niv:'Nivel de depósito',ce:'CE / pH',tem:'Temperatura y humedad del aire',pre:'Presión',cau:'Caudal'};
 const IN_ITIPO={ev:'riego',man:'riego',bdj:'riego',fil:'riego',con:'riego',lla:'riego',ven:'riego',reg:'riego',bom:'riego',pro:'riego',dep:'riego',ant:'riego',fin:'riego',sen:'otro',otro:'otro'};
 const SEC_COL=['#4e79a7','#59a14f','#e15759','#f28e2b','#76b7b2','#b8860b','#b07aa1','#ff9da7','#9c755f','#6b6b6b'];
@@ -1984,7 +2005,7 @@ function inElHTML(cab,x){const G=esGestor(),c=cabById(cab),t=IN_T[x.t]||IN_T.otr
   const donde=[x.nave!=null?'Nave '+x.nave:'',x.pas!=null?'pasillo '+x.pas:'',x.sid?inSecNom(cab,x.sid):'sin sector'].filter(Boolean).join(' · ');
   let h=`<section class="card inel"><div class="tank-h"><div><h3><span class="indot" style="background:${t.c}">${t.l}</span>${esc(x.n||t.n)}</h3><div class="sub">${t.n}${x.t==='sen'&&x.sk?' · '+esc(IN_SK[x.sk]||''):''} · ${esc(donde)}</div></div><button class="btn sm" type="button" data-inact="cerrar">Cerrar</button></div>`;
   if(G)h+=`<div class="frm"><div class="field"><label for="ie_n">Nombre</label><div class="inp"><input class="wide" id="ie_n" data-inc="n" data-id="${x.id}" value="${esc(x.n||'')}" style="text-transform:none"></div></div>
-      <div class="field"><label for="ie_t">Qué es</label><div class="inp"><select id="ie_t" data-inc="t" data-id="${x.id}">${Object.entries(IN_T).map(([k,v])=>`<option value="${k}" ${x.t===k?'selected':''}>${v.n}</option>`).join('')}</select></div></div>
+      <div class="field"><label for="ie_t">Qué es</label><div class="inp"><select id="ie_t" data-inc="t" data-id="${x.id}">${inTOpts(x.t)}</select></div></div>
       <div class="field"><label for="ie_s">Sector</label><div class="inp"><select id="ie_s" data-inc="sid" data-id="${x.id}"><option value="">Sin sector / general</option>${c.sectores.map(s=>`<option value="${s.id}" ${x.sid===s.id?'selected':''}>${esc(s.nombre)}</option>`).join('')}</select></div></div>
       ${x.t==='bdj'?`<div class="field"><label for="ie_b">Bandeja de la app</label><div class="inp"><select id="ie_b" data-inc="bj" data-id="${x.id}"><option value="">Sin enlazar</option>${c.sectores.map(s=>s.bandejas.map(bj=>`<option value="${bj.id}" ${x.bj===bj.id?'selected':''}>${esc(bj.nombre)} · ${esc(s.nombre)}</option>`).join('')).join('')}</select></div></div>`:''}
       ${x.t==='sen'?`<div class="field"><label for="ie_k">Qué mide</label><div class="inp"><select id="ie_k" data-inc="sk" data-id="${x.id}">${Object.entries(IN_SK).map(([k,v])=>`<option value="${k}" ${x.sk===k?'selected':''}>${v}</option>`).join('')}</select></div></div>`:''}
@@ -2015,7 +2036,7 @@ function vInstal(){const cab=st.cab,c=cabById(cab);if(!c)return '';if(st.hist===
   let h=`<section class="card"><div class="tank-h"><div>${d?'<button class="lnk inback" type="button" data-inact="finca">← Mapa de la finca</button>':''}<h3>Instalación · ${esc(c.nombre)}</h3><div class="sub">${cuenta.length?cuenta.map(([k,n])=>`${n} × ${IN_T[k].n.toLowerCase()}`).join(' · '):'Todavía no hay nada puesto en el mapa'}</div></div>
     <div class="row" style="gap:6px"><button class="btn sm" type="button" data-inact="z" data-z="-1" aria-label="Alejar">−</button><button class="btn sm" type="button" data-inact="z" data-z="1" aria-label="Acercar">+</button></div></div>`;
   if(G){h+=`<div class="pick">${[['ver','Ver'],['poner','Poner elementos'],...(M?[['sect','Sectores por pasillo']]:[]),['cab','Situar el cabezal']].map(([k,t])=>`<button class="chip" type="button" data-inact="modo" data-v="${k}" aria-pressed="${E.modo===k}">${t}</button>`).join('')}</div>`;
-    if(E.modo==='poner')h+=`<div class="pick">${Object.entries(IN_T).map(([k,t])=>`<button class="chip" type="button" data-inact="tipo" data-v="${k}" aria-pressed="${E.tipo===k}"><span class="indot sm" style="background:${t.c}">${t.l}</span>${t.n}</button>`).join('')}</div><div class="note">Elige qué es y toca en el mapa donde está (en su pasillo).</div>`;
+    if(E.modo==='poner')h+=[['Riego',([k,t])=>!t.f&&k!=='otro'],['Finca: baños, pantanos, casetas…',([k,t])=>t.f||k==='otro']].map(([g,f])=>`<div class="lbl">${g}</div><div class="pick">${Object.entries(IN_T).filter(f).map(([k,t])=>`<button class="chip" type="button" data-inact="tipo" data-v="${k}" aria-pressed="${E.tipo===k}"><span class="indot sm" style="background:${t.c}">${t.l}</span>${t.n}</button>`).join('')}</div>`).join('')+`<div class="note">Elige qué es y toca en el mapa donde está (en su pasillo).</div>`;
     if(E.modo==='sect')h+=`<div class="pick">${c.sectores.map(s=>`<button class="chip" type="button" data-inact="sec" data-v="${s.id}" aria-pressed="${E.secSel===s.id}"><i class="insw" style="background:${inSecCol(cab,s.id)}"></i>${esc(s.nombre)}</button>`).join('')}</div>
       <div class="pick">${[['pas','Toco un pasillo'],['nave','Toco la nave entera']].map(([k,t])=>`<button class="chip" type="button" data-inact="secpor" data-v="${k}" aria-pressed="${E.secPor===k}">${t}</button>`).join('')}</div><div class="note">Elige el sector y toca sus pasillos (o la nave entera). Tocar otra vez lo quita.</div>`;
     if(E.modo==='cab')h+=`<div class="note">Toca en el mapa dónde está el cabezal.</div>`}
@@ -2165,7 +2186,8 @@ function vRellenar(){const bs=bidonesDe(st.cab);if(!bs.length)return `<section c
       ${L.tipo==='llenado'?`<div class="field"><label for="lf_add">cm añadidos</label><div class="inp"><input id="lf_add" data-lf="add" inputmode="decimal" value="${inVal(L.add)}"><span class="u">cm</span></div></div>`:''}
       ${esDirecto(b)&&L.tipo==='llenado'?'':`<div class="field"><label for="lf_final">${L.tipo==='llenado'?'Vacío tras llenar':'Vacío ahora'}</label><div class="inp"><input id="lf_final" data-lf="final" inputmode="decimal" value="${inVal(aLectura(bid(L.bidon),L.final))}"><span class="u">cm</span></div></div>`}</div>
       ${L.tipo==='llenado'?`<label class="chk"><input type="checkbox" id="lf_desc" data-lf="desc" ${L.desc?'checked':''}> Descontar los abonos del almacén</label>`:''}
-      ${L.falta&&L.falta.length?`<div class="banner"><b>Falta por marcar:</b> ${L.falta.map(p=>p==='agua'?'agua':esc(pn(p))).join(', ')}. ¿Lo has echado?</div><div class="row"><button class="btn pri" data-act="lf-save-igual">Sí, está todo echado: guardar</button><button class="btn" data-act="lf-falta-no">Volver a revisar</button></div>`
+      ${L.dup?`<div class="banner dup"><b>¿Repetido?</b> ${(m=>m<1?'Hace un momento':m<60?'Hace '+m+' min':'Hoy a las '+esc(L.dup.hora))(Math.round((Date.now()-new Date(L.dup.ts).getTime())/60e3))} ${esc(L.dup.por?'«'+L.dup.por+'» ':'')}ya guardó ${L.tipo==='llenado'?`un llenado de este depósito con las mismas medidas (+${fmt(L.dup.cmAdd,1)} cm, vacío ${fmt(L.dup.cmFinal,1)} cm)`:`la misma medida de este depósito (vacío ${fmt(L.dup.cmFinal,1)} cm)`}. Si lo guardas otra vez contará doble.</div><div class="row"><button class="btn" data-act="lf-dup-si">Es otro distinto: guardar</button><button class="btn pri" data-act="lf-cancel">No guardar</button></div>`
+      :L.falta&&L.falta.length?`<div class="banner"><b>Falta por marcar:</b> ${L.falta.map(p=>p==='agua'?'agua':esc(pn(p))).join(', ')}. ¿Lo has echado?</div><div class="row"><button class="btn pri" data-act="lf-save-igual">Sí, está todo echado: guardar</button><button class="btn" data-act="lf-falta-no">Volver a revisar</button></div>`
         :`<div class="row"><button class="btn pri" data-act="lf-save">Guardar</button><button class="btn" data-act="lf-cancel">Cancelar</button></div>`}</div>`;
   const evs=llenadosDe(b).sort((a,c)=>llKey(a)<llKey(c)?1:-1).slice(0,8);
   h+=`<div><h3 style="font-size:16px">Últimos llenados y medidas</h3>${evs.length?evs.map(e=>e.auto?`<div class="ev auto"><span><b>${fFecha(e.fecha)}</b> · Llenado hasta arriba <span class="pill nd">deducido</span> de los ${fmt(e.cmAdd,1)} cm gastados el ${esc(fCorta(e.de))}</span></div>`:`<div class="ev"><span><b>${fFecha(e.fecha)} · ${e.hora?esc(e.hora):'<span class="note" title="Hora en que se apuntó">apuntado '+hhmm(e.ts)+'</span>'}</b> · ${e.tipo==='llenado'?`Llenado +${fmt(e.cmAdd,1)} cm (${fmt(e.cmAdd*b.lpcm,0)} L) → vacío ${fmt(aLectura(b,e.cmFinal),1)} cm`:`Medida: vacío ${fmt(aLectura(b,e.cmFinal),1)} cm`}${e.por?' · '+esc(e.por):''}${e.tipo==='llenado'&&e.cantidades?`<small class="evc">${Object.entries(e.cantidades).map(([p,q])=>esc(pn(p))+' '+fmt(q,1)+' '+uCant(p)).join(' · ')}</small>`:''}${e.sinMarcar&&e.sinMarcar.length?`<small class="evc">Guardado sin marcar en la lista: ${e.sinMarcar.map(p=>p==='agua'?'agua':esc(pn(p))).join(', ')}</small>`:''}</span>${st.confirmLl===e.id?`<span class="row"><button class="btn danger" data-act="ll-del-yes" data-id="${e.id}">Sí, borrar</button><button class="btn" data-act="ll-del-no">Cancelar</button></span>`:`<button class="btn" data-act="ll-del" data-id="${e.id}">Borrar</button>`}</div>`).join(''):'<div class="note">Sin registros.</div>'}</div></section>`;
@@ -2773,8 +2795,14 @@ function lvlBanner(){const bs=bidonesDe(st.cab).filter(b=>bajoUmbral(nivel(b)));
   return bs.length?`<button class="banner msgbar" data-tab="rellenar">${bs.length===1?'1 depósito para rellenar':bs.length+' depósitos para rellenar'}: ${bs.map(b=>esc(b.nombre)).join(', ')} · ver</button>`:''}
 function lfOpen(tipo,o){o=o||{};const b=bid(o.bidon||st.fillB[st.cab]);const n=nivel(b),mx=maxCm(b),add=o.add??(st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b));
   st.lf={tipo,bidon:b.id,fecha:o.fecha||hoy(),hora:o.fecha&&o.fecha!==hoy()?'':horaAhora(),add:tipo==='llenado'?add:null,final:tipo==='llenado'?+mx.toFixed(2):(n?+Math.max(0,n.rest).toFixed(1):null),desc:true,finalTouched:false};renderMain()}
-async function lfSave(){const L=st.lf,b=bid(L.bidon);if(L.final==null||L.final<0||L.final>maxCm(b)+0.5){toast('Escribe el vacío en cm (entre 0 y '+fmt(maxCm(b),0)+')');return}if(L.tipo==='llenado'&&!(L.add>0)){toast('Escribe los cm añadidos');return}if(!/^\d{1,2}:\d{2}$/.test(L.hora||'')){toast(L.tipo==='llenado'?'Pon la hora del llenado':'Pon la hora de la medida');const i=$('#lf_hora');if(i)i.focus();return}
+/* Llenado repetido: si en poco tiempo (20 min, o el mismo día a la misma hora) ya hay uno del mismo depósito con las mismas medidas, pregunta antes de guardar */
+function lfRepetido(L,b){const ahora=Date.now(),f=L.fecha||st.fecha;return (st.llen||[]).find(e=>e.bidon===b.id&&e.tipo===L.tipo&&+e.cmFinal===+L.final&&(L.tipo!=='llenado'||+e.cmAdd===+L.add)&&
+  ((ahora-new Date(e.ts).getTime())<20*60e3||(e.fecha===f&&e.hora===L.hora)))||null}
+let lfOcupado=false;
+async function lfSave(){if(lfOcupado)return;lfOcupado=true;try{await lfSave2()}finally{lfOcupado=false}}
+async function lfSave2(){const L=st.lf,b=bid(L.bidon);if(L.final==null||L.final<0||L.final>maxCm(b)+0.5){toast('Escribe el vacío en cm (entre 0 y '+fmt(maxCm(b),0)+')');return}if(L.tipo==='llenado'&&!(L.add>0)){toast('Escribe los cm añadidos');return}if(!/^\d{1,2}:\d{2}$/.test(L.hora||'')){toast(L.tipo==='llenado'?'Pon la hora del llenado':'Pon la hora de la medida');const i=$('#lf_hora');if(i)i.focus();return}
   if(L.tipo==='llenado'&&!L.igual){const f=fchkFalta(b);if(f.length){L.falta=f;renderMain();const bn=document.querySelector('.panel .banner');if(bn)bn.scrollIntoView({block:'center'});return}}
+  if(!L.dupOk){const r=lfRepetido(L,b);if(r){L.dup=r;renderMain();const bn=document.querySelector('.panel .banner.dup');if(bn)bn.scrollIntoView({block:'center'});return}}
   const ev={ts:new Date().toISOString(),fecha:L.fecha||st.fecha,hora:L.hora,bidon:b.id,tipo:L.tipo,cmFinal:L.final,por:yoNombre()};
   if(L.tipo==='llenado'&&L.igual&&L.falta&&L.falta.length)ev.sinMarcar=L.falta;
   if(L.tipo==='llenado'){ev.cmAdd=L.add;ev.cantidades={};const lt=L.add*b.lpcm;for(const x of b.productos){if(!x.dosis)continue;ev.cantidades[x.p]=+(lt*conc(b,x)/1000).toFixed(2)}}
@@ -4490,6 +4518,9 @@ function planoSVG(cab,incs){const M=MAPAS[cab],[vx,vy,vw,vh]=M.vb;let s=`<svg vi
       for(const[q1,q2]of segs)s+=`<line x1="${q1[0].toFixed(1)}" y1="${q1[1].toFixed(1)}" x2="${q2[0].toFixed(1)}" y2="${q2[1].toFixed(1)}" stroke="#9fb4c9" stroke-width="1.6"/>`;
       if(PV(l.num))for(const f of (nv.q?[fr,1-fr]:[0.05,0.95])){const q=nv.q?lerp(e1,e2,f):lerp(l.p1,l.p2,f);s+=`<g transform="translate(${q[0].toFixed(1)} ${q[1].toFixed(1)})"><circle r="${PR9.toFixed(1)}" fill="#fff" stroke="#7f98b2" stroke-width="1"/><text y="${(PR9*.44).toFixed(1)}" text-anchor="middle" font-size="${(PR9*1.22).toFixed(1)}" font-weight="800" fill="#1b2f4a">${l.num}</text></g>`}}
     const[cx,cy]=nv.c||centro(nv.p);s+=`<g transform="translate(${cx.toFixed(1)} ${cy.toFixed(1)}) rotate(${M.ang}) scale(${NS.toFixed(2)})"><rect x="-46" y="-17" width="92" height="34" rx="17" fill="#1b2f4a" opacity=".92"/><text y="7" text-anchor="middle" font-size="20" font-weight="800" fill="#fff" letter-spacing="1">NAVE ${nv.n}</text>${tiene.length?`<circle cx="50" cy="-15" r="13" fill="${alta?'#c0392b':'#e2a32a'}"/><text x="50" y="-10" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">${tiene.length}</text>`:''}</g></g>`}
+  // lo de la finca (baños, pantanos, casetas…) que se ha puesto en Instalación
+  {const kf=Math.max(vw,vh)/1000*(M.ek||1);for(const x of inCfg(cab).el.filter(x=>(IN_T[x.t]||{}).f&&x.x!=null)){const t=IN_T[x.t];
+    s+=`<g class="mfin" transform="translate(${(+x.x).toFixed(1)} ${(+x.y).toFixed(1)}) scale(${kf.toFixed(3)})" pointer-events="none"><title>${esc(x.n||t.n)}</title><rect x="-17" y="-13" width="34" height="26" rx="7" fill="${t.c}" stroke="#fff" stroke-width="2.5"/><text y="5.5" text-anchor="middle" font-size="${t.l.length>1?14:18}" font-weight="800" fill="#fff">${t.l}</text></g>`}}
   // focos de plaga y enfermedad: mancha de color alrededor (más grande y más roja cuanto más grave)
   for(const i of incs.filter(plgFoco))s+=`<circle class="foco" cx="${i.x.toFixed(1)}" cy="${(i.y-8).toFixed(1)}" r="${i.prio==='alta'?78:i.prio==='media'?60:46}" fill="url(#mpFoco${i.prio==='alta'?'A':i.prio==='baja'?'B':'M'})" pointer-events="none"/>`;
   // incidencias
@@ -4510,6 +4541,7 @@ function vMapa(){const cab=st.cab,M=MAPAS[cab],c=cabById(cab);
     ${Adj.can()?`<div class="row"><label class="btn pri" for="mi_scan">📷 Escanear plaga</label><input type="file" id="mi_scan" data-mi="scan" accept="image/*" capture="environment" hidden><span class="note">Foto a la hoja o al fruto: la IA dice qué es y luego tocas la nave</span></div>`:''}
     <div class="mapwrap" id="mapwrap"><div class="mapin" style="width:${st.mz*100}%">${planoSVG(cab,incs)}</div></div>
     <div class="mley">${Object.entries(ITIPOS).map(([k,t])=>`<span><i style="background:${t[1]}">${t[2]}</i>${t[0]}</span>`).join('')}</div>
+    ${(()=>{const L=[...new Set(inCfg(cab).el.filter(x=>(IN_T[x.t]||{}).f).map(x=>x.t))];return L.length?`<div class="mley">${L.map(k=>`<span><i style="background:${IN_T[k].c};border-radius:5px">${IN_T[k].l}</i>${IN_T[k].n}</span>`).join('')}</div>`:(esGestor()?'<div class="note">Baños, pantanos, casetas y demás se ponen en Instalación › Poner y salen aquí.</div>':'')})()}
     ${esGestor()?(st.mPas?`<div class="panel"><div><h3>Pasillos de cada nave</h3><div class="sub">Cuántos tiene y desde qué lado se empiezan a contar</div></div>${M.naves.map(nv=>{const c=pasCfg(cab,nv);return `<div class="row" style="align-items:flex-end"><b style="min-width:70px">Nave ${nv.n}</b><div class="field"><label>Pasillos</label><div class="inp sm"><input data-mpas="n" data-nave="${nv.n}" inputmode="numeric" value="${c.n}"></div></div><label class="chk"><input type="checkbox" data-mpas="inv" data-nave="${nv.n}" ${c.otro?'checked':''}> Contar desde el otro lado</label></div>`}).join('')}<div class="row"><button class="btn pri" data-act="mpas-save">Guardar</button><button class="btn" data-act="mpas-no">Cancelar</button></div></div>`:`<div class="row"><button class="btn sm" data-act="mpas">Ajustar pasillos</button></div>`):''}
     <div class="pick"><button class="chip" data-mfil="abiertas" aria-pressed="${st.mapFil==='abiertas'}">Abiertas (${ab.length})</button><button class="chip" data-mfil="todas" aria-pressed="${st.mapFil==='todas'}">Todas (${incs.length})</button></div></section>`;
   if(N)h+=`<section class="card" id="mform"><div><h3>Nueva incidencia${N.x!=null?' · '+lugar(N):''}</h3><div class="sub">${N.x!=null?'Marcada en el plano. Toca otro punto para moverla.':'<b>Toca en el plano la nave donde está</b>'}</div></div>
@@ -4750,20 +4782,20 @@ const parteCabs=()=>{const f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(st
 const fLarga=f=>new Date(f+'T12:00:00').toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 const pillC={ok:'ok',warn:'warn',bad:'bad',nd:'nd'};
 function vParte(){if(st.cfg.cabezales.length&&!cabById(st.cab))return '';const d=parteData(st.cab),fs=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(st.cab)),nCab=parteCabs().length;
-  let h=`<section class="card"><div><h3>Parte diario · ${esc(d.cab)}</h3><div class="sub">${esc(d.finca)} · ${esc(fLarga(diaRiego(d.fecha)))} · Sectores: ${esc(d.sectores.join(', '))}</div></div>
+  let h=`<div class="parteimp"><section class="card pcab"><div><h3>Parte diario · ${esc(d.cab)}</h3><div class="sub">${esc(d.finca)} · ${esc(fLarga(diaRiego(d.fecha)))} · Sectores: ${esc(d.sectores.join(', '))}</div></div>
     ${d.provisional?`<div class="banner">${st.dirtyReg?'Hay cambios sin guardar en este día: el parte sale con lo que ves ahora. Guarda el día para que quede igual para todos.':'Este día aún no está guardado: el parte saldría con datos provisionales.'}</div>`:''}
     ${d.recetaDia?'':`<div class="note">${d.fecha<hoy()?'Este día se guardó antes de que la app apuntara la receta de cada día: sale la receta actual.':'La receta queda apuntada con el parte al guardar el día.'}</div>`}
     ${['grande','pequeno'].map(t=>{const K=PTIPO[t];return `<div class="ptipo"><div><b>${K.corto}</b> <span class="note">· hoja «${K.titulo}»${t==='pequeno'?' (Anexo XI)':''}</span></div>
       <div class="row"><button class="btn pri" data-act="parte-pdf" data-tipo="${t}">${K.corto} (PDF) · ${esc(d.cab)}</button><button class="btn" data-act="parte-xlsx" data-tipo="${t}">Excel</button>${nCab>1?`<button class="btn" data-act="parte-pdf" data-tipo="${t}" data-todos="1">Todos los cabezales de ${esc(fs?fs.nombre:'la finca')} (PDF)</button>`:''}</div></div>`}).join('')}
     <div class="note">Los dos salen en las hojas de la empresa (PR101 / Ed.05) con los datos del día. El parte lleva la fecha del día del riego (el anterior a la fecha de arriba, que es cuando se apunta). Para otro día, cambia la fecha arriba. Para otro cabezal, tócalo arriba.</div></section>`+parteFijosInfo(st.cab)+hojaRecetaHTML();
   h+=parteCuerpo(d);
-  return h}
+  return h+'</div>'}
 function parteCuerpo(d){let h='';
-  h+=`<section class="summary"><div class="stat"><span>Agua regada</span><b>${fmt(d.m3,0)} m³</b><small>${esc(d.cab)}</small></div><div class="stat"><span>En dosis (±10 %)</span><b>${d.tot?d.ok+' de '+d.tot:'—'}</b><small>productos</small></div><div class="stat"><span>Drenaje medio</span><b>${fmt(d.dren,1)} %</b><small>${d.ceD!=null?'CE '+fUS(d.ceD)+' µS/cm':'sin CE'}${d.phD!=null?' · pH '+fmt(d.phD,1):''}</small></div></section>`;
+  h+=`<section class="summary pb"><div class="stat"><span>Agua regada</span><b>${fmt(d.m3,0)} m³</b><small>${esc(d.cab)}</small></div><div class="stat"><span>En dosis (±10 %)</span><b>${d.tot?d.ok+' de '+d.tot:'—'}</b><small>productos</small></div><div class="stat"><span>Drenaje medio</span><b>${fmt(d.dren,1)} %</b><small>${d.ceD!=null?'CE '+fUS(d.ceD)+' µS/cm':'sin CE'}${d.phD!=null?' · pH '+fmt(d.phD,1):''}</small></div></section>`;
   h+=`<section class="card"><div><h3>1. Cuentas del día</h3><div class="sub">Gasto de los depósitos y dosis real</div></div>`+d.deps.map(b=>`<div><b>${esc(b.nombre)}</b> <span class="note">${b.cm!=null?fmt(b.cm,1)+' cm · '+fmt(b.L,0)+' L':'sin cm gastados'}${b.otros.length?' · compartido con '+esc(b.otros.join(', ')):''}</span></div>${(b.llen||[]).length?`<div class="note">Llenado: ${b.llen.map(e=>(e.hora?e.hora+' · ':'')+'+'+fmt(e.cm,1)+' cm ('+fmt(e.L,0)+' L)'+(e.por?' · '+esc(e.por):'')).join(' / ')}</div>`:''}
     <div class="tbl"><table><thead><tr><th>Producto</th><th>Deseada</th><th>Real</th><th>Desv.</th><th>Aplicado</th></tr></thead><tbody>${b.filas.map(x=>`<tr><td>${esc(x.n)}</td><td>${fmt(x.des,2)} <span class="u">${x.ud}</span></td><td><b>${fmt(x.real,2)}</b></td><td><span class="pill ${pillC[x.c]}">${x.dev}</span></td><td>${x.cant!=null?fmt(x.cant,2)+' '+x.uc:'—'}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
   const sa=d.salida||{};
-  h+=`<section class="card"><div><h3>2. Agua de riego y drenaje</h3><div class="sub">Salida del cabezal, por sector y bandeja</div></div>
+  h+=`<section class="card pb"><div><h3>2. Agua de riego y drenaje</h3><div class="sub">Salida del cabezal, por sector y bandeja</div></div>
     <div class="tbl"><table><thead><tr><th>CE balsa</th><th>pH balsa</th><th>Incremento</th><th>Total salida</th><th>pH salida</th></tr></thead><tbody><tr><td>${fmt(sa.ceB,2)}</td><td>${fmt(sa.phB,1)}</td><td>${fmt(sa.inc,2)}</td><td><b>${fmt(sa.tot,2)}</b></td><td>${fmt(sa.phS,1)}</td></tr></tbody></table></div>
     <div class="note">CE en mS/cm · incremento según receta ${fmt(sa.incEst,2)} mS/cm</div>`+d.sect.map(s=>`<div><b>${esc(s.nombre)}</b> <span class="note">${s.min!=null?fmt(s.min,0)+' min de riego':'sin minutos'}${s.riegos?' · '+fmt(s.riegos,0)+' riegos'+(s.min?' (≈ '+fmt(s.min/s.riegos,1)+' min/riego)':''):''}</span></div>
     <div class="tbl"><table><thead><tr><th>Bandeja</th><th>Vol. total</th><th>Drenaje</th><th>%</th><th>CE</th><th>pH</th></tr></thead><tbody>${s.band.map(x=>`<tr><td>${esc(x.nombre)}</td><td>${fmt(x.vol,2)} L</td><td>${x.ml!=null?fmt(x.ml,0)+' ml':'—'}</td><td><b>${fmt(x.pct,1)}</b></td><td>${fUS(x.ce)}</td><td>${fmt(x.ph,1)}</td></tr>`).join('')}</tbody></table></div>`).join('')+`</section>`;
@@ -4868,7 +4900,7 @@ function onOpInput(e){const t=e.target,ae=t.dataset.ae,aj=t.dataset.aj,lf=t.data
   if(aj){if(aj==='real'){st.aj.real=num(t.value);const o=$('#aj_sacos');if(o)o.value=sacIn(st.aj.p,st.aj.real)}
     else if(aj==='sacos'){const n=num(t.value);st.aj.real=n==null?null:+(n*sacoDe(st.aj.p)).toFixed(3);const o=$('#aj_real');if(o)o.value=inVal(st.aj.real)}
     else st.aj.p=t.value;if(aj==='p'&&e.type==='change')renderMain();else softUpdate();return}
-  if(lf){const L=st.lf;if(!L)return;if(lf==='fecha')L.fecha=t.value;else if(lf==='hora')L.hora=t.value;else if(lf==='desc')L.desc=t.checked;else if(lf==='final'){const x=num(t.value);L.final=x==null?null:+aNivel(bid(L.bidon),x).toFixed(2);L.finalTouched=true}
+  if(lf){const L=st.lf;if(!L)return;if(lf!=='desc'){L.dupOk=false;if(L.dup&&e.type==='change'){L.dup=null;setTimeout(renderMain,0)}}if(lf==='fecha')L.fecha=t.value;else if(lf==='hora')L.hora=t.value;else if(lf==='desc')L.desc=t.checked;else if(lf==='final'){const x=num(t.value);L.final=x==null?null:+aNivel(bid(L.bidon),x).toFixed(2);L.finalTouched=true}
     else if(lf==='add'){L.add=num(t.value);if(!L.finalTouched){const bb=bid(L.bidon);L.final=L.add==null?null:+maxCm(bb).toFixed(2);const fi=$('#lf_final');if(fi)fi.value=inVal(aLectura(bb,L.final))}}}}
 $('#main').addEventListener('input',onOpInput);$('#main').addEventListener('change',onOpInput);
 
@@ -5788,7 +5820,7 @@ function disPanel(cab){const E=st.dis,D=E.D,o=disObj(D,E.sel),u=D.upm,m=v=>fmt(v
       <div class="field"><label>Diámetro</label><div class="inp"><select data-dv="d"><option value="">—</option>${DIS_DIAM.map(d=>`<option${o.d===d?' selected':''}>${d}</option>`).join('')}</select></div></div><div class="field"><label>Nombre (opcional)</label><div class="inp">${inp('nn',o.n)}</div></div></div>
     <div class="sub">Arrastra los puntos naranjas para alargarla o acortarla; los blancos añaden un codo. ${o.p.length} puntos.</div>
     <div class="row"><button class="btn" data-dis="sigue">Seguir dibujándola</button><button class="btn" data-dis="quitav"${o.p.length>2?'':' disabled'}>Quitar el último punto</button><button class="btn" data-dis="borrar">Borrar la tubería</button></div>`}
-  else if(E.sel.k==='el'){h+=`<h4>${esc((IN_T[o.t]||IN_T.otro).n)}${o.nave!=null?' · nave '+o.nave:''}</h4><div class="frm disfrm"><div class="field"><label>Qué es</label><div class="inp"><select data-dv="t">${Object.entries(IN_T).map(([k,t])=>`<option value="${k}"${o.t===k?' selected':''}>${t.n}</option>`).join('')}</select></div></div>
+  else if(E.sel.k==='el'){h+=`<h4>${esc((IN_T[o.t]||IN_T.otro).n)}${o.nave!=null?' · nave '+o.nave:''}</h4><div class="frm disfrm"><div class="field"><label>Qué es</label><div class="inp"><select data-dv="t">${inTOpts(o.t)}</select></div></div>
       <div class="field"><label>Nombre</label><div class="inp">${inp('nn',o.n)}</div></div><div class="field"><label>Nota</label><div class="inp">${inp('nota',o.nota)}</div></div></div>
     <div class="row"><button class="btn" data-dis="borrar">Borrar</button></div>`}
   else if(E.sel.k==='zon'){h+=`<h4>Zona</h4><div class="frm disfrm"><div class="field"><label>Nombre</label><div class="inp">${inp('nn',o.n)}</div></div></div><div class="pick">${DIS_ZCOL.map(cl=>`<button class="chip" data-dis="zcol" data-v="${cl}" aria-pressed="${o.col===cl}"><i style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${cl}"></i></button>`).join('')}</div>
@@ -5801,7 +5833,7 @@ function vDiseno(){const cab=st.cab,c=cabById(cab);let h='';
   if(!D)return h+`<section class="card"><div><div class="eyebrow">Solo tú · ${esc(c?c.nombre:'')}</div><h3>Diseño a mano</h3><div class="sub">Dibuja tú las naves, zonas, sectores, tuberías y electroválvulas de esta zona, con sus medidas exactas, y míralo en 3D.</div></div>
     <div class="row"><button class="btn pri" data-dis="ahora">Empezar con lo que hay ahora</button><button class="btn" data-dis="blanco">Empezar en blanco</button></div>
     <div class="note">«Con lo que hay ahora» copia las naves, las tuberías del plano de riego y los elementos de Instalación de esta zona, para corregirlos. No cambia nada en la app hasta que lo pongas en uso.</div></section>`;
-  const tl=Object.entries(IN_T).map(([k,t])=>`<option value="${k}"${E.tel===k?' selected':''}>${t.n}</option>`).join('');
+  const tl=inTOpts(E.tel);
   h+=`<section class="card disc"><div class="tank-h"><div><div class="eyebrow">Solo tú · Diseño a mano</div><h3>${esc(c?c.nombre:'')}${g&&g.act?' <span class="dispill">EN USO EN LA APP</span>':''}</h3><div class="sub">${E.dirty?'Hay cambios sin guardar':'Guardado'} · escala ${fmt(D.upm,2)} unidades por metro</div></div>
       <div class="row"><button class="btn pri" data-dis="guardar"${E.dirty?'':' disabled'}>Guardar el diseño</button></div></div>
     <div class="distool" role="toolbar" aria-label="Herramientas">
@@ -5907,7 +5939,10 @@ for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */
 const RECETA_DIA=new Set(['cuentas','drenaje']);
 const vistaTab=()=>{const fn=VIEWS[st.tab];return st.reg&&st.reg.receta&&st.fecha<hoy()&&RECETA_DIA.has(st.tab)?conReceta(st.reg,fn):fn()};
-function renderMain(){try{disSync()}catch(e){console.warn('diseño',e)}if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?(tabPermitida('choy')?'choy':'casist'):'cuentas';try{renderCabs();renderTabs()}catch(e){}}$('#main').innerHTML=vistaTab();if(st.tab==='ajustes')ajAgrupar($('#main'));if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar();if(st.tab==='taller'&&window.TALLER)TALLER.tras();rlColocar();const ib=$('#imprimir');if(ib)ib.hidden=!TABS_DOC.has(st.tab);document.body.classList.toggle('conimp',TABS_DOC.has(st.tab))}
+/* La pantalla de inicio (Hoy) solo se vuelve a pintar si ha cambiado algo: al abrir la app o al volver a ella llegan los datos poco a poco
+   (cuentas, tareas, mensajes, notas…) y antes se repintaba entera con cada uno, como si cargara varias veces */
+const ES_INICIO=t=>t==='hoy'||t==='choy';let HOY_ULT='';
+function renderMain(){try{disSync()}catch(e){console.warn('diseño',e)}if(!VIEWS[st.tab]||!tabPermitida(st.tab)){st.tab=(areaDe(st.tab)==='campo'||!veRiego())&&(tabPermitida('casist')||!veRiego())?(tabPermitida('choy')?'choy':'casist'):'cuentas';try{renderCabs();renderTabs()}catch(e){}}{const H=vistaTab(),M=$('#main');if(ES_INICIO(st.tab)&&M.dataset.pinta===st.tab&&H===HOY_ULT)return;M.innerHTML=H;M.dataset.pinta=st.tab;HOY_ULT=ES_INICIO(st.tab)?H:''}if(st.tab==='ajustes')ajAgrupar($('#main'));if(!esGestor())bloquearCfg();hydrate();if(CAMPO.has(st.tab))campoTrasRender();if(st.tab==='satelite'||st.tab==='graficas'||(st.tab==='tiempo'||st.tab==='ctiempo'))drawCharts();if((st.tab==='tiempo'||st.tab==='ctiempo'))drawRadar();if(st.tab==='taller'&&window.TALLER)TALLER.tras();rlColocar();const ib=$('#imprimir');if(ib)ib.hidden=!TABS_DOC.has(st.tab);document.body.classList.toggle('conimp',TABS_DOC.has(st.tab))}
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
 /* Ajustes por apartados: cada tarjeta va a su grupo según su título; se abren y cierran tocando la cabecera */
@@ -6079,6 +6114,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='llenar-arriba'||t.dataset.act==='ll-inferido'){const id=t.dataset.id;st.fillB[st.cab]=id;st.tab='rellenar';const o={bidon:id};if(t.dataset.f){o.fecha=t.dataset.f;o.add=+t.dataset.add}renderAll();lfOpen('llenado',o);window.scrollTo(0,0)}
   else if(t.dataset.act==='lf-save')lfSave();
   else if(t.dataset.act==='lf-save-igual'&&st.lf){st.lf.igual=true;lfSave()}
+  else if(t.dataset.act==='lf-dup-si'&&st.lf){st.lf.dupOk=true;st.lf.dup=null;lfSave()}
   else if(t.dataset.act==='lf-falta-no'&&st.lf){st.lf.falta=null;renderMain();const o=document.querySelector('[data-out="fill"]');if(o)o.scrollIntoView({block:'start'})}
   else if(t.dataset.act==='lf-cancel'){st.lf=null;renderMain()}
   else if(t.dataset.act==='ll-del'){st.confirmLl=t.dataset.id;renderMain()}
@@ -7966,7 +8002,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v214';
+window.APP_V='abonado-v215';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
