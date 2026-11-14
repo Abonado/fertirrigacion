@@ -733,6 +733,14 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .printhead{display:none}
 @media print{
   @page{margin:12mm 10mm}
+  /* Almacén impreso: 1) cabecera y stock en la misma hoja; 2) gasto por día y, seguido, el gasto por cabezal */
+  .almimp .almh{margin:0 0 2mm!important}
+  .almimp .card.stock{break-inside:auto!important;page-break-inside:auto!important;padding:6px 8px!important}
+  .almimp .stt td{padding:2px 5px!important}.almimp .stt th{padding:0 5px 3px!important;font-size:7.5pt!important}
+  .almimp .stt td.n b{font-size:9pt!important}.almimp .stq{font-size:11pt!important}.almimp .stg{font-size:9pt!important}
+  .almimp .stt small{font-size:7pt!important;line-height:1.15}.almimp .stt td.n .pill{margin-top:1px!important;font-size:6.5pt!important;padding:0 5px!important}
+  .almimp .stt tr{break-inside:avoid;page-break-inside:avoid}
+  .almimp .gdp .gdz{margin:0 0 4mm!important}.almimp .gdp h2{font-size:12pt!important;margin:0 0 1mm!important}.almimp .gdp h4{font-size:9.5pt!important;margin:0 0 1mm!important}.almimp .gdp th{font-size:6.8pt!important;line-height:1.05!important}.almimp .gdp td{line-height:1.1!important}.almimp .gdp td,.almimp .gdp th{padding:.5px 3px!important}.almimp .gdp table{font-size:8pt!important}.almimp .gdp th,.almimp .gdp td{padding:1px 4px!important}
   /* Parte diario impreso en 3 hojas: 1) parte, cultivo y cambios de receta; 2) cuentas del día; 3) agua y drenaje + receta */
   .parteimp{font-size:8.5pt}
   .parteimp .pb{break-before:page;page-break-before:always}
@@ -2946,7 +2954,7 @@ function vAlmacen(){if(st.alm===null){loadOps();return '<div class="card"><div c
     return `<div class="msg"><div class="h"><span class="pill ${m.tipo==='entrada'?'ok':m.tipo==='salida'?'nd':'warn'}">${m.tipo==='correccion'?'corrección':m.tipo}</span><b>${m.qty>=0?'+':'−'}${fmt(Math.abs(m.qty),1)} ${uCant(m.p)}</b>${sacosTxt(m.p,Math.abs(m.qty))&&Math.abs(m.qty)>=sacoDe(m.p)?`<span>${sacosTxt(m.p,Math.abs(m.qty))}</span>`:''}<span>${esc(pn(m.p))}</span><span>${fFecha(m.fecha)}</span></div>
     ${m.prov||m.alb?`<p>${esc([m.prov,m.alb?'Albarán '+m.alb:''].filter(Boolean).join(' · '))}</p>`:''}${m.tipo==='correccion'?`<p class="note">Gasto de ${esc(cabNombre(m.cab))} ${m.dia?'del '+esc(fCorta(m.dia)):'en '+esc(new Date(m.mes+'-15').toLocaleDateString('es-ES',{month:'long'}))}: de ${fmt(m.base,1)} a ${fmt(m.nuevo,1)} ${uCant(m.p)}</p>`:''}${m.manual?`<p class="note">Llenado añadido a mano · ${esc(cabNombre(m.cab))}</p>`:''}${m.editado?`<p class="note">Corregido por ${esc(m.editado.por||'')}: antes ${fmt(Math.abs(m.editado.antes),1)} ${uCant(m.p)}</p>`:''}${m.auto?`<p class="note">Llenado deducido de las cuentas del ${esc(fCorta(m.autoDe))} (${fmt(m.autoCm,1)} cm)</p>`:''}${o?`<p class="note">${esc(o.nombre)} · ${esc(o.cabezales.map(cabNombre).join(' + '))}</p>`:''}${adjHTML(m.adjuntos,false)}
     <div class="row">${!esGestor()&&m.porEmail!==miEmail()?'':st.mvEdit===m.id?`<div class="inp sm"><input id="mvq_${m.id}" inputmode="decimal" value="${inVal(+(m.tipo==='ajuste'?m.qty:Math.abs(m.qty)).toFixed(3))}"><span class="u">${uCant(m.p)}</span></div><button class="btn pri" data-act="mv-ok" data-id="${m.id}">Guardar</button><button class="btn" data-act="mv-cancel">Cancelar</button>`:st.confirmMv===m.id?`<span class="note">¿Borrar movimiento?</span><button class="btn danger" data-act="mv-del-yes" data-id="${m.id}">Sí, borrar</button><button class="btn" data-act="mv-del-no">Cancelar</button>`:`${m.tipo!=='correccion'?`<button class="btn" data-act="mv-edit" data-id="${m.id}">Editar</button>`:''}<button class="btn" data-act="mv-del" data-id="${m.id}">Borrar</button>`}</div></div>`}).join('')+`</div>`:`<div class="note">Sin movimientos.</div>`)+`</section>`;
-  return h}
+  return `<div class="almimp">${h}</div>`}
 async function entSave(){const e=st.ent;if(!(e.qty>0)){toast('Escribe la cantidad');return}
   const m={ts:new Date().toISOString(),fecha:e.fecha||hoy(),tipo:'entrada',alm:almAct(),por:yoNombre(),porEmail:miEmail(),p:e.p,qty:e.qty,prov:e.prov.trim(),alb:e.alb.trim(),adjuntos:e.adj.filter(a=>!a.tmp)};
   try{const id=await Store.addCol('almacen',m);st.alm.unshift({...m,id});st.ent={p:e.p,qty:null,fecha:hoy(),prov:e.prov,alb:'',adj:[]};renderMain();toast('Entrada guardada')}catch(err){toast(errMsg(err))}}
