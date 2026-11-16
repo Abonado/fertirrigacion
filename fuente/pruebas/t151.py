@@ -26,7 +26,9 @@ async def main():
         av = await pg.evaluate("[...document.querySelectorAll('.hoyav .hoyai')].map(b=>b.dataset.tab)")
         assert av == ['casist', 'cincid', 'ctareas'], av
         # insignias en Personal y Trabajo
-        assert await pg.evaluate("[...document.querySelectorAll('#grupos .grp')].filter(b=>b.querySelector('.bdg')).map(b=>b.dataset.grupo)") == ['cpersonal', 'ctrabajo']
+        # (la de Personal, por el parte sin guardar, solo sale a partir de cierta hora: depende de cuándo se pase la prueba)
+        bd = await pg.evaluate("[...document.querySelectorAll('#grupos .grp')].filter(b=>b.querySelector('.bdg')).map(b=>b.dataset.grupo)")
+        assert 'ctrabajo' in bd and set(bd) <= {'cpersonal', 'ctrabajo'}, bd
         # Personal: sus pestañas; el atrás vuelve a Hoy
         await pg.click('.grp[data-grupo="cpersonal"]'); await pg.wait_for_timeout(400)
         assert await pg.evaluate("[st.tab,[...document.querySelectorAll('#tabs .tab')].map(b=>b.dataset.tab)]") == ['casist', ['casist', 'corend', 'coparte', 'cogente']]

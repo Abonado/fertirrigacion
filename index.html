@@ -710,7 +710,10 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .hoynot[disabled]{opacity:1}
 .date{position:relative;gap:6px;height:38px;padding:0 12px 0 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--navy);cursor:pointer}
 .date .dcal{width:18px;height:18px}.date b{font:700 14px var(--f-display);letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
-.date input{position:absolute;inset:0;width:100%;max-width:none;height:100%;opacity:0;border:0;padding:0;cursor:pointer}
+/* En el iPhone el selector de fecha (invisible) se hacía más ancho que el botón «Hoy» y tapaba la impresora: se recorta al botón */
+.date{overflow:hidden;isolation:isolate}
+.date input{position:absolute;inset:0;width:100%;min-width:0;max-width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;cursor:pointer;box-sizing:border-box;-webkit-appearance:none;appearance:none;font-size:16px}
+.topr .frec{position:relative;z-index:2}
 .date input::-webkit-calendar-picker-indicator{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .date.otro{background:var(--navy);border-color:var(--navy);color:#fff}
 .cmb{display:grid;gap:10px}.cmbr{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:8px}
@@ -8010,7 +8013,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v216';
+window.APP_V='abonado-v217';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
