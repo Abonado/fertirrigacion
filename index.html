@@ -2348,7 +2348,7 @@ function vHistorial(){if(st.hist===null){loadHist();return '<div class="card"><d
   else h+=`<div>`+cs.map(x=>`<div class="chg"><b>${fFecha(x.fecha)}${x.por?` · ${esc(x.por)}`:''}</b><ul>${(x.lineas||[]).map(l=>`<li>${esc(String(l).replace(/Bid[oó]n/gi,'Depósito'))}</li>`).join('')}</ul></div>`).join('')+`</div>`;
   return h+`</section>`}
 let histLoading=false;
-async function loadHist(){if(histLoading)return;histLoading=true;await loadHist_();histLoading=false;refreshTab()}
+async function loadHist(){if(histLoading)return;histLoading=true;await loadHist_();histLoading=false;refreshTab();almAutoLimpia()}
 function refreshTab(){spRes();try{renderGrupos()}catch(e){}if(!$('#fincas').hidden)renderFincas();avisosLlenado();if(['historial','graficas','almacen','informe','rellenar','cultivo'].includes(st.tab))renderMain();else if(st.tab==='cuentas')softUpdate()}
 async function loadHist_(){try{const[a,b]=await Promise.all([Store.listRegs(),Store.listCambios()]);st.hist=a;st.cambios=b}catch(e){st.hist=[];st.cambios=[];toast('No se pudo leer el historial')}}
 
@@ -2602,7 +2602,7 @@ $('#lb').addEventListener('click',e=>{if(e.target.id==='lb'||e.target.dataset.ac
 /* ---------- Nivel de depósitos ---------- */
 const isoD=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 let opsLoading=false;
-async function loadOps(){if(opsLoading)return;opsLoading=true;try{const[a,b]=await Promise.all([Store.listCol('llenados',0),Store.listCol('almacen',0)]);st.llen=a;st.alm=b}catch(e){st.llen=st.llen||[];st.alm=st.alm||[]}opsLoading=false;refreshTab()}
+async function loadOps(){if(opsLoading)return;opsLoading=true;try{const[a,b]=await Promise.all([Store.listCol('llenados',0),Store.listCol('almacen',0)]);st.llen=a;st.alm=b}catch(e){st.llen=st.llen||[];st.alm=st.alm||[]}opsLoading=false;refreshTab();almAutoLimpia()}
 /* Medida del depósito: «gaste» = cm que ha bajado desde lleno (regla desde arriba); «nivel» = cm de líquido desde el fondo.
    Por dentro todo se calcula en nivel (lo que queda). */
 /* Cada depósito se apunta de una forma:
@@ -2652,14 +2652,32 @@ function nivel(b){let ev=null;for(const e of llenadosDe(b))if(e.fecha<=st.fecha&
     for(const e of st.llen||[])if(e.bidon===b.id&&e.tipo==='llenado'&&e.fecha>lec.fecha&&e.fecha<=st.fecha)rest+=e.cmAdd||0}
   else{rest=ev.cmFinal;const tras=(lec&&lec.fecha===ev.fecha)||esDirecto(b);for(let d=ev.fecha;d<=st.fecha&&n<180;d=sigD(d),n++){if(d===ev.fecha&&ev.hora&&esDirecto(b)){const fa=fracTras(ev.hora);if(fa>0){const c=cmDe(b,d);if(c!=null)rest-=c*fa;else if(g.v>0){const fr=Math.max(0,fracDia(d)-(1-fa));rest-=g.v*fr;if(fr>0)est++}}continue}if(tras&&d===ev.fecha)continue;const c=cmDe(b,d);if(c!=null)rest-=c;else if(d>ev.fecha&&g.v>0){const fr=fracDia(d);rest-=g.v*fr;if(fr>0)est++}}}
   return{rest,dias:g.v>0?Math.max(0,rest)/g.v:null,ev,max:b.capacidad/b.lpcm,est,g}}
+/* ¿Este descuento automático ya lo cubre un llenado apuntado el día E? Con depósito «diario», si el llenado es del día del descuento;
+   con «cuando se vacía», si el llenado cae entre la lectura anterior y la del día en que se vio que se había llenado */
+function autoDesdeHist(b,L){if(!st.hist)return null;return conDia(L,st.hist.find(x=>x.fecha===L)||{cm:{},niv:{}},()=>{const p=lecturaAnt(b,false);return p?p.fecha:null})}
+function autoCubre(m,E){const b=bid(m.origen);if(!b||!m.auto)return false;if(modoDep(b)==='diario')return m.fecha===E;
+  const d=m.autoDesde!=null?m.autoDesde:autoDesdeHist(b,m.autoDe);return d!=null?E>d&&E<=m.autoDe:(m.fecha===E||m.autoDe===E)}
+/* Limpieza: si un descuento automático y un llenado apuntado (que ya descontó del almacén) son el mismo llenado, sobra el automático.
+   Lo hace el móvil de un gestor cuando tiene todo cargado; así se arreglan también los que se quedaron dobles antes */
+let almLimpiando=false;
+async function almAutoLimpia(){if(almLimpiando||!st.alm||!st.llen||!st.hist||!esGestor())return;almLimpiando=true;let n=0;
+  try{const conDesc=new Set(st.alm.filter(m=>m.llenado).map(m=>m.llenado));
+    for(const m of st.alm.filter(m=>m.auto&&!m.editado)){const e=st.llen.find(e=>e.bidon===m.origen&&e.tipo==='llenado'&&conDesc.has(e.id)&&autoCubre(m,e.fecha));
+      if(!e)continue;try{await Store.delCol('almacen',m.id);st.alm=st.alm.filter(x=>x.id!==m.id);n++}catch(err){}}
+    if(n){console.info('Almacén: quitados',n,'descuentos automáticos repetidos');if(st.tab==='almacen')renderMain()}}finally{almLimpiando=false}}
 /* Almacén: cuando el llenado se deduce de las cuentas, se descuenta solo (un movimiento por producto, con id fijo para no duplicar) */
-async function autoAlmacen(b,L){const mods=[],borrar=[];const alm=almDeCab(b.cabezales[0]),ya=(st.alm||[]).filter(m=>m.auto&&m.origen===b.id&&m.autoDe===L);
-  let cm=null,F=null;
-  if(modoDep(b)==='diario'){cm=st.reg.cm[b.id];F=sigD(L);if((st.llen||[]).some(e=>e.bidon===b.id&&e.tipo==='llenado'&&e.fecha===F))cm=null}
-  else if(modoDep(b)==='vacio'){const a=cmAuto(b);if(a&&a.relleno){cm=a.prev.raw;F=L;if((st.llen||[]).some(e=>e.bidon===b.id&&e.tipo==='llenado'&&e.fecha>a.prev.fecha&&e.fecha<=L))cm=null}}
+async function autoAlmacen(b,L){const alm=almDeCab(b.cabezales[0]),modo=modoDep(b);
+  /* lo que depende del día (st.fecha/st.reg) se calcula aquí, antes de esperar a nada */
+  let cm=null,F=null,desde=null;
+  if(modo==='diario'){cm=st.reg.cm[b.id];F=sigD(L);desde=L}
+  else if(modo==='vacio'){const a=cmAuto(b);if(a&&a.relleno){cm=a.prev.raw;F=L;desde=a.prev.fecha}}
   const nuevos={};if(cm>0)for(const x of b.productos){if(!x.dosis)continue;const q=+(cm*b.lpcm*conc(b,x)/1000).toFixed(2);if(q>0)nuevos[x.p]=q}
+  /* antes de descontar, los llenados y movimientos al día de todos los móviles: si alguien ya apuntó el llenado, no se descuenta dos veces */
+  try{const[ll,am]=await Promise.all([Store.listCol('llenados',0),Store.listCol('almacen',0)]);st.llen=ll;st.alm=am}catch(e){}
+  if((st.llen||[]).some(e=>e.bidon===b.id&&e.tipo==='llenado'&&(modo==='diario'?e.fecha===F:e.fecha>desde&&e.fecha<=L)))for(const k in nuevos)delete nuevos[k];
+  const ya=(st.alm||[]).filter(m=>m.auto&&m.origen===b.id&&m.autoDe===L);
   for(const m of ya)if(!(m.p in nuevos)&&!m.editado){try{await Store.delCol('almacen',m.id)}catch(e){}}
-  for(const[p,q]of Object.entries(nuevos)){const id=`auto_${b.id}_${L}_${p}`,m={ts:F+'T06:00:00.000Z',fecha:F,tipo:'salida',alm,p,qty:-q,origen:b.id,auto:true,autoDe:L,autoCm:cm,por:yoNombre(),porEmail:miEmail()};
+  for(const[p,q]of Object.entries(nuevos)){const id=`auto_${b.id}_${L}_${p}`,m={ts:F+'T06:00:00.000Z',fecha:F,tipo:'salida',alm,p,qty:-q,origen:b.id,auto:true,autoDe:L,autoDesde:desde,autoCm:cm,por:yoNombre(),porEmail:miEmail()};
     const old=ya.find(x=>x.id===id);if(old&&(old.qty===m.qty||old.editado))continue;try{await Store.setCol('almacen',id,m);st.alm=(st.alm||[]).filter(x=>x.id!==id);st.alm.unshift({...m,id})}catch(e){console.warn('auto almacén',e)}}
   st.alm=(st.alm||[]).filter(x=>!(ya.some(m=>m.id===x.id)&&!(x.p in nuevos)&&!x.editado));if(Object.keys(nuevos).length)pushStock(Object.keys(nuevos),alm)}
 /* cm gastados hoy = nivel de partida − nivel de hoy. La partida es la lectura anterior o, si después hubo un llenado o una medida
@@ -2818,7 +2836,8 @@ async function lfSave2(){const L=st.lf,b=bid(L.bidon);if(L.final==null||L.final<
   if(L.tipo==='llenado'&&L.igual&&L.falta&&L.falta.length)ev.sinMarcar=L.falta;
   if(L.tipo==='llenado'){ev.cmAdd=L.add;ev.cantidades={};const lt=L.add*b.lpcm;for(const x of b.productos){if(!x.dosis)continue;ev.cantidades[x.p]=+(lt*conc(b,x)/1000).toFixed(2)}}
   try{const id=await Store.addCol('llenados',ev);st.llen.unshift({...ev,id});
-    if(L.tipo==='llenado'&&L.desc)for(const m of (st.alm||[]).filter(m=>m.auto&&m.origen===b.id&&(m.fecha===ev.fecha||m.autoDe===ev.fecha))){try{await Store.delCol('almacen',m.id)}catch(e){}st.alm=st.alm.filter(x=>x.id!==m.id)}
+    if(L.tipo==='llenado'&&L.desc)try{st.alm=await Store.listCol('almacen',0)}catch(e){}
+    if(L.tipo==='llenado'&&L.desc)for(const m of (st.alm||[]).filter(m=>m.auto&&m.origen===b.id&&autoCubre(m,ev.fecha))){try{await Store.delCol('almacen',m.id)}catch(e){}st.alm=st.alm.filter(x=>x.id!==m.id)}
     if(L.tipo==='llenado'&&L.desc)for(const[p,q]of Object.entries(ev.cantidades)){const m={ts:ev.ts,fecha:ev.fecha,tipo:'salida',alm:almDeCab(b.cabezales[0]),p,qty:-q,origen:b.id,llenado:id,por:yoNombre(),porEmail:miEmail()};const mid=await Store.addCol('almacen',m);st.alm.unshift({...m,id:mid})}
     if(L.tipo==='llenado'&&L.desc)pushStock(Object.keys(ev.cantidades),almDeCab(b.cabezales[0]));if(L.tipo==='llenado')fchkBorra(b);st.lf=null;renderMain();pushProgramar();toast(L.tipo==='llenado'?'Llenado de las '+ev.hora+' guardado'+(L.desc?' y descontado del almacén':''):'Nivel guardado')}catch(e){toast(errMsg(e))}}
 async function llDel(id){try{await Store.delCol('llenados',id);st.llen=st.llen.filter(e=>e.id!==id);for(const m of st.alm.filter(m=>m.llenado===id)){await Store.delCol('almacen',m.id)}st.alm=st.alm.filter(m=>m.llenado!==id);st.confirmLl=null;renderMain();toast('Registro borrado')}catch(e){toast(errMsg(e))}}
@@ -8013,7 +8032,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v217';
+window.APP_V='abonado-v218';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
