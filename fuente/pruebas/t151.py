@@ -31,7 +31,7 @@ async def main():
         assert 'ctrabajo' in bd and set(bd) <= {'cpersonal', 'ctrabajo'}, bd
         # Personal: sus pestañas; el atrás vuelve a Hoy
         await pg.click('.grp[data-grupo="cpersonal"]'); await pg.wait_for_timeout(400)
-        assert await pg.evaluate("[st.tab,[...document.querySelectorAll('#tabs .tab')].map(b=>b.dataset.tab)]") == ['casist', ['casist', 'corend', 'coparte', 'cogente']]
+        assert await pg.evaluate("[st.tab,[...document.querySelectorAll('#tabs .tab')].map(b=>b.dataset.tab)]") == ['casist', ['casist', 'corend', 'coparte', 'cogente', 'cqrtaller']]
         assert await pg.text_content('#fbackT') == 'Hoy'
         await pg.click('header .fback'); await pg.wait_for_timeout(400)
         assert await pg.evaluate("st.tab") == 'choy'

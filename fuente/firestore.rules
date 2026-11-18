@@ -188,6 +188,18 @@ service cloud.firestore {
       allow read, create, update, delete: if esGestor();
     }
 
+    // Entrada al taller por QR: cada persona apunta sus propias entradas y salidas (un documento por persona y día);
+    // las ven ella y los encargados; solo los encargados las corrigen o borran
+    match /abonado_qrtaller/{doc} {
+      allow read: if autorizado() && (esGestor() || resource == null || resource.data.email == request.auth.token.email);
+      allow create: if autorizado() && request.resource.data.email == request.auth.token.email
+        && doc == request.auth.token.email + '_' + request.resource.data.fecha;
+      allow update: if esGestor()
+        || (autorizado() && resource.data.email == request.auth.token.email
+            && request.resource.data.email == resource.data.email);
+      allow delete: if esGestor();
+    }
+
     match /{coleccion}/{doc} {
       allow read, write: if coleccion.matches('abonado_.*')
         && coleccion != 'abonado_acceso'
@@ -207,6 +219,7 @@ service cloud.firestore {
         && coleccion != 'abonado_ordenes'
         && coleccion != 'abonado_sesiones'
         && coleccion != 'abonado_ucrop'
+        && coleccion != 'abonado_qrtaller'
         && veRiego();
     }
   }
