@@ -176,6 +176,12 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['visto', 'hecha', 'hechaTs', 'hechaPor', 'nota', 'mod']));
     }
 
+    // Accesos: cada persona apunta sus propias entradas (quién y desde qué dispositivo); solo el administrador las ve
+    match /abonado_sesiones/{doc} {
+      allow read, delete: if esAdmin();
+      allow create, update: if autorizado() && request.resource.data.email == request.auth.token.email;
+    }
+
     match /{coleccion}/{doc} {
       allow read, write: if coleccion.matches('abonado_.*')
         && coleccion != 'abonado_acceso'
@@ -193,6 +199,7 @@ service cloud.firestore {
         && coleccion != 'abonado_fichajes'
         && coleccion != 'abonado_posiciones'
         && coleccion != 'abonado_ordenes'
+        && coleccion != 'abonado_sesiones'
         && veRiego();
     }
   }

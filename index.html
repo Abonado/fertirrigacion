@@ -392,6 +392,10 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .cpz .zdot{width:12px;height:12px;border-radius:50%;background:var(--zc);flex:none}
 .cpz select{min-width:210px}
 .ev .evbt{gap:6px;flex-wrap:nowrap}
+.accp{border-top:1px solid var(--line,#dde3dc);padding:10px 0 4px}.accp:first-of-type{border-top:0}
+.acch{display:flex;flex-direction:column;gap:1px;margin-bottom:6px}.acch b{font-size:15px}
+.accd{display:flex;gap:10px;align-items:flex-start;padding:6px 8px;margin:0 0 5px;border-radius:10px;background:var(--bg2,#f3f5f2)}
+.accd.yo{outline:2px solid var(--ok,#2f7d4f)}.accd b{font-size:13px}.accd small{display:block;color:var(--muted);font-size:12px;text-transform:none;margin-top:2px}.acci{font-size:18px;line-height:1.2}
 .dissvg{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}.diswrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#f4f1e8;max-height:78vh;margin-top:8px}.disin{min-width:100%}.distool{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;align-items:center}.dissel{font:inherit;font-size:13px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}.disfrm{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:8px 0}.disol{margin:6px 0 8px;padding-left:18px;font-size:14px;text-transform:none}.disol li{margin:0 0 5px}.dispan h4{margin:0 0 6px}.dispill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#2f7d4f;color:#fff;vertical-align:middle;letter-spacing:.5px}#dis3d .vvn>polygon:first-child{fill-opacity:.22}#dis3d .vvr{fill-opacity:.38}#dis3d .vvw{fill-opacity:.28}.dis3w{margin-top:8px}.dis3w svg{width:100%;height:auto;display:block}.prnada{padding:28px 12px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}.prmini{display:block;width:100%;padding:0;margin:10px 0;border:1px solid var(--line);border-radius:10px;background:#f6f4ee;overflow:hidden;cursor:pointer;text-align:center}.prmini img{display:block;width:100%;max-height:340px;object-fit:contain}.prmini span{display:block;padding:7px;font-size:13px;color:var(--muted);font-weight:600;text-transform:none}.prh4{margin:12px 0 4px;font-size:14px}.prpend ul{margin:0;padding-left:20px}.prpend li{margin:3px 0}
 @media print{.prv{max-height:none!important;overflow:visible!important;border:0!important;background:none!important}.prin{width:100%!important}.prcard .prsvg{width:auto!important;max-width:100%;max-height:19.5cm;margin:0 auto}.prcard.hz .prsvg{max-height:12cm}.prcard{gap:6px}}
 @media print{.stq{font-size:16pt}.stg{font-size:12pt}.stt td,.gct td{padding:5px 6px}.stt th,.gct th{padding:0 6px 5px}}
@@ -2300,6 +2304,45 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   if(b.dataset.act==='vlv-add'){const id=(($('#vlv_nuevo')||{}).value||'').trim().toUpperCase();if(!/^[0-9A-F]{4,20}$/.test(id))return toast('El número de la placa son letras de la A a la F y números (ej. 1A2B3C)');
     if(vlvCfg()[id])return toast('Esa placa ya está');vlvPon(V=>{V[id]={cab:st.cab,lpp:100,can:{}}});renderMain()}
   else{vlvPon(V=>{delete V[b.dataset.id]});renderMain()}});
+/* ---------- Accesos: quién entra y desde qué dispositivo. Cada móvil apunta su entrada (como mucho una vez cada 30 min) en
+   abonado_sesiones, un documento por persona y dispositivo. Solo el administrador lo ve, en Ajustes → Usuarios y acceso ---------- */
+function accDispId(){try{let i=localStorage.getItem('abono.disp');if(!i){i=Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);localStorage.setItem('abono.disp',i)}return i}catch(e){return 'sinid'}}
+function accDispInfo(){const u=navigator.userAgent||'';let so='Otro',ver='',modelo='',tipo='Ordenador',m;
+  if(/iPhone/.test(u)){so='iPhone';tipo='Móvil'}else if(/iPad/.test(u)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1)){so='iPad';tipo='Tableta'}
+  else if(/Android/.test(u)){so='Android';tipo=/Mobile/.test(u)?'Móvil':'Tableta';if((m=/Android [\d.]+;\s*([^;)]+?)(?:\s+Build[^;)]*)?\)/.exec(u))&&m[1]!=='K')modelo=m[1].trim()}
+  else if(/Windows/.test(u))so='Windows';else if(/Mac OS X/.test(u))so='Mac';else if(/Linux/.test(u))so='Linux';
+  if((so==='iPhone'||so==='iPad')&&(m=/OS (\d+)[_.](\d+)/.exec(u)))ver=m[1]+'.'+m[2];else if(so==='Android'&&(m=/Android (\d+(?:\.\d+)?)/.exec(u)))ver=m[1];
+  const nav=/EdgA|EdgiOS|Edg\//.test(u)?'Edge':/SamsungBrowser/.test(u)?'Samsung Internet':/CriOS|Chrome\//.test(u)?'Chrome':/FxiOS|Firefox/.test(u)?'Firefox':/Safari/.test(u)?'Safari':'Navegador';
+  const app=!!((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true);
+  return {so,ver,modelo,tipo,nav,app,pantalla:screen.width+'×'+screen.height}}
+let accUlt=0;
+async function accApuntar(forzar){if(!window.NUBE||!NUBE.user||Store.mode!=='fb')return;const ahora=Date.now(),em=NUBE.user.email;
+  const K='abono.acc.'+em;let L={};try{L=JSON.parse(localStorage.getItem(K)||'{}')}catch(e){}
+  if(!forzar&&ahora-Math.max(L.ult||0,accUlt)<30*60e3)return;accUlt=ahora;
+  const h=hoy(),ts=new Date(ahora).toISOString(),dias={};for(const[k,v]of Object.entries(L.dias||{}))if(k>=isoD(new Date(ahora-30*864e5)))dias[k]=v;dias[h]=(dias[h]||0)+1;
+  L={ult:ahora,primera:L.primera||ts,veces:(L.veces||0)+1,dias};try{localStorage.setItem(K,JSON.stringify(L))}catch(e){}
+  const d=accDispInfo(),id=(em+'__'+accDispId()).replace(/[\/#$\[\].]/g,'_');
+  try{await Store.setCol('sesiones',id,{ts,email:em,nombre:NUBE.user.nombre||'',disp:accDispId(),...d,primera:L.primera,veces:L.veces,dias,v:window.APP_V||'',finca:st.finca||''})}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)accApuntar()});
+st.accs=null;let accCargando=false;
+async function accCargar(){if(accCargando)return;accCargando=true;try{st.accs=await Store.listCol('sesiones',0)}catch(e){st.accs=[]}accCargando=false;if(st.tab==='ajustes')renderMain()}
+function accHace(ts){const m=Math.round((Date.now()-new Date(ts).getTime())/60e3);if(m<2)return 'ahora';if(m<60)return 'hace '+m+' min';const d=new Date(ts),hm=d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  if(isoD(d)===hoy())return 'hoy '+hm;if(isoD(d)===isoD(new Date(Date.now()-864e5)))return 'ayer '+hm;return d.toLocaleDateString('es-ES',{day:'numeric',month:'short'})+' '+hm}
+const accDispTxt=x=>[x.modelo?x.so+' '+x.modelo:x.so,x.ver?(x.so==='Android'?'Android '+x.ver:'iOS '+x.ver):'',x.nav+(x.app?' · app instalada':' · navegador')].filter(Boolean).join(' · ');
+function vAccesos(){if(!esAdminU()||!window.NUBE)return '';if(st.accs===null)accCargar();
+  const L=st.accs||[],yo=accDispId(),por={};for(const x of L)(por[x.email]=por[x.email]||[]).push(x);
+  const acc=(NUBE.acc&&NUBE.acc.emails)||[],info=(NUBE.acc&&NUBE.acc.info)||{},todos=[...new Set([...acc,...Object.keys(por)])];
+  const ult=e=>(por[e]||[]).reduce((a,x)=>x.ts>a?x.ts:a,''),h7=isoD(new Date(Date.now()-7*864e5)),h30=isoD(new Date(Date.now()-30*864e5));
+  todos.sort((a,b)=>ult(b).localeCompare(ult(a)));
+  const fila=e=>{const D=(por[e]||[]).sort((a,b)=>b.ts.localeCompare(a.ts)),n=(info[e]&&info[e].nombre)||(D[0]&&D[0].nombre)||e.split('@')[0],dias=new Set();D.forEach(x=>Object.keys(x.dias||{}).forEach(k=>dias.add(k)));
+    return `<div class="accp"><div class="acch"><b>${esc(n)}</b><span class="sub">${esc(e)}${acc.length&&!acc.includes(e)?' · <span class="pill warn">ya sin acceso</span>':''}</span>
+      <span class="sub">${D.length?`Último acceso ${esc(accHace(D[0].ts))} · ${dias.size} día${dias.size===1?'':'s'} en el último mes · ${D.length} dispositivo${D.length>1?'s':''}`:'Todavía no ha entrado con esta versión'}</span></div>
+      ${D.map(x=>`<div class="accd${x.disp===yo&&e===NUBE.user.email?' yo':''}"><span class="acci" aria-hidden="true">${x.tipo==='Ordenador'?'🖥️':x.tipo==='Tableta'?'📱':'📱'}</span><span><b>${esc(accDispTxt(x))}</b>${x.disp===yo&&e===NUBE.user.email?' <span class="pill ok">este</span>':''}${(x.primera||'')>=h7?' <span class="pill warn">nuevo</span>':''}
+        <small>Último: ${esc(accHace(x.ts))} · desde ${esc(fFecha((x.primera||x.ts).slice(0,10)))} · ${x.veces||1} entrada${(x.veces||1)>1?'s':''}${x.pantalla?' · pantalla '+esc(x.pantalla):''}${x.v?' · '+esc(String(x.v).replace('abonado-','')):''}</small></span></div>`).join('')}</div>`};
+  return `<section class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><h3>Usuarios · accesos y dispositivos</h3><div class="sub">Quién entra a la app y desde qué móvil u ordenador. Solo lo ves tú.</div></div><button class="btn" type="button" data-act="acc-recargar">Actualizar</button></div>
+    ${st.accs===null?'<div class="note">Cargando…</div>':todos.length?todos.map(fila).join(''):'<div class="note">Todavía no hay accesos apuntados.</div>'}
+    <div class="note">Se apunta una entrada cada vez que alguien abre la app (como mucho una cada 30 minutos por dispositivo). El móvil se reconoce por el navegador: si alguien borra los datos del navegador o reinstala la app, sale como dispositivo nuevo.</div></section>`}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-act="acc-recargar"]');if(b){st.accs=null;renderMain()}});
 function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos en este móvil</h3><div class="sub">Notificaciones de llenado, mensajes, tareas e incidencias</div></div><div data-out="notif">${notifHTML()}</div></section>`+(window.NUBE&&NUBE.user?NUBE.cardHTML():'')+carpetasHTML()+versionHTML();const c=cabById(st.cab);let h=`<section class="card"><div><h3>Depósitos de ${esc(c.nombre)}</h3><div class="sub">Litros por cm, capacidad y venturis</div></div><div>`;
   for(const b of bidonesDe(st.cab)){h+=`<div class="cfgrow"><div class="field nmf"><label for="bn_${b.id}">Nombre</label><div class="inp"><input class="wide" id="bn_${b.id}" data-k="cfg.bname.${b.id}" data-text="1" value="${esc(b.nombre)}"></div></div>
     <div class="field"><label for="lp_${b.id}">L por cm</label><div class="inp sm"><input id="lp_${b.id}" data-k="cfg.lpcm.${b.id}" inputmode="decimal" value="${inVal(b.lpcm)}"></div></div>
@@ -2331,7 +2374,7 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
     <div class="field"><label for="sat_url_aj">Servidor de satélite</label><div class="inp"><input class="wide" id="sat_url_aj" data-k="cfg.sat.url" data-text="1" style="width:100%;text-transform:none" placeholder="https://abonado-satelite.….workers.dev" value="${esc(st.cfg.satUrl||'')}" autocomplete="off" spellcheck="false"></div></div>
     <div class="note">Después pulsa «Guardar receta y ajustes». La radiación solar funciona sin servidor; las parcelas al aire libre lo necesitan.</div></section>`;
   h+=cultivoAjHTML();
-  if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML();
+  if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML()+vAccesos();
   h+=(esAdminU()?logoHTML():'')+carpetasHTML()+(esAdminU()?copiaHTML():'')+versionHTML();
   h+=vlvCfgHTML();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Copia de seguridad, recetas y ajustes</div></div>
@@ -8030,7 +8073,7 @@ document.addEventListener('change',e=>{if(e.target.id!=='restore'||!e.target.fil
   toast('Copia restaurada');setTimeout(()=>location.reload(),900)}catch(err){toast('Ese archivo no es una copia de esta app')}};fr.readAsText(e.target.files[0]);e.target.value=''});
 
 /* ---------- Arranque ---------- */
-(async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
+(async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;setTimeout(()=>accApuntar(),3000);{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c);splashLogo()}}catch(e){}
   st.ready=true;loadFich();migNavesGas().then(migModoManual).then(migMetalicos).then(migNavesPlanos);if(!veRiego()){st.tab=tabPermitida('choy')?'choy':'casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
@@ -8043,7 +8086,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v219';
+window.APP_V='abonado-v220';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
