@@ -35,12 +35,13 @@ async def main():
         assert r[0] == 0 and r[1] == 0 and r[2] >= 460, r
         assert await f.evaluate("document.querySelector('#brand small').textContent") == 'Laboratorio · Agro Fly'
         # mesa nueva: sale el nodo de suelo de Agro Fly; en Ejemplos están los cuatro
-        await f.evaluate("document.querySelector('#tabs button[data-t=\"ex\"]').click()"); await pg.wait_for_timeout(200)
-        ej = await f.evaluate("[...document.querySelectorAll('#items .tray-item b')].map(x=>x.textContent)")
+        await pg.wait_for_timeout(600); await f.evaluate("document.getElementById('home').hidden=true")   # RoboLab abre con su pantalla de inicio
+        await f.evaluate("document.getElementById('btnExamples').click()"); await pg.wait_for_timeout(200)
+        ej = await f.evaluate("[...document.querySelectorAll('#items .tray-item.example b')].map(x=>x.textContent)")
         assert ej[:4] == ['Agro Fly · Nodo de suelo', 'Agro Fly · Clima de la nave', 'Agro Fly · Electroválvula de un sector', 'Agro Fly · Nivel de bidón'], ej
         res = {}
         for i in range(4):
-            await f.evaluate(f"document.querySelectorAll('#items .tray-item')[{i}].click()"); await pg.wait_for_timeout(1200)
+            await f.evaluate(f"document.querySelectorAll('#items .tray-item.example')[{i}].click()"); await pg.wait_for_timeout(1200)
             n = await f.evaluate("JSON.parse(localStorage.getItem('robolab-xxi')||'{}')")
             await f.evaluate("document.getElementById('play').click()"); await pg.wait_for_timeout(500)
             mon = await f.evaluate("[...document.querySelectorAll('#mbody .item')].map(x=>x.className.replace('item','').trim()+': '+x.querySelector('b').textContent)")
@@ -72,6 +73,7 @@ async def main():
         await f.evaluate("document.getElementById('btnAsk').click()"); await pg.wait_for_timeout(200)
         assert 'IA de Agro Fly' in await f.evaluate("document.getElementById('aSrc').textContent")
         await f.fill('#aIn', 'abrir el riego cuando el suelo esté seco'); await f.evaluate("document.getElementById('aGo').click()"); await pg.wait_for_timeout(800)
+        if await f.evaluate("!!document.getElementById('aQgo')"): await f.evaluate("document.getElementById('aQgo').click()"); await pg.wait_for_timeout(800)   # preguntas rápidas de RoboLab: «que elija la IA»
         t = await f.evaluate("document.getElementById('aOut').textContent"); assert 'Plan de la IA' in t and 'Electroválvula 12 V' in t, t[:300]
         # sin la contraseña del Taller (puesta) no se ve
         assert await pg.evaluate("(()=>{st.cfg.tallerClave={h:'x',s:'y'};tlRecordar(null);st.tab='robolab';renderMain();return !!$('#rlslot')})()") is False

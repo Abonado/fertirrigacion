@@ -32,7 +32,8 @@ def revisar(s):
         if not re.match(r'.*@(\d|x\.)', m) and not m.startswith('three@'):
             fallos.append(f'lleva un correo ({m}): no se publica')
     hosts = set(re.findall(r'https?://([A-Za-z0-9.-]+)', s))
-    raros = hosts - {'fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net', 'www.w3.org'}
+    # amazon.es y aliexpress solo son enlaces de búsqueda de la lista de la compra (los abre la persona, la app no les pide nada)
+    raros = hosts - {'fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net', 'www.w3.org', 'www.amazon.es', 'es.aliexpress.com'}
     if raros: fallos.append('llama a servidores nuevos: ' + ', '.join(sorted(raros)))
 
 def three_local(s):
