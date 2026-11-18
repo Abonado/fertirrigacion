@@ -110,6 +110,36 @@ async function registrar(env, { nodo, id, v, bat, rssi, snr, gw }) {
 /* ---------- controlador de clima: lo manda el lector del PC ---------- */
 const numR = (x, a, b) => typeof x === 'number' && isFinite(x) && x >= a && x <= b ? Math.round(x * 10) / 10 : null;
 const docFS = d => `projects/${PROYECTO}/databases/(default)/documents/abonado_lecturas/${d}`;
+const docU = d => `projects/${PROYECTO}/databases/(default)/documents/abonado_ucrop/${d}`;
+
+/* ---------- control del uCrop: órdenes que salen de la app y aplica el lector del PC ----------
+   La app deja en abonado_ucrop un documento {cab, estado:'pendiente', campo, valor, idx, nombre, modo}.
+   Aquí solo se pasan al lector y se guarda lo que contesta. El lector es quien abre la pantalla del uCrop y, en modo
+   'real', pulsa Guardar; en 'prueba' solo mira. Nada se decide en el servidor. */
+async function ordenesPendientes(env, cab) {
+  let d; try {
+    d = await fs(env, 'POST', ':runQuery', { structuredQuery: { from: [{ collectionId: 'abonado_ucrop' }], limit: 6,
+      where: { compositeFilter: { op: 'AND', filters: [
+        { fieldFilter: { field: { fieldPath: 'cab' }, op: 'EQUAL', value: { stringValue: cab } } },
+        { fieldFilter: { field: { fieldPath: 'estado' }, op: 'EQUAL', value: { stringValue: 'pendiente' } } }] } } } });
+  } catch (e) { return []; }
+  const out = [];
+  for (const row of (Array.isArray(d) ? d : [])) { const doc = row.document; if (!doc) continue; const f = doc.fields || {};
+    out.push({ id: doc.name.split('/').pop(), campo: deFS(f.campo), valor: deFS(f.valor), idx: deFS(f.idx), nombre: deFS(f.nombre), modo: deFS(f.modo) || 'prueba' }); }
+  return out;
+}
+async function guardarHechos(env, hechos) {
+  const writes = [];
+  for (const h of (Array.isArray(hechos) ? hechos : []).slice(0, 12)) {
+    const id = corto(h && h.id, 60).replace(/[^A-Za-z0-9_-]/g, ''); if (!id) continue;
+    const est = ['probado', 'hecho', 'fallo'].includes(h.estado) ? h.estado : 'fallo';
+    const campos = { estado: aFS(est), hechoTs: aFS(new Date().toISOString()),
+      visto: aFS(corto(h.nombre, 60)), vistoValor: aFS(typeof h.valor === 'number' ? h.valor : null), motivo: aFS(corto(h.motivo, 160)) };
+    writes.push({ update: { name: docU(id), fields: campos }, updateMask: { fieldPaths: Object.keys(campos) }, currentDocument: { exists: true } });
+  }
+  if (writes.length) try { await fs(env, 'POST', ':commit', { writes }); } catch (e) {}
+  return writes.length;
+}
 async function registrarClima(env, b) {
   const cab = corto(b.cab, 12).replace(/[^a-z0-9]/gi, '').toLowerCase(); if (!cab) return { error: 'cab' };
   const C = (Array.isArray(b.comp) ? b.comp : []).slice(0, 20).map(c => ({ n: Math.round(+(c && c.n)), ta: numR(c && c.ta, -20, 60), hr: numR(c && c.hr, 0, 100),
@@ -126,6 +156,9 @@ async function registrarClima(env, b) {
 /* ---------- riego del uCrop: lo manda el lector del PC de cada cabezal ---------- */
 async function registrarRiego(env, b) {
   const cab = corto(b.cab, 12).replace(/[^a-z0-9]/gi, '').toLowerCase(); if (!cab) return { error: 'cab' };
+  // el lector puede mandar solo el resultado de las órdenes que ha aplicado (sin lectura de drenajes)
+  const hechos = b.hechos ? await guardarHechos(env, b.hechos) : 0;
+  if (hechos && !(Array.isArray(b.dren) && b.dren.length)) return { ok: true, hechos, ordenes: await ordenesPendientes(env, cab) };
   const N = (x, a, z) => typeof x === 'number' && isFinite(x) && x >= a && x <= z ? Math.round(x * 100) / 100 : null;
   const D = (Array.isArray(b.dren) ? b.dren : []).slice(0, 24).map(d => d && ({ n: Math.round(+d.n), act: N(d.act, 0, 500), dU: N(d.dU, 0, 100), dH: N(d.dH, 0, 100),
     rU: N(d.rU, 0, 1e5), rH: N(d.rH, 0, 1e5), drU: N(d.drU, 0, 1e5), drH: N(d.drH, 0, 1e5), pU: N(d.pU, 0, 1e5), pH: N(d.pH, 0, 1e5),
@@ -140,7 +173,8 @@ async function registrarRiego(env, b) {
   await fs(env, 'POST', ':commit', { writes: [{ update: { name: docFS(`${dev}_${fecha}`), fields: { dev: aFS(dev), nodo: aFS('UCR'), cab: aFS(cab), fecha: aFS(fecha), ts: aFS(iso) } },
     updateMask: { fieldPaths: ['dev', 'nodo', 'cab', 'fecha', 'ts'] }, updateTransforms: [{ fieldPath: 'p', appendMissingElements: { values: [aFS({ t, v })] } }] }] });
   let aviso = null; if (b.empieza && estado && estado.regando) aviso = await avisarRiego(env, cab, estado).catch(e => ({ error: corto(e.message, 80) }));
-  return { ok: true, n: D.length, ...(aviso ? { aviso } : {}) };
+  const ordenes = await ordenesPendientes(env, cab);
+  return { ok: true, n: D.length, ...(hechos ? { hechos } : {}), ...(ordenes.length ? { ordenes } : {}), ...(aviso ? { aviso } : {}) };
 }
 /* Aviso de que empieza un riego: a quien diga la app (abonado_config/finca → avisoRiego {on, para:[correos], cabs:[…]}); sin nada, al
    administrador. El aviso de cada cabezal sustituye al anterior en el móvil (mismo «tag»), así no se amontonan. */

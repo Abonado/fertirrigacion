@@ -182,6 +182,12 @@ service cloud.firestore {
       allow create, update: if autorizado() && request.resource.data.email == request.auth.token.email;
     }
 
+    // Control del uCrop: órdenes que la app manda al lector del PC (cambiar radiación, drenaje ideal, CE). Solo gestores.
+    // El lector las aplica y guarda el resultado con la cuenta de servidor del puente (no entra por estas reglas).
+    match /abonado_ucrop/{doc} {
+      allow read, create, update, delete: if esGestor();
+    }
+
     match /{coleccion}/{doc} {
       allow read, write: if coleccion.matches('abonado_.*')
         && coleccion != 'abonado_acceso'
@@ -200,6 +206,7 @@ service cloud.firestore {
         && coleccion != 'abonado_posiciones'
         && coleccion != 'abonado_ordenes'
         && coleccion != 'abonado_sesiones'
+        && coleccion != 'abonado_ucrop'
         && veRiego();
     }
   }

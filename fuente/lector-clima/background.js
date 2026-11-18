@@ -127,8 +127,8 @@ async function miPestana(P, i, crear) {
   tabs[i] = t.id; await chrome.storage.local.set({ tabs }); return null;   // se lee en la siguiente vuelta, cuando haya cargado
 }
 
-async function mandar(c, cab, r0) {
-  const riego = r0.tipo === 'riego', cuerpo = riego ? { cab, dren: r0.dren, ext: r0.ext, estado: r0.estado || null, empieza: !!r0.empieza } : { cab, comp: r0.comp };
+async function mandar(c, cab, r0, extra) {
+  const riego = r0.tipo === 'riego', cuerpo = riego ? { cab, dren: r0.dren, ext: r0.ext, estado: r0.estado || null, empieza: !!r0.empieza, ...(extra || {}) } : { cab, comp: r0.comp };
   const r = await fetch(c.puente.replace(/\/+$/, '') + (riego ? '/riego' : '/clima'), { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.token }, body: JSON.stringify(cuerpo) });
   const j = await r.json().catch(() => ({}));
   if (r.status === 401) throw new Error('la clave (PUENTE_TOKEN) no es la buena');
@@ -179,9 +179,56 @@ async function leerUna(c, i, e, toca = true) {
   let desde = r.firma === e.firma ? (e.desde || Date.now()) : Date.now();
   if (Date.now() - desde > 45 * 60000) { await chrome.tabs.reload(tab.id); desde = Date.now(); }
   try {
-    await mandar(c, P.cab, r); const msg = `Enviado: ${resumen(r)}` + (r.empieza ? ` · empieza ${r.estado.prog || 'un riego'}` : '');
+    const j = await mandar(c, P.cab, r);
+    if (r.tipo === 'riego' && j && Array.isArray(j.ordenes) && j.ordenes.length) await ordenesUcrop(c, P, j.ordenes).catch(() => {});
+    const msg = `Enviado: ${resumen(r)}` + (r.empieza ? ` · empieza ${r.estado.prog || 'un riego'}` : '');
     return { ok: true, ...r, msg, est: { ult: Date.now(), fallos: 0, firma: r.firma, desde, tipo: r.tipo, estado: r.estado || null, ultimo: r.tipo === 'riego' ? null : r.comp, ultimoR: r.tipo === 'riego' ? r : null, msg } };
   } catch (err) { const msg = 'Leído pero no enviado: ' + err.message; return { ok: false, ...r, msg, est: { ...e, firma: r.firma, desde, msg } }; }
+}
+
+/* ---------- Control del uCrop (órdenes que llegan de la app) ----------
+   PRIMERA VERSIÓN: solo PROBAR. Abre la pantalla del sector (drenaje o programa), comprueba que el nombre coincide y lee el valor
+   que hay ahora. NO escribe nada y NO pulsa Guardar. Sirve para ver que la app apunta al sitio correcto antes de dejarle cambiar. */
+const UC_CAMPO = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC' };
+
+// se ejecuta DENTRO de la página del uCrop ya cargada; solo mira
+async function ucropMira(campo, nombreEsperado) {
+  const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC' };
+  const fc = forms[campo]; if (!fc) return { ok: false, motivo: 'campo desconocido' };
+  const dormir = ms => new Promise(r => setTimeout(r, ms));
+  let inp = null;
+  for (let i = 0; i < 40 && !inp; i++) { inp = document.querySelector(`input[formcontrolname="${fc}"]`); if (!inp) await dormir(250); }
+  if (!inp) return { ok: false, motivo: 'no encuentro el campo en la pantalla (¿cargó bien?)' };
+  const txt = (document.body.innerText || '').replace(/\s+/g, ' ');
+  const coincide = !nombreEsperado || txt.includes(nombreEsperado);
+  const valor = inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
+  return { ok: true, coincide, valor: isFinite(valor) ? valor : null, nombre: nombreEsperado || '' };
+}
+
+async function tabTrabajo() {
+  const { uTab } = await chrome.storage.local.get('uTab');
+  if (uTab != null) { try { const t = await chrome.tabs.get(uTab); if (t) return t.id; } catch (e) {} }
+  const t = await chrome.tabs.create({ url: 'about:blank', active: false, pinned: false });
+  await chrome.storage.local.set({ uTab: t.id }); return t.id;
+}
+const esperarCarga = tabId => new Promise(res => { let fin = false; const acabar = () => { if (fin) return; fin = true; chrome.tabs.onUpdated.removeListener(h); res(); };
+  const h = (id, info) => { if (id === tabId && info.status === 'complete') acabar(); };
+  chrome.tabs.onUpdated.addListener(h); setTimeout(acabar, 15000); });
+
+async function ordenesUcrop(c, P, ordenes) {
+  const m = /\/farming\/([^/]+)\//.exec(P.url || ''); if (!m) return;   // la página de riego da el nº de serie del equipo
+  const base = `https://app.ucrop.net/farming/${m[1]}/irrigation`, tabId = await tabTrabajo(), hechos = [];
+  for (const o of ordenes) {
+    const prog = o.campo === 'ce', idx = (o.idx || {}), url = prog ? `${base}/program/${idx.prog}` : `${base}/drainages_v3/${idx.dren}`;
+    try {
+      await chrome.tabs.update(tabId, { url, active: false }); await esperarCarga(tabId); await new Promise(r => setTimeout(r, 1500));
+      let res; try { [{ result: res }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, o.nombre || ''] }); } catch (e) { res = { ok: false, motivo: 'no puedo leer la pantalla: ' + e.message }; }
+      if (!res || !res.ok) hechos.push({ id: o.id, estado: 'fallo', motivo: (res && res.motivo) || 'no se pudo' });
+      else if (!res.coincide) hechos.push({ id: o.id, estado: 'fallo', nombre: res.nombre, valor: res.valor, motivo: `la pantalla abierta no es ${o.nombre || 'la esperada'}: no toco nada` });
+      else hechos.push({ id: o.id, estado: 'probado', nombre: o.nombre || '', valor: res.valor, motivo: `prueba correcta: ahora pone ${res.valor}` });
+    } catch (e) { hechos.push({ id: o.id, estado: 'fallo', motivo: 'error: ' + (e.message || e) }); }
+  }
+  if (hechos.length) try { await fetch(c.puente.replace(/\/+$/, '') + '/riego', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.token }, body: JSON.stringify({ cab: P.cab, hechos }) }); } catch (e) {}
 }
 
 /* El panel del lector: probar en la pestaña de delante, guardar la página y mandar ya */

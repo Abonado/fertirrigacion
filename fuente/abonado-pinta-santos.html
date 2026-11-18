@@ -380,6 +380,13 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .acch{display:flex;flex-direction:column;gap:1px;margin-bottom:6px}.acch b{font-size:15px}
 .accd{display:flex;gap:10px;align-items:flex-start;padding:6px 8px;margin:0 0 5px;border-radius:10px;background:var(--bg2,#f3f5f2)}
 .accd.yo{outline:2px solid var(--ok,#2f7d4f)}.accd b{font-size:13px}.accd small{display:block;color:var(--muted);font-size:12px;text-transform:none;margin-top:2px}.acci{font-size:18px;line-height:1.2}
+.ucrow{border-top:1px solid var(--line,#dde3dc);padding:8px 0}.ucrow:first-of-type{border-top:0}
+.ucrow .row{margin:5px 0 0}.ucres{margin-top:5px;font-size:12.5px}
+.ucmap{display:grid;gap:8px;margin:8px 0}
+.ucmrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ucmrow>b{min-width:92px}
+.ucmrow label{display:flex;flex-direction:column;font-size:11px;color:var(--muted);gap:2px}
+.ucmrow input{width:120px;border:1px solid var(--line,#dde3dc);border-radius:8px;padding:5px 7px;font:inherit}
+.ucmrow input[type=number]{width:78px}
 .dissvg{display:block;width:100%;height:auto;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}.diswrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#f4f1e8;max-height:78vh;margin-top:8px}.disin{min-width:100%}.distool{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0;align-items:center}.dissel{font:inherit;font-size:13px;padding:5px 6px;border:1px solid var(--line);border-radius:8px;background:#fff;color:inherit}.disfrm{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin:8px 0}.disol{margin:6px 0 8px;padding-left:18px;font-size:14px;text-transform:none}.disol li{margin:0 0 5px}.dispan h4{margin:0 0 6px}.dispill{display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#2f7d4f;color:#fff;vertical-align:middle;letter-spacing:.5px}#dis3d .vvn>polygon:first-child{fill-opacity:.22}#dis3d .vvr{fill-opacity:.38}#dis3d .vvw{fill-opacity:.28}.dis3w{margin-top:8px}.dis3w svg{width:100%;height:auto;display:block}.prnada{padding:28px 12px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}.prmini{display:block;width:100%;padding:0;margin:10px 0;border:1px solid var(--line);border-radius:10px;background:#f6f4ee;overflow:hidden;cursor:pointer;text-align:center}.prmini img{display:block;width:100%;max-height:340px;object-fit:contain}.prmini span{display:block;padding:7px;font-size:13px;color:var(--muted);font-weight:600;text-transform:none}.prh4{margin:12px 0 4px;font-size:14px}.prpend ul{margin:0;padding-left:20px}.prpend li{margin:3px 0}
 @media print{.prv{max-height:none!important;overflow:visible!important;border:0!important;background:none!important}.prin{width:100%!important}.prcard .prsvg{width:auto!important;max-width:100%;max-height:19.5cm;margin:0 auto}.prcard.hz .prsvg{max-height:12cm}.prcard{gap:6px}}
 @media print{.stq{font-size:16pt}.stg{font-size:12pt}.stt td,.gct td{padding:5px 6px}.stt th,.gct th{padding:0 6px 5px}}
@@ -1421,6 +1428,52 @@ function ajrVivoHTML(c){const u=ucrDia(c.id,hoy()),fresco=u&&u.v&&u.v.estado&&(D
   const a=ajrSeg(E.t),b=ajrSeg(E.tt),pc=a!=null&&b?Math.max(0,Math.min(100,a/b*100)):null;
   return `<div class="ajv on" role="status"><span class="ajv-dot"></span><div class="ajv-t"><span class="ajv-k">Regando ahora</span><b>${esc(ajrProg(E.prog))}</b><small>${[E.valv?(/^\d+$/.test(String(E.valv).trim())?'Válvula ':'')+esc(E.valv):'',E.t?`${esc(ajrMin(E.t))}${E.tt?' de '+esc(ajrMin(E.tt)):''}`:'',E.act!=null?fmt(E.act,1)+' m³/h':'',E.espera?'en espera: '+esc(E.espera):''].filter(Boolean).join(' · ')}</small>
     ${pc!=null?`<div class="ajv-bar" aria-label="Lleva el ${fmt(pc,0)} % del riego"><i style="width:${pc.toFixed(1)}%"></i></div>`:''}</div><span class="ajv-h">${hh}</span></div>`}
+/* ---------- Control del uCrop desde la app · PRIMERA VERSIÓN: solo PROBAR la conexión ----------
+   La app deja la orden en abonado_ucrop; el lector del PC abre la pantalla del sector, comprueba que el nombre coincide y lee el
+   valor que hay. No cambia nada ni pulsa Guardar: el cambio «de verdad» se activará cuando las pruebas salgan bien. */
+const UC_CAMPOS=[['control','Radiación de control','dren'],['min','Radiación mínima','dren'],['dren','Drenaje ideal','dren'],['ce','CE ideal','prog']];
+const UC_LIM={control:[25,500],min:[25,350],dren:[15,40],ce:[0,5]};
+const UC_DEF={fra:{on:true,sec:{fra_s1:{prog:0,dren:0,nombre:'SE01FRANCO'},fra_s2:{prog:1,dren:1,nombre:'SEO2FRANCO'},fra_s3:{prog:2,dren:2,nombre:'SEO3ALTO'},fra_s4:{prog:3,dren:3,nombre:'SE04ENCAÑE'}}}};
+function ucCfg(cab){const c=((st.cfg.ucrop||{})[cab])||UC_DEF[cab]||null;if(!c)return null;return {on:!!c.on,modo:'prueba',lim:{...UC_LIM,...(c.lim||{})},sec:c.sec||{}};}
+st.ucOrd=st.ucOrd??null;let ucCargando=false;
+async function ucCargar(){if(ucCargando||!window.NUBE||Store.mode!=='fb')return;ucCargando=true;try{st.ucOrd=await Store.listCol('abonado_ucrop',0)}catch(e){st.ucOrd=st.ucOrd||[]}ucCargando=false;if(st.tab==='ajriego'||st.tab==='ajustes')renderMain();}
+function ucOrdDe(cab,secId,campo){return (st.ucOrd||[]).filter(o=>o.cab===cab&&o.sector===secId&&o.campo===campo).sort((a,b)=>(b.ts||'').localeCompare(a.ts||''))[0]||null;}
+async function ucProbar(cab,secId,campo){const U=ucCfg(cab);if(!U)return;const m=U.sec[secId];if(!m){toast('Falta emparejar este sector con el uCrop (Ajustes)');return;}
+  const prog=campo==='ce',nombre=prog?(m.nombre||''):('Drenaje '+((m.dren??0)+1));
+  const id=`${cab}_${secId}_${campo}_${Date.now().toString(36)}`;
+  const doc={cab,sector:secId,sectorNombre:(cabById(cab).sectores.find(s=>s.id===secId)||{}).nombre||secId,campo,valor:null,idx:{prog:m.prog??0,dren:m.dren??0},nombre,modo:'prueba',estado:'pendiente',por:yoNombre(),porEmail:miEmail(),ts:new Date().toISOString()};
+  try{await Store.setCol('abonado_ucrop',id,doc);(st.ucOrd=st.ucOrd||[]).unshift({...doc,id});toast('Prueba enviada: el PC la hará en el próximo minuto');renderMain();}catch(e){toast(errMsg(e))}}
+function ucEstadoTxt(o){if(!o)return '';const h=o.hechoTs?' · '+accHace(o.hechoTs):'';
+  if(o.estado==='pendiente')return `<span class="pill warn">esperando al PC…</span>`;
+  if(o.estado==='probado')return `<span class="pill ok">prueba correcta${h}</span> <small>ve ${o.vistoValor??'—'}</small>`;
+  return `<span class="pill bad">no se pudo${h}</span> <small>${esc(o.motivo||'')}</small>`;}
+function ucPruebaCard(c){const U=ucCfg(c.id);if(!U||!U.on||!esGestor())return '';if(st.ucOrd===null)ucCargar();
+  const filas=c.sectores.map(s=>{const m=U.sec[s.id];if(!m)return `<div class="ucrow"><div><b>${esc(s.nombre)}</b> <small class="sub">sin emparejar · ponlo en Ajustes</small></div></div>`;
+    const od=ucOrdDe(c.id,s.id,'control'),op=ucOrdDe(c.id,s.id,'ce');
+    return `<div class="ucrow"><div><b>${esc(s.nombre)}</b> <small class="sub">${esc(m.nombre||'')} · Drenaje ${(m.dren??0)+1}</small></div>
+      <div class="row"><button class="btn sm" type="button" data-uc="probar" data-cab="${c.id}" data-sec="${s.id}" data-campo="control">Probar drenaje</button><button class="btn sm" type="button" data-uc="probar" data-cab="${c.id}" data-sec="${s.id}" data-campo="ce">Probar programa</button></div>
+      ${od||op?`<div class="ucres">${od?'Drenaje: '+ucEstadoTxt(od):''}${od&&op?'<br>':''}${op?'Programa: '+ucEstadoTxt(op):''}</div>`:''}</div>`;}).join('');
+  return `<section class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><h3>Probar el uCrop</h3><div class="sub">Comprueba que la app abre la pantalla correcta de cada sector. No cambia nada: solo mira y dice qué valor ve. El PC lo hace en el próximo minuto.</div></div><button class="btn" type="button" data-uc="recargar">Actualizar</button></div>${filas||'<div class="note">Este cabezal no tiene sectores.</div>'}<div class="note">Cuando todas las pruebas salgan correctas, se activará el cambio de verdad.</div></section>`;}
+function vUcropCfg(){if(!esGestor())return '';const cab=st.cab,c=cabById(cab);if(!c)return '';const U=ucCfg(cab)||{on:false,sec:{},lim:UC_LIM};
+  let h=`<section class="card"><div><h3>Control del uCrop · ${esc(c.nombre)}</h3><div class="sub">Empareja cada sector con su programa y su drenaje del uCrop y pon los límites de seguridad. De momento solo pruebas.</div></div>`;
+  h+=`<label class="sw"><input type="checkbox" data-ucc="on" data-cab="${cab}" ${U.on?'checked':''}> Usar el control del uCrop en ${esc(c.nombre)}</label>`;
+  h+=`<div class="ucmap">`+c.sectores.map(s=>{const m=(U.sec[s.id])||{};return `<div class="ucmrow"><b>${esc(s.nombre)}</b>
+     <label>Nombre en el uCrop<input type="text" data-ucm="nombre" data-cab="${cab}" data-sec="${s.id}" value="${esc(m.nombre||'')}" placeholder="SE01FRANCO"></label>
+     <label>Programa nº<input type="number" inputmode="numeric" data-ucm="prog" data-cab="${cab}" data-sec="${s.id}" value="${m.prog??''}"></label>
+     <label>Drenaje nº<input type="number" inputmode="numeric" data-ucm="dren" data-cab="${cab}" data-sec="${s.id}" value="${m.dren??''}"></label></div>`;}).join('')+`</div>`;
+  h+=`<div class="sub">El programa y el drenaje se cuentan desde 0 (el primero es el 0). El lector comprueba el nombre antes de tocar nada.</div>`;
+  h+=`<h4 class="ajr-h4">Límites de seguridad</h4><div class="ucmap">`+UC_CAMPOS.map(a=>{const k=a[0],L=(U.lim[k]||UC_LIM[k]);return `<div class="ucmrow"><b>${esc(a[1])}</b><label>mínimo<input type="number" data-ucl="0" data-k="${k}" data-cab="${cab}" value="${L[0]}"></label><label>máximo<input type="number" data-ucl="1" data-k="${k}" data-cab="${cab}" value="${L[1]}"></label></div>`;}).join('')+`</div>`;
+  h+=`<div class="note">El cambio de verdad (pulsar Guardar en el uCrop) está desactivado hasta que las pruebas salgan bien.</div></section>`;
+  return h;}
+async function ucGuardarCfg(cab,fn){for(const cf of [st.cfg,st.savedCfg]){cf.ucrop=cf.ucrop||{};const base=cf.ucrop[cab]||clone(UC_DEF[cab]||{on:false,sec:{},lim:{}});cf.ucrop[cab]=base;fn(base);}
+  try{await Store.setConfig(clone(st.savedCfg))}catch(e){toast(errMsg(e))}}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-uc]');if(!b)return;
+  if(b.dataset.uc==='probar')ucProbar(b.dataset.cab,b.dataset.sec,b.dataset.campo);
+  else if(b.dataset.uc==='recargar'){st.ucOrd=null;renderMain();ucCargar();}});
+document.addEventListener('change',e=>{const t=e.target;if(!t.dataset)return;const cab=t.dataset.cab;
+  if(t.dataset.ucc==='on')ucGuardarCfg(cab,b=>{b.on=t.checked});
+  else if(t.dataset.ucm){const sec=t.dataset.sec,k=t.dataset.ucm,v=k==='nombre'?t.value.trim():(t.value===''?null:Math.round(+t.value));ucGuardarCfg(cab,b=>{b.sec=b.sec||{};b.sec[sec]=b.sec[sec]||{};b.sec[sec][k]=v});}
+  else if(t.dataset.ucl!=null){const k=t.dataset.k,i=+t.dataset.ucl,v=t.value===''?null:+t.value;ucGuardarCfg(cab,b=>{b.lim=b.lim||{};b.lim[k]=(b.lim[k]||[...UC_LIM[k]]).slice();b.lim[k][i]=v});}});
 function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();lecCargar();const c=cabById(st.cab);if(!c)return '';const k=ajrKey(st.cab),Wc=st.ajrW[k];if(!Wc||(!Wc.dias&&!Wc.fallo&&!Wc.cargando))ajrCargar(st.cab);
   const C=ajrCfg(st.cab),MOD=ajrModelo(st.cab),RS=c.sectores.map(s=>ajrCalc(st.cab,s,MOD)),g=esGestor(),dis=g?'':'disabled',fdia=f=>fFecha(f).replace(/^\w/,x=>x.toUpperCase()),W=(Wc&&Wc.dias)||{};
   const wh=W[hoy()],ok=RS.filter(R=>!R.poco&&R.hoy),vuelta=RS.reduce((a,R)=>a+(R.pulso||0),0),n0=v=>fmt(v,v%1?1:0);
@@ -1445,6 +1498,7 @@ function vAjRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();le
   const uH=ucrDia(st.cab,hoy()),E=uH&&uH.v.estado,hace=uH?Math.round((Date.now()-uH.t)/60000):null;
   const ut=(ucrDia(st.cab,hoy())||{}).t;if(ut)h+=`<div class="note">Datos del uCrop: última lectura a las ${new Date(ut).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}.</div>`;
   h+=`</section>`;
+  h+=ucPruebaCard(c);
   // ---- 2. Un recuadro por sector
   for(const R of RS){const s=R.s,P=R.hoy,Cs=R.C,sc=((C.sec||{})[s.id])||{},pr=R.prueba;
     const acierto=pr&&pr.err.length>=3?`<span class="pill ${pr.mae<=4?'ok':pr.mae<=8?'warn':'bad'}" title="Error medio al predecir el drenaje de los días pasados">acierta ±${fmt(pr.mae,0)} puntos</span>`:'';
@@ -2357,6 +2411,7 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
   if(window.NUBE&&NUBE.user)h+=NUBE.cardHTML()+vAccesos();
   h+=(esAdminU()?logoHTML():'')+carpetasHTML()+(esAdminU()?copiaHTML():'')+versionHTML();
   h+=vlvCfgHTML();
+  h+=vUcropCfg();
   h+=`<section class="card"><div><h3>Datos</h3><div class="sub">Recetas y ajustes iniciales</div></div>
     <div class="row">${st.confirmReset?`<span class="note">¿Restaurar recetas y ajustes iniciales?</span><button class="btn danger" data-act="reset-yes">Sí, restaurar</button><button class="btn" data-act="reset-no">Cancelar</button>`:`<button class="btn" data-act="reset">Restaurar recetas y ajustes iniciales</button>`}</div></section>`;
   return h}
@@ -6007,7 +6062,7 @@ const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
 /* Ajustes por apartados: cada tarjeta va a su grupo según su título; se abren y cierran tocando la cabecera */
 const AJ_GR=[['cab','Depósitos y bandejas',/^(Depósitos|Bandejas)/],['avisos','Avisos y alertas',/^(Aviso de llenado|Avisos de drenaje|Avisos en este móvil)/],['cultivo','Cultivo y partes',/^(Cultivo|Carpetas)/],
-  ['usuarios','Usuarios y acceso',/^Usuarios/],['conex','Conexiones y servidores',/^(IA de la app|Avisos con la app cerrada|Satélite|Sensores|Válvulas del cabezal)/],['empresa','Empresa, copias y versión',/[\s\S]?/]];
+  ['usuarios','Usuarios y acceso',/^Usuarios/],['conex','Conexiones y servidores',/^(IA de la app|Avisos con la app cerrada|Satélite|Sensores|Válvulas del cabezal|Control del uCrop)/],['empresa','Empresa, copias y versión',/[\s\S]?/]];
 st.ajAb=new Set((()=>{try{return JSON.parse(localStorage.getItem('abono.ajAb')||'[]')}catch(e){return []}})());
 function ajAgrupar(root){const cards=[...root.children].filter(e=>e.matches('section.card'));if(cards.length<4)return;const G={};
   for(const c of cards){const t=((c.querySelector('h3')||{}).textContent||'').trim(),g=AJ_GR.find(x=>x[2].test(t));(G[g[0]]=G[g[0]]||[]).push([c,t])}

@@ -5,7 +5,7 @@ const llamadas = [], escrito = []; let cfg = null;
 const ctx = vm.createContext({ console, Date, JSON, Math, URL, Response: class { constructor(b, o) { this.b = b; this.o = o; } }, TextEncoder, TextDecoder, crypto: globalThis.crypto, atob, btoa,
   fetch: async (url, o) => { llamadas.push({ url, body: JSON.parse(o.body) }); return { ok: true, status: 200, json: async () => ({ ok: true }) }; } });
 vm.runInContext(src, ctx);
-ctx.fs = async (env, m, ruta, cuerpo) => { if (m === 'GET' && ruta.startsWith('/abonado_config/finca')) { if (!cfg) throw new Error('404'); return { fields: { avisoRiego: cfg } }; } escrito.push({ m, ruta, cuerpo }); return {}; };
+ctx.fs = async (env, m, ruta, cuerpo) => { if (m === 'GET' && ruta.startsWith('/abonado_config/finca')) { if (!cfg) throw new Error('404'); return { fields: { avisoRiego: cfg } }; } if (ruta === ':runQuery') return [{ document: { name: 'x/abonado_ucrop/o1', fields: { campo: { stringValue: 'control' }, nombre: { stringValue: 'Drenaje 1' }, idx: { mapValue: { fields: { dren: { integerValue: '0' } } } } } } }, {}]; escrito.push({ m, ruta, cuerpo }); return {}; };
 const ok = (c, m) => { if (!c) { console.log('FALLA:', m); process.exit(1); } };
 const env = { AVISOS_URL: 'https://avisos.x', INTERNO_TOKEN: 'I', ADMIN_EMAIL: 'admin@x.es' };
 const base = { cab: 'fra', dren: [{ n: 1, act: 3, dH: 9 }], ext: { racc: 563 }, estado: { prog: 'SE04ENCAÑE', fase: 'Regando', valv: 'Válvula 4', act: 3, t: '00:00:20', tt: '00:08:00', regando: true } };
@@ -22,4 +22,5 @@ llamadas.length = 0; r = await ctx.registrarRiego(env, { ...base, empieza: true,
 cfg = { mapValue: { fields: { on: { booleanValue: false } } } }; llamadas.length = 0; r = await ctx.registrarRiego(env, { ...base, empieza: true }); ok(llamadas.length === 0 && r.aviso.motivo === 'apagado', 'apagado');
 // 4) si el lector dice «empieza» pero no está regando, no avisa
 cfg = null; llamadas.length = 0; r = await ctx.registrarRiego(env, { ...base, empieza: true, estado: { ...base.estado, regando: false } }); ok(llamadas.length === 0, 'no regando');
+r = await ctx.registrarRiego(env, base); ok(r.ordenes && r.ordenes.length === 1 && r.ordenes[0].id === 'o1' && r.ordenes[0].campo === 'control' && r.ordenes[0].modo === 'prueba', 'devuelve las órdenes pendientes: ' + JSON.stringify(r));
 console.log('PUENTE OK');
