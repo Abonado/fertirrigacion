@@ -185,6 +185,7 @@ async function leerUna(c, i, e, toca = true) {
       if (!j || !j.ord) ord = ' · el servidor no contesta con órdenes (¿falta actualizar el worker?)';
       else if (j.ord.err) ord = ' · órdenes: el servidor no pudo mirarlas (' + j.ord.err + ')';
       else ord = ` · órdenes pendientes: ${j.ord.n}`;
+      if (j && j.ord && j.ord.n > 0 && !(Array.isArray(j.ordenes) && j.ordenes.length)) ord += ' · (el servidor cuenta ' + j.ord.n + ' pero no las manda; claves: ' + Object.keys(j).join(',') + ')';
       if (j && Array.isArray(j.ordenes) && j.ordenes.length) { try { ord += ' · ' + await ordenesUcrop(c, P, j.ordenes); } catch (err) { ord += ' · error al hacerlas: ' + (err.message || err); } }
     }
     const msg = `Enviado: ${resumen(r)}` + (r.empieza ? ` · empieza ${r.estado.prog || 'un riego'}` : '') + ord;
