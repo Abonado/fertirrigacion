@@ -130,6 +130,13 @@ async function ordenesPendientes(env, cab) {
       ...(deFS(f.modo) === 'cambio' ? { valorAntes: deFS(f.valorAntes), confirmado: deFS(f.confirmado) === true, ts: deFS(f.ts) } : {}) }); }
   return out;
 }
+/* Lo que lee el lector de la pantalla de un programa o drenaje: solo claves simples y valores cortos, como mucho 40 */
+function limpiarSnap(x) {
+  if (!x || typeof x !== 'object' || Array.isArray(x)) return null;
+  const out = {}; for (const [k, v] of Object.entries(x).slice(0, 40)) { if (!/^\w{1,30}$/.test(k)) continue;
+    if (typeof v === 'number' && isFinite(v)) out[k] = v; else if (typeof v === 'boolean') out[k] = v ? 1 : 0; else if (typeof v === 'string') out[k] = v.slice(0, 12); }
+  return Object.keys(out).length ? out : null;
+}
 async function guardarHechos(env, hechos) {
   const writes = [];
   for (const h of (Array.isArray(hechos) ? hechos : []).slice(0, 12)) {
@@ -137,6 +144,7 @@ async function guardarHechos(env, hechos) {
     const est = ['probado', 'hecho', 'fallo'].includes(h.estado) ? h.estado : 'fallo';
     const campos = { estado: aFS(est), hechoTs: aFS(new Date().toISOString()),
       visto: aFS(corto(h.nombre, 60)), vistoValor: aFS(typeof h.valor === 'number' ? h.valor : null), motivo: aFS(corto(h.motivo, 160)) };
+    const snap = limpiarSnap(h.snap); if (snap) campos.snap = aFS(snap);   // lo relevante de la pantalla del uCrop (horario, días, riegos, CE/pH…)
     writes.push({ update: { name: docU(id), fields: campos }, updateMask: { fieldPaths: Object.keys(campos) }, currentDocument: { exists: true } });
   }
   if (writes.length) try { await fs(env, 'POST', ':commit', { writes }); } catch (e) {}

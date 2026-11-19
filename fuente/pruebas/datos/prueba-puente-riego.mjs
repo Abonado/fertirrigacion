@@ -23,4 +23,10 @@ cfg = { mapValue: { fields: { on: { booleanValue: false } } } }; llamadas.length
 // 4) si el lector dice «empieza» pero no está regando, no avisa
 cfg = null; llamadas.length = 0; r = await ctx.registrarRiego(env, { ...base, empieza: true, estado: { ...base.estado, regando: false } }); ok(llamadas.length === 0, 'no regando');
 r = await ctx.registrarRiego(env, base); ok(r.ordenes && r.ordenes.length === 2 && r.ordenes[0].id === 'o1' && !('confirmado' in r.ordenes[0]) && r.ordenes[1].modo === 'cambio' && r.ordenes[1].confirmado === true && r.ordenes[1].valorAntes === 1.87 && r.ordenes[1].ts === '2026-11-19T10:00:00.000Z' && r.ordenes[0].campo === 'control' && r.ordenes[0].modo === 'prueba', 'devuelve las órdenes pendientes: ' + JSON.stringify(r));
+escrito.length = 0; await ctx.registrarRiego(env, { ...base, hechos: [{ id: 'o1', estado: 'probado', nombre: 'SE01FRANCO', valor: 1, motivo: 'ok', snap: { schedule: 1, week_days: 'WEEK', maxActivations: 12, idealEC: 1.87, 'clave rara!': 5, mala: [1], larga: 'x'.repeat(50), ok: true } }] });
+{ const w = escrito.flatMap(e => (e.cuerpo && e.cuerpo.writes) || []).find(w => w.update && /abonado_ucrop\/o1$/.test(w.update.name)); ok(!!w, 'guarda el hecho');
+  const sn = w && w.update.fields.snap && w.update.fields.snap.mapValue.fields; ok(sn && sn.schedule.integerValue === '1' && sn.week_days.stringValue === 'WEEK' && sn.idealEC.doubleValue === 1.87 && sn.ok.integerValue === '1' && sn.larga.stringValue.length === 12 && !('clave rara!' in sn) && !('mala' in sn), 'guarda el snapshot limpio: ' + JSON.stringify(sn));
+  ok(w.updateMask.fieldPaths.includes('snap'), 'snap en la máscara'); }
+escrito.length = 0; await ctx.registrarRiego(env, { ...base, hechos: [{ id: 'o1', estado: 'probado', valor: 1 }] });
+{ const w = escrito.flatMap(e => (e.cuerpo && e.cuerpo.writes) || []).find(w => w.update && /abonado_ucrop\/o1$/.test(w.update.name)); ok(w && !('snap' in w.update.fields), 'sin snapshot no escribe snap'); }
 console.log('PUENTE OK');

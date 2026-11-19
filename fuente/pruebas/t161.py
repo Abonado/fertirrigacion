@@ -49,6 +49,20 @@ async def main():
         r = await mira(pag_ens('UCROP | Drenaje 1', 'controlRadiation', '150'), 'control', 'Drenaje 2', 33)
         assert not r['coincide'] and 'ensayo' not in r, r
         assert await pg.evaluate("document.querySelector('input').value") == '150', 'escribió en la pantalla equivocada'
+        # LECTURA DEL PROGRAMA: el horario (interruptor) y lo relevante de la pantalla; no lee nombres ni abonos
+        def prog(titulo, horario=True):
+            return f"""<!doctype html><title>{titulo}</title><body><input formcontrolname="name" value="X"><input formcontrolname="schedule" type="checkbox" {'checked' if horario else ''}>
+              <input type="radio" formcontrolname="week_days" name="w" value="WEEK" checked><input type="radio" formcontrolname="week_days" name="w" value="DAYS">
+              <input type="number" formcontrolname="idealEC" value="1.87"><input type="number" formcontrolname="maxActivations" value="12"><input type="number" formcontrolname="idealPH" value="5.5">
+              <input type="checkbox" formcontrolname="stopRain" checked><input type="checkbox" formcontrolname="stopFrost"><input type="number" formcontrolname="quantity" value="9"><input formcontrolname="fertilizerType" value="N"></body>"""
+        r = await mira(prog('UCROP | SE01FRANCO'), 'horario', 'SE01FRANCO'); sn = r['snap']
+        assert r['ok'] and r['coincide'] and r['valor'] == 1 and sn['schedule'] == 1 and sn['week_days'] == 'WEEK' and sn['idealEC'] == 1.87 and sn['maxActivations'] == 12 and sn['idealPH'] == 5.5 and sn['stopRain'] == 1 and sn['stopFrost'] == 0, r
+        assert 'quantity' not in sn and 'name' not in sn and 'fertilizerType' not in sn, sn
+        r = await mira(prog('UCROP | SE01FRANCO', horario=False), 'horario', 'SE01FRANCO'); assert r['valor'] == 0 and r['snap']['schedule'] == 0, r
+        r = await mira(prog('UCROP | SE01FRANCO'), 'ce', 'SE01FRANCO'); assert r['valor'] == 1.87 and r['snap']['schedule'] == 1, r
+        r = await mira(prog('UCROP | SEO2FRANCO'), 'horario', 'SE01FRANCO'); assert not r['coincide'] and 'snap' not in r, r
+        # el ensayo no escribe en interruptores
+        r = await mira(prog('UCROP | SE01FRANCO'), 'horario', 'SE01FRANCO', 1); assert 'ensayo' not in r and await pg.evaluate("document.querySelector('[formcontrolname=schedule]').checked") is True, r
         # el ÚNICO clic de todo el lector está dentro de ucropGuarda; ucropMira (lo que mira y ensaya) no pulsa nada
         assert SRC.count('.click(') == 2, 'tiene que haber solo dos clics en el lector: Guardar y aceptar su aviso'
         assert '.click(' not in FN, 'ucropMira pulsa algo'

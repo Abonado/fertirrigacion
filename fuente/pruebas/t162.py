@@ -40,6 +40,27 @@ async def main():
         for bots in ['<button id="ok">Aceptar</button><button id="ok2">Continuar</button>', '<button id="cancel2">Cancelar</button>', '<button id="x">Quizá</button>']:
             r = await guarda(pagina('UCROP | Drenaje 1', 'controlRadiation', '150', aviso=SEGURO % bots), 'control', 'Drenaje 1', 200, 150)
             assert r['estado'] == 'aviso' and await clics() == ['g=200'], (bots, r, await clics())
+        # HORARIO (interruptor): poner y quitar, solo el botón «Guardar programa»
+        def sw(titulo, marcado, boton='Guardar programa', aviso=''):
+            av = f"g.addEventListener('click',()=>setTimeout(()=>document.body.insertAdjacentHTML('beforeend',{aviso!r}),300));" if aviso else ''
+            return f"""<!doctype html><title>{titulo}</title><body><input type="checkbox" formcontrolname="schedule" {'checked' if marcado else ''}>
+              <button id="g" disabled>{boton}</button><button id="cancel">Cancelar</button>
+              <script>(()=>{{window.__clics=[];document.addEventListener('click',e=>{{const b=e.target.closest('button');if(b)window.__clics.push(b.id+'='+(document.querySelector('input').checked?1:0))}});
+              const inp=document.querySelector('input'),g=document.getElementById('g');inp.addEventListener('change',()=>{{g.disabled=false}});{av}}})()</script></body>"""
+        r = await guarda(sw('UCROP | SE01FRANCO', False), 'horario', 'SE01FRANCO', 1, 0)
+        assert r['estado'] == 'pulsado' and r['leido'] == 1 and await clics() == ['g=1'], (r, await clics())
+        r = await guarda(sw('UCROP | SE01FRANCO', True), 'horario', 'SE01FRANCO', 0, 1)
+        assert r['estado'] == 'pulsado' and r['leido'] == 0 and await clics() == ['g=0'], (r, await clics())
+        r = await guarda(sw('UCROP | SE01FRANCO', True, aviso=SEGURO % '<button id="cancel2">Cancelar</button><button id="ok">Aceptar</button>'), 'horario', 'SE01FRANCO', 0, 1)
+        assert r['confirmado'] == 'aceptar' and await clics() == ['g=0', 'ok=0'], (r, await clics())
+        r = await guarda(sw('UCROP | SE01FRANCO', True), 'horario', 'SE01FRANCO', 1, 0)   # el interruptor ya está como se pide
+        assert r['estado'] == 'yaestaba' and await clics() == [], r
+        r = await guarda(sw('UCROP | SE01FRANCO', False), 'horario', 'SE01FRANCO', 1, 1)   # (orden rara: antes = nuevo = 1, pero la pantalla está en 0)
+        assert r['estado'] == 'distinto' and await clics() == [], r
+        r = await guarda(sw('UCROP | SE01FRANCO', False), 'horario', 'SE01FRANCO', 2, 0); assert not r['ok'] and await clics() == [], r
+        r = await guarda(sw('UCROP | SEO2FRANCO', False), 'horario', 'SE01FRANCO', 1, 0); assert not r['coincide'] and await clics() == [] and await pg.evaluate("document.querySelector('input').checked") is False, r
+        r = await guarda(sw('UCROP | SE01FRANCO', False, boton='Guardar drenaje'), 'horario', 'SE01FRANCO', 1, 0)   # botón equivocado
+        assert r['estado'] == 'boton' and await clics() == [] and await pg.evaluate("document.querySelector('input').checked") is False, r
         # el valor de ahora NO es el que se confirmó: no escribe ni pulsa
         r = await guarda(pagina('UCROP | Drenaje 1', 'controlRadiation', '160'), 'control', 'Drenaje 1', 200, 150)
         assert r['estado'] == 'distinto' and r['valor'] == 160 and await clics() == [] and await val() == '160', r

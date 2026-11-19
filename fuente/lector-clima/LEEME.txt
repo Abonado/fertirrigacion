@@ -41,6 +41,10 @@ CONTROL DEL uCROP
    El uCrop pide confirmar el guardado («¿Está seguro? … programas asociados»): el lector acepta ese aviso, y solo ese, si tiene un único
    botón claro de aceptar; con cualquier otro aviso no pulsa nada y lo cuenta en la app.
    Si algo no cuadra no pulsa nada. Máximo 3 cambios por vuelta. Son los únicos dos clics del lector: Guardar y aceptar ese aviso.
+ · HORARIO Y LECTURA COMPLETA (v1.9.0): además de CE ideal y los valores de drenaje, ahora puede PONER o QUITAR el interruptor «Horario» de un
+   programa (mismo procedimiento: confirmación en la app, valor de ahora comprobado, guardar, recargar y verificar). Las horas concretas del
+   horario NO se tocan. En cada lectura manda a la app una «foto» de los datos relevantes de la pantalla (horario, días, nº máx. de riegos,
+   paradas por lluvia/viento/helada, CE y pH ideal, prioridad, demanda, radiaciones, drenaje) para que se vean en la app.
  · Para que funcione, el PC tiene que estar con sesión abierta en el uCrop. Abre una pestaña suya aparte.
  · Las órdenes se recogen en cada lectura (cada «Leer cada» min) o con «Leer y mandar ya» del panel.
  · Si cambias el worker del servidor puente hay que volver a desplegarlo (Cloudflare › puente-sensores › Edit code).

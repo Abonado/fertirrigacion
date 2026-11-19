@@ -397,7 +397,7 @@ details.tv .tbl{margin-top:8px;max-height:300px;overflow:auto}
 .accd{display:flex;gap:10px;align-items:flex-start;padding:6px 8px;margin:0 0 5px;border-radius:10px;background:var(--bg2,#f3f5f2)}
 .accd.yo{outline:2px solid var(--ok,#2f7d4f)}.accd b{font-size:13px}.accd small{display:block;color:var(--muted);font-size:12px;text-transform:none;margin-top:2px}.acci{font-size:18px;line-height:1.2}
 .qtrow{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid var(--line,#dde3dc);padding:8px 0}.qtrow small{display:block}.qtacc{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.qtacc input[type=time]{width:112px}.qtqr{display:flex;gap:12px;align-items:flex-start;border-top:1px solid var(--line,#dde3dc);padding:10px 0}.qtqr small{word-break:break-all}.qtqrsvg{flex:0 0 112px;width:112px;background:#fff;border-radius:8px;padding:4px}.qtqrsvg svg{width:100%;height:auto;display:block}.ucens{margin-top:6px;gap:6px;flex-wrap:wrap;align-items:center}.ucens select{flex:1 1 150px;min-width:0}.ucens input{flex:0 1 90px;min-width:0}.ucrow{border-top:1px solid var(--line,#dde3dc);padding:8px 0}.ucrow:first-of-type{border-top:0}
-.ucconf{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}.ucconf>div{background:var(--surface);color:var(--ink,inherit);border:1px solid var(--line);border-radius:14px;padding:18px;max-width:420px;width:100%;display:grid;gap:12px}.ucconf .ucnum{display:flex;justify-content:space-between;align-items:center;font-size:22px;gap:10px}.ucconf .ucnum b{font-size:28px}.ucrow .row{margin:5px 0 0}.ucres{margin-top:5px;font-size:12.5px}
+.ucconf{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}.ucconf>div{background:var(--surface);color:var(--ink,inherit);border:1px solid var(--line);border-radius:14px;padding:18px;max-width:420px;width:100%;display:grid;gap:12px}.ucconf .ucnum{display:flex;justify-content:space-between;align-items:center;font-size:22px;gap:10px}.ucconf .ucnum b{font-size:28px}.ucsnr{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:4px}.ucsn small{color:var(--muted,#6b7a72)}.ucsnap details{margin-top:4px}.ucrow .row{margin:5px 0 0}.ucres{margin-top:5px;font-size:12.5px}
 .ucmap{display:grid;gap:8px;margin:8px 0}
 .ucmrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.ucmrow>b{min-width:92px}
 .ucmrow label{display:flex;flex-direction:column;font-size:11px;color:var(--muted);gap:2px}
@@ -1451,15 +1451,16 @@ function ajrVivoHTML(c){const u=ucrDia(c.id,hoy()),fresco=u&&u.v&&u.v.estado&&(D
 /* ---------- Control del uCrop desde la app · PRIMERA VERSIÓN: solo PROBAR la conexión ----------
    La app deja la orden en abonado_ucrop; el lector del PC abre la pantalla del sector, comprueba que el nombre coincide y lee el
    valor que hay. No cambia nada ni pulsa Guardar: el cambio «de verdad» se activará cuando las pruebas salgan bien. */
-const UC_CAMPOS=[['control','Radiación de control','dren'],['min','Radiación mínima','dren'],['dren','Drenaje ideal','dren'],['ce','CE ideal','prog']];
-const UC_LIM={control:[25,500],min:[25,350],dren:[15,40],ce:[0,5]};
+const UC_CAMPOS=[['control','Radiación de control','dren'],['min','Radiación mínima','dren'],['dren','Drenaje ideal','dren'],['ce','CE ideal','prog'],['horario','Horario del programa','prog','sw']];
+const UC_PROG=['ce','horario'];const ucFmt=(campo,v)=>v==null?'—':campo==='horario'?(v===1?'PUESTO':v===0?'QUITADO':String(v)):String(v);
+const UC_LIM={control:[25,500],min:[25,350],dren:[15,40],ce:[0,5],horario:[0,1]};
 const UC_DEF={fra:{on:true,sec:{fra_s1:{prog:0,dren:0,nombre:'SE01FRANCO'},fra_s2:{prog:1,dren:1,nombre:'SEO2FRANCO'},fra_s3:{prog:2,dren:2,nombre:'SEO3ALTO'},fra_s4:{prog:3,dren:3,nombre:'SE04ENCAÑE'}}}};
 function ucCfg(cab){const c=((st.cfg.ucrop||{})[cab])||UC_DEF[cab]||null;if(!c)return null;return {on:!!c.on,cambio:!!c.cambio,modo:'prueba',lim:{...UC_LIM,...(c.lim||{})},sec:c.sec||{}};}
 st.ucOrd=st.ucOrd??null;let ucCargando=false;
 async function ucCargar(){if(ucCargando||!window.NUBE||Store.mode!=='fb')return;ucCargando=true;try{st.ucOrd=await Store.listCol('ucrop',0)}catch(e){st.ucOrd=st.ucOrd||[]}ucCargando=false;if(st.tab==='ajriego'||st.tab==='ajustes')renderMain();}
 function ucOrdDe(cab,secId,campo){return (st.ucOrd||[]).filter(o=>o.cab===cab&&o.sector===secId&&o.campo===campo&&(o.modo==='prueba'||!o.modo)).sort((a,b)=>(b.ts||'').localeCompare(a.ts||''))[0]||null;}
 async function ucOrden(cab,secId,campo,modo,valor,extra){const U=ucCfg(cab);if(!U)return;const m=U.sec[secId];if(!m){toast('Falta emparejar este sector con el uCrop (Ajustes)');return;}
-  const prog=campo==='ce',nombre=prog?(m.nombre||''):('Drenaje '+((m.dren??0)+1));
+  const prog=UC_PROG.includes(campo),nombre=prog?(m.nombre||''):('Drenaje '+((m.dren??0)+1));
   const id=`${cab}_${secId}_${campo}_${modo==='ensayo'?'e':modo==='cambio'?'c':''}${Date.now().toString(36)}`;
   const doc={cab,sector:secId,sectorNombre:(cabById(cab).sectores.find(s=>s.id===secId)||{}).nombre||secId,campo,valor:valor??null,idx:{prog:m.prog??0,dren:m.dren??0},nombre,modo,estado:'pendiente',por:yoNombre(),porEmail:miEmail(),ts:new Date().toISOString(),...(extra||{})};
   try{await Store.setCol('ucrop',id,doc);(st.ucOrd=st.ucOrd||[]).unshift({...doc,id});toast(modo==='cambio'?'Cambio enviado: el PC lo guardará en el uCrop en su próxima lectura':modo==='ensayo'?'Ensayo enviado: el PC lo hará en el próximo minuto. No guarda nada':'Prueba enviada: el PC la hará en el próximo minuto');renderMain();}catch(e){toast(errMsg(e))}}
@@ -1475,31 +1476,35 @@ st.ucForm={};document.addEventListener('input',e=>{const t=e.target;if(!t.datase
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.ucsel){const f=st.ucForm[t.dataset.ucsel]=st.ucForm[t.dataset.ucsel]||{};f.campo=t.value}});
 /* CAMBIO DE VERDAD: pantalla de confirmación (sector, valor de ahora y valor nuevo). Solo con «Permitir cambios reales» encendido en Ajustes. El lector lo vuelve a comprobar todo antes de pulsar Guardar. */
 const UC_CAMBIO_MIN=30;
-function ucUltimo(cab,secId,campo){const l=(st.ucOrd||[]).filter(o=>o.cab===cab&&o.sector===secId&&o.campo===campo&&(o.estado==='probado'||o.estado==='hecho')&&typeof o.vistoValor==='number'&&o.hechoTs).sort((a,b)=>(b.hechoTs||'').localeCompare(a.hechoTs||''))[0];return l?{v:l.vistoValor,ts:l.hechoTs}:null;}
-function ucCambiar(cab,secId){const U=ucCfg(cab);if(!U||!U.on){toast('El control del uCrop está apagado en este cabezal');return}
+function ucUltimo(cab,secId,campo){if(campo==='horario'){const l=(st.ucOrd||[]).filter(o=>o.cab===cab&&o.sector===secId&&UC_PROG.includes(o.campo)&&(o.estado==='probado'||o.estado==='hecho')&&o.snap&&typeof o.snap.schedule==='number'&&o.hechoTs).sort((a,b)=>(b.hechoTs||'').localeCompare(a.hechoTs||''))[0];return l?{v:l.snap.schedule,ts:l.hechoTs}:null}
+  const l=(st.ucOrd||[]).filter(o=>o.cab===cab&&o.sector===secId&&o.campo===campo&&(o.estado==='probado'||o.estado==='hecho')&&typeof o.vistoValor==='number'&&o.hechoTs).sort((a,b)=>(b.hechoTs||'').localeCompare(a.hechoTs||''))[0];return l?{v:l.vistoValor,ts:l.hechoTs}:null;}
+function ucCambiar(cab,secId){const sel=document.querySelector(`[data-ucsel="${secId}"]`),inp=document.querySelector(`[data-ucval="${secId}"]`),campo=sel&&sel.value,v=inp&&inp.value!==''?+String(inp.value).replace(',','.'):NaN;
+  if(!campo||!isFinite(v)){toast('Escribe el valor nuevo');return}ucAbrirConf(cab,secId,campo,v)}
+const ucHorario=(cab,secId,v)=>ucAbrirConf(cab,secId,'horario',v);
+function ucAbrirConf(cab,secId,campo,v){const U=ucCfg(cab);if(!U||!U.on){toast('El control del uCrop está apagado en este cabezal');return}
   if(!U.cambio){toast('Los cambios reales están apagados (Ajustes › Control del uCrop)');return}
   if(!esGestor())return;
-  const sel=document.querySelector(`[data-ucsel="${secId}"]`),inp=document.querySelector(`[data-ucval="${secId}"]`),campo=sel&&sel.value,v=inp&&inp.value!==''?+String(inp.value).replace(',','.'):NaN;
-  if(!campo||!isFinite(v)){toast('Escribe el valor nuevo');return}
   const L=U.lim[campo]||UC_LIM[campo],nom=(UC_CAMPOS.find(a=>a[0]===campo)||[campo,campo])[1];
+  if(campo==='horario'&&v!==0&&v!==1){toast('El horario solo vale poner o quitar');return}
   if(L&&(v<L[0]||v>L[1])){toast(`${nom} tiene que estar entre ${L[0]} y ${L[1]}`,5000);return}
   if((st.ucOrd||[]).some(o=>o.cab===cab&&o.sector===secId&&o.campo===campo&&o.modo==='cambio'&&o.estado==='pendiente')){toast('Ya hay un cambio de eso esperando al PC');return}
   const m=U.sec[secId];if(!m){toast('Falta emparejar este sector con el uCrop (Ajustes)');return}
   const c=cabById(cab),sec=c.sectores.find(x=>x.id===secId)||{nombre:secId},u=ucUltimo(cab,secId,campo);
-  st.ucConf={cab,secId,campo,v,nom,sector:sec.nombre,ucrop:campo==='ce'?(m.nombre||''):'Drenaje '+((m.dren??0)+1),antes:u?u.v:null,antesTs:u?u.ts:null};ucConfPinta();}
+  st.ucConf={cab,secId,campo,v,nom,sector:sec.nombre,ucrop:UC_PROG.includes(campo)?(m.nombre||''):'Drenaje '+((m.dren??0)+1),antes:u?u.v:null,antesTs:u?u.ts:null};ucConfPinta();}
 function ucConfPinta(){let d=document.getElementById('ucconf');const C=st.ucConf;if(!C){if(d)d.remove();return}
   if(!d){d=document.createElement('div');d.id='ucconf';d.className='ucconf';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');document.body.appendChild(d)}
   const igual=C.antes!=null&&C.antes===C.v,viejo=C.antesTs&&Date.now()-Date.parse(C.antesTs)>30*60e3;
-  d.innerHTML=`<div><h3>Cambiar en el uCrop</h3><div class="sub">${esc(C.sector)} · ${esc(C.ucrop)}</div><div><b>${esc(C.nom)}</b></div>
-    <div class="ucnum"><span>Ahora<br><b data-ucconf="antes">${C.antes==null?'sin leer':esc(String(C.antes))}</b>${C.antesTs?`<small class="sub"><br>leído ${esc(accHace(C.antesTs))}</small>`:''}</span><span>→</span><span>Nuevo<br><b data-ucconf="nuevo">${esc(String(C.v))}</b></span></div>
+  d.innerHTML=`<div><h3>${C.campo==='horario'?(C.v===1?'Poner el horario en el uCrop':'Quitar el horario en el uCrop'):'Cambiar en el uCrop'}</h3><div class="sub">${esc(C.sector)} · ${esc(C.ucrop)}</div><div><b>${esc(C.nom)}</b></div>
+    <div class="ucnum"><span>Ahora<br><b data-ucconf="antes">${C.antes==null?'sin leer':esc(ucFmt(C.campo,C.antes))}</b>${C.antesTs?`<small class="sub"><br>leído ${esc(accHace(C.antesTs))}</small>`:''}</span><span>→</span><span>Nuevo<br><b data-ucconf="nuevo">${esc(ucFmt(C.campo,C.v))}</b></span></div>
     ${viejo?`<div class="note"><b>Esta lectura es de hace más de 30 min.</b> Si has tocado el valor en el uCrop, léelo otra vez antes de confirmar.</div>`:''}
-    ${C.antes==null?`<div class="note">Todavía no sé qué valor tiene ahora en el uCrop. Léelo primero: así compruebo que no ha cambiado nadie desde que lo ves.</div>`:igual?`<div class="note">Ya está en ${esc(String(C.v))}: no hace falta cambiar nada.</div>`:`<div class="note">Esto cambia el riego de verdad. El PC escribirá el valor y pulsará «Guardar» en el uCrop en su próxima lectura (hasta unos ${UC_CAMBIO_MIN} min). Antes comprueba la pantalla y que el valor de ahora sigue siendo ${esc(String(C.antes))}; si no, no toca nada. Después vuelve a leerlo para confirmar que quedó guardado.</div>`}
+    ${C.campo==='horario'&&C.antes!=null&&!igual?`<div class="note"><b>${C.v===1?'Al poner el horario, el programa arranca también por las horas que tenga configuradas en el uCrop (y esas horas no se ven desde aquí).':'Al quitar el horario, el programa deja de arrancar por horas y solo lo hará por el resto de condiciones (radiación, demanda, drenaje…).'}</b></div>`:''}
+    ${C.antes==null?`<div class="note">Todavía no sé qué valor tiene ahora en el uCrop. Léelo primero: así compruebo que no ha cambiado nadie desde que lo ves.</div>`:igual?`<div class="note">Ya está en ${esc(ucFmt(C.campo,C.v))}: no hace falta cambiar nada.</div>`:`<div class="note">Esto cambia el riego de verdad. El PC escribirá el valor y pulsará «Guardar» en el uCrop en su próxima lectura (hasta unos ${UC_CAMBIO_MIN} min). Antes comprueba la pantalla y que el valor de ahora sigue siendo ${esc(ucFmt(C.campo,C.antes))}; si no, no toca nada. Después vuelve a leerlo para confirmar que quedó guardado.</div>`}
     <div class="row">${C.antes==null?`<button class="btn pri" type="button" data-uc="conf-leer">Leer valor actual</button>`:igual?'':`<button class="btn pri" type="button" data-uc="conf-si">Sí, guardar en el uCrop</button>`}${C.antes!=null?`<button class="btn" type="button" data-uc="conf-leer">Leer otra vez</button>`:''}<button class="btn" type="button" data-uc="conf-no">Cancelar</button></div></div>`;}
 function ucConfSi(){const C=st.ucConf;if(!C||C.antes==null||C.antes===C.v)return;st.ucConf=null;ucConfPinta();(st.ucForm[C.secId]||{}).valor='';
   ucOrden(C.cab,C.secId,C.campo,'cambio',C.v,{valorAntes:C.antes,confirmado:true,confirmadoTs:new Date().toISOString()})}
 function ucCambiosHtml(c){const l=(st.ucOrd||[]).filter(o=>o.cab===c.id&&o.modo==='cambio').sort((a,b)=>(b.ts||'').localeCompare(a.ts||'')).slice(0,8);if(!l.length)return '';
   const f=t=>{try{return new Date(t).toLocaleString('es-ES',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(e){return ''}};
-  return `<div class="ucres"><b>Cambios hechos</b>${l.map(o=>`<div class="ucf"><span>${esc(f(o.ts))} · ${esc(o.sectorNombre||o.sector)} · ${esc((UC_CAMPOS.find(a=>a[0]===o.campo)||[o.campo,o.campo])[1])}<br><small>${esc(o.por||'')}: ${o.valorAntes??'?'} → ${esc(String(o.valor))}</small></span><span></span><span>${ucEstadoTxt(o)}</span></div>`).join('')}</div>`;}
+  return `<div class="ucres"><b>Cambios hechos</b>${l.map(o=>`<div class="ucf"><span>${esc(f(o.ts))} · ${esc(o.sectorNombre||o.sector)} · ${esc((UC_CAMPOS.find(a=>a[0]===o.campo)||[o.campo,o.campo])[1])}<br><small>${esc(o.por||'')}: ${esc(ucFmt(o.campo,o.valorAntes))} → ${esc(ucFmt(o.campo,o.valor))}</small></span><span></span><span>${ucEstadoTxt(o)}</span></div>`).join('')}</div>`;}
 const ucOrdEns=(cab,secId)=>(st.ucOrd||[]).filter(o=>o.cab===cab&&o.sector===secId&&o.modo==='ensayo').sort((a,b)=>(b.ts||'').localeCompare(a.ts||''))[0]||null;
 function ucEstadoTxt(o){if(!o)return '';const h=o.hechoTs?' · '+accHace(o.hechoTs):'';
   if(o.modo==='cambio'){if(o.estado==='pendiente')return `<span class="pill warn">esperando al PC…</span>`;return o.estado==='hecho'?`<span class="pill ok">guardado${h}</span> <small>${esc(o.motivo||'')}</small>`:`<span class="pill bad">no se cambió${h}</span> <small>${esc(o.motivo||'')}</small>`}
@@ -1507,13 +1512,24 @@ function ucEstadoTxt(o){if(!o)return '';const h=o.hechoTs?' · '+accHace(o.hecho
   if(o.estado==='pendiente')return `<span class="pill warn">esperando al PC…</span>`;
   if(o.estado==='probado')return `<span class="pill ok">prueba correcta${h}</span> <small>ve ${o.visto?esc(o.visto)+' · ':''}${o.vistoValor??'—'}</small>`;
   return `<span class="pill bad">no se pudo${h}</span> <small>${esc(o.motivo||'')}</small>`;}
+/* Lo que lee el lector de la pantalla del programa y del drenaje de cada sector (la última lectura buena) */
+const UC_SNAP_P=[['schedule','Horario',v=>v?'puesto':'quitado'],['week_days','Días',v=>v==='WEEK'?'semana':v==='DAYS'?'días alternos':v],['maxActivations','Nº máx. de riegos',v=>v],['demand','Demanda',v=>v?'sí':'no'],['stopRain','Para por lluvia',v=>v?'sí':'no'],['stopStorm','Para por viento',v=>v?'sí':'no'],['stopFrost','Para por helada',v=>v?'sí':'no'],['idealEC','CE ideal',v=>v],['idealPH','pH ideal',v=>v],['priority','Prioridad',v=>v]];
+const UC_SNAP_D=[['controlRadiation','Radiación de control',v=>v],['minRadiation','Radiación mínima',v=>v],['startingRadiation','Radiación de arranque',v=>v],['idealDraining','Drenaje ideal',v=>v],['wattsDrain','Watios/drenaje',v=>v]];
+function ucSnapDe(cab,secId,campos){return (st.ucOrd||[]).filter(o=>o.cab===cab&&o.sector===secId&&campos.includes(o.campo)&&(o.estado==='probado'||o.estado==='hecho')&&o.snap&&o.hechoTs).sort((a,b)=>(b.hechoTs||'').localeCompare(a.hechoTs||''))[0]||null;}
+function ucSnapHtml(cab,secId){const fila=(tit,o,L)=>{if(!o)return '';const S=o.snap,usados=new Set(L.map(a=>a[0]));
+    const t=L.filter(a=>S[a[0]]!==undefined).map(a=>`<span class="ucsn"><small>${esc(a[1])}</small> <b>${esc(String(a[2](S[a[0]])))}</b></span>`).join('');
+    const resto=Object.keys(S).filter(k=>!usados.has(k)).sort().map(k=>`${esc(k)}: ${esc(String(S[k]))}`).join(' · ');
+    return `<div class="ucres ucsnap"><b>${tit}</b> <small class="sub">leído ${esc(accHace(o.hechoTs))}</small><div class="ucsnr">${t}</div>${resto?`<details><summary>Todo lo que lee</summary><small>${resto}</small></details>`:''}</div>`};
+  return fila('Programa',ucSnapDe(cab,secId,UC_PROG),UC_SNAP_P)+fila('Drenaje',ucSnapDe(cab,secId,['control','min','dren']),UC_SNAP_D);}
 function ucPruebaCard(c){const U=ucCfg(c.id);if(!U||!U.on||!esGestor())return '';if(st.ucOrd===null)ucCargar();
   const filas=c.sectores.map(s=>{const m=U.sec[s.id];if(!m)return `<div class="ucrow"><div><b>${esc(s.nombre)}</b> <small class="sub">sin emparejar · ponlo en Ajustes</small></div></div>`;
     const od=ucOrdDe(c.id,s.id,'control'),op=ucOrdDe(c.id,s.id,'ce');
     return `<div class="ucrow"><div><b>${esc(s.nombre)}</b> <small class="sub">${esc(m.nombre||'')} · Drenaje ${(m.dren??0)+1}</small></div>
       <div class="row"><button class="btn sm" type="button" data-uc="probar" data-cab="${c.id}" data-sec="${s.id}" data-campo="control">Probar drenaje</button><button class="btn sm" type="button" data-uc="probar" data-cab="${c.id}" data-sec="${s.id}" data-campo="ce">Probar programa</button></div>
       ${od||op?`<div class="ucres">${od?'Drenaje: '+ucEstadoTxt(od):''}${od&&op?'<br>':''}${op?'Programa: '+ucEstadoTxt(op):''}</div>`:''}
-      <div class="row ucens"><select data-ucsel="${s.id}" aria-label="Qué ensayar">${UC_CAMPOS.map(a=>`<option value="${a[0]}" ${((st.ucForm||{})[s.id]||{}).campo===a[0]?'selected':''}>${esc(a[1])} (${(U.lim[a[0]]||UC_LIM[a[0]]).join('–')})</option>`).join('')}</select><input type="number" step="any" inputmode="decimal" data-ucval="${s.id}" value="${esc(((st.ucForm||{})[s.id]||{}).valor??'')}" placeholder="Valor" aria-label="Valor a ensayar"><button class="btn sm" type="button" data-uc="ensayar" data-cab="${c.id}" data-sec="${s.id}">Ensayar (no guarda)</button>${U.cambio?`<button class="btn sm danger" type="button" data-uc="cambiar" data-cab="${c.id}" data-sec="${s.id}">Cambiar de verdad…</button>`:''}</div>
+      ${ucSnapHtml(c.id,s.id)}
+      ${U.cambio?`<div class="row"><button class="btn sm danger" type="button" data-uc="horario" data-v="1" data-cab="${c.id}" data-sec="${s.id}">Poner horario…</button><button class="btn sm danger" type="button" data-uc="horario" data-v="0" data-cab="${c.id}" data-sec="${s.id}">Quitar horario…</button></div>`:''}
+      <div class="row ucens"><select data-ucsel="${s.id}" aria-label="Qué ensayar">${UC_CAMPOS.filter(a=>a[3]!=='sw').map(a=>`<option value="${a[0]}" ${((st.ucForm||{})[s.id]||{}).campo===a[0]?'selected':''}>${esc(a[1])} (${(U.lim[a[0]]||UC_LIM[a[0]]).join('–')})</option>`).join('')}</select><input type="number" step="any" inputmode="decimal" data-ucval="${s.id}" value="${esc(((st.ucForm||{})[s.id]||{}).valor??'')}" placeholder="Valor" aria-label="Valor a ensayar"><button class="btn sm" type="button" data-uc="ensayar" data-cab="${c.id}" data-sec="${s.id}">Ensayar (no guarda)</button>${U.cambio?`<button class="btn sm danger" type="button" data-uc="cambiar" data-cab="${c.id}" data-sec="${s.id}">Cambiar de verdad…</button>`:''}</div>
       ${ucOrdEns(c.id,s.id)?`<div class="ucres">Ensayo: ${ucEstadoTxt(ucOrdEns(c.id,s.id))}</div>`:''}</div>`;}).join('')+ucCambiosHtml(c);
   return `<section class="card"><div class="row" style="justify-content:space-between;align-items:center"><div><h3>Probar el uCrop</h3><div class="sub">Comprueba que la app abre la pantalla correcta de cada sector. No cambia nada: solo mira y dice qué valor ve. El PC lo hace en el próximo minuto.</div></div><button class="btn" type="button" data-uc="recargar">Actualizar</button></div>${filas||'<div class="note">Este cabezal no tiene sectores.</div>'}<div class="note"><b>Ensayar</b> escribe el valor en la pantalla del uCrop, comprueba que la acepta y que se activa «Guardar», y deja el valor como estaba. No pulsa Guardar: no cambia nada del riego. El valor tiene que estar dentro de los límites de seguridad (entre paréntesis).${U.cambio?' <b>Cambiar de verdad</b> pide confirmación y entonces el PC sí pulsa «Guardar» en el uCrop, aunque el cabezal esté regando.':''}</div></section>`;}
 function vUcropCfg(){if(!esGestor())return '';const cab=st.cab,c=cabById(cab);if(!c)return '';const U=ucCfg(cab)||{on:false,sec:{},lim:UC_LIM};
@@ -1525,7 +1541,7 @@ function vUcropCfg(){if(!esGestor())return '';const cab=st.cab,c=cabById(cab);if
      <label>Programa nº<input type="number" inputmode="numeric" data-ucm="prog" data-cab="${cab}" data-sec="${s.id}" value="${m.prog??''}"></label>
      <label>Drenaje nº<input type="number" inputmode="numeric" data-ucm="dren" data-cab="${cab}" data-sec="${s.id}" value="${m.dren??''}"></label></div>`;}).join('')+`</div>`;
   h+=`<div class="sub">El programa y el drenaje se cuentan desde 0 (el primero es el 0). El lector comprueba el nombre antes de tocar nada.</div>`;
-  h+=`<h4 class="ajr-h4">Límites de seguridad</h4><div class="ucmap">`+UC_CAMPOS.map(a=>{const k=a[0],L=(U.lim[k]||UC_LIM[k]);return `<div class="ucmrow"><b>${esc(a[1])}</b><label>mínimo<input type="number" data-ucl="0" data-k="${k}" data-cab="${cab}" value="${L[0]}"></label><label>máximo<input type="number" data-ucl="1" data-k="${k}" data-cab="${cab}" value="${L[1]}"></label></div>`;}).join('')+`</div>`;
+  h+=`<h4 class="ajr-h4">Límites de seguridad</h4><div class="ucmap">`+UC_CAMPOS.filter(a=>a[3]!=='sw').map(a=>{const k=a[0],L=(U.lim[k]||UC_LIM[k]);return `<div class="ucmrow"><b>${esc(a[1])}</b><label>mínimo<input type="number" data-ucl="0" data-k="${k}" data-cab="${cab}" value="${L[0]}"></label><label>máximo<input type="number" data-ucl="1" data-k="${k}" data-cab="${cab}" value="${L[1]}"></label></div>`;}).join('')+`</div>`;
   h+=`<div class="note">El cambio de verdad pide siempre confirmación en pantalla, comprueba el nombre de la pantalla y que el valor de ahora no ha cambiado, respeta estos límites (el PC tiene los suyos) y lo anota con quién y cuándo.</div></section>`;
   return h;}
 async function ucGuardarCfg(cab,fn){for(const cf of [st.cfg,st.savedCfg]){cf.ucrop=cf.ucrop||{};const base=cf.ucrop[cab]||clone(UC_DEF[cab]||{on:false,sec:{},lim:{}});cf.ucrop[cab]=base;fn(base);}
@@ -1534,6 +1550,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
   if(b.dataset.uc==='probar')ucProbar(b.dataset.cab,b.dataset.sec,b.dataset.campo);
   else if(b.dataset.uc==='ensayar')ucEnsayar(b.dataset.cab,b.dataset.sec);
   else if(b.dataset.uc==='cambiar')ucCambiar(b.dataset.cab,b.dataset.sec);
+  else if(b.dataset.uc==='horario')ucHorario(b.dataset.cab,b.dataset.sec,+b.dataset.v);
   else if(b.dataset.uc==='conf-si')ucConfSi();
   else if(b.dataset.uc==='conf-no'){st.ucConf=null;ucConfPinta()}
   else if(b.dataset.uc==='conf-leer'){const C=st.ucConf;st.ucConf=null;ucConfPinta();if(C)ucProbar(C.cab,C.secId,C.campo)}
@@ -8278,7 +8295,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v227';
+window.APP_V='abonado-v228';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
