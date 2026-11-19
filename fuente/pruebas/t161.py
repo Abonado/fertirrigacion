@@ -49,9 +49,11 @@ async def main():
         r = await mira(pag_ens('UCROP | Drenaje 1', 'controlRadiation', '150'), 'control', 'Drenaje 2', 33)
         assert not r['coincide'] and 'ensayo' not in r, r
         assert await pg.evaluate("document.querySelector('input').value") == '150', 'escribió en la pantalla equivocada'
-        # el lector no sabe pulsar: ni una llamada a click() en todo el código
-        assert '.click(' not in SRC, 'el lector pulsa algo'
-        # límites y modos del lector: una orden fuera de límites o de otro modo se rechaza sin abrir nada
-        assert "UC_MODOS = ['prueba', 'ensayo']" in SRC and 'no permitido en esta versión' in SRC and 'valor fuera de los límites' in SRC
+        # el ÚNICO clic de todo el lector está dentro de ucropGuarda; ucropMira (lo que mira y ensaya) no pulsa nada
+        assert SRC.count('.click(') == 1, 'tiene que haber un solo clic en el lector'
+        assert '.click(' not in FN, 'ucropMira pulsa algo'
+        assert re.search(r'async function ucropGuarda\(.*?\n\}\n', SRC, re.S).group(0).count('.click(') == 1
+        # límites y modos del lector
+        assert "UC_MODOS = ['prueba', 'ensayo', 'cambio']" in SRC and 'valor fuera de los límites' in SRC
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

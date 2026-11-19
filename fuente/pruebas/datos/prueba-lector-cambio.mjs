@@ -1,0 +1,44 @@
+// Simula el lector (background.js) con un chrome de mentira y comprueba las salvaguardas del cambio real (modo «cambio»).
+import fs from 'node:fs'; import vm from 'node:vm';
+const src = fs.readFileSync('lector-clima/background.js', 'utf8');
+function montar(guarda, mira) {
+  const ls = [], llamadas = [], posts = [];
+  const chrome = { storage: { local: { get: async k => ({ uTab: 5 }), set: async () => {} } }, alarms: { create() {}, onAlarm: { addListener() {} } },
+    runtime: { onInstalled: { addListener() {} }, onStartup: { addListener() {} }, onMessage: { addListener() {} } }, action: { setBadgeText() {}, setBadgeBackgroundColor() {} },
+    tabs: { get: async id => ({ id }), create: async () => ({ id: 5 }), update: async (id, o) => { llamadas.push(['nav', o.url]); setTimeout(() => ls.forEach(h => h(id, { status: 'complete' })), 2); },
+      onUpdated: { addListener: h => ls.push(h), removeListener: h => { const i = ls.indexOf(h); if (i >= 0) ls.splice(i, 1); } } },
+    scripting: { executeScript: async ({ func, args, world }) => { llamadas.push([func.name, world || 'aislado', args]);
+      if (func.name === 'ucropGuarda') return [{ result: guarda(args) }]; if (func.name === 'ucropMira') return [{ result: mira(args) }]; throw new Error('func ' + func.name); } } };
+  const fetchStub = async (url, o) => { posts.push(JSON.parse(o.body)); return { ok: true, status: 200, json: async () => ({ ok: true }) }; };
+  const ctx = vm.createContext({ chrome, fetch: fetchStub, console, setTimeout, Date, JSON, Math, URL, Promise, Number, isFinite, parseFloat, String, Array });
+  vm.runInContext(src + '\n;globalThis.__o = ordenesUcrop;', ctx);
+  return { o: ctx.__o, llamadas, posts };
+}
+const C = { puente: 'https://p.example', token: 'T' }, P = { url: 'https://app.ucrop.net/farming/210525125621-064/irrigation', cab: 'fra' };
+const ahora = (min = 0) => new Date(Date.now() - min * 6e4).toISOString();
+const ord = (x = {}) => ({ id: 'c1', campo: 'control', valor: 200, idx: { prog: 0, dren: 0 }, nombre: 'Drenaje 1', modo: 'cambio', confirmado: true, valorAntes: 150, ts: ahora(1), ...x });
+const okG = a => ({ ok: true, coincide: true, titulo: a[1], valor: a[3], estado: 'pulsado', leido: a[2] });
+const okM = v => a => ({ ok: true, coincide: true, titulo: a[1], valor: v });
+let fallos = 0; const ver = (c, m) => { if (!c) { fallos++; console.log('FALLO:', m); } };
+const guardas = L => L.filter(l => l[0] === 'ucropGuarda').length;
+
+{ const t = montar(okG, okM(200)); const r = await t.o(C, P, [ord()]); const h = t.posts[0].hechos[0];
+  ver(h.estado === 'hecho' && h.valor === 200 && /guardado: de 150 a 200/.test(h.motivo), 'caso bueno: ' + JSON.stringify(h)); ver(guardas(t.llamadas) === 1, 'una sola escritura');
+  ver(t.llamadas.find(l => l[0] === 'ucropGuarda')[1] === 'MAIN', 'corre en el mundo de la página'); ver(/1 bien, 0 con fallo/.test(r), r); }
+for (const [nombre, o] of [['sin confirmar', ord({ confirmado: false })], ['sin confirmado', ord({ confirmado: undefined })], ['sin valorAntes', ord({ valorAntes: null })], ['caducada', ord({ ts: ahora(45) })], ['sin fecha', ord({ ts: undefined })],
+  ['fuera de límites', ord({ valor: 900 })], ['fuera de límites ce', ord({ campo: 'ce', valor: 9, idx: { prog: 0, dren: 0 }, nombre: 'SE01FRANCO', valorAntes: 1.87 })], ['bajo mínimo', ord({ valor: 5 })], ['sin nombre', ord({ nombre: '' })], ['campo raro', ord({ campo: 'x' })], ['valor texto', ord({ valor: '200' })]]) {
+  const t = montar(okG, okM(200)); await t.o(C, P, [o]); const h = t.posts[0].hechos[0];
+  ver(h.estado === 'fallo' && /no he guardado nada/.test(h.motivo), nombre + ': ' + JSON.stringify(h)); ver(guardas(t.llamadas) === 0, nombre + ': no debe tocar la pantalla'); }
+{ const t = montar(a => ({ ok: true, coincide: true, titulo: 'Drenaje 1', valor: 160, estado: 'distinto' }), okM(160)); await t.o(C, P, [ord()]); const h = t.posts[0].hechos[0];
+  ver(h.estado === 'fallo' && /lo cambió alguien/.test(h.motivo), 'valor distinto: ' + h.motivo); ver(!t.llamadas.some(l => l[0] === 'ucropMira'), 'no recarga si no pulsó'); }
+{ const t = montar(a => ({ ok: true, coincide: false, titulo: 'Drenaje 2' }), okM(150)); await t.o(C, P, [ord()]); ver(/no Drenaje 1/.test(t.posts[0].hechos[0].motivo), 'pantalla equivocada'); }
+{ const t = montar(a => ({ ok: true, coincide: true, titulo: 'Drenaje 1', valor: 200, estado: 'yaestaba' }), okM(200)); await t.o(C, P, [ord()]); const h = t.posts[0].hechos[0]; ver(h.estado === 'hecho' && /ya estaba/.test(h.motivo), 'ya estaba'); ver(!t.llamadas.some(l => l[0] === 'ucropMira'), 'ya estaba: sin recarga'); }
+for (const est of ['noactivo', 'boton']) { const t = montar(a => ({ ok: true, coincide: true, titulo: 'Drenaje 1', valor: 150, estado: est, leido: 200, boton: 'Guardar programa' }), okM(150)); await t.o(C, P, [ord()]); const h = t.posts[0].hechos[0]; ver(h.estado === 'fallo', est + ': ' + h.motivo); }
+{ const t = montar(okG, okM(150)); await t.o(C, P, [ord()]); const h = t.posts[0].hechos[0]; ver(h.estado === 'fallo' && /OJO: pulsé Guardar pero al recargar pone 150/.test(h.motivo), 'no quedó guardado: ' + h.motivo); }
+{ const t = montar(okG, () => null); await t.o(C, P, [ord()]); const h = t.posts[0].hechos[0]; ver(h.estado === 'fallo' && /no pude comprobar/.test(h.motivo), 'sin poder comprobar: ' + h.motivo); }
+{ const t = montar(() => { throw new Error('boom'); }, okM(150)); await t.o(C, P, [ord()]); ver(t.posts[0].hechos[0].estado === 'fallo', 'error al escribir'); }
+{ const t = montar(okG, okM(200)); await t.o(C, P, [1, 2, 3, 4, 5].map(i => ord({ id: 'c' + i }))); ver(guardas(t.llamadas) === 3 && t.posts[0].hechos.length === 3, 'máximo 3 cambios por vuelta: ' + guardas(t.llamadas)); }
+{ const t = montar(okG, okM(200)); await t.o(C, P, [ord({ modo: 'borrar' })]); ver(t.posts[0].hechos[0].estado === 'fallo' && guardas(t.llamadas) === 0, 'modo raro'); }
+{ const t = montar(okG, okM(150)); await t.o(C, P, [ord({ modo: 'prueba' })]); ver(guardas(t.llamadas) === 0 && t.posts[0].hechos[0].estado === 'probado', 'una prueba nunca guarda'); }
+{ const t = montar(okG, okM(150)); await t.o(C, P, [ord({ modo: 'ensayo', valor: 99 })]); ver(guardas(t.llamadas) === 0, 'un ensayo nunca usa la función de guardar'); }
+console.log(fallos ? 'FALLOS ' + fallos : 'OK'); process.exit(fallos ? 1 : 0);

@@ -126,7 +126,8 @@ async function ordenesPendientes(env, cab) {
   ordenesPendientes.err = null;
   const out = [];
   for (const row of (Array.isArray(d) ? d : [])) { const doc = row.document; if (!doc) continue; const f = doc.fields || {};
-    out.push({ id: doc.name.split('/').pop(), campo: deFS(f.campo), valor: deFS(f.valor), idx: deFS(f.idx), nombre: deFS(f.nombre), modo: deFS(f.modo) || 'prueba' }); }
+    out.push({ id: doc.name.split('/').pop(), campo: deFS(f.campo), valor: deFS(f.valor), idx: deFS(f.idx), nombre: deFS(f.nombre), modo: deFS(f.modo) || 'prueba',
+      ...(deFS(f.modo) === 'cambio' ? { valorAntes: deFS(f.valorAntes), confirmado: deFS(f.confirmado) === true, ts: deFS(f.ts) } : {}) }); }
   return out;
 }
 async function guardarHechos(env, hechos) {
