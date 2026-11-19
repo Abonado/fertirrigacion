@@ -30,10 +30,15 @@ ACTUALIZAR A UNA VERSIÓN NUEVA
  · Descomprime el zip nuevo encima de la carpeta de antes (sustituir los archivos) y en edge://extensions pulsa la flecha de
    «Recargar» del lector. Se queda con la configuración que tenía.
 
-CONTROL DEL uCROP (NUEVO · DE MOMENTO SOLO PRUEBAS)
- · Desde la app (Riego › Ajuste del riego › «Probar el uCrop») el administrador puede mandar una PRUEBA a un sector.
- · El lector abre la pantalla de ese sector en el uCrop (programa o drenaje), comprueba que el nombre coincide y lee el valor
-   que hay. NO cambia nada y NO pulsa Guardar. La app enseña el resultado (✓ con el valor que ve, o el motivo si algo falla).
- · Para que funcione, el PC tiene que estar con sesión abierta en el uCrop (como para leer). Abre una pestaña suya aparte.
- · El emparejamiento de cada sector (nombre, nº de programa y nº de drenaje) y los límites se ponen en Ajustes › Control del uCrop.
- · El cambio «de verdad» (pulsar Guardar) se activará más adelante, cuando las pruebas salgan bien.
+CONTROL DEL uCROP
+ · PRUEBA y ENSAYO (no cambian nada): desde la app (Riego › Ajuste del riego › «Probar el uCrop») el administrador manda al lector
+   abrir la pantalla de un sector, comprobar el nombre y leer el valor; el ensayo además escribe un valor, mira si «Guardar» se activa
+   y lo deja como estaba. No pulsan Guardar.
+ · CAMBIO DE VERDAD (v1.7.0): solo si se enciende en Ajustes › Control del uCrop › «Permitir cambios reales», y solo tras la
+   pantalla de confirmación de la app. El lector vuelve a comprobar TODO por su cuenta: límites, que la orden venga confirmada y
+   no tenga más de 30 min, que la pantalla sea la del sector y que el valor de ahora sea el que se confirmó. Entonces escribe el
+   valor, pulsa SOLO «Guardar programa/drenaje» (aunque el cabezal esté regando), recarga la pantalla y comprueba que quedó guardado.
+   Si algo no cuadra no pulsa nada. Máximo 3 cambios por vuelta. Es el único botón que pulsa el lector.
+ · Para que funcione, el PC tiene que estar con sesión abierta en el uCrop. Abre una pestaña suya aparte.
+ · Las órdenes se recogen en cada lectura (cada «Leer cada» min) o con «Leer y mandar ya» del panel.
+ · Si cambias el worker del servidor puente hay que volver a desplegarlo (Cloudflare › puente-sensores › Edit code).
