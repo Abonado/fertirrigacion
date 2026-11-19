@@ -47,6 +47,10 @@ async def main():
         t = await pg.text_content('#ucconf'); assert 'Sector 1' in t and 'Drenaje 1' in t and 'Radiación de control' in t, t
         assert await pg.text_content('[data-ucconf="antes"]') == '150' and await pg.text_content('[data-ucconf="nuevo"]') == '200'
         assert await pg.locator('[data-uc="conf-si"]').count() == 1 and 'Sí, guardar en el uCrop' in await pg.text_content('[data-uc="conf-si"]')
+        assert await pg.locator('[data-uc="conf-leer"]').count() == 1, 'falta «Leer otra vez»'
+        # una lectura de hace más de 30 min avisa
+        await pg.evaluate("st.ucConf.antesTs=new Date(Date.now()-3600e3).toISOString();ucConfPinta()"); assert 'más de 30 min' in await pg.text_content('#ucconf')
+        await pg.evaluate("st.ucConf.antesTs=new Date().toISOString();ucConfPinta()"); assert 'más de 30 min' not in await pg.text_content('#ucconf')
         # cancelar no crea nada
         n0 = await pg.evaluate("st.ucOrd.length"); await pg.click('[data-uc="conf-no"]'); await pg.wait_for_timeout(300)
         assert await pg.locator('#ucconf').count() == 0 and await pg.evaluate("st.ucOrd.length") == n0

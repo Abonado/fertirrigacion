@@ -1489,11 +1489,12 @@ function ucCambiar(cab,secId){const U=ucCfg(cab);if(!U||!U.on){toast('El control
   st.ucConf={cab,secId,campo,v,nom,sector:sec.nombre,ucrop:campo==='ce'?(m.nombre||''):'Drenaje '+((m.dren??0)+1),antes:u?u.v:null,antesTs:u?u.ts:null};ucConfPinta();}
 function ucConfPinta(){let d=document.getElementById('ucconf');const C=st.ucConf;if(!C){if(d)d.remove();return}
   if(!d){d=document.createElement('div');d.id='ucconf';d.className='ucconf';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');document.body.appendChild(d)}
-  const igual=C.antes!=null&&C.antes===C.v;
+  const igual=C.antes!=null&&C.antes===C.v,viejo=C.antesTs&&Date.now()-Date.parse(C.antesTs)>30*60e3;
   d.innerHTML=`<div><h3>Cambiar en el uCrop</h3><div class="sub">${esc(C.sector)} · ${esc(C.ucrop)}</div><div><b>${esc(C.nom)}</b></div>
     <div class="ucnum"><span>Ahora<br><b data-ucconf="antes">${C.antes==null?'sin leer':esc(String(C.antes))}</b>${C.antesTs?`<small class="sub"><br>leído ${esc(accHace(C.antesTs))}</small>`:''}</span><span>→</span><span>Nuevo<br><b data-ucconf="nuevo">${esc(String(C.v))}</b></span></div>
+    ${viejo?`<div class="note"><b>Esta lectura es de hace más de 30 min.</b> Si has tocado el valor en el uCrop, léelo otra vez antes de confirmar.</div>`:''}
     ${C.antes==null?`<div class="note">Todavía no sé qué valor tiene ahora en el uCrop. Léelo primero: así compruebo que no ha cambiado nadie desde que lo ves.</div>`:igual?`<div class="note">Ya está en ${esc(String(C.v))}: no hace falta cambiar nada.</div>`:`<div class="note">Esto cambia el riego de verdad. El PC escribirá el valor y pulsará «Guardar» en el uCrop en su próxima lectura (hasta unos ${UC_CAMBIO_MIN} min). Antes comprueba la pantalla y que el valor de ahora sigue siendo ${esc(String(C.antes))}; si no, no toca nada. Después vuelve a leerlo para confirmar que quedó guardado.</div>`}
-    <div class="row">${C.antes==null?`<button class="btn pri" type="button" data-uc="conf-leer">Leer valor actual</button>`:igual?'':`<button class="btn pri" type="button" data-uc="conf-si">Sí, guardar en el uCrop</button>`}<button class="btn" type="button" data-uc="conf-no">Cancelar</button></div></div>`;}
+    <div class="row">${C.antes==null?`<button class="btn pri" type="button" data-uc="conf-leer">Leer valor actual</button>`:igual?'':`<button class="btn pri" type="button" data-uc="conf-si">Sí, guardar en el uCrop</button>`}${C.antes!=null?`<button class="btn" type="button" data-uc="conf-leer">Leer otra vez</button>`:''}<button class="btn" type="button" data-uc="conf-no">Cancelar</button></div></div>`;}
 function ucConfSi(){const C=st.ucConf;if(!C||C.antes==null||C.antes===C.v)return;st.ucConf=null;ucConfPinta();(st.ucForm[C.secId]||{}).valor='';
   ucOrden(C.cab,C.secId,C.campo,'cambio',C.v,{valorAntes:C.antes,confirmado:true,confirmadoTs:new Date().toISOString()})}
 function ucCambiosHtml(c){const l=(st.ucOrd||[]).filter(o=>o.cab===c.id&&o.modo==='cambio').sort((a,b)=>(b.ts||'').localeCompare(a.ts||'')).slice(0,8);if(!l.length)return '';
@@ -8277,7 +8278,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v221';
+window.APP_V='abonado-v227';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
