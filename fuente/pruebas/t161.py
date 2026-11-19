@@ -3,15 +3,15 @@
 import asyncio, re, sys
 from playwright.async_api import async_playwright
 SRC = open('lector-clima/background.js').read()
-m = re.search(r'async function ucropMira\(campo, nombreEsperado\) \{.*?\n\}\n', SRC, re.S); assert m, 'no encuentro ucropMira'
+m = re.search(r'async function ucropMira\(campo, nombreEsperado, ensayoValor\) \{.*?\n\}\n', SRC, re.S); assert m, 'no encuentro ucropMira'
 FN = m.group(0)
 def pagina(titulo, campo, valor, otros=''):
     return f'<!doctype html><title>{titulo}</title><body><table><tr><td>SE01FRANCO</td><td>SEO2FRANCO</td><td>SEO3ALTO</td><td>SE04ENCAÑE</td></tr></table>{otros}<input formcontrolname="{campo}" value="{valor}"></body>'
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
-        async def mira(html, campo, esperado):
-            await pg.set_content(html); return await pg.evaluate("([f,c,n])=>(0,eval('('+f+')'))(c,n)", [FN, campo, esperado])
+        async def mira(html, campo, esperado, ens=None):
+            await pg.set_content(html); return await pg.evaluate("([f,c,n,e])=>(0,eval('('+f+')'))(c,n,e)", [FN, campo, esperado, ens])
         # la de verdad: título y nombre coinciden
         r = await mira(pagina('UCROP | SE01FRANCO', 'idealEC', '1,87'), 'ce', 'SE01FRANCO'); assert r['ok'] and r['coincide'] and r['valor'] == 1.87 and r['titulo'] == 'SE01FRANCO', r
         # letra O o cero en el nombre: da igual
@@ -26,5 +26,28 @@ async def main():
         # sin el campo: no se puede
         await pg.set_content('<title>UCROP | SE01FRANCO</title><body>nada</body>')
         r = await pg.evaluate("([f,c,n])=>(0,eval('('+f+')'))(c,n)", [FN, 'ce', 'SE01FRANCO']); assert not r['ok'], r
+        # ENSAYO (v2): escribe, ve que «Guardar» se activa, deja el valor de antes y NO pulsa nada
+        def pag_ens(titulo, campo, valor, activa=True):
+            return f"""<!doctype html><title>{titulo}</title><body><input formcontrolname="{campo}" value="{valor}">
+              <button id="g" disabled>Guardar drenaje</button><button id="otro">Cancelar</button>
+              <script>(()=>{{window.__clics=0;document.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>window.__clics++));
+              const inp=document.querySelector('input');{"inp.addEventListener('input',()=>{document.getElementById('g').disabled=false});" if activa else ""}}})()</script></body>"""
+        r = await mira(pag_ens('UCROP | Drenaje 2', 'controlRadiation', '150'), 'control', 'Drenaje 2', 33)
+        e = r['ensayo']; assert r['coincide'] and e['leido'] == 33 and e['guardarActivo'] and e['restaurado'] and e['original'] == '150', r
+        assert await pg.evaluate("document.querySelector('input').value") == '150' and await pg.evaluate("window.__clics") == 0, 'tocó algo'
+        # con coma decimal, la escribe con coma y la deja como estaba
+        r = await mira(pag_ens('UCROP | SE01FRANCO', 'idealEC', '1,87'), 'ce', 'SE01FRANCO', 2.5)
+        e = r['ensayo']; assert e['leido'] == 2.5 and e['restaurado'] and e['original'] == '1,87', r
+        # si «Guardar» no se activa, lo dice
+        r = await mira(pag_ens('UCROP | Drenaje 2', 'controlRadiation', '150', activa=False), 'control', 'Drenaje 2', 33)
+        assert r['ensayo']['guardarActivo'] is False and r['ensayo']['restaurado'], r
+        # pantalla equivocada: no escribe nada
+        r = await mira(pag_ens('UCROP | Drenaje 1', 'controlRadiation', '150'), 'control', 'Drenaje 2', 33)
+        assert not r['coincide'] and 'ensayo' not in r, r
+        assert await pg.evaluate("document.querySelector('input').value") == '150', 'escribió en la pantalla equivocada'
+        # el lector no sabe pulsar: ni una llamada a click() en todo el código
+        assert '.click(' not in SRC, 'el lector pulsa algo'
+        # límites y modos del lector: una orden fuera de límites o de otro modo se rechaza sin abrir nada
+        assert "UC_MODOS = ['prueba', 'ensayo']" in SRC and 'no permitido en esta versión' in SRC and 'valor fuera de los límites' in SRC
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

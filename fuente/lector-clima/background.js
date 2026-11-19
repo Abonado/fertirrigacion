@@ -196,10 +196,12 @@ async function leerUna(c, i, e, toca = true) {
 /* ---------- Control del uCrop (órdenes que llegan de la app) ----------
    PRIMERA VERSIÓN: solo PROBAR. Abre la pantalla del sector (drenaje o programa), comprueba que el nombre coincide y lee el valor
    que hay ahora. NO escribe nada y NO pulsa Guardar. Sirve para ver que la app apunta al sitio correcto antes de dejarle cambiar. */
+const UC_LIM = { control: [25, 500], min: [25, 350], dren: [15, 40], ce: [0, 5] };   // los mismos límites que la app: si una orden se sale, no se toca nada
+const UC_MODOS = ['prueba', 'ensayo'];   // el cambio de verdad (guardar) NO está permitido en esta versión
 const UC_CAMPO = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC' };
 
 // se ejecuta DENTRO de la página del uCrop ya cargada; solo mira
-async function ucropMira(campo, nombreEsperado) {
+async function ucropMira(campo, nombreEsperado, ensayoValor) {
   const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC' };
   const fc = forms[campo]; if (!fc) return { ok: false, motivo: 'campo desconocido' };
   const dormir = ms => new Promise(r => setTimeout(r, ms));
@@ -212,7 +214,21 @@ async function ucropMira(campo, nombreEsperado) {
   if (!inp) return { ok: false, motivo: 'no encuentro el campo en la pantalla (¿cargó bien?)' };
   const coincide = !nombreEsperado || (!!tit && norm(tit) === norm(nombreEsperado));
   const valor = inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
-  return { ok: true, coincide, valor: isFinite(valor) ? valor : null, nombre: nombreEsperado || '', titulo: tit };
+  const res = { ok: true, coincide, valor: isFinite(valor) ? valor : null, nombre: nombreEsperado || '', titulo: tit };
+  // ENSAYO: solo si la pantalla es la esperada. Escribe el valor, mira si la pantalla lo acepta y si se activa «Guardar», y deja el valor de antes.
+  // No pulsa NINGÚN botón: lo único que hace con «Guardar» es mirar si está activo.
+  if (ensayoValor != null && coincide) {
+    const orig = inp.value, coma = /,/.test(orig), txt = v => (coma ? String(v).replace('.', ',') : String(v));
+    const poner = v => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(inp, v); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); };
+    const guardar = () => [...document.querySelectorAll('button')].find(b => /^\s*guardar\b/i.test(b.innerText || b.textContent || ''));
+    const antes = guardar(), activoAntes = !!antes && !antes.disabled;
+    poner(txt(ensayoValor)); await dormir(700);
+    const leido = parseFloat(String(inp.value).replace(',', '.')), g = guardar();
+    const guardarActivo = !!g && !g.disabled;
+    poner(orig); await dormir(500);
+    res.ensayo = { escrito: ensayoValor, leido: isFinite(leido) ? leido : null, guardarActivo, activoAntes, original: orig, restaurado: inp.value === orig };
+  }
+  return res;
 }
 
 async function tabTrabajo() {
@@ -229,14 +245,23 @@ async function ordenesUcrop(c, P, ordenes) {
   const m = /\/farming\/([^/]+)\//.exec(P.url || ''); if (!m) return 'la página guardada no tiene el nº de equipo';   // la página de riego da el nº de serie del equipo
   const base = `https://app.ucrop.net/farming/${m[1]}/irrigation`, tabId = await tabTrabajo(), hechos = [];
   for (const o of ordenes) {
-    const prog = o.campo === 'ce', idx = (o.idx || {}), url = prog ? `${base}/program/${idx.prog}` : `${base}/drainages_v3/${idx.dren}`;
+    const prog = o.campo === 'ce', idx = (o.idx || {}), url = prog ? `${base}/program/${idx.prog}` : `${base}/drainages_v3/${idx.dren}`, modo = o.modo || 'prueba', ens = modo === 'ensayo';
+    if (!UC_MODOS.includes(modo)) { hechos.push({ id: o.id, estado: 'fallo', motivo: `modo «${modo}» no permitido en esta versión: no toco nada` }); continue; }
+    if (ens) { const L = UC_LIM[o.campo];
+      if (!L || typeof o.valor !== 'number' || !isFinite(o.valor) || o.valor < L[0] || o.valor > L[1]) { hechos.push({ id: o.id, estado: 'fallo', motivo: `valor fuera de los límites (${L ? L.join('–') : 'campo desconocido'}): no toco nada` }); continue; } }
     try {
       await chrome.tabs.update(tabId, { url, active: false }); await esperarCarga(tabId); await new Promise(r => setTimeout(r, 1500));
-      let res; try { [{ result: res }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, o.nombre || ''] }); } catch (e) { res = { ok: false, motivo: 'no puedo leer la pantalla: ' + e.message }; }
+      let res; try { [{ result: res }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, o.nombre || '', ens ? o.valor : null] }); } catch (e) { res = { ok: false, motivo: 'no puedo leer la pantalla: ' + e.message }; }
       if (!res || !res.ok) hechos.push({ id: o.id, estado: 'fallo', motivo: (res && res.motivo) || 'no se pudo' });
       else if (!res.coincide) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `la pantalla abierta es «${res.titulo || 'sin título'}», no ${o.nombre || 'la esperada'}: no toco nada` });
+      else if (ens) { const e = res.ensayo || {};
+        if (!e.restaurado) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `OJO: no pude dejar el valor como estaba (era ${e.original}). Cierra esa pestaña del uCrop sin guardar` });
+        else if (e.leido !== o.valor) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `la pantalla no aceptó el ${o.valor} (puso ${e.leido}). No he guardado nada` });
+        else if (!e.guardarActivo) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `escribí ${o.valor} pero «Guardar» no se activó. No he guardado nada` });
+        else hechos.push({ id: o.id, estado: 'probado', nombre: res.titulo || '', valor: res.valor, motivo: `${res.titulo}: escribí ${o.valor}, la pantalla lo aceptó y «Guardar» se activó. He vuelto a dejar ${e.original}; no he guardado nada` }); }
       else hechos.push({ id: o.id, estado: 'probado', nombre: res.titulo || o.nombre || '', valor: res.valor, motivo: `prueba correcta: ${res.titulo || o.nombre || ''} · ahora pone ${res.valor}` });
     } catch (e) { hechos.push({ id: o.id, estado: 'fallo', motivo: 'error: ' + (e.message || e) }); }
+    if (ens) { try { await chrome.tabs.update(tabId, { url: 'about:blank' }); } catch (e) {} }   // sin guardar: lo escrito se descarta
   }
   let envio = '';
   if (hechos.length) try { const rr = await fetch(c.puente.replace(/\/+$/, '') + '/riego', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.token }, body: JSON.stringify({ cab: P.cab, hechos }) }); if (!rr.ok) envio = ' (el servidor no guardó el resultado: ' + rr.status + ')'; } catch (e) { envio = ' (no pude mandar el resultado: ' + e.message + ')'; }

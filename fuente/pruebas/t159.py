@@ -40,6 +40,21 @@ async def main():
         await pg.evaluate("""([id])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'fallo',hechoTs:new Date().toISOString(),motivo:'la pantalla abierta no es SE01FRANCO: no toco nada'})""", [op['id']])
         await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
         assert 'no se pudo' in await pg.locator('.ucrow').first.locator('.ucres').text_content()
+        # ENSAYO (v2): un valor dentro de límites crea una orden «ensayo» con el valor; fuera de límites no crea nada
+        # lo escrito en el formulario de ensayo no se pierde si la pantalla se repinta (llegan datos nuevos)
+        await pg.select_option('[data-ucsel="fra_s2"]', 'dren'); await pg.fill('[data-ucval="fra_s2"]', '22'); await pg.evaluate("renderMain()"); await pg.wait_for_timeout(300)
+        assert await pg.input_value('[data-ucsel="fra_s2"]') == 'dren' and await pg.input_value('[data-ucval="fra_s2"]') == '22', 'se borró lo escrito'
+        n0 = await pg.evaluate("st.ucOrd.length")
+        await pg.select_option('[data-ucsel="fra_s1"]', 'ce'); await pg.fill('[data-ucval="fra_s1"]', '9'); await pg.locator('[data-uc="ensayar"]').first.click(); await pg.wait_for_timeout(400)
+        assert await pg.evaluate("st.ucOrd.length") == n0, 'creó una orden con un valor fuera de límites'
+        await pg.fill('[data-ucval="fra_s1"]', '2.5'); await pg.locator('[data-uc="ensayar"]').first.click(); await pg.wait_for_timeout(600)
+        oe = await pg.evaluate("st.ucOrd.find(o=>o.modo==='ensayo')")
+        assert oe and oe['campo'] == 'ce' and oe['valor'] == 2.5 and oe['estado'] == 'pendiente' and oe['nombre'] == 'SE01FRANCO' and oe['idx']['prog'] == 0, oe
+        # el ensayo no se mezcla con las pruebas de arriba
+        assert 'ensayo con 2.5' in await pg.locator('.ucrow').first.locator('.ucres').last.text_content()
+        await pg.evaluate("""([id])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'probado',hechoTs:new Date().toISOString(),motivo:'SE01FRANCO: escribí 2.5, la pantalla lo aceptó y «Guardar» se activó. No he guardado nada'})""", [oe['id']])
+        await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
+        assert 'ensayo correcto' in await pg.locator('.ucrow').first.text_content()
         # Ajustes: emparejamiento y límites, con lo de Franco puesto
         await pg.evaluate("st.tab='ajustes';st.ajAb=new Set(['cab','avisos','cultivo','usuarios','conex','empresa']);renderAll()"); await pg.wait_for_timeout(600)
         assert 'Control del uCrop' in await pg.text_content('#main')
