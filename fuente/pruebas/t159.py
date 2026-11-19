@@ -24,17 +24,20 @@ async def main():
         await pg.locator('.ucrow').first.locator('[data-campo="control"]').click(); await pg.wait_for_timeout(500)
         o = await pg.evaluate("st.ucOrd.find(o=>o.sector==='fra_s1'&&o.campo==='control')")
         assert o and o['estado'] == 'pendiente' and o['valor'] is None and o['idx'] == {'prog': 0, 'dren': 0} and o['nombre'] == 'Drenaje 1' and o['modo'] == 'prueba', o
+        # la orden tiene que quedar en abonado_ucrop (la colección que mira el servidor), no en otra con el prefijo repetido
+        ks = await pg.evaluate("Object.keys(JSON.parse(localStorage.getItem('mockfb')).docs)"); print(ks)
+        assert any(k.startswith('abonado_ucrop/') for k in ks) and not any('abonado_abonado' in k for k in ks), ks
         assert 'esperando al PC' in await pg.locator('.ucrow').first.locator('.ucres').text_content()
         # probar el programa → va a la pantalla de programa, nombre SE01FRANCO
         await pg.locator('.ucrow').first.locator('[data-campo="ce"]').click(); await pg.wait_for_timeout(500)
         op = await pg.evaluate("st.ucOrd.find(o=>o.sector==='fra_s1'&&o.campo==='ce')")
         assert op['nombre'] == 'SE01FRANCO' and op['idx']['prog'] == 0, op
         # el lector contesta (lo que haría el servidor): queda «probado» con el valor que vio
-        await pg.evaluate("""([id])=>Store.setCol('abonado_ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'probado',vistoValor:150,hechoTs:new Date().toISOString(),motivo:'prueba correcta: ahora pone 150'})""", [o['id']])
+        await pg.evaluate("""([id])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'probado',vistoValor:150,hechoTs:new Date().toISOString(),motivo:'prueba correcta: ahora pone 150'})""", [o['id']])
         await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
         t = await pg.locator('.ucrow').first.locator('.ucres').text_content(); assert 'prueba correcta' in t and '150' in t, t
         # un valor fuera del nombre esperado se marca fallo (lo decide el lector); aquí comprobamos que el fallo se enseña
-        await pg.evaluate("""([id])=>Store.setCol('abonado_ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'fallo',hechoTs:new Date().toISOString(),motivo:'la pantalla abierta no es SE01FRANCO: no toco nada'})""", [op['id']])
+        await pg.evaluate("""([id])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'fallo',hechoTs:new Date().toISOString(),motivo:'la pantalla abierta no es SE01FRANCO: no toco nada'})""", [op['id']])
         await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
         assert 'no se pudo' in await pg.locator('.ucrow').first.locator('.ucres').text_content()
         # Ajustes: emparejamiento y límites, con lo de Franco puesto

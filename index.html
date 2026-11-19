@@ -1456,13 +1456,13 @@ const UC_LIM={control:[25,500],min:[25,350],dren:[15,40],ce:[0,5]};
 const UC_DEF={fra:{on:true,sec:{fra_s1:{prog:0,dren:0,nombre:'SE01FRANCO'},fra_s2:{prog:1,dren:1,nombre:'SEO2FRANCO'},fra_s3:{prog:2,dren:2,nombre:'SEO3ALTO'},fra_s4:{prog:3,dren:3,nombre:'SE04ENCAÑE'}}}};
 function ucCfg(cab){const c=((st.cfg.ucrop||{})[cab])||UC_DEF[cab]||null;if(!c)return null;return {on:!!c.on,modo:'prueba',lim:{...UC_LIM,...(c.lim||{})},sec:c.sec||{}};}
 st.ucOrd=st.ucOrd??null;let ucCargando=false;
-async function ucCargar(){if(ucCargando||!window.NUBE||Store.mode!=='fb')return;ucCargando=true;try{st.ucOrd=await Store.listCol('abonado_ucrop',0)}catch(e){st.ucOrd=st.ucOrd||[]}ucCargando=false;if(st.tab==='ajriego'||st.tab==='ajustes')renderMain();}
+async function ucCargar(){if(ucCargando||!window.NUBE||Store.mode!=='fb')return;ucCargando=true;try{st.ucOrd=await Store.listCol('ucrop',0)}catch(e){st.ucOrd=st.ucOrd||[]}ucCargando=false;if(st.tab==='ajriego'||st.tab==='ajustes')renderMain();}
 function ucOrdDe(cab,secId,campo){return (st.ucOrd||[]).filter(o=>o.cab===cab&&o.sector===secId&&o.campo===campo).sort((a,b)=>(b.ts||'').localeCompare(a.ts||''))[0]||null;}
 async function ucProbar(cab,secId,campo){const U=ucCfg(cab);if(!U)return;const m=U.sec[secId];if(!m){toast('Falta emparejar este sector con el uCrop (Ajustes)');return;}
   const prog=campo==='ce',nombre=prog?(m.nombre||''):('Drenaje '+((m.dren??0)+1));
   const id=`${cab}_${secId}_${campo}_${Date.now().toString(36)}`;
   const doc={cab,sector:secId,sectorNombre:(cabById(cab).sectores.find(s=>s.id===secId)||{}).nombre||secId,campo,valor:null,idx:{prog:m.prog??0,dren:m.dren??0},nombre,modo:'prueba',estado:'pendiente',por:yoNombre(),porEmail:miEmail(),ts:new Date().toISOString()};
-  try{await Store.setCol('abonado_ucrop',id,doc);(st.ucOrd=st.ucOrd||[]).unshift({...doc,id});toast('Prueba enviada: el PC la hará en el próximo minuto');renderMain();}catch(e){toast(errMsg(e))}}
+  try{await Store.setCol('ucrop',id,doc);(st.ucOrd=st.ucOrd||[]).unshift({...doc,id});toast('Prueba enviada: el PC la hará en el próximo minuto');renderMain();}catch(e){toast(errMsg(e))}}
 function ucEstadoTxt(o){if(!o)return '';const h=o.hechoTs?' · '+accHace(o.hechoTs):'';
   if(o.estado==='pendiente')return `<span class="pill warn">esperando al PC…</span>`;
   if(o.estado==='probado')return `<span class="pill ok">prueba correcta${h}</span> <small>ve ${o.vistoValor??'—'}</small>`;
