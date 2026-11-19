@@ -1,11 +1,11 @@
 // Simula el lector (background.js) con un chrome de mentira y comprueba las salvaguardas del cambio real (modo «cambio»).
 import fs from 'node:fs'; import vm from 'node:vm';
-const src = fs.readFileSync('lector-clima/background.js', 'utf8');
-function montar(guarda, mira) {
-  const ls = [], llamadas = [], posts = [];
+const src = fs.readFileSync('lector-clima/background.js', 'utf8').replace('sondeo: 500, asentar: 1500', 'sondeo: 2, asentar: 2');
+function montar(guarda, mira, atasco = 0) {
+  const ls = [], llamadas = [], posts = []; let url = 'about:blank', sondeos = 0;
   const chrome = { storage: { local: { get: async k => ({ uTab: 5 }), set: async () => {} } }, alarms: { create() {}, onAlarm: { addListener() {} } },
     runtime: { onInstalled: { addListener() {} }, onStartup: { addListener() {} }, onMessage: { addListener() {} } }, action: { setBadgeText() {}, setBadgeBackgroundColor() {} },
-    tabs: { get: async id => ({ id }), create: async () => ({ id: 5 }), update: async (id, o) => { llamadas.push(['nav', o.url]); setTimeout(() => ls.forEach(h => h(id, { status: 'complete' })), 2); },
+    tabs: { get: async id => { if (url.startsWith('https://app.ucrop.net/') && atasco > 0 && sondeos++ < atasco) return { id, status: 'complete', url: 'chrome-extension://abc/' }; return { id, status: 'complete', url }; }, create: async () => ({ id: 5 }), update: async (id, o) => { llamadas.push(['nav', o.url]); url = o.url; sondeos = 0; setTimeout(() => ls.forEach(h => h(id, { status: 'complete' })), 2); },
       onUpdated: { addListener: h => ls.push(h), removeListener: h => { const i = ls.indexOf(h); if (i >= 0) ls.splice(i, 1); } } },
     scripting: { executeScript: async ({ func, args, world }) => { llamadas.push([func.name, world || 'aislado', args]);
       if (func.name === 'ucropGuarda') return [{ result: guarda(args) }]; if (func.name === 'ucropMira') return [{ result: mira(args) }]; throw new Error('func ' + func.name); } } };
@@ -41,4 +41,7 @@ for (const est of ['noactivo', 'boton']) { const t = montar(a => ({ ok: true, co
 { const t = montar(okG, okM(200)); await t.o(C, P, [ord({ modo: 'borrar' })]); ver(t.posts[0].hechos[0].estado === 'fallo' && guardas(t.llamadas) === 0, 'modo raro'); }
 { const t = montar(okG, okM(150)); await t.o(C, P, [ord({ modo: 'prueba' })]); ver(guardas(t.llamadas) === 0 && t.posts[0].hechos[0].estado === 'probado', 'una prueba nunca guarda'); }
 { const t = montar(okG, okM(150)); await t.o(C, P, [ord({ modo: 'ensayo', valor: 99 })]); ver(guardas(t.llamadas) === 0, 'un ensayo nunca usa la función de guardar'); }
+{ const t = montar(okG, okM(200), 5); await t.o(C, P, [ord()]); ver(t.posts[0].hechos[0].estado === 'hecho' && guardas(t.llamadas) === 1, 'espera a que la pestaña esté de verdad en el uCrop: ' + JSON.stringify(t.posts[0].hechos[0])); }
+{ const t = montar(okG, okM(200), 1e9); await t.o(C, P, [ord()]); const h = t.posts[0].hechos[0]; ver(h.estado === 'fallo' && /no pude abrir la pantalla/.test(h.motivo) && guardas(t.llamadas) === 0, 'pestaña atascada en otra página: ' + JSON.stringify(h)); }
+{ const t = montar(okG, okM(150), 1e9); await t.o(C, P, [ord({ modo: 'ensayo', valor: 99 })]); const h = t.posts[0].hechos[0]; ver(h.estado === 'fallo' && /no pude abrir la pantalla/.test(h.motivo) && !t.llamadas.some(l => l[0] === 'ucropMira'), 'ensayo con pestaña atascada no lee nada'); }
 console.log(fallos ? 'FALLOS ' + fallos : 'OK'); process.exit(fallos ? 1 : 0);

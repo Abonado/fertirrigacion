@@ -285,6 +285,17 @@ async function tabTrabajo() {
   const t = await chrome.tabs.create({ url: 'about:blank', active: false, pinned: false });
   await chrome.storage.local.set({ uTab: t.id }); return t.id;
 }
+const UC_ESPERA = { sondeo: 500, asentar: 1500 };
+/* Abre una pantalla del uCrop en la pestaña de trabajo y espera a que la pestaña esté DE VERDAD en app.ucrop.net y cargada
+   (no se fía del primer aviso de «cargada»: puede ser el de la página en blanco anterior o de una página de otra extensión). */
+async function irA(tabId, url) {
+  const lista = async () => { try { const t = await chrome.tabs.get(tabId); return !!t && t.status === 'complete' && /^https:\/\/app\.ucrop\.net\//.test(t.url || ''); } catch (e) { return false; } };
+  for (let intento = 0; intento < 2; intento++) {
+    await chrome.tabs.update(tabId, { url, active: false });
+    for (let i = 0; i < 40; i++) { await new Promise(r => setTimeout(r, UC_ESPERA.sondeo)); if (await lista()) { await new Promise(r => setTimeout(r, UC_ESPERA.asentar)); return true; } }
+  }
+  return false;
+}
 const esperarCarga = tabId => new Promise(res => { let fin = false; const acabar = () => { if (fin) return; fin = true; chrome.tabs.onUpdated.removeListener(h); res(); };
   const h = (id, info) => { if (id === tabId && info.status === 'complete') acabar(); };
   chrome.tabs.onUpdated.addListener(h); setTimeout(acabar, 15000); });
@@ -301,7 +312,7 @@ async function cambioUcrop(o, url, tabId) {
   const edad = (Date.now() - Date.parse(o.ts || '')) / 6e4;
   if (!isFinite(edad) || edad > UC_CAMBIO_MAX_MIN || edad < -5) return no(`la orden ${isFinite(edad) ? 'es de hace ' + Math.round(edad) + ' min: caducó' : 'no trae fecha'}; confírmala otra vez`);
   try {
-    await chrome.tabs.update(tabId, { url, active: false }); await esperarCarga(tabId); await new Promise(r => setTimeout(r, 1500));
+    if (!(await irA(tabId, url))) return no('no pude abrir la pantalla del uCrop (la pestaña de trabajo se quedó en otra página)');
     let r; try { [{ result: r }] = await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', func: ucropGuarda, args: [o.campo, nom, o.valor, o.valorAntes] }); } catch (e) { return no('no puedo escribir en la pantalla: ' + e.message); }
     if (!r || !r.ok) return no((r && r.motivo) || 'no se pudo');
     if (!r.coincide) return no(`la pantalla abierta es «${r.titulo || 'sin título'}», no ${nom}`);
@@ -310,8 +321,8 @@ async function cambioUcrop(o, url, tabId) {
     if (r.estado === 'boton') return no(`no encuentro el botón «Guardar» esperado (hay: ${r.boton || 'ninguno'})`);
     if (r.estado === 'noactivo') return no(`escribí ${o.valor} (la pantalla puso ${r.leido}) pero «Guardar» no se activó; dejé el valor como estaba`);
     if (r.estado !== 'pulsado') return no('respuesta rara de la pantalla');
-    await chrome.tabs.update(tabId, { url, active: false }); await esperarCarga(tabId); await new Promise(x => setTimeout(x, 1500));   // recargar y mirar si quedó guardado
-    let v; try { [{ result: v }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, nom, null] }); } catch (e) { v = null; }
+    const abierta = await irA(tabId, url);   // recargar y mirar si quedó guardado
+    let v = null; if (abierta) try { [{ result: v }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, nom, null] }); } catch (e) { v = null; }
     if (!v || !v.ok || !v.coincide || v.valor == null) return { id: o.id, estado: 'fallo', nombre: r.titulo, motivo: `OJO: pulsé Guardar (de ${o.valorAntes} a ${o.valor}) pero no pude comprobar el resultado${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
     if (Math.abs(v.valor - o.valor) < 0.0005) return { id: o.id, estado: 'hecho', nombre: v.titulo, valor: v.valor, motivo: `guardado: de ${o.valorAntes} a ${v.valor} (comprobado al recargar)` };
     return { id: o.id, estado: 'fallo', nombre: v.titulo, valor: v.valor, motivo: `OJO: pulsé Guardar pero al recargar pone ${v.valor}, no ${o.valor}${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
@@ -332,7 +343,7 @@ async function ordenesUcrop(c, P, ordenes) {
     if (ens) { const L = UC_LIM[o.campo];
       if (!L || typeof o.valor !== 'number' || !isFinite(o.valor) || o.valor < L[0] || o.valor > L[1]) { hechos.push({ id: o.id, estado: 'fallo', motivo: `valor fuera de los límites (${L ? L.join('–') : 'campo desconocido'}): no toco nada` }); continue; } }
     try {
-      await chrome.tabs.update(tabId, { url, active: false }); await esperarCarga(tabId); await new Promise(r => setTimeout(r, 1500));
+      if (!(await irA(tabId, url))) { hechos.push({ id: o.id, estado: 'fallo', motivo: 'no pude abrir la pantalla del uCrop (la pestaña de trabajo se quedó en otra página)' }); continue; }
       let res; try { [{ result: res }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, o.nombre || '', ens ? o.valor : null] }); } catch (e) { res = { ok: false, motivo: 'no puedo leer la pantalla: ' + e.message }; }
       if (ens && res && res.ok && res.coincide && res.ensayo && res.ensayo.restaurado && !res.ensayo.guardarActivo) {   // otra vez, ahora dentro de la propia página
         try { const [{ result: r2 }] = await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', func: ucropMira, args: [o.campo, o.nombre || '', o.valor] });
