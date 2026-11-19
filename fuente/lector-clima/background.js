@@ -219,14 +219,21 @@ async function ucropMira(campo, nombreEsperado, ensayoValor) {
   // No pulsa NINGÚN botón: lo único que hace con «Guardar» es mirar si está activo.
   if (ensayoValor != null && coincide) {
     const orig = inp.value, coma = /,/.test(orig), txt = v => (coma ? String(v).replace('.', ',') : String(v));
-    const poner = v => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(inp, v); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); };
+    const clases = () => (inp.className.match(/ng-(?:pristine|dirty|touched|untouched|valid|invalid)/g) || []).join(' ');
+    const fijar = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    // como si alguien escribiera: foco, el valor, evento de entrada, tecla y cambio (Angular decide por estos eventos si hubo cambio)
+    const poner = v => { inp.focus(); fijar.call(inp, v);
+      inp.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: String(v) }));
+      inp.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: '1' })); inp.dispatchEvent(new Event('change', { bubbles: true })); };
+    const soltar = () => { inp.dispatchEvent(new FocusEvent('blur')); inp.dispatchEvent(new FocusEvent('focusout', { bubbles: true })); inp.blur(); };
     const guardar = () => [...document.querySelectorAll('button')].find(b => /^\s*guardar\b/i.test(b.innerText || b.textContent || ''));
-    const antes = guardar(), activoAntes = !!antes && !antes.disabled;
+    const clasesAntes = clases();
     poner(txt(ensayoValor)); await dormir(700);
-    const leido = parseFloat(String(inp.value).replace(',', '.')), g = guardar();
-    const guardarActivo = !!g && !g.disabled;
-    poner(orig); await dormir(500);
-    res.ensayo = { escrito: ensayoValor, leido: isFinite(leido) ? leido : null, guardarActivo, activoAntes, original: orig, restaurado: inp.value === orig };
+    let g = guardar(), activo = !!g && !g.disabled, con = activo ? 'escribir' : '';
+    if (!activo) { soltar(); await dormir(700); g = guardar(); activo = !!g && !g.disabled; if (activo) con = 'salir del campo'; }
+    const leido = parseFloat(String(inp.value).replace(',', '.')), clasesDespues = clases(), hayBoton = !!g;
+    poner(orig); soltar(); await dormir(500);
+    res.ensayo = { escrito: ensayoValor, leido: isFinite(leido) ? leido : null, guardarActivo: activo, con, hayBoton, clasesAntes, clasesDespues, original: orig, restaurado: inp.value === orig };
   }
   return res;
 }
@@ -252,13 +259,16 @@ async function ordenesUcrop(c, P, ordenes) {
     try {
       await chrome.tabs.update(tabId, { url, active: false }); await esperarCarga(tabId); await new Promise(r => setTimeout(r, 1500));
       let res; try { [{ result: res }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, o.nombre || '', ens ? o.valor : null] }); } catch (e) { res = { ok: false, motivo: 'no puedo leer la pantalla: ' + e.message }; }
+      if (ens && res && res.ok && res.coincide && res.ensayo && res.ensayo.restaurado && !res.ensayo.guardarActivo) {   // otra vez, ahora dentro de la propia página
+        try { const [{ result: r2 }] = await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', func: ucropMira, args: [o.campo, o.nombre || '', o.valor] });
+          if (r2 && r2.ok && r2.coincide && r2.ensayo) { r2.ensayo.mundo = 'pagina'; if (r2.ensayo.guardarActivo || !r2.ensayo.restaurado) res = r2; else res.ensayo.mundo = 'ambos'; } } catch (e) {} }
       if (!res || !res.ok) hechos.push({ id: o.id, estado: 'fallo', motivo: (res && res.motivo) || 'no se pudo' });
       else if (!res.coincide) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `la pantalla abierta es «${res.titulo || 'sin título'}», no ${o.nombre || 'la esperada'}: no toco nada` });
       else if (ens) { const e = res.ensayo || {};
         if (!e.restaurado) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `OJO: no pude dejar el valor como estaba (era ${e.original}). Cierra esa pestaña del uCrop sin guardar` });
         else if (e.leido !== o.valor) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `la pantalla no aceptó el ${o.valor} (puso ${e.leido}). No he guardado nada` });
-        else if (!e.guardarActivo) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `escribí ${o.valor} pero «Guardar» no se activó. No he guardado nada` });
-        else hechos.push({ id: o.id, estado: 'probado', nombre: res.titulo || '', valor: res.valor, motivo: `${res.titulo}: escribí ${o.valor}, la pantalla lo aceptó y «Guardar» se activó. He vuelto a dejar ${e.original}; no he guardado nada` }); }
+        else if (!e.guardarActivo) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `escribí ${o.valor} pero «Guardar» no se activó. No he guardado nada · campo: ${e.clasesAntes || '?'} → ${e.clasesDespues || '?'} · botón ${e.hayBoton ? 'visto' : 'NO visto'}${e.mundo ? ' · probado también ' + e.mundo : ''}` });
+        else hechos.push({ id: o.id, estado: 'probado', nombre: res.titulo || '', valor: res.valor, motivo: `${res.titulo}: escribí ${o.valor}, la pantalla lo aceptó y «Guardar» se activó (al ${e.con}${e.mundo === 'pagina' ? ', desde la página' : ''}). He vuelto a dejar ${e.original}; no he guardado nada` }); }
       else hechos.push({ id: o.id, estado: 'probado', nombre: res.titulo || o.nombre || '', valor: res.valor, motivo: `prueba correcta: ${res.titulo || o.nombre || ''} · ahora pone ${res.valor}` });
     } catch (e) { hechos.push({ id: o.id, estado: 'fallo', motivo: 'error: ' + (e.message || e) }); }
     if (ens) { try { await chrome.tabs.update(tabId, { url: 'about:blank' }); } catch (e) {} }   // sin guardar: lo escrito se descarta

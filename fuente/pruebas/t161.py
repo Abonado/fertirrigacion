@@ -41,6 +41,10 @@ async def main():
         # si «Guardar» no se activa, lo dice
         r = await mira(pag_ens('UCROP | Drenaje 2', 'controlRadiation', '150', activa=False), 'control', 'Drenaje 2', 33)
         assert r['ensayo']['guardarActivo'] is False and r['ensayo']['restaurado'], r
+        # Angular real: «Guardar» solo se activa al salir del campo → el lector sale del campo y lo detecta
+        r = await mira(pag_ens('UCROP | Drenaje 2', 'controlRadiation', '150', activa=False).replace("</script>", ";document.querySelector('input').addEventListener('blur',()=>{document.getElementById('g').disabled=false});</script>").replace("(()=>{{", "(()=>{{"), 'control', 'Drenaje 2', 33)
+        assert r['ensayo']['guardarActivo'] and r['ensayo']['con'] == 'salir del campo' and r['ensayo']['restaurado'], r
+        assert await pg.evaluate("window.__clics") == 0, 'tocó algo'
         # pantalla equivocada: no escribe nada
         r = await mira(pag_ens('UCROP | Drenaje 1', 'controlRadiation', '150'), 'control', 'Drenaje 2', 33)
         assert not r['coincide'] and 'ensayo' not in r, r
