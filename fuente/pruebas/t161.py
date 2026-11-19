@@ -50,9 +50,9 @@ async def main():
         assert not r['coincide'] and 'ensayo' not in r, r
         assert await pg.evaluate("document.querySelector('input').value") == '150', 'escribió en la pantalla equivocada'
         # el ÚNICO clic de todo el lector está dentro de ucropGuarda; ucropMira (lo que mira y ensaya) no pulsa nada
-        assert SRC.count('.click(') == 1, 'tiene que haber un solo clic en el lector'
+        assert SRC.count('.click(') == 2, 'tiene que haber solo dos clics en el lector: Guardar y aceptar su aviso'
         assert '.click(' not in FN, 'ucropMira pulsa algo'
-        assert re.search(r'async function ucropGuarda\(.*?\n\}\n', SRC, re.S).group(0).count('.click(') == 1
+        assert re.search(r'async function ucropGuarda\(.*?\n\}\n', SRC, re.S).group(0).count('.click(') == 2
         # límites y modos del lector
         assert "UC_MODOS = ['prueba', 'ensayo', 'cambio']" in SRC and 'valor fuera de los límites' in SRC
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)

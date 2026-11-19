@@ -273,10 +273,23 @@ async function ucropGuarda(campo, nombreEsperado, nuevo, antes) {
   const leido = parseFloat(String(inp.value).replace(',', '.'));
   if (!g) { poner(orig); soltar(); return { ...res, estado: 'boton', boton: botones().map(b => (b.innerText || '').trim()).join(' | ').slice(0, 80), leido }; }
   if (!activo || Math.abs(leido - nuevo) > 0.0005) { poner(orig); soltar(); await dormir(300); return { ...res, estado: 'noactivo', leido }; }
-  g.click();   // ← el único clic de toda la extensión
+  g.click();   // ← clic 1 de 2: «Guardar programa/drenaje»
+  // El uCrop responde con un aviso «¿Está seguro? Los cambios realizados en este apartado pueden afectar a los programas asociados…».
+  // Es parte del mismo guardado (la orden ya la confirmó una persona en la app): se pulsa su botón de aceptar, y solo si el aviso es ese
+  // y hay UN solo botón claro de aceptar. Cualquier otro aviso, o dudas con los botones: no se toca y se cuenta qué salió.
+  const sinAc = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+  const avisos = () => [...document.querySelectorAll('[role="dialog"],mat-dialog-container,.modal.show,.swal2-popup,.cdk-overlay-pane')].filter(d => d.offsetParent !== null || getComputedStyle(d).display !== 'none');
+  let aviso = null, confirmado = '';
+  for (let i = 0; i < 16 && !aviso; i++) { await dormir(250); aviso = avisos().find(d => /pueden afectar a los programas asociados/.test(sinAc(d.innerText || d.textContent))) || null; }
+  if (aviso) {
+    const bs = [...aviso.querySelectorAll('button')], etiqueta = b => sinAc(b.innerText || b.textContent);
+    const ok = bs.filter(b => !b.disabled && /^(si|aceptar|continuar|confirmar|ok|guardar|si,? (continuar|guardar|estoy seguro))$/.test(etiqueta(b)));
+    if (ok.length === 1) { confirmado = etiqueta(ok[0]); ok[0].click(); }   // ← clic 2 de 2: aceptar el aviso del propio guardado
+    else return { ...res, estado: 'aviso', leido, dialogo: sinAc(aviso.innerText || aviso.textContent).slice(0, 140), botones: bs.map(etiqueta).join(' | ').slice(0, 80) };
+  }
   await dormir(3000);
-  const dlg = [...document.querySelectorAll('[role="dialog"],mat-dialog-container,.modal.show,.swal2-popup,.cdk-overlay-pane')].map(d => (d.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).join(' | ').slice(0, 120);
-  return { ...res, estado: 'pulsado', leido, dialogo: dlg };
+  const dlg = avisos().map(d => (d.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).join(' | ').slice(0, 120);
+  return { ...res, estado: 'pulsado', leido, dialogo: dlg, confirmado };
 }
 
 async function tabTrabajo() {
@@ -320,11 +333,12 @@ async function cambioUcrop(o, url, tabId) {
     if (r.estado === 'yaestaba') return { id: o.id, estado: 'hecho', nombre: r.titulo, valor: r.valor, motivo: `ya estaba en ${o.valor}: no hizo falta guardar` };
     if (r.estado === 'boton') return no(`no encuentro el botón «Guardar» esperado (hay: ${r.boton || 'ninguno'})`);
     if (r.estado === 'noactivo') return no(`escribí ${o.valor} (la pantalla puso ${r.leido}) pero «Guardar» no se activó; dejé el valor como estaba`);
+    if (r.estado === 'aviso') return { id: o.id, estado: 'fallo', nombre: r.titulo, motivo: `OJO: pulsé Guardar y el uCrop sacó un aviso que no reconozco (${r.dialogo}; botones: ${r.botones || 'ninguno'}). No lo he aceptado. Míralo en el uCrop` };
     if (r.estado !== 'pulsado') return no('respuesta rara de la pantalla');
     const abierta = await irA(tabId, url);   // recargar y mirar si quedó guardado
     let v = null; if (abierta) try { [{ result: v }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, nom, null] }); } catch (e) { v = null; }
     if (!v || !v.ok || !v.coincide || v.valor == null) return { id: o.id, estado: 'fallo', nombre: r.titulo, motivo: `OJO: pulsé Guardar (de ${o.valorAntes} a ${o.valor}) pero no pude comprobar el resultado${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
-    if (Math.abs(v.valor - o.valor) < 0.0005) return { id: o.id, estado: 'hecho', nombre: v.titulo, valor: v.valor, motivo: `guardado: de ${o.valorAntes} a ${v.valor} (comprobado al recargar)` };
+    if (Math.abs(v.valor - o.valor) < 0.0005) return { id: o.id, estado: 'hecho', nombre: v.titulo, valor: v.valor, motivo: `guardado: de ${o.valorAntes} a ${v.valor} (comprobado al recargar${r.confirmado ? '; el uCrop pidió confirmar y se aceptó' : ''})` };
     return { id: o.id, estado: 'fallo', nombre: v.titulo, valor: v.valor, motivo: `OJO: pulsé Guardar pero al recargar pone ${v.valor}, no ${o.valor}${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
   } catch (e) { return { id: o.id, estado: 'fallo', motivo: 'error: ' + (e.message || e) + ' · mira el valor en el uCrop' }; }
 }

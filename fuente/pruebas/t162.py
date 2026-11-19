@@ -6,12 +6,14 @@ SRC = open('lector-clima/background.js').read()
 m = re.search(r'async function ucropGuarda\(campo, nombreEsperado, nuevo, antes\) \{.*?\n\}\n', SRC, re.S); assert m, 'no encuentro ucropGuarda'
 FN = m.group(0)
 r = subprocess.run(['node', 'pruebas/datos/prueba-lector-cambio.mjs'], capture_output=True, text=True); print(r.stdout.strip(), r.stderr.strip()[:300]); assert r.returncode == 0 and 'OK' in r.stdout, 'simulación del lector'
-def pagina(titulo, campo, valor, boton='Guardar drenaje', activa='input', extra=''):
+def pagina(titulo, campo, valor, boton='Guardar drenaje', activa='input', extra='', aviso=''):
     ev = {'input': "inp.addEventListener('input',()=>{g.disabled=false});", 'blur': "inp.addEventListener('blur',()=>{g.disabled=false});", 'nunca': ''}[activa]
+    av = f"g.addEventListener('click',()=>setTimeout(()=>document.body.insertAdjacentHTML('beforeend',{aviso!r}),300));" if aviso else ''
     return f"""<!doctype html><title>{titulo}</title><body><input formcontrolname="{campo}" value="{valor}">{extra}
       <button id="g" disabled>{boton}</button><button id="cancel">Cancelar</button><button id="gs">Guardar y salir</button>
-      <script>(()=>{{window.__clics=[];document.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>window.__clics.push(b.id+'='+document.querySelector('input').value)));
-      const inp=document.querySelector('input'),g=document.getElementById('g');{ev}}})()</script></body>"""
+      <script>(()=>{{window.__clics=[];document.addEventListener('click',e=>{{const b=e.target.closest('button');if(b)window.__clics.push(b.id+'='+document.querySelector('input').value)}});
+      const inp=document.querySelector('input'),g=document.getElementById('g');{ev}{av}}})()</script></body>"""
+SEGURO = '<div role="dialog"><p>¿Está seguro? Los cambios realizados en este apartado pueden afectar a los programas asociados. ¿Quieres continuar?</p>%s</div>'
 async def main():
     async with async_playwright() as p:
         b = await p.chromium.launch(); pg = await b.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)))
@@ -28,6 +30,16 @@ async def main():
         # «Guardar» solo se activa al salir del campo (Angular real)
         r = await guarda(pagina('UCROP | Drenaje 2', 'controlRadiation', '150', activa='blur'), 'control', 'Drenaje 2', 180, 150)
         assert r['estado'] == 'pulsado' and await clics() == ['g=180'], (r, await clics())
+        # el uCrop pide confirmar el guardado («¿Está seguro? … programas asociados»): se acepta SU botón de aceptar, y solo ese
+        r = await guarda(pagina('UCROP | Drenaje 1', 'controlRadiation', '150', aviso=SEGURO % '<button id="cancel2">Cancelar</button><button id="ok">Aceptar</button>'), 'control', 'Drenaje 1', 200, 150)
+        assert r['estado'] == 'pulsado' and r['confirmado'] == 'aceptar' and await clics() == ['g=200', 'ok=200'], (r, await clics())
+        # un aviso de otra cosa no se acepta
+        r = await guarda(pagina('UCROP | Drenaje 1', 'controlRadiation', '150', aviso='<div role="dialog"><p>¿Borrar el programa?</p><button id="ok">Aceptar</button></div>'), 'control', 'Drenaje 1', 200, 150)
+        assert r['estado'] == 'pulsado' and not r['confirmado'] and await clics() == ['g=200'], (r, await clics())
+        # el aviso bueno pero con dos botones de aceptar posibles, o sin ninguno: no pulsa ninguno
+        for bots in ['<button id="ok">Aceptar</button><button id="ok2">Continuar</button>', '<button id="cancel2">Cancelar</button>', '<button id="x">Quizá</button>']:
+            r = await guarda(pagina('UCROP | Drenaje 1', 'controlRadiation', '150', aviso=SEGURO % bots), 'control', 'Drenaje 1', 200, 150)
+            assert r['estado'] == 'aviso' and await clics() == ['g=200'], (bots, r, await clics())
         # el valor de ahora NO es el que se confirmó: no escribe ni pulsa
         r = await guarda(pagina('UCROP | Drenaje 1', 'controlRadiation', '160'), 'control', 'Drenaje 1', 200, 150)
         assert r['estado'] == 'distinto' and r['valor'] == 160 and await clics() == [] and await val() == '160', r

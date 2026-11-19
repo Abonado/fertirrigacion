@@ -38,7 +38,9 @@ CONTROL DEL uCROP
    pantalla de confirmación de la app. El lector vuelve a comprobar TODO por su cuenta: límites, que la orden venga confirmada y
    no tenga más de 30 min, que la pantalla sea la del sector y que el valor de ahora sea el que se confirmó. Entonces escribe el
    valor, pulsa SOLO «Guardar programa/drenaje» (aunque el cabezal esté regando), recarga la pantalla y comprueba que quedó guardado.
-   Si algo no cuadra no pulsa nada. Máximo 3 cambios por vuelta. Es el único botón que pulsa el lector.
+   El uCrop pide confirmar el guardado («¿Está seguro? … programas asociados»): el lector acepta ese aviso, y solo ese, si tiene un único
+   botón claro de aceptar; con cualquier otro aviso no pulsa nada y lo cuenta en la app.
+   Si algo no cuadra no pulsa nada. Máximo 3 cambios por vuelta. Son los únicos dos clics del lector: Guardar y aceptar ese aviso.
  · Para que funcione, el PC tiene que estar con sesión abierta en el uCrop. Abre una pestaña suya aparte.
  · Las órdenes se recogen en cada lectura (cada «Leer cada» min) o con «Leer y mandar ya» del panel.
  · Si cambias el worker del servidor puente hay que volver a desplegarlo (Cloudflare › puente-sensores › Edit code).
