@@ -180,8 +180,14 @@ async function leerUna(c, i, e, toca = true) {
   if (Date.now() - desde > 45 * 60000) { await chrome.tabs.reload(tab.id); desde = Date.now(); }
   try {
     const j = await mandar(c, P.cab, r);
-    if (r.tipo === 'riego' && j && Array.isArray(j.ordenes) && j.ordenes.length) await ordenesUcrop(c, P, j.ordenes).catch(() => {});
-    const msg = `Enviado: ${resumen(r)}` + (r.empieza ? ` · empieza ${r.estado.prog || 'un riego'}` : '');
+    let ord = '';   // lo que pasa con las órdenes de la app, a la vista en el panel (antes los fallos se perdían sin decir nada)
+    if (r.tipo === 'riego') {
+      if (!j || !j.ord) ord = ' · el servidor no contesta con órdenes (¿falta actualizar el worker?)';
+      else if (j.ord.err) ord = ' · órdenes: el servidor no pudo mirarlas (' + j.ord.err + ')';
+      else ord = ` · órdenes pendientes: ${j.ord.n}`;
+      if (j && Array.isArray(j.ordenes) && j.ordenes.length) { try { ord += ' · ' + await ordenesUcrop(c, P, j.ordenes); } catch (err) { ord += ' · error al hacerlas: ' + (err.message || err); } }
+    }
+    const msg = `Enviado: ${resumen(r)}` + (r.empieza ? ` · empieza ${r.estado.prog || 'un riego'}` : '') + ord;
     return { ok: true, ...r, msg, est: { ult: Date.now(), fallos: 0, firma: r.firma, desde, tipo: r.tipo, estado: r.estado || null, ultimo: r.tipo === 'riego' ? null : r.comp, ultimoR: r.tipo === 'riego' ? r : null, msg } };
   } catch (err) { const msg = 'Leído pero no enviado: ' + err.message; return { ok: false, ...r, msg, est: { ...e, firma: r.firma, desde, msg } }; }
 }
@@ -216,7 +222,7 @@ const esperarCarga = tabId => new Promise(res => { let fin = false; const acabar
   chrome.tabs.onUpdated.addListener(h); setTimeout(acabar, 15000); });
 
 async function ordenesUcrop(c, P, ordenes) {
-  const m = /\/farming\/([^/]+)\//.exec(P.url || ''); if (!m) return;   // la página de riego da el nº de serie del equipo
+  const m = /\/farming\/([^/]+)\//.exec(P.url || ''); if (!m) return 'la página guardada no tiene el nº de equipo';   // la página de riego da el nº de serie del equipo
   const base = `https://app.ucrop.net/farming/${m[1]}/irrigation`, tabId = await tabTrabajo(), hechos = [];
   for (const o of ordenes) {
     const prog = o.campo === 'ce', idx = (o.idx || {}), url = prog ? `${base}/program/${idx.prog}` : `${base}/drainages_v3/${idx.dren}`;
@@ -228,7 +234,9 @@ async function ordenesUcrop(c, P, ordenes) {
       else hechos.push({ id: o.id, estado: 'probado', nombre: o.nombre || '', valor: res.valor, motivo: `prueba correcta: ahora pone ${res.valor}` });
     } catch (e) { hechos.push({ id: o.id, estado: 'fallo', motivo: 'error: ' + (e.message || e) }); }
   }
-  if (hechos.length) try { await fetch(c.puente.replace(/\/+$/, '') + '/riego', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.token }, body: JSON.stringify({ cab: P.cab, hechos }) }); } catch (e) {}
+  let envio = '';
+  if (hechos.length) try { const rr = await fetch(c.puente.replace(/\/+$/, '') + '/riego', { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + c.token }, body: JSON.stringify({ cab: P.cab, hechos }) }); if (!rr.ok) envio = ' (el servidor no guardó el resultado: ' + rr.status + ')'; } catch (e) { envio = ' (no pude mandar el resultado: ' + e.message + ')'; }
+  return `hechas ${hechos.length}: ${hechos.filter(h => h.estado === 'probado').length} bien, ${hechos.filter(h => h.estado !== 'probado').length} con fallo` + envio;
 }
 
 /* El panel del lector: probar en la pestaña de delante, guardar la página y mandar ya */

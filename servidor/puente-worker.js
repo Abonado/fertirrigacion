@@ -122,7 +122,8 @@ async function ordenesPendientes(env, cab) {
       where: { compositeFilter: { op: 'AND', filters: [
         { fieldFilter: { field: { fieldPath: 'cab' }, op: 'EQUAL', value: { stringValue: cab } } },
         { fieldFilter: { field: { fieldPath: 'estado' }, op: 'EQUAL', value: { stringValue: 'pendiente' } } }] } } } });
-  } catch (e) { return []; }
+  } catch (e) { ordenesPendientes.err = String(e && e.message || e).slice(0, 160); return []; }
+  ordenesPendientes.err = null;
   const out = [];
   for (const row of (Array.isArray(d) ? d : [])) { const doc = row.document; if (!doc) continue; const f = doc.fields || {};
     out.push({ id: doc.name.split('/').pop(), campo: deFS(f.campo), valor: deFS(f.valor), idx: deFS(f.idx), nombre: deFS(f.nombre), modo: deFS(f.modo) || 'prueba' }); }
@@ -158,7 +159,7 @@ async function registrarRiego(env, b) {
   const cab = corto(b.cab, 12).replace(/[^a-z0-9]/gi, '').toLowerCase(); if (!cab) return { error: 'cab' };
   // el lector puede mandar solo el resultado de las órdenes que ha aplicado (sin lectura de drenajes)
   const hechos = b.hechos ? await guardarHechos(env, b.hechos) : 0;
-  if (hechos && !(Array.isArray(b.dren) && b.dren.length)) return { ok: true, hechos, ordenes: await ordenesPendientes(env, cab) };
+  if (hechos && !(Array.isArray(b.dren) && b.dren.length)) { const o = await ordenesPendientes(env, cab); return { ok: true, hechos, ordenes: o, ord: { n: o.length, err: ordenesPendientes.err } }; }
   const N = (x, a, z) => typeof x === 'number' && isFinite(x) && x >= a && x <= z ? Math.round(x * 100) / 100 : null;
   const D = (Array.isArray(b.dren) ? b.dren : []).slice(0, 24).map(d => d && ({ n: Math.round(+d.n), act: N(d.act, 0, 500), dU: N(d.dU, 0, 100), dH: N(d.dH, 0, 100),
     rU: N(d.rU, 0, 1e5), rH: N(d.rH, 0, 1e5), drU: N(d.drU, 0, 1e5), drH: N(d.drH, 0, 1e5), pU: N(d.pU, 0, 1e5), pH: N(d.pH, 0, 1e5),
@@ -174,7 +175,7 @@ async function registrarRiego(env, b) {
     updateMask: { fieldPaths: ['dev', 'nodo', 'cab', 'fecha', 'ts'] }, updateTransforms: [{ fieldPath: 'p', appendMissingElements: { values: [aFS({ t, v })] } }] }] });
   let aviso = null; if (b.empieza && estado && estado.regando) aviso = await avisarRiego(env, cab, estado).catch(e => ({ error: corto(e.message, 80) }));
   const ordenes = await ordenesPendientes(env, cab);
-  return { ok: true, n: D.length, ...(hechos ? { hechos } : {}), ...(ordenes.length ? { ordenes } : {}), ...(aviso ? { aviso } : {}) };
+  return { ok: true, n: D.length, ord: { n: ordenes.length, err: ordenesPendientes.err }, ...(hechos ? { hechos } : {}), ...(ordenes.length ? { ordenes } : {}), ...(aviso ? { aviso } : {}) };
 }
 /* Aviso de que empieza un riego: a quien diga la app (abonado_config/finca → avisoRiego {on, para:[correos], cabs:[…]}); sin nada, al
    administrador. El aviso de cada cabezal sustituye al anterior en el móvil (mismo «tag»), así no se amontonan. */
