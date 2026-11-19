@@ -203,13 +203,16 @@ async function ucropMira(campo, nombreEsperado) {
   const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC' };
   const fc = forms[campo]; if (!fc) return { ok: false, motivo: 'campo desconocido' };
   const dormir = ms => new Promise(r => setTimeout(r, ms));
-  let inp = null;
-  for (let i = 0; i < 40 && !inp; i++) { inp = document.querySelector(`input[formcontrolname="${fc}"]`); if (!inp) await dormir(250); }
+  // La pantalla se identifica por su título («UCROP | SE01FRANCO», «UCROP | Drenaje 1»), no por el texto de la página: la de programas
+  // lista todos los programas en una tabla, así que el nombre aparecería en cualquiera. En uCrop unos nombres llevan la letra O y otros el cero.
+  const norm = t => String(t || '').toUpperCase().replace(/\s+/g, '').replace(/O/g, '0');
+  const titulo = () => { const m = /^\s*UCROP\s*\|\s*(.+?)\s*$/i.exec(document.title || ''); return m ? m[1].trim() : ''; };
+  let inp = null, tit = '';
+  for (let i = 0; i < 40 && !(inp && tit); i++) { inp = document.querySelector(`input[formcontrolname="${fc}"]`); tit = titulo(); if (!(inp && tit)) await dormir(250); }
   if (!inp) return { ok: false, motivo: 'no encuentro el campo en la pantalla (¿cargó bien?)' };
-  const txt = (document.body.innerText || '').replace(/\s+/g, ' ');
-  const coincide = !nombreEsperado || txt.includes(nombreEsperado);
+  const coincide = !nombreEsperado || (!!tit && norm(tit) === norm(nombreEsperado));
   const valor = inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
-  return { ok: true, coincide, valor: isFinite(valor) ? valor : null, nombre: nombreEsperado || '' };
+  return { ok: true, coincide, valor: isFinite(valor) ? valor : null, nombre: nombreEsperado || '', titulo: tit };
 }
 
 async function tabTrabajo() {
@@ -231,8 +234,8 @@ async function ordenesUcrop(c, P, ordenes) {
       await chrome.tabs.update(tabId, { url, active: false }); await esperarCarga(tabId); await new Promise(r => setTimeout(r, 1500));
       let res; try { [{ result: res }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, o.nombre || ''] }); } catch (e) { res = { ok: false, motivo: 'no puedo leer la pantalla: ' + e.message }; }
       if (!res || !res.ok) hechos.push({ id: o.id, estado: 'fallo', motivo: (res && res.motivo) || 'no se pudo' });
-      else if (!res.coincide) hechos.push({ id: o.id, estado: 'fallo', nombre: res.nombre, valor: res.valor, motivo: `la pantalla abierta no es ${o.nombre || 'la esperada'}: no toco nada` });
-      else hechos.push({ id: o.id, estado: 'probado', nombre: o.nombre || '', valor: res.valor, motivo: `prueba correcta: ahora pone ${res.valor}` });
+      else if (!res.coincide) hechos.push({ id: o.id, estado: 'fallo', nombre: res.titulo || '', valor: res.valor, motivo: `la pantalla abierta es «${res.titulo || 'sin título'}», no ${o.nombre || 'la esperada'}: no toco nada` });
+      else hechos.push({ id: o.id, estado: 'probado', nombre: res.titulo || o.nombre || '', valor: res.valor, motivo: `prueba correcta: ${res.titulo || o.nombre || ''} · ahora pone ${res.valor}` });
     } catch (e) { hechos.push({ id: o.id, estado: 'fallo', motivo: 'error: ' + (e.message || e) }); }
   }
   let envio = '';

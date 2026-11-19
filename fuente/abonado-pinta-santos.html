@@ -1445,7 +1445,7 @@ async function ucProbar(cab,secId,campo){const U=ucCfg(cab);if(!U)return;const m
   try{await Store.setCol('ucrop',id,doc);(st.ucOrd=st.ucOrd||[]).unshift({...doc,id});toast('Prueba enviada: el PC la hará en el próximo minuto');renderMain();}catch(e){toast(errMsg(e))}}
 function ucEstadoTxt(o){if(!o)return '';const h=o.hechoTs?' · '+accHace(o.hechoTs):'';
   if(o.estado==='pendiente')return `<span class="pill warn">esperando al PC…</span>`;
-  if(o.estado==='probado')return `<span class="pill ok">prueba correcta${h}</span> <small>ve ${o.vistoValor??'—'}</small>`;
+  if(o.estado==='probado')return `<span class="pill ok">prueba correcta${h}</span> <small>ve ${o.visto?esc(o.visto)+' · ':''}${o.vistoValor??'—'}</small>`;
   return `<span class="pill bad">no se pudo${h}</span> <small>${esc(o.motivo||'')}</small>`;}
 function ucPruebaCard(c){const U=ucCfg(c.id);if(!U||!U.on||!esGestor())return '';if(st.ucOrd===null)ucCargar();
   const filas=c.sectores.map(s=>{const m=U.sec[s.id];if(!m)return `<div class="ucrow"><div><b>${esc(s.nombre)}</b> <small class="sub">sin emparejar · ponlo en Ajustes</small></div></div>`;

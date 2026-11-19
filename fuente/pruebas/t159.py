@@ -33,9 +33,9 @@ async def main():
         op = await pg.evaluate("st.ucOrd.find(o=>o.sector==='fra_s1'&&o.campo==='ce')")
         assert op['nombre'] == 'SE01FRANCO' and op['idx']['prog'] == 0, op
         # el lector contesta (lo que haría el servidor): queda «probado» con el valor que vio
-        await pg.evaluate("""([id])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'probado',vistoValor:150,hechoTs:new Date().toISOString(),motivo:'prueba correcta: ahora pone 150'})""", [o['id']])
+        await pg.evaluate("""([id])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'probado',visto:'Drenaje 1',vistoValor:150,hechoTs:new Date().toISOString(),motivo:'prueba correcta: ahora pone 150'})""", [o['id']])
         await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
-        t = await pg.locator('.ucrow').first.locator('.ucres').text_content(); assert 'prueba correcta' in t and '150' in t, t
+        t = await pg.locator('.ucrow').first.locator('.ucres').text_content(); assert 'prueba correcta' in t and '150' in t and 'Drenaje 1' in t, t
         # un valor fuera del nombre esperado se marca fallo (lo decide el lector); aquí comprobamos que el fallo se enseña
         await pg.evaluate("""([id])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'fallo',hechoTs:new Date().toISOString(),motivo:'la pantalla abierta no es SE01FRANCO: no toco nada'})""", [op['id']])
         await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
