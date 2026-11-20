@@ -54,12 +54,19 @@ async def main():
             return f"""<!doctype html><title>{titulo}</title><body><input formcontrolname="name" value="X"><input formcontrolname="schedule" type="checkbox" {'checked' if horario else ''}>
               <input type="radio" formcontrolname="week_days" name="w" value="WEEK" checked><input type="radio" formcontrolname="week_days" name="w" value="DAYS">
               <input type="number" formcontrolname="idealEC" value="1.87"><input type="number" formcontrolname="maxActivations" value="12"><input type="number" formcontrolname="idealPH" value="5.5">
-              <input type="checkbox" formcontrolname="stopRain" checked><input type="checkbox" formcontrolname="stopFrost"><input type="number" formcontrolname="quantity" value="9"><input formcontrolname="fertilizerType" value="N">
+              <select formcontrolname="priority"><option value="LOW">x</option><option value="MEDIUM" selected>x</option></select><select formcontrolname="demand"><option value="255" selected>-</option></select><input type="checkbox" formcontrolname="stopRain" checked><input type="checkbox" formcontrolname="stopFrost"><input type="number" formcontrolname="quantity" value="9"><input formcontrolname="fertilizerType" value="N">
               {''.join(f'<input type="checkbox" id="week_{d}-0" {"checked" if i in (0,2,4) else ""}>' for i, d in enumerate(['monday','tuesday','wednesday','thursday','friday','saturday','sunday']))}</body>"""
         r = await mira(prog('UCROP | SE01FRANCO'), 'horario', 'SE01FRANCO'); sn = r['snap']
         assert r['ok'] and r['coincide'] and r['valor'] == 1 and sn['schedule'] == 1 and sn['week_days'] == 'WEEK' and sn['idealEC'] == 1.87 and sn['maxActivations'] == 12 and sn['idealPH'] == 5.5 and sn['stopRain'] == 1 and sn['stopFrost'] == 0, r
         assert 'quantity' not in sn and 'name' not in sn and 'fertilizerType' not in sn, sn
         assert sn['dias'] == 'L-X-V--', sn   # días de la semana marcados
+        assert sn['priority'] == 'MEDIUM' and sn['demand'] == '255', sn
+        r = await mira(prog('UCROP | SE01FRANCO'), 'prioridad', 'SE01FRANCO'); assert r['valor'] == 2, r
+        r = await mira(prog('UCROP | SE01FRANCO'), 'riegos', 'SE01FRANCO'); assert r['valor'] == 12, r
+        r = await mira(prog('UCROP | SE01FRANCO'), 'lluvia', 'SE01FRANCO'); assert r['valor'] == 1, r
+        r = await mira(prog('UCROP | SE01FRANCO'), 'helada', 'SE01FRANCO'); assert r['valor'] == 0, r
+        r = await mira(prog('UCROP | SE01FRANCO'), 'ph', 'SE01FRANCO', 6.1); assert r['valor'] == 5.5 and r['ensayo']['restaurado'], r
+        r = await mira(prog('UCROP | SE01FRANCO'), 'prioridad', 'SE01FRANCO', 4); assert 'ensayo' not in r, r
         r = await mira(prog('UCROP | SE01FRANCO'), 'dias', 'SE01FRANCO'); assert r['ok'] and r['coincide'] and r['valor'] == 21 and r['snap']['pend'] == 0, r   # L X V = 1+4+16
         r = await mira(prog('UCROP | SE01FRANCO').replace('</body>', '<p>Hay cambios pendientes de ser actualizados en el equipo, tomarán efecto</p></body>'), 'dias', 'SE01FRANCO'); assert r['snap']['pend'] == 1, r
         r = await mira(prog('UCROP | SE01FRANCO', horario=False), 'dias', 'SE01FRANCO', 5); assert 'ensayo' not in r, r   # los días no se ensayan

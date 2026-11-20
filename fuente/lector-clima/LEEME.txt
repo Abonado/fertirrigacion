@@ -41,6 +41,8 @@ CONTROL DEL uCROP
    El uCrop pide confirmar el guardado («¿Está seguro? … programas asociados»): el lector acepta ese aviso, y solo ese, si tiene un único
    botón claro de aceptar; con cualquier otro aviso no pulsa nada y lo cuenta en la app.
    Si algo no cuadra no pulsa nada. Máximo 3 cambios por vuelta. Son los únicos dos clics del lector: Guardar y aceptar ese aviso.
+ · v1.11.0: más campos del programa que se pueden cambiar con el mismo procedimiento (confirmación, comprobación y recarga): nº máximo de riegos (0–100), radiación acumulada (0–20000),
+   pH ideal (3–9), parar por lluvia / viento / helada (sí/no) y prioridad (Muy baja … Total). También lee la prioridad, la demanda y el modo de pH. «Activo», abonos y fórmulas NO se tocan.
  · v1.10.2: el uCrop guarda y avisa «pendientes de ser aceptados por el dispositivo»: la pantalla puede seguir enseñando el valor de antes hasta que el equipo lo acepte
    (sobre todo si el programa está regando). El lector vuelve a mirar 2 veces (cada ~20 s); si sigue igual lo cuenta como «guardado, pendiente en el equipo», no como fallo.
  · v1.10.1: los días y el interruptor del horario se pulsan como lo haría una persona (la etiqueta «L M X…» visible / el propio interruptor) y espera hasta 4 s a que

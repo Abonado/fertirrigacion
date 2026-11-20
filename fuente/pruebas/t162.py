@@ -97,6 +97,26 @@ async def main():
         r = await guarda(dias('UCROP | SEO2FRANCO', 127), 'dias', 'SE01FRANCO', 125, 127); assert not r['coincide'] and await clics() == [] and await pg.evaluate("window.__m()") == 127, r
         r = await guarda(dias('UCROP | SE01FRANCO', 127, boton='Guardar drenaje'), 'dias', 'SE01FRANCO', 125, 127)   # botón equivocado: deja los días como estaban
         assert r['estado'] == 'boton' and await clics() == [] and await pg.evaluate("window.__m()") == 127, r
+        # RESTO DE CAMPOS DEL PROGRAMA: números (riegos, radiación acumulada, pH), interruptores (lluvia/viento/helada) y el desplegable de prioridad
+        r = await guarda(pagina('UCROP | SE01FRANCO', 'maxActivations', '20', boton='Guardar programa'), 'riegos', 'SE01FRANCO', 12, 20)
+        assert r['estado'] == 'pulsado' and r['leido'] == 12 and await clics() == ['g=12'], (r, await clics())
+        r = await guarda(pagina('UCROP | SE01FRANCO', 'acummulatedRadiation', '12000', boton='Guardar programa'), 'rad', 'SE01FRANCO', 9000, 12000)
+        assert r['estado'] == 'pulsado' and await clics() == ['g=9000'], (r, await clics())
+        r = await guarda(pagina('UCROP | SE01FRANCO', 'idealPH', '5,5', boton='Guardar programa'), 'ph', 'SE01FRANCO', 5.8, 5.5)
+        assert r['estado'] == 'pulsado' and await clics() == ['g=5,8'], (r, await clics())
+        for campo, fcn in [('lluvia', 'stopRain'), ('viento', 'stopStorm'), ('helada', 'stopFrost')]:
+            r = await guarda(sw('UCROP | SE01FRANCO', True).replace('formcontrolname="schedule"', f'formcontrolname="{fcn}"'), campo, 'SE01FRANCO', 0, 1)
+            assert r['estado'] == 'pulsado' and r['leido'] == 0 and await clics() == ['g=0'], (campo, r, await clics())
+        def prio(titulo, valor):
+            opts = ''.join(f'<option value="{v}" {"selected" if v == valor else ""}>{v}</option>' for v in ['LOWEST', 'LOW', 'MEDIUM', 'HIGH', 'HIGHEST', 'TOTAL'])
+            return f"""<!doctype html><title>{titulo}</title><body><select formcontrolname="priority">{opts}</select><button id="g" disabled>Guardar programa</button>
+              <script>(()=>{{window.__clics=[];document.addEventListener('click',e=>{{const b=e.target.closest('button');if(b)window.__clics.push(b.id+'='+document.querySelector('select').value)}});
+              document.querySelector('select').addEventListener('change',()=>{{document.getElementById('g').disabled=false}})}})()</script></body>"""
+        r = await guarda(prio('UCROP | SE01FRANCO', 'MEDIUM'), 'prioridad', 'SE01FRANCO', 4, 2)
+        assert r['estado'] == 'pulsado' and r['leido'] == 4 and await clics() == ['g=HIGHEST'], (r, await clics())
+        r = await guarda(prio('UCROP | SE01FRANCO', 'MEDIUM'), 'prioridad', 'SE01FRANCO', 9, 2); assert not r['ok'] and await clics() == [], r
+        r = await guarda(prio('UCROP | SE01FRANCO', 'LOW'), 'prioridad', 'SE01FRANCO', 4, 2); assert r['estado'] == 'distinto' and await clics() == [], r   # ahora es Baja, no Media
+        r = await guarda(prio('UCROP | SE01FRANCO', 'HIGHEST'), 'prioridad', 'SE01FRANCO', 4, 2); assert r['estado'] == 'yaestaba' and await clics() == [], r
         # el valor de ahora NO es el que se confirmó: no escribe ni pulsa
         r = await guarda(pagina('UCROP | Drenaje 1', 'controlRadiation', '160'), 'control', 'Drenaje 1', 200, 150)
         assert r['estado'] == 'distinto' and r['valor'] == 160 and await clics() == [] and await val() == '160', r

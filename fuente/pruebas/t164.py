@@ -35,7 +35,7 @@ async def main():
         n0 = await pg.evaluate("st.ucOrd.length"); await pg.click('[data-uc="conf-leer"]'); await pg.wait_for_timeout(500)
         o = await pg.evaluate("st.ucOrd[0]"); assert await pg.evaluate("st.ucOrd.length") == n0 + 1 and o['modo'] == 'prueba' and o['campo'] == 'horario' and o['idx']['prog'] == 0, o
         # el lector contesta con el snapshot: horario puesto
-        snap = {'schedule': 1, 'week_days': 'WEEK', 'maxActivations': 6, 'stopRain': 1, 'stopStorm': 0, 'stopFrost': 1, 'idealEC': 1.87, 'idealPH': 6, 'priority': 2, 'demand': 1, 'extra_x': 7, 'dias': 'LMXJVSD', 'pend': 0}
+        snap = {'schedule': 1, 'week_days': 'WEEK', 'maxActivations': 6, 'stopRain': 1, 'stopStorm': 0, 'stopFrost': 1, 'idealEC': 1.87, 'idealPH': 6, 'priority': 'MEDIUM', 'demand': '255', 'extra_x': 7, 'dias': 'LMXJVSD', 'pend': 0}
         await pg.evaluate("""([id,snap])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'probado',visto:'Franco S1',vistoValor:1,snap,hechoTs:new Date().toISOString(),motivo:'prueba correcta'})""", [o['id'], snap])
         await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
         # el snapshot se ve en el sector
@@ -93,5 +93,28 @@ async def main():
         sec = pg.locator('.ucrow', has_text='Sector 1').first
         assert await sec.locator('.ucdia').first.is_disabled() and await sec.locator('[data-uc="dias"]').count() == 0
         assert await pg.evaluate("(ucAbrirConf('fra','fra_s1','dias',127),st.ucConf)") is None
+        # RESTO DE CAMPOS: paradas (lluvia/viento/helada), prioridad y números (riegos…) con lo último leído
+        await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
+        sec = pg.locator('.ucrow', has_text='Sector 1').first
+        assert await sec.locator('[data-uc="sw"]').count() == 3 and await sec.locator('[data-ucprio]').count() == 1
+        assert await sec.locator('[data-ucprio]').input_value() == '2'
+        await sec.locator('[data-uc="sw"][data-campo="lluvia"]').click(); await pg.wait_for_timeout(300)
+        t = await pg.text_content('#ucconf'); assert 'Parar por lluvia' in t and await pg.text_content('[data-ucconf="antes"]') == 'SÍ' and await pg.text_content('[data-ucconf="nuevo"]') == 'NO' and 'seguirá regando aunque llueva' in t, t
+        await pg.click('[data-uc="conf-si"]'); await pg.wait_for_timeout(600)
+        ol = await pg.evaluate("st.ucOrd.find(o=>o.modo==='cambio'&&o.campo==='lluvia')")
+        assert ol and ol['valor'] == 0 and ol['valorAntes'] == 1 and ol['confirmado'] is True and ol['idx']['prog'] == 0, ol
+        sec = pg.locator('.ucrow', has_text='Sector 1').first
+        await sec.locator('[data-ucprio]').select_option('4'); await sec.locator('[data-uc="prio"]').click(); await pg.wait_for_timeout(300)
+        assert await pg.text_content('[data-ucconf="antes"]') == 'Media' and await pg.text_content('[data-ucconf="nuevo"]') == 'Muy alta'
+        await pg.click('[data-uc="conf-no"]')
+        await pg.select_option('[data-ucsel="fra_s1"]', 'riegos'); await pg.fill('[data-ucval="fra_s1"]', '12'); await pg.locator('[data-uc="cambiar"]').first.click(); await pg.wait_for_timeout(300)
+        assert await pg.text_content('[data-ucconf="antes"]') == '6' and await pg.text_content('[data-ucconf="nuevo"]') == '12'; await pg.click('[data-uc="conf-no"]')
+        for malo in ['2.5', '150', '-1']:
+            await pg.fill('[data-ucval="fra_s1"]', malo); await pg.locator('[data-uc="cambiar"]').first.click(); await pg.wait_for_timeout(300)
+            assert await pg.locator('#ucconf').count() == 0, 'riegos ' + malo
+        await pg.select_option('[data-ucsel="fra_s1"]', 'ph'); await pg.fill('[data-ucval="fra_s1"]', '12'); await pg.locator('[data-uc="cambiar"]').first.click(); await pg.wait_for_timeout(300)
+        assert await pg.locator('#ucconf').count() == 0, 'pH fuera de límites'
+        await pg.fill('[data-ucval="fra_s1"]', '6.2'); await pg.locator('[data-uc="cambiar"]').first.click(); await pg.wait_for_timeout(300)
+        assert await pg.text_content('[data-ucconf="antes"]') == '6' and await pg.text_content('[data-ucconf="nuevo"]') == '6.2'; await pg.click('[data-uc="conf-no"]')
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

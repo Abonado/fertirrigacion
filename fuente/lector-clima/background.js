@@ -196,16 +196,20 @@ async function leerUna(c, i, e, toca = true) {
 /* ---------- Control del uCrop (órdenes que llegan de la app) ----------
    PRIMERA VERSIÓN: solo PROBAR. Abre la pantalla del sector (drenaje o programa), comprueba que el nombre coincide y lee el valor
    que hay ahora. NO escribe nada y NO pulsa Guardar. Sirve para ver que la app apunta al sitio correcto antes de dejarle cambiar. */
-const UC_LIM = { control: [25, 500], min: [25, 350], dren: [15, 40], ce: [0, 5], horario: [0, 1], dias: [1, 127] };   // dias = máscara de los 7 botones L M X J V S D (L = 1 … D = 64); 0 días no se permite   // los mismos límites que la app: si una orden se sale, no se toca nada
+const UC_LIM = { control: [25, 500], min: [25, 350], dren: [15, 40], ce: [0, 5], horario: [0, 1], dias: [1, 127], riegos: [0, 100], rad: [0, 20000], ph: [3, 9], lluvia: [0, 1], viento: [0, 1], helada: [0, 1], prioridad: [0, 5] };   // dias = máscara de los 7 botones L M X J V S D (L = 1 … D = 64); 0 días no se permite   // los mismos límites que la app: si una orden se sale, no se toca nada
 const UC_MODOS = ['prueba', 'ensayo', 'cambio'];   // «cambio» = pulsar Guardar de verdad: solo con la orden confirmada en la app (ver cambioUcrop)
 const UC_CAMBIO_MAX_MIN = 30, UC_CAMBIOS_POR_CICLO = 3;   // una orden de cambio más vieja que esto caduca; y nunca más de 3 cambios en una vuelta
-const UC_CAMPO = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule', dias: 'week_days' };
-const UC_PROG = ['ce', 'horario', 'dias'];   // estos campos están en la pantalla del programa; los demás, en la del drenaje
+const UC_CAMPO = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule', dias: 'week_days', riegos: 'maxActivations', rad: 'acummulatedRadiation', ph: 'idealPH', lluvia: 'stopRain', viento: 'stopStorm', helada: 'stopFrost', prioridad: 'priority' };
+const UC_PROG = ['ce', 'horario', 'dias', 'riegos', 'rad', 'ph', 'lluvia', 'viento', 'helada', 'prioridad'];
+const UC_SW = ['horario', 'lluvia', 'viento', 'helada'];   // interruptores: solo 0 (quitado/no) o 1 (puesto/sí)
+const UC_ENT = ['riegos', 'rad', 'prioridad', 'dias'];      // enteros
+const UC_NOENS = ['horario', 'dias', 'lluvia', 'viento', 'helada', 'prioridad'];   // no se pueden «ensayar» (no son un número que se escribe)   // estos campos están en la pantalla del programa; los demás, en la del drenaje
 
 // se ejecuta DENTRO de la página del uCrop ya cargada; solo mira
 async function ucropMira(campo, nombreEsperado, ensayoValor) {
-  const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule', dias: 'week_days' };
+  const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule', dias: 'week_days', riegos: 'maxActivations', rad: 'acummulatedRadiation', ph: 'idealPH', lluvia: 'stopRain', viento: 'stopStorm', helada: 'stopFrost', prioridad: 'priority' };
   const fc = forms[campo]; if (!fc) return { ok: false, motivo: 'campo desconocido' };
+  const PRIO = ['LOWEST', 'LOW', 'MEDIUM', 'HIGH', 'HIGHEST', 'TOTAL'];   // Muy baja, Baja, Media, Alta, Muy alta, Total
   const esDias = campo === 'dias', DIAS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   const cDias = () => DIAS.map(d => document.querySelector(`input[id^="week_${d}"]`));   // los 7 botones de los días (L M X J V S D)
   const masc = c => c.every(Boolean) ? c.reduce((a, e, i) => a | (e.checked ? 1 << i : 0), 0) : null;
@@ -215,11 +219,11 @@ async function ucropMira(campo, nombreEsperado, ensayoValor) {
   const norm = t => String(t || '').toUpperCase().replace(/\s+/g, '').replace(/O/g, '0');
   const titulo = () => { const m = /^\s*UCROP\s*\|\s*(.+?)\s*$/i.exec(document.title || ''); return m ? m[1].trim() : ''; };
   let inp = null, tit = '';
-  for (let i = 0; i < 40 && !(inp && tit); i++) { inp = document.querySelector(`input[formcontrolname="${fc}"]`); tit = titulo(); if (!(inp && tit)) await dormir(250); }
+  for (let i = 0; i < 40 && !(inp && tit); i++) { inp = document.querySelector(`[formcontrolname="${fc}"]`); tit = titulo(); if (!(inp && tit)) await dormir(250); }
   if (!inp) return { ok: false, motivo: 'no encuentro el campo en la pantalla (¿cargó bien?)' };
   const coincide = !nombreEsperado || (!!tit && norm(tit) === norm(nombreEsperado));
-  const esSw = inp.type === 'checkbox';
-  const valor = esDias ? masc(cDias()) : esSw ? (inp.checked ? 1 : 0) : inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
+  const esSw = inp.type === 'checkbox', esSel = inp.tagName === 'SELECT';   // interruptor / desplegable (prioridad: 0 = Muy baja … 5 = Total)
+  const valor = esDias ? masc(cDias()) : esSel ? (PRIO.indexOf(inp.value) >= 0 ? PRIO.indexOf(inp.value) : null) : esSw ? (inp.checked ? 1 : 0) : inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
   const res = { ok: true, coincide, valor: valor != null && isFinite(valor) ? valor : null, nombre: nombreEsperado || '', titulo: tit };
   // lo más relevante de la pantalla, para enseñarlo en la app: interruptores (horario, demanda, paradas por lluvia/viento/helada…), días,
   // nº de riegos, CE/pH ideales, prioridad, radiación y drenaje. Solo mira; salta lo que son nombres y abonos.
@@ -227,12 +231,13 @@ async function ucropMira(campo, nombreEsperado, ensayoValor) {
     try { for (const el of document.querySelectorAll('input[formcontrolname]')) { const n = el.getAttribute('formcontrolname'); if (!/^\w{1,30}$/.test(n) || salta.test(n) || Object.keys(snap).length >= 40) continue;
       if (el.type === 'checkbox') snap[n] = el.checked ? 1 : 0; else if (el.type === 'radio') { if (el.checked) snap[n] = String(el.value).slice(0, 12); }
       else if (el.type === 'number') { const v = parseFloat(String(el.value).replace(',', '.')); if (isFinite(v)) snap[n] = v; } } } catch (e) {}
+    try { for (const n of ['priority', 'demand', 'phMode']) { const e = document.querySelector(`select[formcontrolname="${n}"]`); if (e) snap[n] = String(e.value).slice(0, 12); } } catch (e) {}   // desplegables relevantes
     try { const c = cDias(); if (c.every(Boolean)) snap.dias = c.map((e, i) => e.checked ? 'LMXJVSD'[i] : '-').join(''); } catch (e) {}   // días de la semana marcados, p. ej. «LMXJVSD» o «L-X-V--»
     try { snap.pend = /cambios pendientes de ser actualizados en el equipo/i.test(document.body.innerText || '') ? 1 : 0; } catch (e) {}   // el uCrop avisa si hay algo guardado que el equipo aún no ha aceptado
     res.snap = snap; }
   // ENSAYO: solo si la pantalla es la esperada. Escribe el valor, mira si la pantalla lo acepta y si se activa «Guardar», y deja el valor de antes.
   // No pulsa NINGÚN botón: lo único que hace con «Guardar» es mirar si está activo.
-  if (ensayoValor != null && coincide && !esSw && !esDias) {
+  if (ensayoValor != null && coincide && !esSw && !esDias && !esSel) {
     const orig = inp.value, coma = /,/.test(orig), txt = v => (coma ? String(v).replace('.', ',') : String(v));
     const clases = () => (inp.className.match(/ng-(?:pristine|dirty|touched|untouched|valid|invalid)/g) || []).join(' ');
     const fijar = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
@@ -257,8 +262,9 @@ async function ucropMira(campo, nombreEsperado, ensayoValor) {
 // «Guardar programa» / «Guardar drenaje», con el nombre de la pantalla ya comprobado, el valor de antes igual al que se confirmó
 // y el valor nuevo ya aceptado por la pantalla. Si algo no cuadra no pulsa nada y deja el valor como estaba.
 async function ucropGuarda(campo, nombreEsperado, nuevo, antes) {
-  const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule', dias: 'week_days' };
+  const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule', dias: 'week_days', riegos: 'maxActivations', rad: 'acummulatedRadiation', ph: 'idealPH', lluvia: 'stopRain', viento: 'stopStorm', helada: 'stopFrost', prioridad: 'priority' };
   const fc = forms[campo]; if (!fc) return { ok: false, motivo: 'campo desconocido' };
+  const PRIO = ['LOWEST', 'LOW', 'MEDIUM', 'HIGH', 'HIGHEST', 'TOTAL'];   // Muy baja, Baja, Media, Alta, Muy alta, Total
   const esDias = campo === 'dias', DIAS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
   const cDias = () => DIAS.map(d => document.querySelector(`input[id^="week_${d}"]`));
   const masc = c => c.every(Boolean) ? c.reduce((a, e, i) => a | (e.checked ? 1 << i : 0), 0) : null;
@@ -267,39 +273,42 @@ async function ucropGuarda(campo, nombreEsperado, nuevo, antes) {
   const norm = t => String(t || '').toUpperCase().replace(/\s+/g, '').replace(/O/g, '0');
   const titulo = () => { const m = /^\s*UCROP\s*\|\s*(.+?)\s*$/i.exec(document.title || ''); return m ? m[1].trim() : ''; };
   let inp = null, tit = '';
-  for (let i = 0; i < 40 && !(inp && tit); i++) { inp = document.querySelector(`input[formcontrolname="${fc}"]`); tit = titulo(); if (!(inp && tit)) await dormir(250); }
+  for (let i = 0; i < 40 && !(inp && tit); i++) { inp = document.querySelector(`[formcontrolname="${fc}"]`); tit = titulo(); if (!(inp && tit)) await dormir(250); }
   if (!inp) return { ok: false, motivo: 'no encuentro el campo en la pantalla (¿cargó bien?)' };
   const coincide = !!tit && norm(tit) === norm(nombreEsperado);
   const esSw = inp.type === 'checkbox';   // el «Horario» es un interruptor: 1 = puesto, 0 = quitado
   if (esSw && nuevo !== 0 && nuevo !== 1) return { ok: false, motivo: 'un interruptor solo vale 0 o 1' };
   if (esDias && (!Number.isInteger(nuevo) || nuevo < 1 || nuevo > 127 || !Number.isInteger(antes))) return { ok: false, motivo: 'los días tienen que ser una máscara de 1 a 127' };
-  const valor = esDias ? masc(cDias()) : esSw ? (inp.checked ? 1 : 0) : inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
+  const esSel = inp.tagName === 'SELECT';
+  if (esSel && (!Number.isInteger(nuevo) || nuevo < 0 || nuevo >= PRIO.length || !Number.isInteger(antes))) return { ok: false, motivo: 'la prioridad tiene que ser un número de 0 a 5' };
+  const valor = esDias ? masc(cDias()) : esSel ? (PRIO.indexOf(inp.value) >= 0 ? PRIO.indexOf(inp.value) : null) : esSw ? (inp.checked ? 1 : 0) : inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
   const res = { ok: true, coincide, titulo: tit, valor: valor != null && isFinite(valor) ? valor : null };
   if (!coincide) return res;
   if (esDias) { const wk = document.querySelector('input[formcontrolname="week_days"][value="WEEK"]');   // en «Días alternos» los botones significan otra cosa: no se toca
     if (!wk || !wk.checked) return { ok: false, motivo: 'el programa no está en modo «Semana» (¿días alternos?): no toco los días' }; }
   if (res.valor != null && Math.abs(res.valor - nuevo) < 0.0005) return { ...res, estado: 'yaestaba' };   // (p. ej. se guardó pero no llegó el aviso): no se vuelve a pulsar
   if (res.valor == null || Math.abs(res.valor - antes) > 0.0005) return { ...res, estado: 'distinto' };
-  const orig = esDias ? valor : esSw ? (inp.checked ? 1 : 0) : inp.value, coma = !esSw && !esDias && /,/.test(orig), txt = v => (esSw || esDias ? v : coma ? String(v).replace('.', ',') : String(v));
+  const orig = esDias || esSel ? valor : esSw ? (inp.checked ? 1 : 0) : inp.value, coma = !esSw && !esDias && !esSel && /,/.test(orig), txt = v => (esSw || esDias || esSel ? v : coma ? String(v).replace('.', ',') : String(v));
   const fijar = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
   const poner = v => {
     // ← CLIC de interruptor/día: pulsa como lo haría una persona (la etiqueta visible «L M X…», o el propio interruptor). No guarda nada; vale también para revertir
     const pulsa = e => { const lab = e.id ? document.querySelector(`label[for="${e.id}"]`) : null; (lab || e).click(); };
     if (esDias) { cDias().forEach((e, i) => { if (e && e.checked !== !!((+v >> i) & 1)) pulsa(e); }); return; }
     inp.focus();
+    if (esSel) { inp.value = PRIO[+v]; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); return; }   // elegir en el desplegable
     if (esSw) { if (inp.checked !== !!+v) pulsa(inp); return; }
     fijar.call(inp, v);
     inp.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: String(v) }));
     inp.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: '1' })); inp.dispatchEvent(new Event('change', { bubbles: true })); };
   const soltar = () => { inp.dispatchEvent(new FocusEvent('blur')); inp.dispatchEvent(new FocusEvent('focusout', { bubbles: true })); inp.blur(); };
-  const palabra = campo === 'ce' || campo === 'horario' || campo === 'dias' ? 'programa' : 'drenaje';
+  const palabra = ['control', 'min', 'arr', 'dren'].includes(campo) ? 'drenaje' : 'programa';
   const avisosHay = () => [...document.querySelectorAll('[role="dialog"],mat-dialog-container,.modal.show,.swal2-popup,.cdk-overlay-pane')].map(d => (d.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).join(' / ').slice(0, 90);
   const botones = () => [...document.querySelectorAll('button')].filter(b => /^\s*guardar\b/i.test(b.innerText || b.textContent || ''));
   const elBoton = () => botones().find(b => new RegExp('^\\s*guardar\\s+' + palabra + '\\s*$', 'i').test((b.innerText || b.textContent || '').replace(/\s+/g, ' ')));
   poner(txt(nuevo));
   let g = null, activo = false;
   for (let i = 0; i < 12; i++) { await dormir(350); g = elBoton(); activo = !!g && !g.disabled; if (activo) break; if (i === 2) soltar(); }   // la barra «Guardar» puede tardar en salir
-  const leido = esDias ? masc(cDias()) : esSw ? (inp.checked ? 1 : 0) : parseFloat(String(inp.value).replace(',', '.'));
+  const leido = esDias ? masc(cDias()) : esSel ? PRIO.indexOf(inp.value) : esSw ? (inp.checked ? 1 : 0) : parseFloat(String(inp.value).replace(',', '.'));
   if (!g) { poner(orig); soltar(); return { ...res, estado: 'boton', boton: botones().map(b => (b.innerText || '').trim()).join(' | ').slice(0, 80), otros: [...document.querySelectorAll('button')].filter(b => b.offsetParent !== null).map(b => (b.innerText || b.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(-6).map(t => t.slice(0, 14)).join('|'), nb: document.querySelectorAll('button').length, url: location.pathname.slice(0, 60), dlg: avisosHay(), leido }; }
   if (!activo || Math.abs(leido - nuevo) > 0.0005) { poner(orig); soltar(); await dormir(300); return { ...res, estado: 'noactivo', leido }; }
   g.click();   // ← clic 1 de 2: «Guardar programa/drenaje»
@@ -351,9 +360,10 @@ async function cambioUcrop(o, url, tabId) {
   const L = UC_LIM[o.campo], nom = o.nombre || '';
   const no = motivo => ({ id: o.id, estado: 'fallo', motivo: motivo + ' · no he guardado nada' });
   if (!L || typeof o.valor !== 'number' || !isFinite(o.valor) || o.valor < L[0] || o.valor > L[1]) return no(`valor fuera de los límites (${L ? L.join('–') : 'campo desconocido'})`);
-  if (o.campo === 'horario' && o.valor !== 0 && o.valor !== 1) return no('el horario solo vale 1 (poner) o 0 (quitar)');
-  if (o.campo === 'dias' && (!Number.isInteger(o.valor) || !Number.isInteger(o.valorAntes))) return no('los días tienen que ser una máscara entera');
-  const fm = v => o.campo === 'dias' && Number.isInteger(v) ? 'LMXJVSD'.split('').map((c, i) => (v >> i) & 1 ? c : '-').join('') : v;   // para los mensajes
+  if (UC_SW.includes(o.campo) && o.valor !== 0 && o.valor !== 1) return no('un interruptor solo vale 1 (sí/puesto) o 0 (no/quitado)');
+  if (UC_ENT.includes(o.campo) && (!Number.isInteger(o.valor) || !Number.isInteger(o.valorAntes))) return no('este campo solo admite números enteros');
+  const PRIO_T = ['Muy baja', 'Baja', 'Media', 'Alta', 'Muy alta', 'Total'];
+  const fm = v => o.campo === 'dias' && Number.isInteger(v) ? 'LMXJVSD'.split('').map((c, i) => (v >> i) & 1 ? c : '-').join('') : o.campo === 'prioridad' && PRIO_T[v] ? PRIO_T[v] : UC_SW.includes(o.campo) && (v === 0 || v === 1) ? (o.campo === 'horario' ? ['quitado', 'puesto'] : ['no', 'sí'])[v] : v;   // para los mensajes
   if (!nom) return no('la orden no trae el nombre de la pantalla');
   if (o.confirmado !== true || typeof o.valorAntes !== 'number') return no('la orden no trae la confirmación (¿el servidor puente está sin actualizar?)');
   const edad = (Date.now() - Date.parse(o.ts || '')) / 6e4;
@@ -397,7 +407,7 @@ async function ordenesUcrop(c, P, ordenes) {
       if (cambios >= UC_CAMBIOS_POR_CICLO) continue;   // el resto espera a la próxima vuelta (sigue pendiente)
       cambios++; hechos.push(await cambioUcrop(o, url, tabId)); try { await chrome.tabs.update(tabId, { url: 'about:blank' }); } catch (e) {} continue;
     }
-    if (ens && (o.campo === 'horario' || o.campo === 'dias')) { hechos.push({ id: o.id, estado: 'fallo', motivo: 'el ensayo no sirve para interruptores ni días: no toco nada' }); continue; }
+    if (ens && UC_NOENS.includes(o.campo)) { hechos.push({ id: o.id, estado: 'fallo', motivo: 'el ensayo no sirve para interruptores ni días: no toco nada' }); continue; }
     if (ens) { const L = UC_LIM[o.campo];
       if (!L || typeof o.valor !== 'number' || !isFinite(o.valor) || o.valor < L[0] || o.valor > L[1]) { hechos.push({ id: o.id, estado: 'fallo', motivo: `valor fuera de los límites (${L ? L.join('–') : 'campo desconocido'}): no toco nada` }); continue; } }
     try {
