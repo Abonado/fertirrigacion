@@ -1,6 +1,6 @@
 // Simula el lector (background.js) con un chrome de mentira y comprueba las salvaguardas del cambio real (modo «cambio»).
 import fs from 'node:fs'; import vm from 'node:vm';
-const src = fs.readFileSync('lector-clima/background.js', 'utf8').replace('sondeo: 500, asentar: 1500', 'sondeo: 2, asentar: 2');
+const src = fs.readFileSync('lector-clima/background.js', 'utf8').replace('sondeo: 500, asentar: 1500, pendiente: 20000', 'sondeo: 2, asentar: 2, pendiente: 2');
 function montar(guarda, mira, atasco = 0) {
   const ls = [], llamadas = [], posts = []; let url = 'about:blank', sondeos = 0;
   const chrome = { storage: { local: { get: async k => ({ uTab: 5 }), set: async () => {} } }, alarms: { create() {}, onAlarm: { addListener() {} } },
@@ -63,4 +63,11 @@ for (const [nombre, o] of [['días 0', ordD({ valor: 0 })], ['días 128', ordD({
   const t = montar(okG, okM(127)); await t.o(C, P, [o]); ver(t.posts[0].hechos[0].estado === 'fallo' && guardas(t.llamadas) === 0, nombre + ': ' + t.posts[0].hechos[0].motivo); }
 { const t = montar(okG, okM(127)); await t.o(C, P, [ordD({ modo: 'ensayo' })]); const h = t.posts[0].hechos[0]; ver(h.estado === 'fallo' && !t.llamadas.some(l => l[0] === 'ucropMira'), 'el ensayo no toca los días'); }
 { const t = montar(a => ({ ok: true, coincide: true, titulo: a[1], valor: 127, estado: 'distinto' }), okM(127)); await t.o(C, P, [ordD({ valorAntes: 125, valor: 127 })]); ver(/lo cambió alguien/.test(t.posts[0].hechos[0].motivo) && /L-XJVSD/.test(t.posts[0].hechos[0].motivo), 'días distintos: ' + t.posts[0].hechos[0].motivo); }
+// Pendiente en el equipo: el uCrop dice «guardado, pendiente» y al recargar sigue el valor viejo → «hecho» con aviso (no fallo); si no hubo aviso → fallo
+{ let n = 0; const t = montar(a => ({ ok: true, coincide: true, titulo: a[1], valor: a[3], estado: 'pulsado', leido: a[2], info: 'los cambios se han guardado y estan pendientes' }), a => { n++; return { ok: true, coincide: true, titulo: a[1], valor: 125, snap: { dias: 'L-XJVSD', pend: 1 } }; });
+  await t.o(C, P, [ordD({ valor: 127, valorAntes: 125 })]); const h = t.posts[0].hechos[0]; ver(h.estado === 'hecho' && /pendiente de que lo acepte el equipo/.test(h.motivo) && /aún pone L-XJVSD/.test(h.motivo) && n === 3, 'pendiente en el equipo: ' + n + ' ' + JSON.stringify(h)); }
+{ let n = 0; const t = montar(a => ({ ok: true, coincide: true, titulo: a[1], valor: a[3], estado: 'pulsado', leido: a[2], info: 'x' }), a => { n++; return { ok: true, coincide: true, titulo: a[1], valor: n >= 2 ? 127 : 125 }; });
+  await t.o(C, P, [ordD({ valor: 127, valorAntes: 125 })]); const h = t.posts[0].hechos[0]; ver(h.estado === 'hecho' && /guardado: de L-XJVSD a LMXJVSD/.test(h.motivo) && n === 2, 'el equipo lo acepta al segundo vistazo: ' + n + ' ' + JSON.stringify(h)); }
+{ let n = 0; const t = montar(a => ({ ok: true, coincide: true, titulo: a[1], valor: a[3], estado: 'pulsado', leido: a[2] }), a => { n++; return { ok: true, coincide: true, titulo: a[1], valor: 125 }; });
+  await t.o(C, P, [ordD({ valor: 127, valorAntes: 125 })]); const h = t.posts[0].hechos[0]; ver(h.estado === 'fallo' && n === 1, 'sin aviso de pendiente y valor distinto: fallo y sin esperas: ' + n + ' ' + JSON.stringify(h)); }
 console.log(fallos ? 'FALLOS ' + fallos : 'OK'); process.exit(fallos ? 1 : 0);

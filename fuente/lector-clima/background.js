@@ -329,7 +329,7 @@ async function tabTrabajo() {
   const t = await chrome.tabs.create({ url: 'about:blank', active: false, pinned: false });
   await chrome.storage.local.set({ uTab: t.id }); return t.id;
 }
-const UC_ESPERA = { sondeo: 500, asentar: 1500 };
+const UC_ESPERA = { sondeo: 500, asentar: 1500, pendiente: 20000 };
 /* Abre una pantalla del uCrop en la pestaña de trabajo y espera a que la pestaña esté DE VERDAD en app.ucrop.net y cargada
    (no se fía del primer aviso de «cargada»: puede ser el de la página en blanco anterior o de una página de otra extensión). */
 async function irA(tabId, url) {
@@ -369,10 +369,19 @@ async function cambioUcrop(o, url, tabId) {
     if (r.estado === 'noactivo') return no(`escribí ${fm(o.valor)} (la pantalla puso ${fm(r.leido)}) pero «Guardar» no se activó; dejé el valor como estaba`);
     if (r.estado === 'aviso') return { id: o.id, estado: 'fallo', nombre: r.titulo, motivo: `OJO: pulsé Guardar y el uCrop sacó un aviso que no reconozco (${r.dialogo}; botones: ${r.botones || 'ninguno'}). No lo he aceptado. Míralo en el uCrop` };
     if (r.estado !== 'pulsado') return no('respuesta rara de la pantalla');
-    const abierta = await irA(tabId, url);   // recargar y mirar si quedó guardado
-    let v = null; if (abierta) try { [{ result: v }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, nom, null] }); } catch (e) { v = null; }
+    // Recargar y mirar si quedó guardado. Si el uCrop dijo «guardado, pendiente de que lo acepte el equipo», la pantalla puede seguir enseñando el valor
+    // de antes hasta que el equipo lo acepte: se vuelve a mirar un par de veces (cada ~20 s) antes de darlo por pendiente.
+    let v = null;
+    for (let intento = 0; intento < 3; intento++) {
+      if (intento > 0) await new Promise(res => setTimeout(res, UC_ESPERA.pendiente));
+      v = null; const abierta = await irA(tabId, url);
+      if (abierta) try { [{ result: v }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, nom, null] }); } catch (e) { v = null; }
+      if (v && v.ok && v.coincide && v.valor != null && Math.abs(v.valor - o.valor) < 0.0005) break;
+      if (!r.info) break;   // sin ese aviso no hay motivo para esperar
+    }
     if (!v || !v.ok || !v.coincide || v.valor == null) return { id: o.id, estado: 'fallo', nombre: r.titulo, motivo: `OJO: pulsé Guardar (de ${fm(o.valorAntes)} a ${fm(o.valor)}) pero no pude comprobar el resultado${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
     if (Math.abs(v.valor - o.valor) < 0.0005) return { id: o.id, estado: 'hecho', nombre: v.titulo, valor: v.valor, snap: v.snap, motivo: `guardado: de ${fm(o.valorAntes)} a ${fm(v.valor)} (comprobado al recargar${r.confirmado ? '; el uCrop pidió confirmar y se aceptó' : ''}${r.info ? '; el uCrop avisa: pendiente de que lo acepte el equipo' : ''})` };
+    if (r.info) return { id: o.id, estado: 'hecho', nombre: v.titulo, valor: v.valor, snap: v.snap, motivo: `guardado en el uCrop (de ${fm(o.valorAntes)} a ${fm(o.valor)}), pendiente de que lo acepte el equipo: al recargar aún pone ${fm(v.valor)}. Léelo otra vez en unos minutos` };
     return { id: o.id, estado: 'fallo', nombre: v.titulo, valor: v.valor, motivo: `OJO: pulsé Guardar pero al recargar pone ${fm(v.valor)}, no ${fm(o.valor)}${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
   } catch (e) { return { id: o.id, estado: 'fallo', motivo: 'error: ' + (e.message || e) + ' · mira el valor en el uCrop' }; }
 }

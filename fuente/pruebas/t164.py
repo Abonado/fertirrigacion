@@ -81,6 +81,10 @@ async def main():
         assert await pg.evaluate("ucUltimo('fra','fra_s1','dias').v") == 125
         t = await pg.locator('.ucres', has_text='Cambios hechos').text_content(); assert 'LMXJVSD → L-XJVSD' in t, t
         assert 'Pendiente en el equipo' in await pg.locator('.ucsnap').first.text_content()
+        # «guardado, pendiente en el equipo»: el uCrop aún enseña el valor viejo → pastilla de aviso, no de «guardado» a secas
+        await pg.evaluate("""()=>Store.setCol('ucrop','fra_fra_s1_dias_cpend',{cab:'fra',sector:'fra_s1',sectorNombre:'S1',campo:'dias',valor:127,valorAntes:125,modo:'cambio',estado:'hecho',motivo:'guardado en el uCrop (de L-XJVSD a LMXJVSD), pendiente de que lo acepte el equipo: al recargar aún pone L-XJVSD. Léelo otra vez en unos minutos',por:'X',ts:new Date().toISOString(),hechoTs:new Date().toISOString(),confirmado:true,idx:{prog:0,dren:0},nombre:'Franco S1'})""")
+        await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
+        assert 'pendiente en el equipo' in await pg.locator('.ucres', has_text='Cambios hechos').text_content()
         # quitar todos los días: no se permite
         assert await pg.evaluate("(ucAbrirConf('fra','fra_s1','dias',0),st.ucConf)") is None
         # programa en «Días alternos»: botones apagados y no abre la confirmación

@@ -1513,7 +1513,8 @@ function ucCambiosHtml(c){const l=(st.ucOrd||[]).filter(o=>o.cab===c.id&&o.modo=
   return `<div class="ucres"><b>Cambios hechos</b>${l.map(o=>`<div class="ucf"><span>${esc(f(o.ts))} · ${esc(o.sectorNombre||o.sector)} · ${esc((UC_CAMPOS.find(a=>a[0]===o.campo)||[o.campo,o.campo])[1])}<br><small>${esc(o.por||'')}: ${esc(ucFmt(o.campo,o.valorAntes))} → ${esc(ucFmt(o.campo,o.valor))}</small></span><span></span><span>${ucEstadoTxt(o)}</span></div>`).join('')}</div>`;}
 const ucOrdEns=(cab,secId)=>(st.ucOrd||[]).filter(o=>o.cab===cab&&o.sector===secId&&o.modo==='ensayo').sort((a,b)=>(b.ts||'').localeCompare(a.ts||''))[0]||null;
 function ucEstadoTxt(o){if(!o)return '';const h=o.hechoTs?' · '+accHace(o.hechoTs):'';
-  if(o.modo==='cambio'){if(o.estado==='pendiente')return `<span class="pill warn">esperando al PC…</span>`;return o.estado==='hecho'?`<span class="pill ok">guardado${h}</span> <small>${esc(o.motivo||'')}</small>`:`<span class="pill bad">no se cambió${h}</span> <small>${esc(o.motivo||'')}</small>`}
+  if(o.modo==='cambio'){if(o.estado==='pendiente')return `<span class="pill warn">esperando al PC…</span>`;if(o.estado==='hecho'&&/al recargar aún pone/.test(o.motivo||''))return `<span class="pill warn">guardado · pendiente en el equipo${h}</span> <small>${esc(o.motivo||'')}</small>`;
+    return o.estado==='hecho'?`<span class="pill ok">guardado${h}</span> <small>${esc(o.motivo||'')}</small>`:`<span class="pill bad">no se cambió${h}</span> <small>${esc(o.motivo||'')}</small>`}
   if(o.modo==='ensayo'){if(o.estado==='pendiente')return `<span class="pill warn">esperando al PC…</span> <small>ensayo con ${esc(String(o.valor))}</small>`;return o.estado==='probado'?`<span class="pill ok">ensayo correcto${h}</span> <small>${esc(o.motivo||'')}</small>`:`<span class="pill bad">no se pudo${h}</span> <small>${esc(o.motivo||'')}</small>`}
   if(o.estado==='pendiente')return `<span class="pill warn">esperando al PC…</span>`;
   if(o.estado==='probado')return `<span class="pill ok">prueba correcta${h}</span> <small>ve ${o.visto?esc(o.visto)+' · ':''}${o.vistoValor??'—'}</small>`;
@@ -8304,7 +8305,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v229';
+window.APP_V='abonado-v230';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
