@@ -283,9 +283,11 @@ async function ucropGuarda(campo, nombreEsperado, nuevo, antes) {
   const orig = esDias ? valor : esSw ? (inp.checked ? 1 : 0) : inp.value, coma = !esSw && !esDias && /,/.test(orig), txt = v => (esSw || esDias ? v : coma ? String(v).replace('.', ',') : String(v));
   const fijar = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
   const poner = v => {
-    if (esDias) { cDias().forEach((e, i) => { if (e && e.checked !== !!((+v >> i) & 1)) e.click(); }); return; }   // ← solo pulsa los botones de día que hay que cambiar (no guarda nada); vale para revertir
+    // ← CLIC de interruptor/día: pulsa como lo haría una persona (la etiqueta visible «L M X…», o el propio interruptor). No guarda nada; vale también para revertir
+    const pulsa = e => { const lab = e.id ? document.querySelector(`label[for="${e.id}"]`) : null; (lab || e).click(); };
+    if (esDias) { cDias().forEach((e, i) => { if (e && e.checked !== !!((+v >> i) & 1)) pulsa(e); }); return; }
     inp.focus();
-    if (esSw) { inp.checked = !!+v; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); return; }   // Angular se entera por «change»
+    if (esSw) { if (inp.checked !== !!+v) pulsa(inp); return; }
     fijar.call(inp, v);
     inp.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: String(v) }));
     inp.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: '1' })); inp.dispatchEvent(new Event('change', { bubbles: true })); };
@@ -294,11 +296,11 @@ async function ucropGuarda(campo, nombreEsperado, nuevo, antes) {
   const avisosHay = () => [...document.querySelectorAll('[role="dialog"],mat-dialog-container,.modal.show,.swal2-popup,.cdk-overlay-pane')].map(d => (d.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).join(' / ').slice(0, 90);
   const botones = () => [...document.querySelectorAll('button')].filter(b => /^\s*guardar\b/i.test(b.innerText || b.textContent || ''));
   const elBoton = () => botones().find(b => new RegExp('^\\s*guardar\\s+' + palabra + '\\s*$', 'i').test((b.innerText || b.textContent || '').replace(/\s+/g, ' ')));
-  poner(txt(nuevo)); await dormir(700);
-  let g = elBoton(), activo = !!g && !g.disabled;
-  if (!activo) { soltar(); await dormir(700); g = elBoton(); activo = !!g && !g.disabled; }
+  poner(txt(nuevo));
+  let g = null, activo = false;
+  for (let i = 0; i < 12; i++) { await dormir(350); g = elBoton(); activo = !!g && !g.disabled; if (activo) break; if (i === 2) soltar(); }   // la barra «Guardar» puede tardar en salir
   const leido = esDias ? masc(cDias()) : esSw ? (inp.checked ? 1 : 0) : parseFloat(String(inp.value).replace(',', '.'));
-  if (!g) { poner(orig); soltar(); return { ...res, estado: 'boton', boton: botones().map(b => (b.innerText || '').trim()).join(' | ').slice(0, 80), otros: [...document.querySelectorAll('button')].filter(b => b.offsetParent !== null).map(b => (b.innerText || b.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(0, 14).map(t => t.slice(0, 16)).join(' | '), url: location.pathname.slice(0, 60), dlg: avisosHay(), leido }; }
+  if (!g) { poner(orig); soltar(); return { ...res, estado: 'boton', boton: botones().map(b => (b.innerText || '').trim()).join(' | ').slice(0, 80), otros: [...document.querySelectorAll('button')].filter(b => b.offsetParent !== null).map(b => (b.innerText || b.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(-6).map(t => t.slice(0, 14)).join('|'), nb: document.querySelectorAll('button').length, url: location.pathname.slice(0, 60), dlg: avisosHay(), leido }; }
   if (!activo || Math.abs(leido - nuevo) > 0.0005) { poner(orig); soltar(); await dormir(300); return { ...res, estado: 'noactivo', leido }; }
   g.click();   // ← clic 1 de 2: «Guardar programa/drenaje»
   // El uCrop responde con un aviso «¿Está seguro? Los cambios realizados en este apartado pueden afectar a los programas asociados…».
@@ -363,7 +365,7 @@ async function cambioUcrop(o, url, tabId) {
     if (!r.coincide) return no(`la pantalla abierta es «${r.titulo || 'sin título'}», no ${nom}`);
     if (r.estado === 'distinto') return no(`el valor de ahora (${fm(r.valor)}) no es el que viste al confirmar (${fm(o.valorAntes)}): lo cambió alguien. Léelo y confírmalo otra vez`);
     if (r.estado === 'yaestaba') return { id: o.id, estado: 'hecho', nombre: r.titulo, valor: r.valor, motivo: `ya estaba en ${fm(o.valor)}: no hizo falta guardar` };
-    if (r.estado === 'boton') return no(`sin botón Guardar (hay: ${r.boton || 'ninguno'}; visibles: ${r.otros || 'ninguno'}${r.dlg ? '; aviso: ' + r.dlg : ''})`.slice(0, 118));
+    if (r.estado === 'boton') return { id: o.id, estado: 'fallo', motivo: `sin botón Guardar tras pulsar (leí ${fm(r.leido)}; ${r.nb} botones; últimos: ${r.otros || '-'}${r.dlg ? '; aviso: ' + r.dlg : ''}) · no guardé nada`.slice(0, 158) };
     if (r.estado === 'noactivo') return no(`escribí ${fm(o.valor)} (la pantalla puso ${fm(r.leido)}) pero «Guardar» no se activó; dejé el valor como estaba`);
     if (r.estado === 'aviso') return { id: o.id, estado: 'fallo', nombre: r.titulo, motivo: `OJO: pulsé Guardar y el uCrop sacó un aviso que no reconozco (${r.dialogo}; botones: ${r.botones || 'ninguno'}). No lo he aceptado. Míralo en el uCrop` };
     if (r.estado !== 'pulsado') return no('respuesta rara de la pantalla');

@@ -41,6 +41,8 @@ CONTROL DEL uCROP
    El uCrop pide confirmar el guardado («¿Está seguro? … programas asociados»): el lector acepta ese aviso, y solo ese, si tiene un único
    botón claro de aceptar; con cualquier otro aviso no pulsa nada y lo cuenta en la app.
    Si algo no cuadra no pulsa nada. Máximo 3 cambios por vuelta. Son los únicos dos clics del lector: Guardar y aceptar ese aviso.
+ · v1.10.1: los días y el interruptor del horario se pulsan como lo haría una persona (la etiqueta «L M X…» visible / el propio interruptor) y espera hasta 4 s a que
+   el uCrop saque la barra «Guardar programa». Si no sale, cuenta cuántos botones hay y cuáles son los últimos.
  · DÍAS DE LA SEMANA (v1.10.0): lee qué días (L M X J V S D) tiene marcados cada programa y puede cambiarlos (mismo procedimiento con confirmación,
    solo en modo «Semana»; nunca deja 0 días). Pulsa los botones de día que cambian y luego «Guardar programa». Si el uCrop contesta «Los cambios se
    han guardado y están pendientes de ser aceptados por el dispositivo», lo da por guardado (el equipo lo aplica después) y no pulsa nada más.

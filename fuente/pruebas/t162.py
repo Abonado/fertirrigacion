@@ -61,7 +61,7 @@ async def main():
         r = await guarda(sw('UCROP | SEO2FRANCO', False), 'horario', 'SE01FRANCO', 1, 0); assert not r['coincide'] and await clics() == [] and await pg.evaluate("document.querySelector('input').checked") is False, r
         r = await guarda(sw('UCROP | SE01FRANCO', False, boton='Guardar drenaje'), 'horario', 'SE01FRANCO', 1, 0)   # botón equivocado
         assert r['estado'] == 'boton' and await clics() == [] and await pg.evaluate("document.querySelector('input').checked") is False, r
-        assert 'Guardar drenaje' in r['otros'] and 'Cancelar' in r['otros'] and r['url'], r   # diagnóstico: qué botones hay
+        assert 'Guardar drenaj' in r['otros'] and 'Cancelar' in r['otros'] and r['url'], r   # diagnóstico: qué botones hay
         # DÍAS DE LA SEMANA (L M X J V S D): pulsa solo los botones de día que cambian y luego «Guardar programa»
         def dias(titulo, mask, modo='WEEK', boton='Guardar programa', aviso=''):
             nom = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
@@ -71,7 +71,20 @@ async def main():
               <button id="g" disabled>{boton}</button><button id="cancel">Cancelar</button>
               <script>(()=>{{const m=()=>[...document.querySelectorAll('input[type=checkbox]')].reduce((a,e,i)=>a|(e.checked?1<<i:0),0);window.__m=m;window.__clics=[];
               document.addEventListener('click',e=>{{const b=e.target.closest('button');if(b)window.__clics.push(b.id+'='+m())}});
-              const g=document.getElementById('g');document.querySelectorAll('input[type=checkbox]').forEach(e=>e.addEventListener('change',()=>{{g.disabled=false}}));{av}}})()</script></body>"""
+              const g=document.getElementById('g');document.querySelectorAll('input[type=checkbox]').forEach(e=>e.addEventListener('change',()=>{{if(g)g.disabled=false}}));{av}}})()</script></body>"""
+        def dias_label(titulo, mask):
+            # como el uCrop real puede estar hecho: solo la ETIQUETA visible del día avisa del cambio; pulsar el input escondido no hace salir «Guardar»
+            nom = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            cs = ''.join(f'<input type="checkbox" class="btn-check" id="week_{d}-0" {"checked" if (mask >> i) & 1 else ""}><label for="week_{d}-0">{"LMXJVSD"[i]}</label>' for i, d in enumerate(nom))
+            return f"""<!doctype html><title>{titulo}</title><body><input type="radio" formcontrolname="week_days" name="w" value="WEEK" checked><input type="radio" formcontrolname="week_days" name="w" value="DAYS">{cs}
+              <div id="barra"></div><script>(()=>{{const m=()=>[...document.querySelectorAll('input[type=checkbox]')].reduce((a,e,i)=>a|(e.checked?1<<i:0),0);window.__m=m;window.__clics=[];
+              document.querySelectorAll('label').forEach(l=>l.addEventListener('click',()=>{{if(!document.getElementById('g'))document.getElementById('barra').innerHTML='<button id="g">Guardar programa</button>'}}));
+              document.addEventListener('click',e=>{{const b=e.target.closest('button');if(b)window.__clics.push(b.id+'='+m())}});}})()</script></body>"""
+        r = await guarda(dias_label('UCROP | SE01FRANCO', 127), 'dias', 'SE01FRANCO', 125, 127)
+        assert r['estado'] == 'pulsado' and r['leido'] == 125 and await clics() == ['g=125'], (r, await clics())
+        # si la barra Guardar nunca sale: deja los días como estaban y lo cuenta
+        r = await guarda(dias('UCROP | SE01FRANCO', 127).replace('<button id="g" disabled>Guardar programa</button>', ''), 'dias', 'SE01FRANCO', 125, 127)
+        assert r['estado'] == 'boton' and await pg.evaluate("window.__m()") == 127 and 'nb' in r, r
         INFO = '<div role="dialog"><p>Los cambios se han guardado y están pendientes de ser aceptados por el dispositivo</p><button id="acep">Aceptar</button></div>'
         r = await guarda(dias('UCROP | SE01FRANCO', 127), 'dias', 'SE01FRANCO', 125, 127)   # quitar el martes
         assert r['estado'] == 'pulsado' and r['leido'] == 125 and await clics() == ['g=125'], (r, await clics())
