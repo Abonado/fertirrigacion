@@ -41,6 +41,11 @@ CONTROL DEL uCROP
    El uCrop pide confirmar el guardado («¿Está seguro? … programas asociados»): el lector acepta ese aviso, y solo ese, si tiene un único
    botón claro de aceptar; con cualquier otro aviso no pulsa nada y lo cuenta en la app.
    Si algo no cuadra no pulsa nada. Máximo 3 cambios por vuelta. Son los únicos dos clics del lector: Guardar y aceptar ese aviso.
+ · DÍAS DE LA SEMANA (v1.10.0): lee qué días (L M X J V S D) tiene marcados cada programa y puede cambiarlos (mismo procedimiento con confirmación,
+   solo en modo «Semana»; nunca deja 0 días). Pulsa los botones de día que cambian y luego «Guardar programa». Si el uCrop contesta «Los cambios se
+   han guardado y están pendientes de ser aceptados por el dispositivo», lo da por guardado (el equipo lo aplica después) y no pulsa nada más.
+   Son tres clics en todo el lector: botón de un día (sin guardar), Guardar y aceptar el aviso «¿Está seguro?» cuando sale. Si no encuentra
+   «Guardar programa», cuenta qué botones ve.
  · HORARIO Y LECTURA COMPLETA (v1.9.0): además de CE ideal y los valores de drenaje, ahora puede PONER o QUITAR el interruptor «Horario» de un
    programa (mismo procedimiento: confirmación en la app, valor de ahora comprobado, guardar, recargar y verificar). Las horas concretas del
    horario NO se tocan. En cada lectura manda a la app una «foto» de los datos relevantes de la pantalla (horario, días, nº máx. de riegos,

@@ -35,7 +35,7 @@ async def main():
         n0 = await pg.evaluate("st.ucOrd.length"); await pg.click('[data-uc="conf-leer"]'); await pg.wait_for_timeout(500)
         o = await pg.evaluate("st.ucOrd[0]"); assert await pg.evaluate("st.ucOrd.length") == n0 + 1 and o['modo'] == 'prueba' and o['campo'] == 'horario' and o['idx']['prog'] == 0, o
         # el lector contesta con el snapshot: horario puesto
-        snap = {'schedule': 1, 'week_days': 'WEEK', 'maxActivations': 6, 'stopRain': 1, 'stopStorm': 0, 'stopFrost': 1, 'idealEC': 1.87, 'idealPH': 6, 'priority': 2, 'demand': 1, 'extra_x': 7}
+        snap = {'schedule': 1, 'week_days': 'WEEK', 'maxActivations': 6, 'stopRain': 1, 'stopStorm': 0, 'stopFrost': 1, 'idealEC': 1.87, 'idealPH': 6, 'priority': 2, 'demand': 1, 'extra_x': 7, 'dias': 'LMXJVSD', 'pend': 0}
         await pg.evaluate("""([id,snap])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'probado',visto:'Franco S1',vistoValor:1,snap,hechoTs:new Date().toISOString(),motivo:'prueba correcta'})""", [o['id'], snap])
         await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
         # el snapshot se ve en el sector
@@ -61,5 +61,33 @@ async def main():
         await pg.locator('[data-uc="horario"][data-v="1"]').first.click(); await pg.wait_for_timeout(300)
         t = await pg.text_content('#ucconf'); assert 'Poner el horario' in t and 'las horas que tenga configuradas' in t, t
         await pg.click('[data-uc="conf-no"]')
+        # DÍAS: 7 botones con lo último leído; quitar el martes → confirmación con letras → orden «dias» con la máscara
+        assert await pg.locator('.ucdia').count() == 7, 'solo el sector 1 tiene lectura'
+        sec = pg.locator('.ucrow', has_text='Sector 1').first
+        assert await sec.locator('.ucdia').count() == 7 and await sec.locator('.ucdia.on').count() == 7
+        assert await sec.locator('[data-uc="dias"]').is_disabled(), 'sin cambios no se puede pulsar'
+        await sec.locator('.ucdia').nth(1).click(); assert await sec.locator('.ucdia.on').count() == 6 and await sec.locator('[data-uc="dias"]').is_enabled()
+        await sec.locator('[data-uc="dias"]').click(); await pg.wait_for_timeout(300)
+        t = await pg.text_content('#ucconf'); assert 'Cambiar los días de riego' in t and await pg.text_content('[data-ucconf="antes"]') == 'LMXJVSD' and await pg.text_content('[data-ucconf="nuevo"]') == 'L-XJVSD', t
+        assert 'dejan de regar' in t
+        await pg.click('[data-uc="conf-si"]'); await pg.wait_for_timeout(600)
+        od = await pg.evaluate("st.ucOrd.find(o=>o.modo==='cambio'&&o.campo==='dias')")
+        assert od and od['valor'] == 125 and od['valorAntes'] == 127 and od['confirmado'] is True and od['estado'] == 'pendiente' and od['idx'] == {'prog': 0, 'dren': 0}, od
+        # el lector contesta «hecho» y el snapshot nuevo: los botones se ponen como quedó
+        await pg.evaluate("""([id,snap])=>Store.setCol('ucrop',id,{...st.ucOrd.find(o=>o.id===id),estado:'hecho',visto:'Franco S1',vistoValor:125,snap,hechoTs:new Date().toISOString(),motivo:'guardado: de LMXJVSD a L-XJVSD (comprobado al recargar)'})""", [od['id'], dict(snap, dias='L-XJVSD', pend=1)])
+        await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
+        sec = pg.locator('.ucrow', has_text='Sector 1').first
+        assert await sec.locator('.ucdia.on').count() == 6 and await sec.locator('.ucdia').nth(1).get_attribute('aria-pressed') == 'false'
+        assert await pg.evaluate("ucUltimo('fra','fra_s1','dias').v") == 125
+        t = await pg.locator('.ucres', has_text='Cambios hechos').text_content(); assert 'LMXJVSD → L-XJVSD' in t, t
+        assert 'Pendiente en el equipo' in await pg.locator('.ucsnap').first.text_content()
+        # quitar todos los días: no se permite
+        assert await pg.evaluate("(ucAbrirConf('fra','fra_s1','dias',0),st.ucConf)") is None
+        # programa en «Días alternos»: botones apagados y no abre la confirmación
+        await pg.evaluate("""()=>Store.setCol('ucrop','fra_fra_s1_ce_zz',{cab:'fra',sector:'fra_s1',sectorNombre:'S1',campo:'ce',valor:null,modo:'prueba',estado:'probado',por:'X',ts:new Date().toISOString(),hechoTs:new Date(Date.now()+60e3).toISOString(),visto:'Franco S1',vistoValor:1.87,idx:{prog:0,dren:0},nombre:'Franco S1',snap:{schedule:0,week_days:'DAYS',dias:'L-XJVSD'}})""")
+        await pg.evaluate("st.ucOrd=null;renderMain();ucCargar()"); await pg.wait_for_timeout(800)
+        sec = pg.locator('.ucrow', has_text='Sector 1').first
+        assert await sec.locator('.ucdia').first.is_disabled() and await sec.locator('[data-uc="dias"]').count() == 0
+        assert await pg.evaluate("(ucAbrirConf('fra','fra_s1','dias',127),st.ucConf)") is None
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())

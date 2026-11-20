@@ -61,6 +61,29 @@ async def main():
         r = await guarda(sw('UCROP | SEO2FRANCO', False), 'horario', 'SE01FRANCO', 1, 0); assert not r['coincide'] and await clics() == [] and await pg.evaluate("document.querySelector('input').checked") is False, r
         r = await guarda(sw('UCROP | SE01FRANCO', False, boton='Guardar drenaje'), 'horario', 'SE01FRANCO', 1, 0)   # botón equivocado
         assert r['estado'] == 'boton' and await clics() == [] and await pg.evaluate("document.querySelector('input').checked") is False, r
+        assert 'Guardar drenaje' in r['otros'] and 'Cancelar' in r['otros'] and r['url'], r   # diagnóstico: qué botones hay
+        # DÍAS DE LA SEMANA (L M X J V S D): pulsa solo los botones de día que cambian y luego «Guardar programa»
+        def dias(titulo, mask, modo='WEEK', boton='Guardar programa', aviso=''):
+            nom = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
+            cs = ''.join(f'<input type="checkbox" id="week_{d}-0" {"checked" if (mask >> i) & 1 else ""}>' for i, d in enumerate(nom))
+            av = f"g.addEventListener('click',()=>setTimeout(()=>document.body.insertAdjacentHTML('beforeend',{aviso!r}),300));" if aviso else ''
+            return f"""<!doctype html><title>{titulo}</title><body><input type="radio" formcontrolname="week_days" name="w" value="WEEK" {'checked' if modo=='WEEK' else ''}><input type="radio" formcontrolname="week_days" name="w" value="DAYS" {'checked' if modo=='DAYS' else ''}>{cs}
+              <button id="g" disabled>{boton}</button><button id="cancel">Cancelar</button>
+              <script>(()=>{{const m=()=>[...document.querySelectorAll('input[type=checkbox]')].reduce((a,e,i)=>a|(e.checked?1<<i:0),0);window.__m=m;window.__clics=[];
+              document.addEventListener('click',e=>{{const b=e.target.closest('button');if(b)window.__clics.push(b.id+'='+m())}});
+              const g=document.getElementById('g');document.querySelectorAll('input[type=checkbox]').forEach(e=>e.addEventListener('change',()=>{{g.disabled=false}}));{av}}})()</script></body>"""
+        INFO = '<div role="dialog"><p>Los cambios se han guardado y están pendientes de ser aceptados por el dispositivo</p><button id="acep">Aceptar</button></div>'
+        r = await guarda(dias('UCROP | SE01FRANCO', 127), 'dias', 'SE01FRANCO', 125, 127)   # quitar el martes
+        assert r['estado'] == 'pulsado' and r['leido'] == 125 and await clics() == ['g=125'], (r, await clics())
+        r = await guarda(dias('UCROP | SE01FRANCO', 125, aviso=INFO), 'dias', 'SE01FRANCO', 127, 125)   # volver a ponerlo, con el aviso real del uCrop
+        assert r['estado'] == 'pulsado' and r['leido'] == 127 and 'se han guardado' in r['info'] and r['confirmado'] == '' and await clics() == ['g=127'], (r, await clics())   # no pulsa «Aceptar»
+        r = await guarda(dias('UCROP | SE01FRANCO', 127), 'dias', 'SE01FRANCO', 127, 125); assert r['estado'] == 'yaestaba' and await clics() == [], r
+        r = await guarda(dias('UCROP | SE01FRANCO', 127), 'dias', 'SE01FRANCO', 5, 125); assert r['estado'] == 'distinto' and await clics() == [] and await pg.evaluate("window.__m()") == 127, r
+        r = await guarda(dias('UCROP | SE01FRANCO', 127, modo='DAYS'), 'dias', 'SE01FRANCO', 125, 127); assert not r['ok'] and 'Semana' in r['motivo'] and await clics() == [] and await pg.evaluate("window.__m()") == 127, r
+        r = await guarda(dias('UCROP | SE01FRANCO', 127), 'dias', 'SE01FRANCO', 0, 127); assert not r['ok'] and await clics() == [], r   # ningún día: no se permite
+        r = await guarda(dias('UCROP | SEO2FRANCO', 127), 'dias', 'SE01FRANCO', 125, 127); assert not r['coincide'] and await clics() == [] and await pg.evaluate("window.__m()") == 127, r
+        r = await guarda(dias('UCROP | SE01FRANCO', 127, boton='Guardar drenaje'), 'dias', 'SE01FRANCO', 125, 127)   # botón equivocado: deja los días como estaban
+        assert r['estado'] == 'boton' and await clics() == [] and await pg.evaluate("window.__m()") == 127, r
         # el valor de ahora NO es el que se confirmó: no escribe ni pulsa
         r = await guarda(pagina('UCROP | Drenaje 1', 'controlRadiation', '160'), 'control', 'Drenaje 1', 200, 150)
         assert r['estado'] == 'distinto' and r['valor'] == 160 and await clics() == [] and await val() == '160', r

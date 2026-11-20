@@ -196,16 +196,19 @@ async function leerUna(c, i, e, toca = true) {
 /* ---------- Control del uCrop (órdenes que llegan de la app) ----------
    PRIMERA VERSIÓN: solo PROBAR. Abre la pantalla del sector (drenaje o programa), comprueba que el nombre coincide y lee el valor
    que hay ahora. NO escribe nada y NO pulsa Guardar. Sirve para ver que la app apunta al sitio correcto antes de dejarle cambiar. */
-const UC_LIM = { control: [25, 500], min: [25, 350], dren: [15, 40], ce: [0, 5], horario: [0, 1] };   // los mismos límites que la app: si una orden se sale, no se toca nada
+const UC_LIM = { control: [25, 500], min: [25, 350], dren: [15, 40], ce: [0, 5], horario: [0, 1], dias: [1, 127] };   // dias = máscara de los 7 botones L M X J V S D (L = 1 … D = 64); 0 días no se permite   // los mismos límites que la app: si una orden se sale, no se toca nada
 const UC_MODOS = ['prueba', 'ensayo', 'cambio'];   // «cambio» = pulsar Guardar de verdad: solo con la orden confirmada en la app (ver cambioUcrop)
 const UC_CAMBIO_MAX_MIN = 30, UC_CAMBIOS_POR_CICLO = 3;   // una orden de cambio más vieja que esto caduca; y nunca más de 3 cambios en una vuelta
-const UC_CAMPO = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule' };
-const UC_PROG = ['ce', 'horario'];   // estos campos están en la pantalla del programa; los demás, en la del drenaje
+const UC_CAMPO = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule', dias: 'week_days' };
+const UC_PROG = ['ce', 'horario', 'dias'];   // estos campos están en la pantalla del programa; los demás, en la del drenaje
 
 // se ejecuta DENTRO de la página del uCrop ya cargada; solo mira
 async function ucropMira(campo, nombreEsperado, ensayoValor) {
-  const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule' };
+  const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule', dias: 'week_days' };
   const fc = forms[campo]; if (!fc) return { ok: false, motivo: 'campo desconocido' };
+  const esDias = campo === 'dias', DIAS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const cDias = () => DIAS.map(d => document.querySelector(`input[id^="week_${d}"]`));   // los 7 botones de los días (L M X J V S D)
+  const masc = c => c.every(Boolean) ? c.reduce((a, e, i) => a | (e.checked ? 1 << i : 0), 0) : null;
   const dormir = ms => new Promise(r => setTimeout(r, ms));
   // La pantalla se identifica por su título («UCROP | SE01FRANCO», «UCROP | Drenaje 1»), no por el texto de la página: la de programas
   // lista todos los programas en una tabla, así que el nombre aparecería en cualquiera. En uCrop unos nombres llevan la letra O y otros el cero.
@@ -216,18 +219,20 @@ async function ucropMira(campo, nombreEsperado, ensayoValor) {
   if (!inp) return { ok: false, motivo: 'no encuentro el campo en la pantalla (¿cargó bien?)' };
   const coincide = !nombreEsperado || (!!tit && norm(tit) === norm(nombreEsperado));
   const esSw = inp.type === 'checkbox';
-  const valor = esSw ? (inp.checked ? 1 : 0) : inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
-  const res = { ok: true, coincide, valor: isFinite(valor) ? valor : null, nombre: nombreEsperado || '', titulo: tit };
+  const valor = esDias ? masc(cDias()) : esSw ? (inp.checked ? 1 : 0) : inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
+  const res = { ok: true, coincide, valor: valor != null && isFinite(valor) ? valor : null, nombre: nombreEsperado || '', titulo: tit };
   // lo más relevante de la pantalla, para enseñarlo en la app: interruptores (horario, demanda, paradas por lluvia/viento/helada…), días,
   // nº de riegos, CE/pH ideales, prioridad, radiación y drenaje. Solo mira; salta lo que son nombres y abonos.
   if (coincide) { const snap = {}, salta = /^(quantity|fertilizerType|name|.*Formula|linkedProgram|drainage)$/;
     try { for (const el of document.querySelectorAll('input[formcontrolname]')) { const n = el.getAttribute('formcontrolname'); if (!/^\w{1,30}$/.test(n) || salta.test(n) || Object.keys(snap).length >= 40) continue;
       if (el.type === 'checkbox') snap[n] = el.checked ? 1 : 0; else if (el.type === 'radio') { if (el.checked) snap[n] = String(el.value).slice(0, 12); }
       else if (el.type === 'number') { const v = parseFloat(String(el.value).replace(',', '.')); if (isFinite(v)) snap[n] = v; } } } catch (e) {}
+    try { const c = cDias(); if (c.every(Boolean)) snap.dias = c.map((e, i) => e.checked ? 'LMXJVSD'[i] : '-').join(''); } catch (e) {}   // días de la semana marcados, p. ej. «LMXJVSD» o «L-X-V--»
+    try { snap.pend = /cambios pendientes de ser actualizados en el equipo/i.test(document.body.innerText || '') ? 1 : 0; } catch (e) {}   // el uCrop avisa si hay algo guardado que el equipo aún no ha aceptado
     res.snap = snap; }
   // ENSAYO: solo si la pantalla es la esperada. Escribe el valor, mira si la pantalla lo acepta y si se activa «Guardar», y deja el valor de antes.
   // No pulsa NINGÚN botón: lo único que hace con «Guardar» es mirar si está activo.
-  if (ensayoValor != null && coincide && !esSw) {
+  if (ensayoValor != null && coincide && !esSw && !esDias) {
     const orig = inp.value, coma = /,/.test(orig), txt = v => (coma ? String(v).replace('.', ',') : String(v));
     const clases = () => (inp.className.match(/ng-(?:pristine|dirty|touched|untouched|valid|invalid)/g) || []).join(' ');
     const fijar = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
@@ -252,8 +257,11 @@ async function ucropMira(campo, nombreEsperado, ensayoValor) {
 // «Guardar programa» / «Guardar drenaje», con el nombre de la pantalla ya comprobado, el valor de antes igual al que se confirmó
 // y el valor nuevo ya aceptado por la pantalla. Si algo no cuadra no pulsa nada y deja el valor como estaba.
 async function ucropGuarda(campo, nombreEsperado, nuevo, antes) {
-  const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule' };
+  const forms = { control: 'controlRadiation', min: 'minRadiation', arr: 'startingRadiation', dren: 'idealDraining', ce: 'idealEC', horario: 'schedule', dias: 'week_days' };
   const fc = forms[campo]; if (!fc) return { ok: false, motivo: 'campo desconocido' };
+  const esDias = campo === 'dias', DIAS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const cDias = () => DIAS.map(d => document.querySelector(`input[id^="week_${d}"]`));
+  const masc = c => c.every(Boolean) ? c.reduce((a, e, i) => a | (e.checked ? 1 << i : 0), 0) : null;
   if (!nombreEsperado || typeof nuevo !== 'number' || !isFinite(nuevo) || typeof antes !== 'number') return { ok: false, motivo: 'faltan datos de la orden' };
   const dormir = ms => new Promise(r => setTimeout(r, ms));
   const norm = t => String(t || '').toUpperCase().replace(/\s+/g, '').replace(/O/g, '0');
@@ -264,27 +272,33 @@ async function ucropGuarda(campo, nombreEsperado, nuevo, antes) {
   const coincide = !!tit && norm(tit) === norm(nombreEsperado);
   const esSw = inp.type === 'checkbox';   // el «Horario» es un interruptor: 1 = puesto, 0 = quitado
   if (esSw && nuevo !== 0 && nuevo !== 1) return { ok: false, motivo: 'un interruptor solo vale 0 o 1' };
-  const valor = esSw ? (inp.checked ? 1 : 0) : inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
-  const res = { ok: true, coincide, titulo: tit, valor: isFinite(valor) ? valor : null };
+  if (esDias && (!Number.isInteger(nuevo) || nuevo < 1 || nuevo > 127 || !Number.isInteger(antes))) return { ok: false, motivo: 'los días tienen que ser una máscara de 1 a 127' };
+  const valor = esDias ? masc(cDias()) : esSw ? (inp.checked ? 1 : 0) : inp.value === '' ? null : parseFloat(String(inp.value).replace(',', '.'));
+  const res = { ok: true, coincide, titulo: tit, valor: valor != null && isFinite(valor) ? valor : null };
   if (!coincide) return res;
+  if (esDias) { const wk = document.querySelector('input[formcontrolname="week_days"][value="WEEK"]');   // en «Días alternos» los botones significan otra cosa: no se toca
+    if (!wk || !wk.checked) return { ok: false, motivo: 'el programa no está en modo «Semana» (¿días alternos?): no toco los días' }; }
   if (res.valor != null && Math.abs(res.valor - nuevo) < 0.0005) return { ...res, estado: 'yaestaba' };   // (p. ej. se guardó pero no llegó el aviso): no se vuelve a pulsar
   if (res.valor == null || Math.abs(res.valor - antes) > 0.0005) return { ...res, estado: 'distinto' };
-  const orig = esSw ? (inp.checked ? 1 : 0) : inp.value, coma = !esSw && /,/.test(orig), txt = v => (esSw ? v : coma ? String(v).replace('.', ',') : String(v));
+  const orig = esDias ? valor : esSw ? (inp.checked ? 1 : 0) : inp.value, coma = !esSw && !esDias && /,/.test(orig), txt = v => (esSw || esDias ? v : coma ? String(v).replace('.', ',') : String(v));
   const fijar = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-  const poner = v => { inp.focus();
+  const poner = v => {
+    if (esDias) { cDias().forEach((e, i) => { if (e && e.checked !== !!((+v >> i) & 1)) e.click(); }); return; }   // ← solo pulsa los botones de día que hay que cambiar (no guarda nada); vale para revertir
+    inp.focus();
     if (esSw) { inp.checked = !!+v; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); return; }   // Angular se entera por «change»
     fijar.call(inp, v);
     inp.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: String(v) }));
     inp.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: '1' })); inp.dispatchEvent(new Event('change', { bubbles: true })); };
   const soltar = () => { inp.dispatchEvent(new FocusEvent('blur')); inp.dispatchEvent(new FocusEvent('focusout', { bubbles: true })); inp.blur(); };
-  const palabra = campo === 'ce' || campo === 'horario' ? 'programa' : 'drenaje';
+  const palabra = campo === 'ce' || campo === 'horario' || campo === 'dias' ? 'programa' : 'drenaje';
+  const avisosHay = () => [...document.querySelectorAll('[role="dialog"],mat-dialog-container,.modal.show,.swal2-popup,.cdk-overlay-pane')].map(d => (d.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).join(' / ').slice(0, 90);
   const botones = () => [...document.querySelectorAll('button')].filter(b => /^\s*guardar\b/i.test(b.innerText || b.textContent || ''));
   const elBoton = () => botones().find(b => new RegExp('^\\s*guardar\\s+' + palabra + '\\s*$', 'i').test((b.innerText || b.textContent || '').replace(/\s+/g, ' ')));
   poner(txt(nuevo)); await dormir(700);
   let g = elBoton(), activo = !!g && !g.disabled;
   if (!activo) { soltar(); await dormir(700); g = elBoton(); activo = !!g && !g.disabled; }
-  const leido = esSw ? (inp.checked ? 1 : 0) : parseFloat(String(inp.value).replace(',', '.'));
-  if (!g) { poner(orig); soltar(); return { ...res, estado: 'boton', boton: botones().map(b => (b.innerText || '').trim()).join(' | ').slice(0, 80), leido }; }
+  const leido = esDias ? masc(cDias()) : esSw ? (inp.checked ? 1 : 0) : parseFloat(String(inp.value).replace(',', '.'));
+  if (!g) { poner(orig); soltar(); return { ...res, estado: 'boton', boton: botones().map(b => (b.innerText || '').trim()).join(' | ').slice(0, 80), otros: [...document.querySelectorAll('button')].filter(b => b.offsetParent !== null).map(b => (b.innerText || b.textContent || '').replace(/\s+/g, ' ').trim()).filter(Boolean).slice(0, 14).map(t => t.slice(0, 16)).join(' | '), url: location.pathname.slice(0, 60), dlg: avisosHay(), leido }; }
   if (!activo || Math.abs(leido - nuevo) > 0.0005) { poner(orig); soltar(); await dormir(300); return { ...res, estado: 'noactivo', leido }; }
   g.click();   // ← clic 1 de 2: «Guardar programa/drenaje»
   // El uCrop responde con un aviso «¿Está seguro? Los cambios realizados en este apartado pueden afectar a los programas asociados…».
@@ -292,8 +306,10 @@ async function ucropGuarda(campo, nombreEsperado, nuevo, antes) {
   // y hay UN solo botón claro de aceptar. Cualquier otro aviso, o dudas con los botones: no se toca y se cuenta qué salió.
   const sinAc = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
   const avisos = () => [...document.querySelectorAll('[role="dialog"],mat-dialog-container,.modal.show,.swal2-popup,.cdk-overlay-pane')].filter(d => d.offsetParent !== null || getComputedStyle(d).display !== 'none');
-  let aviso = null, confirmado = '';
-  for (let i = 0; i < 16 && !aviso; i++) { await dormir(250); aviso = avisos().find(d => /pueden afectar a los programas asociados/.test(sinAc(d.innerText || d.textContent))) || null; }
+  let aviso = null, confirmado = '', info = '';
+  for (let i = 0; i < 16 && !aviso; i++) { await dormir(250); aviso = avisos().find(d => /pueden afectar a los programas asociados|los cambios se han guardado/.test(sinAc(d.innerText || d.textContent))) || null; }
+  // «Los cambios se han guardado y están pendientes de ser aceptados por el dispositivo»: es solo un aviso de que se guardó (el equipo lo acepta después); no hay nada que pulsar
+  if (aviso && /los cambios se han guardado/.test(sinAc(aviso.innerText || aviso.textContent))) { info = sinAc(aviso.innerText || aviso.textContent).slice(0, 100); aviso = null; }
   if (aviso) {
     const bs = [...aviso.querySelectorAll('button')], etiqueta = b => sinAc(b.innerText || b.textContent);
     const ok = bs.filter(b => !b.disabled && /^(si|aceptar|continuar|confirmar|ok|guardar|si,? (continuar|guardar|estoy seguro))$/.test(etiqueta(b)));
@@ -302,7 +318,7 @@ async function ucropGuarda(campo, nombreEsperado, nuevo, antes) {
   }
   await dormir(3000);
   const dlg = avisos().map(d => (d.innerText || '').replace(/\s+/g, ' ').trim()).filter(Boolean).join(' | ').slice(0, 120);
-  return { ...res, estado: 'pulsado', leido, dialogo: dlg, confirmado };
+  return { ...res, estado: 'pulsado', leido, dialogo: dlg, confirmado, info };
 }
 
 async function tabTrabajo() {
@@ -334,6 +350,8 @@ async function cambioUcrop(o, url, tabId) {
   const no = motivo => ({ id: o.id, estado: 'fallo', motivo: motivo + ' · no he guardado nada' });
   if (!L || typeof o.valor !== 'number' || !isFinite(o.valor) || o.valor < L[0] || o.valor > L[1]) return no(`valor fuera de los límites (${L ? L.join('–') : 'campo desconocido'})`);
   if (o.campo === 'horario' && o.valor !== 0 && o.valor !== 1) return no('el horario solo vale 1 (poner) o 0 (quitar)');
+  if (o.campo === 'dias' && (!Number.isInteger(o.valor) || !Number.isInteger(o.valorAntes))) return no('los días tienen que ser una máscara entera');
+  const fm = v => o.campo === 'dias' && Number.isInteger(v) ? 'LMXJVSD'.split('').map((c, i) => (v >> i) & 1 ? c : '-').join('') : v;   // para los mensajes
   if (!nom) return no('la orden no trae el nombre de la pantalla');
   if (o.confirmado !== true || typeof o.valorAntes !== 'number') return no('la orden no trae la confirmación (¿el servidor puente está sin actualizar?)');
   const edad = (Date.now() - Date.parse(o.ts || '')) / 6e4;
@@ -343,17 +361,17 @@ async function cambioUcrop(o, url, tabId) {
     let r; try { [{ result: r }] = await chrome.scripting.executeScript({ target: { tabId }, world: 'MAIN', func: ucropGuarda, args: [o.campo, nom, o.valor, o.valorAntes] }); } catch (e) { return no('no puedo escribir en la pantalla: ' + e.message); }
     if (!r || !r.ok) return no((r && r.motivo) || 'no se pudo');
     if (!r.coincide) return no(`la pantalla abierta es «${r.titulo || 'sin título'}», no ${nom}`);
-    if (r.estado === 'distinto') return no(`el valor de ahora (${r.valor}) no es el que viste al confirmar (${o.valorAntes}): lo cambió alguien. Léelo y confírmalo otra vez`);
-    if (r.estado === 'yaestaba') return { id: o.id, estado: 'hecho', nombre: r.titulo, valor: r.valor, motivo: `ya estaba en ${o.valor}: no hizo falta guardar` };
-    if (r.estado === 'boton') return no(`no encuentro el botón «Guardar» esperado (hay: ${r.boton || 'ninguno'})`);
-    if (r.estado === 'noactivo') return no(`escribí ${o.valor} (la pantalla puso ${r.leido}) pero «Guardar» no se activó; dejé el valor como estaba`);
+    if (r.estado === 'distinto') return no(`el valor de ahora (${fm(r.valor)}) no es el que viste al confirmar (${fm(o.valorAntes)}): lo cambió alguien. Léelo y confírmalo otra vez`);
+    if (r.estado === 'yaestaba') return { id: o.id, estado: 'hecho', nombre: r.titulo, valor: r.valor, motivo: `ya estaba en ${fm(o.valor)}: no hizo falta guardar` };
+    if (r.estado === 'boton') return no(`sin botón Guardar (hay: ${r.boton || 'ninguno'}; visibles: ${r.otros || 'ninguno'}${r.dlg ? '; aviso: ' + r.dlg : ''})`.slice(0, 118));
+    if (r.estado === 'noactivo') return no(`escribí ${fm(o.valor)} (la pantalla puso ${fm(r.leido)}) pero «Guardar» no se activó; dejé el valor como estaba`);
     if (r.estado === 'aviso') return { id: o.id, estado: 'fallo', nombre: r.titulo, motivo: `OJO: pulsé Guardar y el uCrop sacó un aviso que no reconozco (${r.dialogo}; botones: ${r.botones || 'ninguno'}). No lo he aceptado. Míralo en el uCrop` };
     if (r.estado !== 'pulsado') return no('respuesta rara de la pantalla');
     const abierta = await irA(tabId, url);   // recargar y mirar si quedó guardado
     let v = null; if (abierta) try { [{ result: v }] = await chrome.scripting.executeScript({ target: { tabId }, func: ucropMira, args: [o.campo, nom, null] }); } catch (e) { v = null; }
-    if (!v || !v.ok || !v.coincide || v.valor == null) return { id: o.id, estado: 'fallo', nombre: r.titulo, motivo: `OJO: pulsé Guardar (de ${o.valorAntes} a ${o.valor}) pero no pude comprobar el resultado${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
-    if (Math.abs(v.valor - o.valor) < 0.0005) return { id: o.id, estado: 'hecho', nombre: v.titulo, valor: v.valor, snap: v.snap, motivo: `guardado: de ${o.valorAntes} a ${v.valor} (comprobado al recargar${r.confirmado ? '; el uCrop pidió confirmar y se aceptó' : ''})` };
-    return { id: o.id, estado: 'fallo', nombre: v.titulo, valor: v.valor, motivo: `OJO: pulsé Guardar pero al recargar pone ${v.valor}, no ${o.valor}${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
+    if (!v || !v.ok || !v.coincide || v.valor == null) return { id: o.id, estado: 'fallo', nombre: r.titulo, motivo: `OJO: pulsé Guardar (de ${fm(o.valorAntes)} a ${fm(o.valor)}) pero no pude comprobar el resultado${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
+    if (Math.abs(v.valor - o.valor) < 0.0005) return { id: o.id, estado: 'hecho', nombre: v.titulo, valor: v.valor, snap: v.snap, motivo: `guardado: de ${fm(o.valorAntes)} a ${fm(v.valor)} (comprobado al recargar${r.confirmado ? '; el uCrop pidió confirmar y se aceptó' : ''}${r.info ? '; el uCrop avisa: pendiente de que lo acepte el equipo' : ''})` };
+    return { id: o.id, estado: 'fallo', nombre: v.titulo, valor: v.valor, motivo: `OJO: pulsé Guardar pero al recargar pone ${fm(v.valor)}, no ${fm(o.valor)}${r.dialogo ? ' · salió: ' + r.dialogo : ''}. Míralo en el uCrop` };
   } catch (e) { return { id: o.id, estado: 'fallo', motivo: 'error: ' + (e.message || e) + ' · mira el valor en el uCrop' }; }
 }
 
@@ -368,7 +386,7 @@ async function ordenesUcrop(c, P, ordenes) {
       if (cambios >= UC_CAMBIOS_POR_CICLO) continue;   // el resto espera a la próxima vuelta (sigue pendiente)
       cambios++; hechos.push(await cambioUcrop(o, url, tabId)); try { await chrome.tabs.update(tabId, { url: 'about:blank' }); } catch (e) {} continue;
     }
-    if (ens && o.campo === 'horario') { hechos.push({ id: o.id, estado: 'fallo', motivo: 'el ensayo no sirve para el horario (es un interruptor): no toco nada' }); continue; }
+    if (ens && (o.campo === 'horario' || o.campo === 'dias')) { hechos.push({ id: o.id, estado: 'fallo', motivo: 'el ensayo no sirve para interruptores ni días: no toco nada' }); continue; }
     if (ens) { const L = UC_LIM[o.campo];
       if (!L || typeof o.valor !== 'number' || !isFinite(o.valor) || o.valor < L[0] || o.valor > L[1]) { hechos.push({ id: o.id, estado: 'fallo', motivo: `valor fuera de los límites (${L ? L.join('–') : 'campo desconocido'}): no toco nada` }); continue; } }
     try {

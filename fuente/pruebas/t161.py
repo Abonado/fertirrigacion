@@ -54,19 +54,24 @@ async def main():
             return f"""<!doctype html><title>{titulo}</title><body><input formcontrolname="name" value="X"><input formcontrolname="schedule" type="checkbox" {'checked' if horario else ''}>
               <input type="radio" formcontrolname="week_days" name="w" value="WEEK" checked><input type="radio" formcontrolname="week_days" name="w" value="DAYS">
               <input type="number" formcontrolname="idealEC" value="1.87"><input type="number" formcontrolname="maxActivations" value="12"><input type="number" formcontrolname="idealPH" value="5.5">
-              <input type="checkbox" formcontrolname="stopRain" checked><input type="checkbox" formcontrolname="stopFrost"><input type="number" formcontrolname="quantity" value="9"><input formcontrolname="fertilizerType" value="N"></body>"""
+              <input type="checkbox" formcontrolname="stopRain" checked><input type="checkbox" formcontrolname="stopFrost"><input type="number" formcontrolname="quantity" value="9"><input formcontrolname="fertilizerType" value="N">
+              {''.join(f'<input type="checkbox" id="week_{d}-0" {"checked" if i in (0,2,4) else ""}>' for i, d in enumerate(['monday','tuesday','wednesday','thursday','friday','saturday','sunday']))}</body>"""
         r = await mira(prog('UCROP | SE01FRANCO'), 'horario', 'SE01FRANCO'); sn = r['snap']
         assert r['ok'] and r['coincide'] and r['valor'] == 1 and sn['schedule'] == 1 and sn['week_days'] == 'WEEK' and sn['idealEC'] == 1.87 and sn['maxActivations'] == 12 and sn['idealPH'] == 5.5 and sn['stopRain'] == 1 and sn['stopFrost'] == 0, r
         assert 'quantity' not in sn and 'name' not in sn and 'fertilizerType' not in sn, sn
+        assert sn['dias'] == 'L-X-V--', sn   # días de la semana marcados
+        r = await mira(prog('UCROP | SE01FRANCO'), 'dias', 'SE01FRANCO'); assert r['ok'] and r['coincide'] and r['valor'] == 21 and r['snap']['pend'] == 0, r   # L X V = 1+4+16
+        r = await mira(prog('UCROP | SE01FRANCO').replace('</body>', '<p>Hay cambios pendientes de ser actualizados en el equipo, tomarán efecto</p></body>'), 'dias', 'SE01FRANCO'); assert r['snap']['pend'] == 1, r
+        r = await mira(prog('UCROP | SE01FRANCO', horario=False), 'dias', 'SE01FRANCO', 5); assert 'ensayo' not in r, r   # los días no se ensayan
         r = await mira(prog('UCROP | SE01FRANCO', horario=False), 'horario', 'SE01FRANCO'); assert r['valor'] == 0 and r['snap']['schedule'] == 0, r
         r = await mira(prog('UCROP | SE01FRANCO'), 'ce', 'SE01FRANCO'); assert r['valor'] == 1.87 and r['snap']['schedule'] == 1, r
         r = await mira(prog('UCROP | SEO2FRANCO'), 'horario', 'SE01FRANCO'); assert not r['coincide'] and 'snap' not in r, r
         # el ensayo no escribe en interruptores
         r = await mira(prog('UCROP | SE01FRANCO'), 'horario', 'SE01FRANCO', 1); assert 'ensayo' not in r and await pg.evaluate("document.querySelector('[formcontrolname=schedule]').checked") is True, r
         # el ÚNICO clic de todo el lector está dentro de ucropGuarda; ucropMira (lo que mira y ensaya) no pulsa nada
-        assert SRC.count('.click(') == 2, 'tiene que haber solo dos clics en el lector: Guardar y aceptar su aviso'
+        assert SRC.count('.click(') == 3, 'tiene que haber solo tres clics en el lector: botón de un día (sin guardar), Guardar y aceptar su aviso'
         assert '.click(' not in FN, 'ucropMira pulsa algo'
-        assert re.search(r'async function ucropGuarda\(.*?\n\}\n', SRC, re.S).group(0).count('.click(') == 2
+        assert re.search(r'async function ucropGuarda\(.*?\n\}\n', SRC, re.S).group(0).count('.click(') == 3
         # límites y modos del lector
         assert "UC_MODOS = ['prueba', 'ensayo', 'cambio']" in SRC and 'valor fuera de los límites' in SRC
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
