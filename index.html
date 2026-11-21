@@ -6215,17 +6215,30 @@ async function recargarApp(){const b=$('#recargar');if((st.dirtyReg||st.dirtyCfg
   if(b)b.classList.add('gira');try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await Promise.race([r.update(),new Promise(z=>setTimeout(z,2500))])}catch(e){}
   st.dirtyReg=false;st.dirtyCfg=false;location.reload()}
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#recargar');if(b)recargarApp()});
-/* iPhone: al cerrar el teclado, Safari a veces deja lo fijo de abajo (menú, barra de guardar, AGRO) a media pantalla.
-   Con el teclado abierto se esconden el menú y AGRO; al cerrarlo se fuerza a recolocar y, si la parte visible sigue sin cuadrar con la
-   que usa Safari para lo fijo, se baja a su sitio. */
+/* iPhone: Safari a veces deja lo fijo de abajo (menú, barra de guardar, AGRO) a media pantalla (al cerrar el teclado, al volver a la app, tras el dictado…).
+   Con el teclado abierto se esconden el menú y AGRO. Además se MIDE dónde está de verdad lo que va pegado abajo (una marca invisible fija con bottom:0)
+   y se compara con el borde inferior de la parte visible: si no cuadra, se baja (o sube) a su sitio. Se vuelve a medir al volver a la app, al tocar/desplazar
+   y cada segundo, así que no depende de que Safari avise. */
 (function(){const vv=window.visualViewport,esCampo=e=>!!e&&/^(INPUT|TEXTAREA|SELECT)$/.test(e.tagName)&&!/^(checkbox|radio|button|submit|range|color|file)$/i.test(e.type||'');
+  let sonda=null,pend=null,puesto=0;
+  const mide=()=>{if(!vv||(vv.scale&&Math.abs(vv.scale-1)>.02))return null;
+    if(!sonda){sonda=document.createElement('div');sonda.id='fixsonda';sonda.setAttribute('aria-hidden','true');sonda.style.cssText='position:fixed;left:0;bottom:0;width:1px;height:1px;visibility:hidden;pointer-events:none';document.body.appendChild(sonda)}
+    const d=Math.round(vv.offsetTop+vv.height-sonda.getBoundingClientRect().bottom);return Math.abs(d)>1&&Math.abs(d)<700?d:0};
   const aj=()=>{const b=document.body;if(!b)return;const foco=esCampo(document.activeElement);let gap=0,fix=0;
     if(vv){const vis=vv.height+vv.offsetTop;gap=window.innerHeight-vis;fix=!foco&&vis-window.innerHeight>1?Math.round(vis-window.innerHeight):0}
-    b.classList.toggle('teclado',foco&&gap>120);document.documentElement.style.setProperty('--vvfix',fix+'px')};
+    b.classList.toggle('teclado',foco&&gap>120);
+    if(!foco&&!fix){const m=mide();if(m){const t=Date.now();if(pend&&Math.abs(pend.v-m)<=2&&t-pend.t>=250)fix=m;else{if(!pend||Math.abs(pend.v-m)>2)pend={v:m,t};setTimeout(aj,300);fix=puesto}}else pend=null}
+    puesto=fix;document.documentElement.style.setProperty('--vvfix',fix+'px')};
   window.ajustaFijos=aj;
   if(vv){vv.addEventListener('resize',aj);vv.addEventListener('scroll',aj)}window.addEventListener('resize',aj);window.addEventListener('orientationchange',()=>setTimeout(aj,300));
+  window.addEventListener('pageshow',()=>{aj();setTimeout(aj,400)});window.addEventListener('focus',()=>setTimeout(aj,150));
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){aj();setTimeout(aj,400);setTimeout(aj,1200)}});
+  window.addEventListener('scroll',()=>{clearTimeout(aj._t);aj._t=setTimeout(aj,200)},{passive:true});
+  document.addEventListener('touchend',()=>setTimeout(aj,350),{passive:true});
+  setInterval(()=>{if(!document.hidden)aj()},1000);
   document.addEventListener('focusin',e=>{if(esCampo(e.target))setTimeout(aj,350)});
   document.addEventListener('focusout',e=>{if(!esCampo(e.target))return;setTimeout(()=>{if(esCampo(document.activeElement))return;const y=window.scrollY;window.scrollTo(window.scrollX,y+1);window.scrollTo(window.scrollX,y);aj();setTimeout(aj,400)},120)});
+  setTimeout(aj,600);
 })();
 function renderSave(){const bar=$('#savebar');const show=st.dirtyReg||st.dirtyCfg;bar.hidden=!show;document.body.classList.toggle('consave',!!show);if(!show)return;requestAnimationFrame(()=>{const nb=$('#grupos'),bs=document.body.style;if(nb&&nb.offsetHeight&&getComputedStyle(nb).position==='fixed'&&!nb.hidden)bs.setProperty('--bnh',nb.offsetHeight+'px');bs.setProperty('--sbh',bar.offsetHeight+'px')});
   $('#savemsg').textContent=st.saving?'Guardando…':'Cambios sin guardar';
@@ -8318,7 +8331,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v231';
+window.APP_V='abonado-v232';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;
