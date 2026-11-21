@@ -2,7 +2,8 @@
 // Necesita:
 //   1. Un espacio KV enlazado con el nombre de variable  AVISOS
 //   2. Un disparador Cron cada 5 minutos:  */5 * * * *
-// Los envíos van por grupos (12 personas por vez) para no pasar el límite de 50 conexiones del plan gratuito.
+// Los envíos van por grupos (6 personas por vez desde la app) y con un presupuesto de peticiones para no pasar el límite de 50 del plan gratuito.
+// Telegram (opcional, gratis): secretos TELEGRAM_TOKEN y TELEGRAM_SECRET; después, abrir una vez  <esta dirección>/telegram/instalar  en el navegador.
 // Solo atiende a personas que han entrado en la app y que el administrador ha dado de alta.
 
 const PROYECTO = 'fertirrigacion-cabezales';
@@ -98,29 +99,78 @@ async function empujar(env, sub, datos, urgente) {
   return r.status;
 }
 
+/* ---------- Telegram (gratis): el mismo aviso llega también al chat del bot ----------
+   Secretos del worker:  TELEGRAM_TOKEN (el que da @BotFather)  y  TELEGRAM_SECRET (una clave larga inventada, la usa Telegram al llamar al webhook).
+   KV:  t:<email> → {chat, ts}   tc:<chat> → email   tl:<código> → email (10 min, un solo uso) */
+const kTg = e => 't:' + e;
+const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+async function tgApi(env, metodo, cuerpo) {
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${env.TELEGRAM_TOKEN}/${metodo}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo || {}) });
+    const j = await r.json().catch(() => ({})); return { ok: !!j.ok, st: r.status, desc: j.description || '', res: j.result };
+  } catch (e) { return { ok: false, st: 0, desc: 'red' }; }
+}
+let botCache = '';
+async function nombreBot(env) {
+  if (env.TELEGRAM_BOT) return String(env.TELEGRAM_BOT).replace(/^@/, '');
+  if (botCache) return botCache;
+  const r = await tgApi(env, 'getMe'); if (r.ok && r.res && r.res.username) botCache = r.res.username;
+  return botCache;
+}
+async function chatDe(env, email) { const j = await env.AVISOS.get(kTg(email), 'json'); return (j && j.chat) || null; }
+/* Los urgentes suenan; el resto llega en silencio. El botón abre la pantalla del aviso (#ir=...) */
+async function telegramEnviar(env, chat, datos, urgente) {
+  const tab = String(datos.tab || '').replace(/[^\w:-]/g, '').slice(0, 60);
+  const texto = (`<b>${escH(datos.t)}</b>` + (datos.b ? '\n' + escH(datos.b) : '')).slice(0, 4000);
+  const r = await tgApi(env, 'sendMessage', { chat_id: chat, text: texto, parse_mode: 'HTML', disable_notification: !urgente, link_preview_options: { is_disabled: true },
+    reply_markup: { inline_keyboard: [[{ text: 'Abrir en la app', url: SUB_VAPID + (tab ? '#ir=' + tab : '') }]] } });
+  return r;
+}
+const chatMuerto = r => r.st === 403 || (r.st === 400 && /chat not found|user is deactivated/i.test(r.desc));   // bloqueó el bot o ya no existe
+async function desvincular(env, email, chat) {
+  await env.AVISOS.delete(kTg(email)); if (chat) await env.AVISOS.delete('tc:' + chat);
+}
+
 /* ---------- Suscripciones guardadas en KV: s:<email> → [{sub, disp, ts}] ---------- */
 const kSub = e => 's:' + e;
 async function subsDe(env, email) { return (await env.AVISOS.get(kSub(email), 'json')) || []; }
-async function enviarA(env, emails, datos, urgente) {
-  let ok = 0, fallos = 0, sinDispositivo = 0;
-  for (const email of [...new Set(emails)].slice(0, 12)) {
-    const l = await subsDe(env, email); if (!l.length) { sinDispositivo++; continue; }
+/* El plan gratuito de Cloudflare admite ~50 peticiones por ejecución (cada lectura de KV y cada envío cuentan).
+   «pres.n» es lo que queda; quien no cabe se devuelve en «pendientes» para la pasada siguiente. */
+async function enviarA(env, emails, datos, urgente, pres) {
+  pres = pres || { n: 40 };
+  const hayTg = !!env.TELEGRAM_TOKEN && !datos.sinTg;   // «sinTg»: la prueba del móvil no molesta al chat de Telegram
+  let ok = 0, fallos = 0, sinDispositivo = 0, telegram = 0; const pendientes = [];
+  const lista = [...new Set(emails)].slice(0, 12);
+  for (let i = 0; i < lista.length; i++) {
+    const email = lista[i];
+    if (pres.n < 2) { pendientes.push(...lista.slice(i)); break; }
+    const [l, chat] = await Promise.all([subsDe(env, email), hayTg ? chatDe(env, email) : null]); pres.n -= hayTg ? 2 : 1;
+    const gasto = l.length + (chat ? 1 : 0);
+    if (!gasto) { sinDispositivo++; continue; }
+    if (gasto + 3 > pres.n) { pendientes.push(email); continue; }   // +3: por si hay que borrar un dispositivo o un chat muertos
+    pres.n -= gasto;
     const vivas = [];
     for (const s of l) {
       let st = 0; try { st = await empujar(env, s.sub, datos, urgente); } catch (e) { st = 0; }
       if (st === 404 || st === 410) continue;          // el dispositivo ya no existe: se borra
       vivas.push(s); if (st >= 200 && st < 300) ok++; else fallos++;
     }
-    if (vivas.length !== l.length) vivas.length ? await env.AVISOS.put(kSub(email), JSON.stringify(vivas)) : await env.AVISOS.delete(kSub(email));
+    if (vivas.length !== l.length) { pres.n--; vivas.length ? await env.AVISOS.put(kSub(email), JSON.stringify(vivas)) : await env.AVISOS.delete(kSub(email)); }
+    if (chat) {
+      const r = await telegramEnviar(env, chat, datos, urgente);
+      if (r.ok) { telegram++; ok++; } else if (chatMuerto(r)) { pres.n -= 2; await desvincular(env, email, chat); } else fallos++;
+    }
   }
-  return { enviados: ok, fallos, sinDispositivo };
+  return { enviados: ok, fallos, sinDispositivo, telegram, pendientes };
 }
+const resumen = r => ({ ...r, pendientes: r.pendientes.length });   // a quien llama no se le devuelven correos ajenos
 const datosDe = b => ({ t: corto(b.titulo, 120) || 'Abonado Pinta Santos', b: corto(b.cuerpo, 300), tag: corto(b.tag, 80), tab: corto(b.tab, 60) });
 
 /* ---------- Avisos programados (llenado de depósitos y recordatorios de las notas): clave única "prog" ----------
    Un recordatorio que se repite trae «serie»: las siguientes horas de aviso. Al enviar uno, pasa al siguiente. */
 function siguiente(a, ahora) { const l = (a.serie || []).filter(t => t > ahora); if (!l.length) return false; a.cuando = l[0]; a.serie = l.slice(1); a.enviado = 0; delete a.pend; return true; }
 async function revisarProgramados(env) {
+  const pres = { n: 38 };   // peticiones que quedan en esta ejecución (la lectura y la escritura de «prog» ya van descontadas)
   const prog = (await env.AVISOS.get('prog', 'json')) || {};
   const ahora = Date.now(); let cambios = false, cupo = 12;   // como mucho 12 personas por pasada; el resto en la siguiente (5 min)
   for (const [id, a] of Object.entries(prog)) {
@@ -130,11 +180,53 @@ async function revisarProgramados(env) {
     if (!a.pend) a.pend = [...(a.para || [])];
     if (cupo <= 0) break;
     const lote = a.pend.splice(0, cupo); cupo -= lote.length;
-    if (lote.length) await enviarA(env, lote, datosDe(a), true);
+    if (lote.length) { const r = await enviarA(env, lote, datosDe(a), true, pres); if (r.pendientes.length) { a.pend.unshift(...r.pendientes); cupo = 0; } }   // sin presupuesto: el resto, en 5 min
     if (!a.pend.length) { delete a.pend; if (!siguiente(a, ahora)) a.enviado = ahora; }
     cambios = true;
   }
   if (cambios) await env.AVISOS.put('prog', JSON.stringify(prog));
+}
+
+/* ---------- Telegram: webhook (lo llama Telegram) e instalación del webhook ---------- */
+const AB_COD = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const iguales = (a, b) => a.length === b.length && a === b;
+async function webhookTelegram(request, env) {
+  const ok = new Response('ok');
+  const sec = request.headers.get('x-telegram-bot-api-secret-token') || '';
+  if (!env.TELEGRAM_TOKEN || !env.TELEGRAM_SECRET || !env.AVISOS || !iguales(sec, env.TELEGRAM_SECRET)) return new Response('no', { status: 401 });
+  let u; try { u = await request.json(); } catch { return ok; }
+  const m = u && u.message; if (!m || !m.chat || m.chat.type !== 'private' || typeof m.text !== 'string') return ok;   // solo chats privados con el bot
+  const chat = m.chat.id, txt = m.text.trim();
+  const decir = t => tgApi(env, 'sendMessage', { chat_id: chat, text: t, parse_mode: 'HTML', link_preview_options: { is_disabled: true } });
+  const cmd = /^\/([a-zA-Z]+)(?:@\w+)?(?:\s+(\S+))?/.exec(txt);
+  const orden = cmd ? cmd[1].toLowerCase() : '', arg = cmd ? cmd[2] || '' : '';
+  if (orden === 'start' && /^[A-Z2-9]{10}$/.test(arg)) {
+    const email = await env.AVISOS.get('tl:' + arg);
+    if (!email) { await decir('Ese código ha caducado o ya se usó. En la app, vuelve a pulsar «Vincular Telegram».'); return ok; }
+    await env.AVISOS.delete('tl:' + arg);
+    const ant = await env.AVISOS.get(kTg(email), 'json'); if (ant && ant.chat && String(ant.chat) !== String(chat)) await env.AVISOS.delete('tc:' + ant.chat);
+    const otro = await env.AVISOS.get('tc:' + chat); if (otro && otro !== email) await env.AVISOS.delete(kTg(otro));   // un chat, una persona
+    await env.AVISOS.put(kTg(email), JSON.stringify({ chat, ts: Date.now() })); await env.AVISOS.put('tc:' + chat, email);
+    await decir('✅ <b>Vinculado.</b> Aquí te llegarán los avisos de Abonado: los urgentes con sonido y el resto en silencio.\nPara dejar de recibirlos, escribe /stop.');
+    return ok;
+  }
+  if (orden === 'stop') {
+    const email = await env.AVISOS.get('tc:' + chat);
+    if (email) { await desvincular(env, email, chat); await decir('Desvinculado: ya no recibirás avisos por aquí. Puedes volver a vincular desde la app.'); }
+    else await decir('Este chat no estaba vinculado.');
+    return ok;
+  }
+  const email = await env.AVISOS.get('tc:' + chat);
+  await decir(email ? 'Este chat está vinculado y recibe los avisos de Abonado. Escribe /stop para dejar de recibirlos.'
+    : 'Para recibir los avisos de Abonado, abre la app → Ajustes → «Vincular Telegram» y pulsa el botón que aparece.');
+  return ok;
+}
+async function instalarTelegram(request, env) {
+  if (!env.TELEGRAM_TOKEN || !env.TELEGRAM_SECRET) return { ok: false, falta: [!env.TELEGRAM_TOKEN && 'TELEGRAM_TOKEN', !env.TELEGRAM_SECRET && 'TELEGRAM_SECRET'].filter(Boolean) };
+  const u = new URL(request.url), hook = u.origin + u.pathname.replace(/\/+$/, '').replace(/\/instalar$/, '');
+  const r = await tgApi(env, 'setWebhook', { url: hook, secret_token: env.TELEGRAM_SECRET, allowed_updates: ['message'], drop_pending_updates: true });
+  const yo = r.ok ? await tgApi(env, 'getMe') : null;
+  return { ok: r.ok, descripcion: r.desc || undefined, webhook: hook, bot: yo && yo.res ? '@' + yo.res.username : undefined };
 }
 
 export default {
@@ -143,8 +235,11 @@ export default {
     const cors = { 'Access-Control-Allow-Origin': okOrigen(origin) ? origin : ORIGENES[0], 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'content-type, authorization', 'Access-Control-Max-Age': '86400', 'Vary': 'Origin' };
     const json = (o, s) => new Response(JSON.stringify(o), { status: s || 200, headers: { ...cors, 'content-type': 'application/json' } });
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (request.method === 'GET') return json({ ok: true, servicio: 'Avisos de Abonado', kv: !!env.AVISOS, vapid: !!(env.VAPID_PRIVADA || VAPID_PRIVADA_EN_CODIGO) });
+    const ruta0 = new URL(request.url).pathname.replace(/\/+$/, '');
+    if (request.method === 'GET' && ruta0.endsWith('/telegram/instalar')) return json(await instalarTelegram(request, env));   // se abre una vez en el navegador
+    if (request.method === 'GET') return json({ ok: true, servicio: 'Avisos de Abonado', kv: !!env.AVISOS, vapid: !!(env.VAPID_PRIVADA || VAPID_PRIVADA_EN_CODIGO), telegram: !!(env.TELEGRAM_TOKEN && env.TELEGRAM_SECRET) });
     if (request.method !== 'POST') return json({ error: 'metodo' }, 405);
+    if (ruta0.endsWith('/telegram')) return webhookTelegram(request, env);   // lo llama Telegram, con su clave secreta
     /* Aviso desde otro servidor nuestro (el puente de los sensores), con la clave compartida INTERNO_TOKEN: no viene de la app */
     if (new URL(request.url).pathname.replace(/\/+$/, '').endsWith('/interno')) {
       const tk = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
@@ -152,7 +247,7 @@ export default {
       let b; try { b = await request.json(); } catch { return json({ error: 'peticion' }, 400); }
       const para = (Array.isArray(b.para) ? b.para : []).map(e => String(e || '').toLowerCase()).filter(e => /^\S+@\S+$/.test(e)).slice(0, 5);
       if (!para.length) return json({ ok: true, enviados: 0 });
-      return json({ ok: true, ...(await enviarA(env, para, datosDe(b), true)) });
+      return json({ ok: true, ...resumen(await enviarA(env, para, datosDe(b), true)) });
     }
     if (!okOrigen(origin)) return json({ error: 'origen' }, 403);
     if (!env.AVISOS) return json({ error: 'sin_kv' }, 500);
@@ -173,6 +268,28 @@ export default {
       await env.AVISOS.put(kSub(yo), JSON.stringify(l.slice(0, 3)));   // como mucho 3 móviles por persona
       return json({ ok: true, dispositivos: Math.min(3, l.length) });
     }
+    if (ruta === 'tg-estado') {
+      if (!(env.TELEGRAM_TOKEN && env.TELEGRAM_SECRET)) return json({ ok: true, config: false });
+      return json({ ok: true, config: true, vinculado: !!(await chatDe(env, yo)) });
+    }
+    if (ruta === 'tg-vincular') {
+      if (!(env.TELEGRAM_TOKEN && env.TELEGRAM_SECRET)) return json({ error: 'sin_telegram' }, 503);
+      const bot = await nombreBot(env); if (!bot) return json({ error: 'sin_bot' }, 502);
+      const cod = Array.from(crypto.getRandomValues(new Uint8Array(10)), x => AB_COD[x % 32]).join('');
+      await env.AVISOS.put('tl:' + cod, yo, { expirationTtl: 600 });
+      return json({ ok: true, bot, enlace: `https://t.me/${bot}?start=${cod}` });
+    }
+    if (ruta === 'tg-probar') {
+      const chat = env.TELEGRAM_TOKEN ? await chatDe(env, yo) : null; if (!chat) return json({ error: 'sin_vincular' }, 404);
+      const r = await telegramEnviar(env, chat, { t: 'Abonado Pinta Santos', b: 'Telegram vinculado: aquí te llegarán los avisos de la app.', tab: '' }, true);
+      if (chatMuerto(r)) { await desvincular(env, yo, chat); return json({ error: 'sin_vincular' }, 404); }
+      return r.ok ? json({ ok: true }) : json({ error: 'telegram' }, 502);
+    }
+    if (ruta === 'tg-baja') {
+      const chat = env.TELEGRAM_TOKEN ? await chatDe(env, yo) : null;
+      if (chat) { await desvincular(env, yo, chat); await tgApi(env, 'sendMessage', { chat_id: chat, text: 'Desvinculado desde la app: ya no recibirás avisos por aquí.' }); }
+      return json({ ok: true });
+    }
     if (ruta === 'baja') {
       const l = await subsDe(env, yo), r = l.filter(x => x.sub.endpoint !== b.endpoint);
       if (r.length !== l.length) r.length ? await env.AVISOS.put(kSub(yo), JSON.stringify(r)) : await env.AVISOS.delete(kSub(yo));
@@ -180,14 +297,14 @@ export default {
     }
     if (ruta === 'enviar') {
       if (b.prueba) {
-        const datos = { t: 'Abonado Pinta Santos', b: 'Los avisos con la app cerrada funcionan en este dispositivo', tag: 'prueba', tab: '' };
+        const datos = { t: 'Abonado Pinta Santos', b: 'Los avisos con la app cerrada funcionan en este dispositivo', tag: 'prueba', tab: '', sinTg: true };
         const espera = Math.min(20, Math.max(0, +b.retraso || 0)) * 1000;
         if (espera) { ctx.waitUntil(new Promise(r => setTimeout(r, espera)).then(() => enviarA(env, [yo], datos, true))); return json({ ok: true, programado: espera / 1000 }); }
-        return json({ ok: true, ...(await enviarA(env, [yo], datos, true)) });
+        return json({ ok: true, ...resumen(await enviarA(env, [yo], datos, true)) });
       }
       const para = emails(b.para).filter(e => e !== yo).slice(0, 12); if (!para.length) return json({ ok: true, enviados: 0 });
       if (b.unico) { const k = 'u:' + corto(b.unico, 200); if (await env.AVISOS.get(k)) return json({ ok: true, repetido: true }); await env.AVISOS.put(k, '1', { expirationTtl: 172800 }); }
-      return json({ ok: true, ...(await enviarA(env, para, datosDe(b), b.urgente !== false)) });
+      return json({ ok: true, ...resumen(await enviarA(env, para, datosDe(b), b.urgente !== false)) });
     }
     if (ruta === 'programar') {
       const id = corto(b.id, 80); if (!id) return json({ error: 'peticion' }, 400);

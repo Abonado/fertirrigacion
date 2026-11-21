@@ -2901,7 +2901,7 @@ function tanqueHTML(b,n,c){const r=Math.max(0,n.rest),mx=n.max,pct=Math.min(1,r/
     <div class="note">${esc(MODOS[modoDep(b)][0])}: ${esc(MODOS[modoDep(b)][1].toLowerCase())}.</div>
     <div class="row"><button class="btn pri sm" data-act="llenar-arriba" data-id="${b.id}">He llenado hasta arriba</button><button class="btn sm" data-act="lvl-medir" data-id="${b.id}">Medir el vacío ahora</button></div></div></div>`}
 const notifOk=()=>'Notification' in window&&window.isSecureContext;
-function notifHTML(){if(!notifOk())return `<div class="note">Este navegador no permite notificaciones. En iPhone, instala la app en la pantalla de inicio y ábrela desde el icono.</div>`;
+function notifPushHTML(){if(!notifOk())return `<div class="note">Este navegador no permite notificaciones. En iPhone, instala la app en la pantalla de inicio y ábrela desde el icono.</div>`;
   const p=Notification.permission;
   if(p==='denied')return `<div class="note">Las notificaciones están bloqueadas para esta app. Actívalas en los ajustes del navegador o del móvil.</div>`;
   let h='';
@@ -2914,6 +2914,30 @@ function notifHTML(){if(!notifOk())return `<div class="note">Este navegador no p
   const e=st.push.estado;
   if(e==='on')return h+`<div class="row"><span class="pill ok">Avisos con la app cerrada: activados</span><button class="btn" data-act="push-test">Probar con la app cerrada</button></div><div class="note">Mensajes, tareas, pedidos de material, llenado de depósitos y stock bajo.</div>`;
   return h+`<div class="row"><button class="btn pri" data-act="push-on">Activar avisos con la app cerrada</button></div>${e==='err'?`<div class="note">No se pudieron activar (${esc(st.push.err||'error')}). Comprueba la cobertura y vuelve a intentarlo.</div>`:''}`}
+/* ---------- Avisos por Telegram (gratis): el servidor de avisos manda lo mismo al chat del bot. Va aparte de las notificaciones del móvil:
+   también vale en iPhone sin instalar la app. El enlace lleva un código de un solo uso; el chat se vincula al pulsar «Iniciar» en Telegram ---------- */
+st.tg={estado:null,enlace:'',poll:0,cargando:false,email:''};
+function notifHTML(){return notifPushHTML()+tgHTML()}
+function tgPintar(){try{const o=$('[data-out="notif"]');if(o)o.innerHTML=notifHTML()}catch(e){}}
+function tgHTML(){if(!pushListo())return '';let t=st.tg;
+  if(t.email!==miEmail()){t=st.tg={estado:null,enlace:'',poll:t.poll+1,cargando:false,email:miEmail()}}   // otra persona en el mismo navegador: se vuelve a preguntar
+  if(t.estado===null&&!t.cargando)setTimeout(tgCargar,0);
+  const cab=`<div class="lbl" style="margin-top:14px">Avisos por Telegram · gratis</div>`;
+  if(t.estado==='sin-config')return esAdminU()?`${cab}<div class="note">Telegram aún no está activado en el servidor de avisos (faltan los secretos TELEGRAM_TOKEN y TELEGRAM_SECRET).</div>`:'';
+  if(t.estado==='no')return `${cab}<div class="row"><button class="btn pri" data-act="tg-vincular">Vincular Telegram</button></div><div class="note">Los avisos llegan también a tu Telegram, con la app cerrada. Sirve incluso en iPhone sin instalar la app.</div>`;
+  if(t.estado==='esperando')return `${cab}<div class="row"><a class="btn pri" href="${esc(t.enlace)}" target="_blank" rel="noopener">Abrir Telegram y pulsar «Iniciar»</a><button class="btn" data-act="tg-cancelar">Cancelar</button></div><div class="note">Esperando a que pulses «Iniciar» en Telegram…</div>`;
+  if(t.estado==='si')return `${cab}<div class="row"><span class="pill ok">Telegram vinculado</span><button class="btn" data-act="tg-probar">Probar</button><button class="btn" data-act="tg-baja">Desvincular</button></div><div class="note">Los avisos urgentes suenan; los demás llegan en silencio. En Telegram, /stop también los desactiva.</div>`;
+  return ''}
+async function tgCargar(){const t=st.tg;if(t.cargando||!pushListo())return;t.cargando=true;t.email=miEmail();
+  try{const j=await pushApi('tg-estado',{});t.estado=!j.config?'sin-config':j.vinculado?'si':t.estado==='esperando'?'esperando':'no'}
+  catch(e){t.estado=e&&e.code==='ruta'?'sin-config':'err';if(t.estado==='err')setTimeout(()=>{if(st.tg.estado==='err')st.tg.estado=null},60000)}   // servidor viejo: sin Telegram; sin red: se reintenta al minuto
+  finally{t.cargando=false;tgPintar()}}
+async function tgVincular(btn){btn.disabled=true;
+  try{const j=await pushApi('tg-vincular',{});st.tg.enlace=String(j.enlace||'');if(!/^https:\/\/t\.me\//.test(st.tg.enlace))throw{code:'enlace'};st.tg.estado='esperando';tgPintar();tgEsperar()}
+  catch(e){toast(e&&e.code==='sin_telegram'?'Telegram aún no está activado en el servidor de avisos':'No se pudo preparar el enlace ('+((e&&e.code)||'error')+')');btn.disabled=false}}
+function tgEsperar(){const id=++st.tg.poll;let n=0;(async function paso(){if(st.tg.poll!==id||st.tg.estado!=='esperando')return;if(++n>60){st.tg.estado='no';tgPintar();return}   // 60 × 3 s = 3 minutos
+  try{const j=await pushApi('tg-estado',{});if(st.tg.poll!==id)return;if(j.vinculado){st.tg.estado='si';tgPintar();toast('Telegram vinculado');return}}catch(e){}
+  setTimeout(paso,3000)})()}
 async function notificar(t,body,tag){try{const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(reg)await reg.showNotification(t,{body,icon:'icon-192.png',badge:'badge-96.png',tag});else new Notification(t,{body,icon:'icon-192.png',tag})}catch(e){}}
 /* ---------- Avisos con la app cerrada (Web Push a través del servidor de avisos en Cloudflare) ---------- */
 const VAPID_PUB='BH8Jm5HP_bXDhFs4e9_lwXiJ7n9YcmHtWzkjqKSx15ySOHDuYFgU2NXji0kaft9Orq4aOHqCYnoLveltvsOcc0I';
@@ -2957,9 +2981,9 @@ const quienVeCab=c=>todosEmails().filter(e=>veFinca(e,fincaDeCab(c))&&veZona(e,c
 const quienVeFinca=f=>todosEmails().filter(e=>veFinca(e,f));
 const adminsEmails=()=>todosEmails().filter(e=>accInfo(e).admin);
 function pushEnviar(para,titulo,cuerpo,tag,tab,extra){if(!pushListo())return;para=[...new Set(para||[])].filter(e=>e&&e!==miEmail());if(!para.length)return;
-  /* Por grupos de 12 personas: el servidor gratuito de Cloudflare no admite más de ~50 envíos por petición */
+  /* Por grupos de 6 personas: el servidor gratuito de Cloudflare no admite más de ~50 peticiones por ejecución (cada persona gasta hasta 6: lecturas, 3 móviles y Telegram) */
   const base={titulo:String(titulo||'').slice(0,120),cuerpo:String(cuerpo||'').slice(0,280),tag,tab,...(extra||{})};
-  for(let i=0;i<para.length;i+=12){const trozo={...base,para:para.slice(i,i+12)};if(i&&trozo.unico)trozo.unico=trozo.unico+'#'+i;pushApi('enviar',trozo).catch(e=>console.warn('push enviar',e))}}
+  for(let i=0;i<para.length;i+=6){const trozo={...base,para:para.slice(i,i+6)};if(i&&trozo.unico)trozo.unico=trozo.unico+'#'+i;pushApi('enviar',trozo).catch(e=>console.warn('push enviar',e))}}
 /* Llenado: calcula a qué hora llegará cada depósito al aviso y se lo deja programado al servidor */
 function cuandoUmbral(b,n){const u=umbralLl(),falta=n.rest-u*n.max;if(falta<=0)return Date.now();const g=n.g&&n.g.v;if(!(g>0))return null;
   const r=st.cfg.riego||{},a=minDe(r.ini)??510,z=minDe(r.fin)??1110,ven=z>a?z-a:1440,ini=z>a?a:0;
@@ -6426,6 +6450,10 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='notif-on'){if(pushSoportado()&&pushListo()&&!(esIOS()&&!instalada())){await pushSuscribir(true);softUpdate();avisosLlenado()}else Notification.requestPermission().then(()=>{softUpdate();avisosLlenado()})}
   else if(t.dataset.act==='push-on'){t.disabled=true;t.textContent='Activando…';const ok=await pushSuscribir(true);toast(ok?'Avisos con la app cerrada activados':'No se pudieron activar los avisos');pushProgramar()}
   else if(t.dataset.act==='push-test'){try{await pushApi('enviar',{prueba:true,retraso:10});toast('Cierra la app: el aviso llega en unos 10 segundos')}catch(e){toast('No se pudo enviar la prueba ('+(e.code||'error')+')')}}
+  else if(t.dataset.act==='tg-vincular')tgVincular(t);
+  else if(t.dataset.act==='tg-cancelar'){st.tg.poll++;st.tg.estado='no';tgPintar()}
+  else if(t.dataset.act==='tg-probar'){try{await pushApi('tg-probar',{});toast('Mensaje de prueba enviado a tu Telegram')}catch(e){if(e&&e.code==='sin_vincular'){st.tg.estado='no';tgPintar();toast('Este Telegram ya no estaba vinculado')}else toast('No se pudo enviar la prueba ('+((e&&e.code)||'error')+')')}}
+  else if(t.dataset.act==='tg-baja'){t.disabled=true;try{await pushApi('tg-baja',{});st.tg.estado='no';tgPintar();toast('Telegram desvinculado')}catch(e){toast('No se pudo desvincular ('+((e&&e.code)||'error')+')');t.disabled=false}}
   else if(t.dataset.act==='notif-test'){notificar('Abonado-Fertirrigación','Las notificaciones funcionan en este dispositivo','prueba')}
   else if(t.dataset.act==='usar-rec'){const b=bid(t.dataset.id);if(b){b.kgPrincipal=+t.dataset.v;st.dirtyCfg=true;renderMain();renderSave();toast('Cantidad aplicada: pulsa «Guardar receta y ajustes»')}}
   else if(t.dataset.act==='save-reg')saveReg();
