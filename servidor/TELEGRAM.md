@@ -31,6 +31,14 @@ Debe salir `{"ok":true, ... "bot":"@agrofly_avisos_bot"}`. Si sale `falta`, falt
 Con la app publicada: Ajustes → **Vincular Telegram** → «Abrir Telegram y pulsar Iniciar». Al volver a la app aparece «Telegram vinculado». «Probar» manda un mensaje de prueba.
 Para dejar de recibir: «Desvincular» en la app, o `/stop` en el chat del bot. Si alguien bloquea el bot, se desvincula solo.
 
+## Resumen diario a las 10:00 (encargados y administrador)
+Cada día, a la hora que se elija en Ajustes → **Resumen diario** (por defecto las 10:00, hora de Madrid), el servidor de los sensores (`puente-worker.js`) manda por notificación y por Telegram las cuentas y los drenajes de cada cabezal: riego, % de drenaje, CE y pH de entrada y de drenaje, y cuántos productos se salen de ±10 % de la dosis. Si de un cabezal aún no hay registro de hoy, enseña el de ayer y lo dice; si no hay ninguno, avisa.
+- Lo recibe quien es administrador o encargado en «Usuarios y acceso» **y** tiene activados los avisos del móvil o Telegram. Cada persona ve solo sus fincas y zonas.
+- Hace falta: `puente-worker.js` actualizado en Cloudflare, el enlace de servicio `AVISOS_SVC` → `abonado-avisos`, el secreto `INTERNO_TOKEN` (igual en los dos) y `ADMIN_EMAIL` en el puente, `avisos-worker.js` actualizado (lleva el texto largo a Telegram) y el Cron `*/30 * * * *` del puente (ya existe).
+- Para no repetir, el puente apunta el día en `abonado_lecturas/RESUMEN-ESTADO`. Si el servidor de avisos falla, reintenta cada 30 min hasta 3 veces el mismo día; si se hace tarde (4 horas después de la hora elegida) lo deja.
+- Prueba a mano (solo al administrador, sin gastar el aviso del día): `POST https://<puente>.workers.dev/resumen` con `Authorization: Bearer <PUENTE_TOKEN>` y cuerpo `{}`. Con `{"todos":true}` lo manda a todos los destinatarios.
+- Pruebas: `fuente/pruebas/datos/prueba-resumen-diario.mjs` y `fuente/pruebas/t167.py`.
+
 ## Límites y detalles
 - El plan gratuito de Cloudflare admite ~50 peticiones por ejecución. El servidor lleva la cuenta: si en un aviso no caben todas las personas, el resto sale en la pasada siguiente (5 min) en los avisos programados. La app manda en grupos de 6.
 - El botón de prueba del móvil («Probar con la app cerrada») no escribe a Telegram.

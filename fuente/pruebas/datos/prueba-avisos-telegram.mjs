@@ -123,4 +123,14 @@ chatsMuertos.clear();
   limpiar(); nPeticiones = 0; await W.scheduled({}, env, ctx); await Promise.all(pend.splice(0));
   const pr2 = JSON.parse(datos.get('prog'))['llenado-x']; ok(ultimas('sendMessage').length === 12 - n1 && pr2.enviado > 0 && !pr2.pend, 'la segunda pasada termina: ' + ultimas('sendMessage').length);
   const todos = new Set(); /* nadie recibe dos veces: ya comprobado por el reparto 12 = n1 + resto */ }
+// 13) el resumen diario (desde el puente): Telegram lleva el texto largo «cuerpoTg»; el aviso del móvil solo el corto
+{ limpiar(); datos.set('t:ana@x.es', JSON.stringify({ chat: 777, ts: 1 }));
+  const largo = 'Gasolinera\nRiego 12,4 m³ · drenaje 28 %\n' + 'x'.repeat(900);
+  const r = await W.fetch(new Request(base + '/interno', { method: 'POST', headers: { authorization: 'Bearer I', 'content-type': 'application/json' }, body: JSON.stringify({ para: ['ana@x.es'], titulo: 'Resumen de las 10:00 · 22 nov', cuerpo: 'Sin avisos.', cuerpoTg: largo, tag: 'resumen-diario', tab: 'cuentas' }) }), env, ctx);
+  const j = await r.json(); const m = ultimas('sendMessage').at(-1);
+  ok(j.ok && j.telegram === 1 && m.chat_id === 777, 'interno manda a Telegram: ' + JSON.stringify(j));
+  ok(m.text.includes('Gasolinera\nRiego 12,4 m³') && m.text.length > 800 && !m.text.includes('Sin avisos.'), 'Telegram lleva el texto largo');
+  ok(m.reply_markup.inline_keyboard[0][0].url.endsWith('#ir=cuentas'), 'el botón abre «Cuentas del día»');
+  const codigo = fs.readFileSync(process.argv[2], 'utf8'); ok(/empujar\(env, s\.sub, datosPush, urgente\)/.test(codigo) && /\{ bt: _bt, \.\.\.datosPush \}/.test(codigo), 'el texto largo no va en el aviso del móvil');
+  datos.delete('t:ana@x.es'); }
 console.log('AVISOS TELEGRAM OK');

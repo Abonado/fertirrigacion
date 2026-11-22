@@ -121,7 +121,7 @@ async function chatDe(env, email) { const j = await env.AVISOS.get(kTg(email), '
 /* Los urgentes suenan; el resto llega en silencio. El botón abre la pantalla del aviso (#ir=...) */
 async function telegramEnviar(env, chat, datos, urgente) {
   const tab = String(datos.tab || '').replace(/[^\w:-]/g, '').slice(0, 60);
-  const texto = (`<b>${escH(datos.t)}</b>` + (datos.b ? '\n' + escH(datos.b) : '')).slice(0, 4000);
+  const cuerpoT = datos.bt || datos.b, texto = (`<b>${escH(datos.t)}</b>` + (cuerpoT ? '\n' + escH(cuerpoT) : '')).slice(0, 4000);
   const r = await tgApi(env, 'sendMessage', { chat_id: chat, text: texto, parse_mode: 'HTML', disable_notification: !urgente, link_preview_options: { is_disabled: true },
     reply_markup: { inline_keyboard: [[{ text: 'Abrir en la app', url: SUB_VAPID + (tab ? '#ir=' + tab : '') }]] } });
   return r;
@@ -141,6 +141,7 @@ async function enviarA(env, emails, datos, urgente, pres) {
   const hayTg = !!env.TELEGRAM_TOKEN && !datos.sinTg;   // «sinTg»: la prueba del móvil no molesta al chat de Telegram
   let ok = 0, fallos = 0, sinDispositivo = 0, telegram = 0; const pendientes = [];
   const lista = [...new Set(emails)].slice(0, 12);
+  const { bt: _bt, ...datosPush } = datos;   // el texto largo de Telegram no va en el aviso del móvil
   for (let i = 0; i < lista.length; i++) {
     const email = lista[i];
     if (pres.n < 2) { pendientes.push(...lista.slice(i)); break; }
@@ -151,7 +152,7 @@ async function enviarA(env, emails, datos, urgente, pres) {
     pres.n -= gasto;
     const vivas = [];
     for (const s of l) {
-      let st = 0; try { st = await empujar(env, s.sub, datos, urgente); } catch (e) { st = 0; }
+      let st = 0; try { st = await empujar(env, s.sub, datosPush, urgente); } catch (e) { st = 0; }
       if (st === 404 || st === 410) continue;          // el dispositivo ya no existe: se borra
       vivas.push(s); if (st >= 200 && st < 300) ok++; else fallos++;
     }
@@ -164,7 +165,8 @@ async function enviarA(env, emails, datos, urgente, pres) {
   return { enviados: ok, fallos, sinDispositivo, telegram, pendientes };
 }
 const resumen = r => ({ ...r, pendientes: r.pendientes.length });   // a quien llama no se le devuelven correos ajenos
-const datosDe = b => ({ t: corto(b.titulo, 120) || 'Abonado Pinta Santos', b: corto(b.cuerpo, 300), tag: corto(b.tag, 80), tab: corto(b.tab, 60) });
+/* «cuerpoTg»: texto largo solo para Telegram (el móvil lleva el corto «cuerpo»; un aviso del móvil no admite tanto) */
+const datosDe = b => ({ t: corto(b.titulo, 120) || 'Abonado Pinta Santos', b: corto(b.cuerpo, 300), tag: corto(b.tag, 80), tab: corto(b.tab, 60), ...(b.cuerpoTg ? { bt: corto(b.cuerpoTg, 1800) } : {}) });
 
 /* ---------- Avisos programados (llenado de depósitos y recordatorios de las notas): clave única "prog" ----------
    Un recordatorio que se repite trae «serie»: las siguientes horas de aviso. Al enviar uno, pasa al siguiente. */

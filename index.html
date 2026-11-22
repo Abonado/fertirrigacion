@@ -2507,6 +2507,11 @@ function vAjustes(){if(!esGestor())return `<section class="card"><div><h3>Avisos
     <div class="field"><label for="al_ceMax">CE drenaje máxima</label><div class="inp"><input id="al_ceMax" data-k="cfg.al.ceMax" inputmode="decimal" value="${inVal(uS(al.ceMax))}"><span class="u nt">µS/cm</span></div></div>
     <div class="field"><label for="al_phMin">pH mínimo</label><div class="inp"><input id="al_phMin" data-k="cfg.al.phMin" inputmode="decimal" value="${inVal(al.phMin)}"></div></div>
     <div class="field"><label for="al_phMax">pH máximo</label><div class="inp"><input id="al_phMax" data-k="cfg.al.phMax" inputmode="decimal" value="${inVal(al.phMax)}"></div></div></div></section>`;
+  {const rd=st.cfg.resumen||{},rh=Number.isInteger(rd.hora)?rd.hora:10;
+  h+=`<section class="card"><div><h3>Resumen diario</h3><div class="sub">Las cuentas y los drenajes de cada cabezal, a encargados y administrador</div></div><div class="frm">
+    <label class="chk"><input type="checkbox" data-k="cfg.rd.on" ${rd.on!==false?'checked':''}> Mandar el resumen cada día</label>
+    <div class="field"><label for="rd_hora">Hora</label><div class="inp"><select id="rd_hora" data-k="cfg.rd.hora">${[7,8,9,10,11,12,13,14].map(x=>`<option value="${x}"${x===rh?' selected':''}>${x}:00</option>`).join('')}</select></div></div></div>
+    <div class="note">Llega por notificación y por Telegram: riego, % de drenaje, CE y pH de entrada y de drenaje, y los productos que se salen de la dosis. Si aún no hay registro de hoy, enseña el de ayer y lo dice. Cada persona ve solo sus fincas y zonas. Quien no tenga activados los avisos del móvil o Telegram no lo recibe. Después pulsa «Guardar receta y ajustes».</div></section>`}
   if(window.NUBE&&NUBE.user&&NUBE.user.admin)h+=`<section class="card"><div><h3>IA de la app</h3><div class="sub">Dirección del servidor de IA (Cloudflare): usa OpenAI o Claude según la clave que tenga. Vacío: se usa Gemini${window.NUBE&&NUBE.ia?' · ahora: '+esc(NUBE.ia.nombre()):''}</div></div>
     <div class="field"><label for="ia_url_cfg">Servidor de IA</label><div class="inp"><input class="wide" id="ia_url_cfg" data-k="cfg.ia.url" data-text="1" style="width:100%;text-transform:none" placeholder="https://abonado-ia.….workers.dev" value="${esc(st.cfg.iaUrl||'')}" autocomplete="off" spellcheck="false"></div></div>
     <div class="note">Después pulsa «Guardar receta y ajustes». Vale para todo el equipo.</div></section>
@@ -2948,6 +2953,7 @@ function tgHTML(){if(!pushListo())return '';let t=st.tg;
   if(t.estado==='no')return `${cab}<div class="row"><button class="btn pri" data-act="tg-vincular">Vincular Telegram</button></div><div class="note">Los avisos llegan también a tu Telegram, con la app cerrada. Sirve incluso en iPhone sin instalar la app.</div>`;
   if(t.estado==='esperando')return `${cab}<div class="row"><a class="btn pri" href="${esc(t.enlace)}" target="_blank" rel="noopener">Abrir Telegram y pulsar «Iniciar»</a><button class="btn" data-act="tg-cancelar">Cancelar</button></div><div class="note">Esperando a que pulses «Iniciar» en Telegram…</div>`;
   if(t.estado==='si')return `${cab}<div class="row"><span class="pill ok">Telegram vinculado</span><button class="btn" data-act="tg-probar">Probar</button><button class="btn" data-act="tg-baja">Desvincular</button></div><div class="note">Los avisos urgentes suenan; los demás llegan en silencio. En Telegram, /stop también los desactiva.</div>`;
+  if(t.estado==='err')return `${cab}<div class="note">No se pudo comprobar Telegram: no hay conexión con el servidor de avisos.</div><div class="row"><button class="btn" data-act="tg-reintentar">Reintentar</button></div>`;
   return ''}
 async function tgCargar(){const t=st.tg;if(t.cargando||!pushListo())return;t.cargando=true;t.email=miEmail();
   try{const j=await pushApi('tg-estado',{});t.estado=!j.config?'sin-config':j.vinculado?'si':t.estado==='esperando'?'esperando':'no'}
@@ -6195,7 +6201,7 @@ function renderMain(){try{disSync()}catch(e){console.warn('diseño',e)}if(!VIEWS
 const esReceta=k=>/^cfg\.(dosis|kg)\./.test(k||'');
 function bloquearCfg(){for(const i of document.querySelectorAll('#main [data-k^="cfg."]')){if(esReceta(i.dataset.k))continue;i.disabled=true;i.title='Solo el encargado o el administrador'}for(const b of document.querySelectorAll('#main [data-act="cul-edit"]'))b.remove()}
 /* Ajustes por apartados: cada tarjeta va a su grupo según su título; se abren y cierran tocando la cabecera */
-const AJ_GR=[['cab','Depósitos y bandejas',/^(Depósitos|Bandejas)/],['avisos','Avisos y alertas',/^(Aviso de llenado|Avisos de drenaje|Avisos en este móvil)/],['cultivo','Cultivo y partes',/^(Cultivo|Carpetas)/],
+const AJ_GR=[['cab','Depósitos y bandejas',/^(Depósitos|Bandejas)/],['avisos','Avisos y alertas',/^(Aviso de llenado|Avisos de drenaje|Resumen diario|Avisos en este móvil)/],['cultivo','Cultivo y partes',/^(Cultivo|Carpetas)/],
   ['usuarios','Usuarios y acceso',/^Usuarios/],['conex','Conexiones y servidores',/^(IA de la app|Avisos con la app cerrada|Satélite|Sensores|Válvulas del cabezal|Control del uCrop)/],['empresa','Empresa, copias y versión',/[\s\S]?/]];
 st.ajAb=new Set((()=>{try{return JSON.parse(localStorage.getItem('abono.ajAb')||'[]')}catch(e){return []}})());
 function ajAgrupar(root){const cards=[...root.children].filter(e=>e.matches('section.card'));if(cards.length<4)return;const G={};
@@ -6279,7 +6285,7 @@ function bandeja(id){for(const c of st.cfg.cabezales)for(const s of c.sectores)f
 function applyCfg(p,v){const b=bid(p[2]);switch(p[1]){
   case 'kg':b.kgPrincipal=v;break;case 'dosis':b.productos[+p[3]].dosis=v??0;break;case 'lpcm':if(v)b.lpcm=v;break;
   case 'cap':if(v)b.capacidad=v;break;case 'vent':b.venturis=v?Math.max(1,Math.round(v)):1;break;case 'rep':b.reparto=!!v;break;
-  case 'al':if(v!=null)st.cfg.alertas[p[2]]=p[2]==='ceMax'&&v>=50?v/1000:v;break;case 'ub':st.cfg.ubic={...(st.cfg.ubic||{}),[p[2]]:v};st.wx=null;break;case 'min':if(v==null)delete st.cfg.stockMin[p[2]];else st.cfg.stockMin[p[2]]=v;break;case 'saco':if(!(v>0))delete st.cfg.saco[p[2]];else st.cfg.saco[p[2]]=v;break;
+  case 'rd':{const R={...(st.cfg.resumen||{})};if(p[2]==='on')R.on=!!v;else if(p[2]==='hora'&&Number.isInteger(v)&&v>=0&&v<=20)R.hora=v;st.cfg.resumen=R;break}case 'al':if(v!=null)st.cfg.alertas[p[2]]=p[2]==='ceMax'&&v>=50?v/1000:v;break;case 'ub':st.cfg.ubic={...(st.cfg.ubic||{}),[p[2]]:v};st.wx=null;break;case 'min':if(v==null)delete st.cfg.stockMin[p[2]];else st.cfg.stockMin[p[2]]=v;break;case 'saco':if(!(v>0))delete st.cfg.saco[p[2]];else st.cfg.saco[p[2]]=v;break;
   case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'avisos':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.avisosUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.avisosUrl=u;break}case 'sat':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.satUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.satUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'modo':if(MODOS[v])b.modo=v;break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
 function onInput(e){const t=e.target,k=t.dataset.k;if(!k)return;const p=k.split('.');let v=t.type==='checkbox'?t.checked:(t.dataset.text?t.value.trim():num(t.value));
   if(p[0]==='reg'){if(p[1]==='ceD'&&v!=null&&v>=50)v=v/1000;   // 4400 µS → 4,4 mS (4,4 también vale)
@@ -6472,6 +6478,7 @@ document.addEventListener('click',async e=>{const t=e.target.closest('button');i
   else if(t.dataset.act==='push-on'){t.disabled=true;t.textContent='Activando…';const ok=await pushSuscribir(true);toast(ok?'Avisos con la app cerrada activados':'No se pudieron activar los avisos');pushProgramar()}
   else if(t.dataset.act==='push-test'){try{await pushApi('enviar',{prueba:true,retraso:10});toast('Cierra la app: el aviso llega en unos 10 segundos')}catch(e){toast('No se pudo enviar la prueba ('+(e.code||'error')+')')}}
   else if(t.dataset.act==='tg-vincular')tgVincular(t);
+  else if(t.dataset.act==='tg-reintentar'){st.tg.estado=null;st.tg.cargando=false;tgPintar()}
   else if(t.dataset.act==='tg-cancelar'){st.tg.poll++;st.tg.estado='no';tgPintar()}
   else if(t.dataset.act==='tg-probar'){try{await pushApi('tg-probar',{});toast('Mensaje de prueba enviado a tu Telegram')}catch(e){if(e&&e.code==='sin_vincular'){st.tg.estado='no';tgPintar();toast('Este Telegram ya no estaba vinculado')}else toast('No se pudo enviar la prueba ('+((e&&e.code)||'error')+')')}}
   else if(t.dataset.act==='tg-baja'){t.disabled=true;try{await pushApi('tg-baja',{});st.tg.estado='no';tgPintar();toast('Telegram desvinculado')}catch(e){toast('No se pudo desvincular ('+((e&&e.code)||'error')+')');t.disabled=false}}
@@ -8359,7 +8366,7 @@ let ultRec=Date.now();document.addEventListener('visibilitychange',()=>{if(docum
   if(veRiego()){if(!st.dirtyReg)loadFecha(st.fecha);st.hist=null;loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();if(st.jorDias)loadJor(esGestor()?0:2);
   if(!st.dirtyCfg)Store.getConfig().then(c=>{if(c&&Array.isArray(c.bidones)&&!st.dirtyCfg&&JSON.stringify(c)!==JSON.stringify(st.savedCfg)){c.productos={...(c.productos||{}),...PRODUCTOS};c.stockMin=c.stockMin||{};c.saco=c.saco||{};st.cfg=c;st.savedCfg=clone(c);renderMain();splashLogo()}}).catch(()=>{})});
 
-window.APP_V='abonado-v233';
+window.APP_V='abonado-v234';
 /* Actualizaciones: se busca versión nueva al abrir y al volver a la app; cuando la nueva toma el control, se recarga sola una vez
    (salvo que haya cambios sin guardar). */
 if('serviceWorker' in navigator)window.addEventListener('load',()=>{const habia=!!navigator.serviceWorker.controller;let rec=false;

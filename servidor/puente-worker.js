@@ -16,6 +16,9 @@
 //            la app (Ajuste del riego → Avisos de riego; si no hay nada puesto, al administrador).
 //   Con cada dato: lo guarda en abonado_lecturas (un documento por placa y día, con todos los puntos) y pone el «último dato»
 //   y la batería en su aparato de «Mis aparatos» (el que tenga ese número de placa).
+//   · /resumen → prueba a mano del resumen diario (POST con Authorization: Bearer <PUENTE_TOKEN>; cuerpo {} = solo al administrador, {"todos":true} = a todos).
+//   · Resumen diario (Cron, a las 10:00 hora de Madrid; se puede cambiar en la app): las cuentas y los drenajes de cada cabezal, a encargados y administrador,
+//     por el servidor de avisos (notificación y Telegram). Cada persona ve solo sus fincas y zonas.
 //   · Cada 30 minutos (Cron): si un aparato con placa lleva más de 2 horas sin mandar nada, avisa al administrador
 //     (a través del servidor de avisos, ruta «interno»). Avisa una sola vez hasta que vuelva a mandar.
 //
@@ -240,6 +243,87 @@ async function revisar(env) {
   }
 }
 
+/* ---------- resumen diario de las cuentas y los drenajes (a las 10:00, a encargados y administrador) ----------
+   Lee lo que la app ya calculó y guardó en el registro del día (registros/<fecha> → resumen[cabezal]): riego, % de drenaje, CE y pH de entrada y
+   de drenaje, y cuántos productos quedaron fuera de ±10 % de la dosis. Si hoy aún no hay nada de un cabezal, enseña lo de ayer (lo dice).
+   Ajuste en la app: abonado_config/finca → resumen {on, hora}. Sin nada puesto: activo, a las 10:00.
+   Estado (para no repetir): abonado_lecturas/RESUMEN-ESTADO {dia, n, ok}. Se reintenta hasta 3 veces el mismo día si no sale a nadie. */
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const num = (v, d) => v == null || !isFinite(v) ? '—' : (Math.round(v * 10 ** d) / 10 ** d).toFixed(d).replace('.', ',');
+const us = v => v == null || !isFinite(v) ? '—' : String(Math.round(v * 1000));
+const fechaCorta = f => { const m = /^\d{4}-(\d\d)-(\d\d)$/.exec(f || ''); return m ? `${+m[2]} ${MESES[+m[1] - 1]}` : f; };
+const conDatos = z => !!z && typeof z === 'object' && ['m3', 'drenaje', 'ceD', 'phD', 'ceE', 'phE'].some(k => z[k] != null);
+function cabsVisibles(cfg, inf, esAdmin) {
+  const todos = (cfg.cabezales || []).map(c => c && c.id).filter(Boolean);
+  if (esAdmin) return todos;
+  const fincas = Array.isArray(cfg.fincas) ? cfg.fincas : [];
+  if (!fincas.length) return todos;
+  const enFinca = new Set(fincas.flatMap(f => f.cabezales || [])), out = new Set(todos.filter(c => !enFinca.has(c)));
+  const fl = Array.isArray(inf.fincas) ? fincas.filter(f => inf.fincas.includes(f.id)) : fincas, zonas = Array.isArray(inf.cabs) ? inf.cabs : [];
+  for (const f of fl) { const lista = (f.cabezales || []).filter(c => todos.includes(c)), sel = lista.filter(c => zonas.includes(c)); (sel.length ? sel : lista).forEach(c => out.add(c)); }
+  return todos.filter(c => out.has(c));
+}
+/* Texto del resumen para una lista de cabezales: {titulo, cuerpo (corto, para el móvil), cuerpoTg (completo), avisos} */
+function textoResumen(cfg, ids, hoyReg, ayerReg, hoy, hora) {
+  const al = { ceMax: 4, phMin: 5.5, phMax: 7, ...(cfg.alertas || {}) }, nom = id => ((cfg.cabezales || []).find(c => c && c.id === id) || {}).nombre || id;
+  const avisos = [], bloques = [];
+  for (const id of ids) {
+    const zh = ((hoyReg || {}).resumen || {})[id], za = ((ayerReg || {}).resumen || {})[id], esHoy = conDatos(zh), z = esHoy ? zh : conDatos(za) ? za : null, n = nom(id);
+    if (!z) { avisos.push(`${n}: sin registro hoy ni ayer`); bloques.push(`${n}\nSin registro hoy ni ayer`); continue; }
+    const L = [], cab = esHoy ? n : `${n} (datos de ayer)`;
+    if (z.m3 != null || z.drenaje != null) L.push([z.m3 != null ? `Riego ${num(z.m3, 1)} m³` : null, z.drenaje != null ? `drenaje ${num(z.drenaje, 0)} %` : null].filter(Boolean).join(' · '));
+    if (z.ceE != null || z.phE != null) L.push(`Entrada: CE ${us(z.ceE)} µS/cm · pH ${num(z.phE, 1)}`);
+    if (z.ceD != null || z.phD != null) L.push(`Drenaje: CE ${us(z.ceD)} µS/cm · pH ${num(z.phD, 1)}`);
+    if (z.total > 0) L.push(z.fuera > 0 ? `Dosis: ${z.fuera} de ${z.total} productos fuera de ±10 %` : `Dosis: todo dentro de ±10 %`);
+    if (z.ceD != null && z.ceD > al.ceMax) { avisos.push(`CE de drenaje alta en ${n} (${us(z.ceD)} µS/cm)`); L.push('⚠ CE de drenaje por encima del límite'); }
+    if (z.phD != null && (z.phD < al.phMin || z.phD > al.phMax)) { avisos.push(`pH de drenaje fuera de rango en ${n} (${num(z.phD, 1)})`); L.push('⚠ pH de drenaje fuera de rango'); }
+    if (z.fuera > 0) avisos.push(`Dosis fuera de ±10 % en ${n}`);
+    bloques.push(`${cab}\n${L.join('\n')}`);
+  }
+  return { titulo: `Resumen de las ${hora}:00 · ${fechaCorta(hoy)}`, avisos,
+    cuerpo: corto(avisos.length ? '⚠ ' + avisos.join(' · ') : 'Sin avisos. Toca para ver las cuentas.', 280),
+    cuerpoTg: corto(bloques.join('\n\n') + (avisos.length ? '' : '\n\nSin avisos.'), 1700) };
+}
+async function leerDoc(env, ruta, mask) {
+  try { const d = await fs(env, 'GET', ruta + (mask ? '?' + mask.map(k => 'mask.fieldPaths=' + k).join('&') : '')); return Object.fromEntries(Object.entries(d.fields || {}).map(([k, x]) => [k, deFS(x)])); }
+  catch (e) { return /firestore 404/.test(e.message) ? null : Promise.reject(e); }
+}
+/* opc: {forzar: sin mirar hora ni repetición, soloAdmin: solo al administrador (prueba), ahora: reloj para pruebas} */
+async function resumenDiario(env, opc) {
+  opc = opc || {};
+  if (!(env.AVISOS_SVC || env.AVISOS_URL) || !env.INTERNO_TOKEN) return { enviado: false, motivo: 'sin_avisos' };
+  const t = opc.ahora || Date.now(), hoy = hoyMadrid(t), ayer = hoyMadrid(t - 864e5), h = +new Date(t).toLocaleString('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', hour12: false }) % 24;
+  const cfg = await leerDoc(env, '/abonado_config/finca', ['resumen', 'alertas', 'cabezales', 'fincas']) || {}, ajuste = cfg.resumen || {};
+  if (ajuste.on === false && !opc.forzar) return { enviado: false, motivo: 'apagado' };
+  const hora = Number.isInteger(ajuste.hora) && ajuste.hora >= 0 && ajuste.hora <= 20 ? ajuste.hora : 10;
+  if (!opc.forzar && (h < hora || h >= hora + 4)) return { enviado: false, motivo: 'fuera_de_hora' };
+  const est = await leerDoc(env, '/abonado_lecturas/RESUMEN-ESTADO') || {}, mismoDia = est.dia === hoy;
+  if (!opc.forzar && mismoDia && (est.ok || (est.n || 0) >= 3)) return { enviado: false, motivo: est.ok ? 'ya_enviado' : 'demasiados_intentos' };
+  const acc = await leerDoc(env, '/abonado_acceso/usuarios', ['emails', 'info']) || {}, info = acc.info || {}, lista = Array.isArray(acc.emails) ? acc.emails.map(e => String(e).toLowerCase()) : [];
+  const admin = String(env.ADMIN_EMAIL || '').toLowerCase(), esAdm = e => e === admin || !!(info[e] || {}).admin;
+  let dest = [...new Set([...(admin ? [admin] : []), ...lista])].filter(e => (e === admin || lista.includes(e)) && (esAdm(e) || !!(info[e] || {}).encargado));
+  if (opc.soloAdmin) dest = dest.filter(e => e === admin);
+  if (!dest.length) return { enviado: false, motivo: 'sin_destinatarios' };
+  const [rh, ra] = await Promise.all([leerDoc(env, '/abonado_registros/' + hoy).catch(() => null), leerDoc(env, '/abonado_registros/' + ayer).catch(() => null)]);
+  const grupos = new Map();   // cada persona ve solo sus fincas y zonas: se agrupan las que ven lo mismo
+  for (const e of dest) { const ids = cabsVisibles(cfg, info[e] || {}, esAdm(e)); if (!ids.length) continue; const k = ids.join('|'); if (!grupos.has(k)) grupos.set(k, { ids, para: [] }); grupos.get(k).para.push(e); }
+  if (!opc.forzar) await fs(env, 'PATCH', '/abonado_lecturas/RESUMEN-ESTADO?updateMask.fieldPaths=dia&updateMask.fieldPaths=n&updateMask.fieldPaths=ok', { fields: { dia: aFS(hoy), n: aFS((mismoDia ? est.n || 0 : 0) + 1), ok: aFS(false) } });
+  let llamadas = 0, buenas = 0, personas = 0, enviados = 0, errores = [];
+  for (const g of grupos.values()) {
+    const x = textoResumen(cfg, g.ids, rh, ra, hoy, hora);
+    for (let i = 0; i < g.para.length && llamadas < 20; i += 5) {
+      const para = g.para.slice(i, i + 5); llamadas++;
+      try {
+        const r = await avisosFetch(env, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
+          body: JSON.stringify({ para, titulo: x.titulo, cuerpo: x.cuerpo, cuerpoTg: x.cuerpoTg, tag: 'resumen-diario', tab: 'cuentas' }) });
+        if (r.ok) { const j = await r.json().catch(() => ({})); buenas++; personas += para.length; enviados += j.enviados || 0; } else errores.push(r.status);
+      } catch (e) { errores.push('red'); }
+    }
+  }
+  if (!opc.forzar && buenas) await fs(env, 'PATCH', '/abonado_lecturas/RESUMEN-ESTADO?updateMask.fieldPaths=ok', { fields: { ok: aFS(true) } }).catch(() => {});
+  return { enviado: buenas > 0, personas, enviados, grupos: grupos.size, ...(errores.length ? { errores } : {}) };
+}
+
 /* ---------- entradas ---------- */
 const igual = (a, b) => { a = te.encode(String(a || '')); b = te.encode(String(b || '')); if (a.length !== b.length) return false; let d = 0; for (let i = 0; i < a.length; i++) d |= a[i] ^ b[i]; return d === 0; };
 export default {
@@ -259,6 +343,10 @@ export default {
         if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
         return json(await registrarRiego(env, b));
       }
+      if (ruta === 'resumen') {   // prueba a mano: manda el resumen ahora, solo al administrador (o a todos con «todos»: true)
+        if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
+        return json(await resumenDiario(env, { forzar: true, soloAdmin: !b.todos }));
+      }
       if (ruta === 'clima') {
         if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
         return json(await registrarClima(env, b));
@@ -274,5 +362,5 @@ export default {
     } catch (e) { return json({ error: 'servidor', detalle: corto(e.message, 200) }, 500); }
     return json({ error: 'ruta' }, 404);
   },
-  async scheduled(event, env, ctx) { ctx.waitUntil(Promise.all([revisar(env).catch(() => {}), revisarClima(env).catch(() => {})])); }
+  async scheduled(event, env, ctx) { ctx.waitUntil(Promise.all([revisar(env).catch(() => {}), revisarClima(env).catch(() => {}), resumenDiario(env).catch(() => {})])); }
 };
