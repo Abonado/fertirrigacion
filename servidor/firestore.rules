@@ -176,6 +176,70 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['visto', 'hecha', 'hechaTs', 'hechaPor', 'nota', 'mod']));
     }
 
+    // Accesos: cada persona apunta sus propias entradas (quién y desde qué dispositivo); solo el administrador las ve
+    match /abonado_sesiones/{doc} {
+      allow read, delete: if esAdmin();
+      allow create, update: if autorizado() && request.resource.data.email == request.auth.token.email;
+    }
+
+    // Control del uCrop: órdenes que la app manda al lector del PC (cambiar radiación, drenaje ideal, CE). Solo gestores.
+    // El lector las aplica y guarda el resultado con la cuenta de servidor del puente (no entra por estas reglas).
+    match /abonado_ucrop/{doc} {
+      allow read, create, update, delete: if esGestor();
+    }
+
+    // Entrada al taller por QR: cada persona apunta sus propias entradas y salidas (un documento por persona y día);
+    // las ven ella y los encargados; solo los encargados las corrigen o borran
+    match /abonado_qrtaller/{doc} {
+      allow read: if autorizado() && (esGestor() || resource == null || resource.data.email == request.auth.token.email);
+      allow create: if autorizado() && request.resource.data.email == request.auth.token.email
+        && doc == request.auth.token.email + '_' + request.resource.data.fecha;
+      allow update: if esGestor()
+        || (autorizado() && resource.data.email == request.auth.token.email
+            && request.resource.data.email == resource.data.email);
+      allow delete: if esGestor();
+    }
+
+    // ===== Panel de administración de Agro FLY (colecciones panel_*) =====
+    // Solo entra el equipo: el administrador (arriba) y las personas dadas de alta en panel_equipo con rol soporte o facturación.
+    // Los clientes y los usuarios de la app NO tienen acceso a nada de esto. Cada rol toca únicamente lo que necesita.
+    function enEquipo() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/panel_equipo/$(request.auth.token.email))
+        && get(/databases/$(database)/documents/panel_equipo/$(request.auth.token.email)).data.get('activo', true) == true;
+    }
+    function rolEs(r) {
+      return enEquipo()
+        && get(/databases/$(database)/documents/panel_equipo/$(request.auth.token.email)).data.get('rol', '') == r;
+    }
+    function panelLee() { return esAdmin() || enEquipo(); }
+    function panelSoporte() { return esAdmin() || rolEs('soporte'); }
+    function panelFactura() { return esAdmin() || rolEs('facturacion'); }
+
+    // Empresas, fincas, partes técnicos y casos de soporte: los ve todo el equipo; los modifican administración y soporte
+    match /panel_empresas/{doc}  { allow read: if panelLee(); allow write: if panelSoporte(); }
+    match /panel_fincas/{doc}    { allow read: if panelLee(); allow write: if panelSoporte(); }
+    match /panel_partes/{doc}    { allow read: if panelLee(); allow write: if panelSoporte(); }
+    match /panel_soporte/{doc}   { allow read: if panelLee(); allow write: if panelSoporte(); }
+    // Suscripciones (plan, módulos, prueba, precio): las ve todo el equipo; las cambian administración y facturación
+    match /panel_suscripciones/{doc} { allow read: if panelLee(); allow write: if panelFactura(); }
+    // Cobros y consumos de IA/voz: solo administración y facturación (soporte no ve dinero)
+    match /panel_cobros/{doc}    { allow read, write: if panelFactura(); }
+    match /panel_consumos/{doc}  { allow read, write: if panelFactura(); }
+    // Recorrido de Agro FLY Técnico (primer parte, abierto, avisos…): lo anota cualquiera del equipo
+    match /panel_eventos/{doc}   { allow read, write: if panelLee(); }
+    // Condiciones comerciales (días de prueba, precio) y equipo y permisos: solo el administrador los cambia
+    match /panel_config/{doc}    { allow read: if panelLee(); allow write: if esAdmin(); }
+    match /panel_equipo/{doc}    { allow read: if panelLee(); allow write: if esAdmin(); }
+    // Registro de cambios: solo se puede añadir (con tu correo y la hora del servidor); no se edita ni se borra; solo lo lee el administrador
+    match /panel_registro/{doc} {
+      allow read: if esAdmin();
+      allow create: if panelLee()
+        && request.resource.data.quien == request.auth.token.email
+        && request.resource.data.cuando == request.time;
+      allow update, delete: if false;
+    }
+
     match /{coleccion}/{doc} {
       allow read, write: if coleccion.matches('abonado_.*')
         && coleccion != 'abonado_acceso'
@@ -193,6 +257,9 @@ service cloud.firestore {
         && coleccion != 'abonado_fichajes'
         && coleccion != 'abonado_posiciones'
         && coleccion != 'abonado_ordenes'
+        && coleccion != 'abonado_sesiones'
+        && coleccion != 'abonado_ucrop'
+        && coleccion != 'abonado_qrtaller'
         && veRiego();
     }
   }
