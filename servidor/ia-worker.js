@@ -138,6 +138,7 @@ export default {
     if (esChat && (!chat.length || chat[chat.length - 1].role !== 'user')) return json({ error: 'peticion' }, 400);
     const prompt = esChat ? '' : String(body.prompt || '').slice(0, 30000);
     const rapido = !esChat && body.rapido === true;
+    const pro = !esChat && body.pro === true;                 // pregunta de «por qué» a AGRO: modelo bueno y respuesta más larga
     if (!esChat && !prompt) return json({ error: 'peticion' }, 400);
     const tipos = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     const images = (Array.isArray(body.images) ? body.images : [])
@@ -175,7 +176,7 @@ export default {
         model: images.length ? (env.MODEL_FOTOS || MODELO_FOTOS) : (env.MODEL || MODELO), max_tokens: 1500,
         system: SISTEMA_CHAT + (body.contexto ? '\n\nDatos de la finca de quien pregunta (úsalos solo si vienen al caso):\n' + String(body.contexto).slice(0, 6000) : ''),
         messages: chat.map((m, i) => ({ role: m.role, content: i === chat.length - 1 ? [...images, { type: 'text', text: m.text }] : m.text }))
-      } : { model: rapido ? (env.MODEL_RAPIDO || MODELO_RAPIDO) : images.length ? (env.MODEL_FOTOS || MODELO_FOTOS) : (env.MODEL || MODELO), max_tokens: rapido ? 700 : 4000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
+      } : { model: pro ? (env.MODEL_FOTOS || MODELO_FOTOS) : rapido ? (env.MODEL_RAPIDO || MODELO_RAPIDO) : images.length ? (env.MODEL_FOTOS || MODELO_FOTOS) : (env.MODEL || MODELO), max_tokens: pro ? 1400 : rapido ? 700 : 4000, messages: [{ role: 'user', content: [...images, { type: 'text', text: prompt }] }] })
     });
     const j = await r.json().catch(() => null);
     if (!r.ok) {

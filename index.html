@@ -1765,36 +1765,45 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
    que se ha hecho el bidón, los m³ del día o una nota/recordatorio. Lo que apunta lo guarda en el día de hoy y lo dice. */
 const AG={ab:false,est:'',oye:'',hist:[],manos:false,rec:null,busy:false,hecho:[],hab:false,analiza:false,tok:0,cache:new Map(),tec:null,bnd:0,fk:0,vozFalla:'',mudo:(()=>{try{return localStorage.getItem('abono.agmudo')==='1'}catch(e){return false}})()};
 const agSR=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
-/* ---------- El avatar de AGRO: dibujo 2D propio (técnico de campo con gorra verde) ---------- */
+/* ---------- El avatar de AGRO: dibujo 2D propio (técnico de campo con barba y sombrero de campo) ---------- */
 function avSVG(fab){
   const cab=`<g class="av-cabeza">
-      <rect x="86" y="140" width="28" height="34" rx="12" fill="#dba37c"/>
-      <ellipse cx="58" cy="114" rx="7.5" ry="10.5" fill="#efbf9a"/><ellipse cx="142" cy="114" rx="7.5" ry="10.5" fill="#efbf9a"/>
-      <ellipse cx="100" cy="108" rx="42" ry="50" fill="#efbf9a"/>
-      <path d="M58 100q-5 14 1 28q6-6 7-22z" fill="#2b2118"/><path d="M142 100q5 14-1 28q-6-6-7-22z" fill="#2b2118"/>
-      <ellipse cx="73" cy="139" rx="8" ry="5" fill="#e79a8a" opacity=".35"/><ellipse cx="127" cy="139" rx="8" ry="5" fill="#e79a8a" opacity=".35"/>
-      <path d="M56 100C53 56 78 42 100 42c22 0 47 14 44 58Q100 112 56 100z" fill="#2f8f4e"/>
-      <path d="M100 43c-9 17-9 36-3 54" stroke="#1f6b3a" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <path d="M94 76C94 67 100 62 109 62C109 71 103 76 94 76z" fill="#fff"/><path d="M99 81C99 74 104 70 111 70C111 77 106 81 99 81z" fill="#bfe8cd"/>
-      <path d="M50 92Q100 104 150 92Q154 100 143 103Q100 114 57 103Q46 100 50 92z" fill="#1f6b3a"/>
-      <g class="av-cejas" stroke="#2b2118" stroke-width="3.2" stroke-linecap="round" fill="none"><path d="M70 117Q80 111 91 115"/><path d="M109 115Q120 111 130 117"/></g>
-      <g class="av-ojos"><ellipse cx="80" cy="128" rx="7.5" ry="7.4" fill="#fff"/><ellipse cx="120" cy="128" rx="7.5" ry="7.4" fill="#fff"/>
-        <g class="av-pup"><circle cx="80" cy="129" r="4.2" fill="#1d2a3a"/><circle cx="120" cy="129" r="4.2" fill="#1d2a3a"/><circle cx="81.5" cy="127.3" r="1.3" fill="#fff"/><circle cx="121.5" cy="127.3" r="1.3" fill="#fff"/></g></g>
-      <path d="M100 131q-5 11 0 15q4 2 6-1" stroke="#c98b64" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-      <path ${fab?'':'id="av-boca" '}class="av-boca" data-v="0" d="M90 148Q100 155 110 148" stroke="#7a2e2e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <rect x="84" y="138" width="32" height="40" rx="13" fill="#c98f6c"/>
+      <ellipse cx="55" cy="116" rx="8" ry="11" fill="#e3ad89"/><ellipse cx="145" cy="116" rx="8" ry="11" fill="#e3ad89"/>
+      <ellipse cx="100" cy="108" rx="45" ry="51" fill="#e8b693"/>
+      <path d="M56 98q-5 13 0 28q6-5 8-24z" fill="#5a4030"/><path d="M144 98q5 13 0 28q-6-5-8-24z" fill="#5a4030"/>
+      <ellipse cx="72" cy="134" rx="9" ry="5.5" fill="#d98b7d" opacity=".3"/><ellipse cx="128" cy="134" rx="9" ry="5.5" fill="#d98b7d" opacity=".3"/>
+      <path d="M56 112C54 148 68 177 100 178C132 177 146 148 144 112C140 128 126 141 100 141C74 141 60 128 56 112z" fill="#33271f"/>
+      <path d="M88 169Q100 176 112 169M82 161q5 5 9 4M118 161q-5 5-9 4" stroke="#a7a7a5" stroke-width="2.6" stroke-linecap="round" fill="none" opacity=".85"/>
+      <path d="M100 131q-5 9 0 12q4 2 6-1" stroke="#c98b64" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M76 145Q87 136 100 141Q113 136 124 145Q113 149 100 147Q87 149 76 145z" fill="#2a1f19"/>
+      <path d="M60 100Q100 106 140 100L140 108Q100 116 60 108z" fill="#4b4d52" opacity=".28"/>
+      <g class="av-cejas" stroke="#2f2119" stroke-width="4.4" stroke-linecap="round" fill="none"><path d="M68 116Q79 110 92 115"/><path d="M108 115Q121 110 132 116"/></g>
+      <g class="av-ojos"><ellipse cx="80" cy="127.5" rx="7" ry="5.4" fill="#fff"/><ellipse cx="120" cy="127.5" rx="7" ry="5.4" fill="#fff"/>
+        <g class="av-pup"><circle cx="80" cy="128.4" r="4.1" fill="#3a2315"/><circle cx="120" cy="128.4" r="4.1" fill="#3a2315"/><circle cx="81.4" cy="127" r="1.2" fill="#fff"/><circle cx="121.4" cy="127" r="1.2" fill="#fff"/></g></g>
+      <path d="M72 124Q80 119 88 124M112 124Q120 119 128 124" stroke="#3a2315" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      <path ${fab?'':'id="av-boca" '}class="av-boca" data-v="0" d="M90 148Q100 155 110 148" stroke="#c9766b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path d="M52 100C50 60 74 40 100 40c26 0 50 20 48 60z" fill="#7d8084"/>
+      <path d="M62 77Q100 85 138 77" stroke="#a9acb0" stroke-width="8" stroke-linecap="round" stroke-dasharray="1.6 3.4" fill="none" opacity=".9"/>
+      <path d="M53 84Q100 94 147 84L148 100Q100 108 52 100z" fill="#6b6e72"/>
+      <path d="M100 41c-12 14-14 30-12 45" stroke="#686b6f" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>
+      <path d="M52 98C24 98 14 106 18 114C24 124 62 112 100 112C138 112 176 124 182 114C186 106 176 98 148 98Q100 104 52 98z" fill="#85888c"/>
+      <path d="M26 108Q100 120 174 108" stroke="#6b6e72" stroke-width="1.4" fill="none" opacity=".7"/><path d="M34 113Q100 123 166 113" stroke="#6b6e72" stroke-width="1.2" fill="none" opacity=".5"/>
+      <path d="M56 112Q61 148 100 175M144 112Q139 148 100 175" stroke="#1c1d20" stroke-width="1.8" fill="none" stroke-linecap="round" opacity=".85"/><circle cx="100" cy="172" r="3.6" fill="#1c1d20"/>
     </g>`;
-  if(fab)return `<svg class="av av-fab" viewBox="38 38 124 124" aria-hidden="true" focusable="false"><g class="av-cuerpo"><path d="M18 210C20 178 54 166 100 166C146 166 180 178 182 210z" fill="#12315a"/></g>${cab}</svg>`;
+  const cuerpo=`<path d="M14 212C16 180 52 168 100 168C148 168 184 180 186 212z" fill="#1b2a4d"/><path d="M80 168L100 190L120 168z" fill="#101a33"/><path d="M70 170Q78 164 88 166L100 192L74 182z" fill="#2c3d69"/><path d="M130 170Q122 164 112 166L100 192L126 182z" fill="#2c3d69"/><path d="M100 192V212" stroke="#0d1426" stroke-width="2.4"/>`;
+  if(fab)return `<svg class="av av-fab" viewBox="20 24 160 160" aria-hidden="true" focusable="false"><g class="av-cuerpo">${cuerpo}</g>${cab}</svg>`;
   return `<svg class="av" viewBox="0 0 200 200" role="img" aria-label="AGRO, el experto de Agro FLY" data-e="idle">
     <defs><radialGradient id="avbg" cx=".5" cy=".3" r=".85"><stop offset="0" stop-color="#eef9f1"/><stop offset="1" stop-color="#b9dfc6"/></radialGradient><clipPath id="avclip"><circle cx="100" cy="100" r="98"/></clipPath></defs>
     <g clip-path="url(#avclip)"><circle cx="100" cy="100" r="98" fill="url(#avbg)"/>
       <circle class="av-onda" cx="100" cy="108" r="58"/><circle class="av-onda o2" cx="100" cy="108" r="58"/>
-      <g class="av-cuerpo"><path d="M18 210C20 178 54 166 100 166C146 166 180 178 182 210z" fill="#12315a"/><path d="M84 167L100 187L116 167z" fill="#dba37c"/><path d="M78 167L100 193L122 167" fill="none" stroke="#e8eef6" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
-        <g transform="translate(138 178)"><path d="M0 12C0 4 6 0 14 0C14 8 8 12 0 12z" fill="#4cba6f"/><path d="M6 17C6 10 11 6 18 6C18 13 13 17 6 17z" fill="#2f8f4e"/></g></g>
+      <g class="av-cuerpo">${cuerpo}
+        <g transform="translate(140 182)"><path d="M0 12C0 4 6 0 14 0C14 8 8 12 0 12z" fill="#4cba6f"/><path d="M6 17C6 10 11 6 18 6C18 13 13 17 6 17z" fill="#2f8f4e"/></g></g>
       ${cab}
       <g class="av-pens" fill="#2f8f4e"><circle cx="150" cy="58" r="3"/><circle cx="161" cy="48" r="4"/><circle cx="175" cy="40" r="5"/></g>
     </g></svg>`}
 const AG_BOCA=['M90 148Q100 155 110 148','M92 148Q100 153 108 148Q100 156 92 148z','M91 147Q100 149 109 147Q108 160 100 161Q92 160 91 147z','M89 146Q100 149 111 146Q112 163 100 165Q88 163 89 146z','M95 148Q100 145 105 148Q108 156 100 159Q92 156 95 148z'];
-function agBoca(v){const e=document.getElementById('av-boca');if(!e)return;v=v|0;if(e.dataset.v==String(v))return;e.dataset.v=String(v);e.setAttribute('d',AG_BOCA[v]||AG_BOCA[0]);e.setAttribute('fill',v?'#7a2e2e':'none')}
+function agBoca(v){const e=document.getElementById('av-boca');if(!e)return;v=v|0;if(e.dataset.v==String(v))return;e.dataset.v=String(v);e.setAttribute('d',AG_BOCA[v]||AG_BOCA[0]);e.setAttribute('fill',v?'#4b1c1c':'none')}
 /* Voz de AGRO. Natural: el servidor (OpenAI) la genera y la boca sigue el sonido de verdad. Si no hay servidor de voz, saldo o cobertura, habla con la voz del móvil. */
 const agUrl=()=>{try{return (st.cfg&&st.cfg.iaUrl)||''}catch(e){return ''}},agEspera=ms=>{const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal};
 const agDiccion=t=>String(t||'').replace(/[·•]/g,',').replace(/\bmS\/cm\b/g,'milisiemens por centímetro').replace(/\bdS\/m\b/g,'decisiemens por metro').replace(/\bcm\b/g,'centímetros').replace(/\bm³/g,'metros cúbicos').replace(/\bL\b/g,'litros').replace(/°C/g,' grados').replace(/(\d)\s*%/g,'$1 por ciento').replace(/\bkg\b/g,'kilos');
@@ -1884,12 +1893,28 @@ function agManosSigue(){const SR=agSR();if(!SR||!AG.manos||agMR||AG.rec||AG.busy
   try{r.start()}catch(e){agMR=null}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&AG.manos)agManosSigue()});
 /* Lo que AGRO sabe en este momento */
+/* Las CUENTAS de la pantalla «Cuentas del día»: dosis deseada contra dosis real de cada producto, m³ y cm gastados del día que está abierto,
+   y los días anteriores, para que AGRO razone sobre «abono bajo», «me sale alto», etc. con los mismos números que ve la persona. */
+function agCuentas(){const n1=(v,d)=>v==null?'—':fmt(v,d??1),vis=new Set(cabsVis().map(c=>c.id)),R=st.reg||{},O=[];
+  const esHoy=st.fecha===hoy();
+  O.push(`CUENTAS DEL DÍA ABIERTO EN LA APP: ${st.fecha}${esHoy?' (hoy)':st.fecha<hoy()?' (un día ANTERIOR a hoy; si habla de «la cuenta de ayer» es esta u otra de abajo)':''}. Dosis real = litros gastados del bidón × concentración ÷ m³ regados; «desv.» = real frente a deseada (±10 % se considera en dosis). Si falta una lectura o los m³, la cuenta sale vacía.`);
+  for(const c of cabsVis()){const bs=bidonesDe(c.id);if(!bs.length)continue;const m3=(R.m3||{})[c.id];
+    if(m3==null&&!bs.some(b=>(R.cm||{})[b.id]!=null)){O.push(`· ${c.nombre}: sin datos apuntados ese día`);continue}
+    const L=[`· ${c.nombre}: ${m3!=null?n1(m3,2)+' m³ regados':'sin m³ apuntados'}`];
+    for(const b of bs){let cm=null;try{cm=cmCab(b,c.id)}catch(e){}const lit=cm==null?null:cm*b.lpcm,raw=(R.cm||{})[b.id],perd=(R.perd||{})[b.id];
+      const ps=b.productos.filter(x=>x.dosis>0).map(x=>{let r=null;try{r=dosisReal(b,x,c.id)}catch(e){}const e=estado(r,x.dosis);return `${pn(x.p)} deseada ${n1(x.dosis,2)} real ${r==null?'sin calcular':n1(r,2)}${r==null?'':' ('+e.t+')'}`});
+      L.push(`   - ${b.nombre}${b.cabezales.length>1?' (compartido con '+b.cabezales.filter(x=>x!==c.id).map(cabNombre).join(', ')+')':''}: ${raw==null?'sin gasto apuntado ese día':`gastados ${n1(raw)} cm${perd?', pérdida '+n1(perd)+' cm':''}${lit!=null?' = '+n1(lit,0)+' L'+(b.cabezales.length>1?' para este cabezal':''):''}`}${ps.length?' · '+ps.join('; '):''}`)}
+    O.push(L.join('\n'))}
+  try{const ant=(st.hist||[]).filter(r=>r.fecha<st.fecha).sort((a,b)=>a.fecha<b.fecha?1:-1).slice(0,4);
+    if(ant.length)O.push('DÍAS ANTERIORES GUARDADOS (m³ por cabezal · cm gastados por bidón): '+ant.map(r=>`${r.fecha}: `+cabsVis().filter(c=>r.m3&&r.m3[c.id]!=null).map(c=>`${c.nombre} ${n1(r.m3[c.id],0)} m³`).join(', ')+' · '+st.cfg.bidones.filter(b=>b.cabezales.some(x=>vis.has(x))&&r.cm&&r.cm[b.id]!=null).map(b=>`${b.nombre} ${n1(r.cm[b.id])} cm`).join(', ')).join(' | '))}catch(e){}
+  return O.join('\n')}
 function agContexto(){const L=[],f=fincaAct(),n1=(v,d)=>v==null?'—':fmt(v,d??1);
   L.push(`Ahora: ${new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}, ${horaAhora()}. Usuario: ${yoNombre()||'—'}. Finca: ${f?f.nombre:'—'}. Cabezal que tiene abierto: ${cabNombre(st.cab)} (${st.cab}). Pantalla abierta: ${(TABS.find(t=>t[0]===st.tab)||[])[1]||st.tab}.`);
   L.push('CABEZALES: '+cabsVis().map(c=>`${c.id} = ${c.nombre}`).join('; '));
-  const vis=new Set(cabsVis().map(c=>c.id));L.push('BIDONES (id: nombre · cabezales · litros por cm · productos de la receta · nivel · lo apuntado hoy):');
+  const vis=new Set(cabsVis().map(c=>c.id));L.push('BIDONES (id: nombre · cabezales · litros por cm · productos de la receta · NIVEL que queda en el depósito · lo apuntado hoy). OJO: el nivel de un bidón NO explica por sí solo que una cuenta salga baja o alta; para eso mira las CUENTAS de más abajo:');
   for(const b of st.cfg.bidones.filter(b=>b.cabezales.some(c=>vis.has(c))))try{let n=null;try{n=nivel(b)}catch(e){}const R=st.fecha===hoy()?st.reg:null;
     L.push(`- ${b.id}: ${b.nombre} · ${b.cabezales.map(cabNombre).join(' + ')} · ${b.lpcm} L/cm · ${b.productos.filter(x=>x.dosis>0).map(x=>pn(x.p)).join(', ')} · ${n?`quedan ${n1(Math.max(0,n.rest))} cm (${Math.round(Math.max(0,n.rest)*b.lpcm)} L)${n.dias!=null?', para '+n1(n.dias)+' días':''}`:'nivel sin datos'}${R?` · hoy: regla ${n1((R.vac||{})[b.id])} cm, gastados ${n1((R.cm||{})[b.id])} cm, pérdida ${n1((R.perd||{})[b.id])} cm`:''}`)}catch(e){L.push(`- ${b.id}: ${b.nombre}`)}
+  try{L.push(agCuentas())}catch(e){console.error('AGRO cuentas',e)}
   try{const w=st.splashWx,c=w&&w.current,d=w&&w.daily,W=st.wx&&st.wx.daily;const T=[];
     if(c)T.push(`ahora ${n1(c.temperature_2m)} °C, ${n1(c.relative_humidity_2m,0)} % de humedad, viento ${n1(c.wind_speed_10m,0)} km/h (rachas ${n1(c.wind_gusts_10m,0)}), ${typeof WX_TXT!=='undefined'?WX_TXT[c.weather_code]||'':''}`);
     const dd=W||d;if(dd&&dd.time)dd.time.slice(0,3).forEach((f,i)=>T.push(`${i===0?'hoy':i===1?'mañana':'pasado mañana'}: máxima ${n1(dd.temperature_2m_max[i],0)} °C, mínima ${n1(dd.temperature_2m_min[i],0)} °C, ${typeof WX_TXT!=='undefined'?WX_TXT[dd.weather_code[i]]||'':''}${dd.precipitation_probability_max?', probabilidad de lluvia '+n1(dd.precipitation_probability_max[i],0)+' %':''}${dd.precipitation_sum?', '+n1(dd.precipitation_sum[i])+' mm':''}${dd.wind_gusts_10m_max?', rachas de '+n1(dd.wind_gusts_10m_max[i],0)+' km/h':''}`));
@@ -1918,7 +1943,9 @@ ACCIONES QUE PUEDES HACER (en "acciones"; solo si te lo piden claramente):
 - {"tipo":"m3","cab":"id","m3":205} → agua regada hoy en un cabezal
 - {"tipo":"nota","texto":"…","fecha":"AAAA-MM-DD o null","hora":"HH:MM o null"} → nota o recordatorio (si dice una hora o un día, ponlos)
 - {"tipo":"tecnico","resumen":"2 o 3 frases: qué pasa, desde cuándo, qué se ha probado","urgente":false} → abre el aviso al técnico para que la persona lo confirme
-Reglas: usa SOLO ids de los datos de arriba. Si falta algo para hacer la acción (qué bidón, cuántos cm…), pregúntalo en "decir" y no la hagas. Si te preguntan algo, contesta con los datos de arriba; si no está, dilo claro y no inventes. Para el tiempo usa la previsión de arriba. Si solo te saludan o te llaman, contesta «Dime». «El potásico», «el calcio», «el hierro», «el nítrico» son los bidones de ese nombre; si no dice cabezal y hay varios, usa el que tiene abierto (${cabNombre(st.cab)}).
+Reglas: usa SOLO ids de los datos de arriba. Si falta algo para hacer la acción (qué bidón, cuántos cm…), pregúntalo en "decir" y no la hagas. Si te preguntan algo, contesta con los datos de arriba; si no está, dilo claro y no inventes.
+PREGUNTAS DE «POR QUÉ» (el abono sale bajo o alto, la cuenta no cuadra, la CE, el drenaje…): no contestes con una sola causa ni con lo primero que veas. Primero mira en CUENTAS qué productos salen fuera de dosis, en qué sentido y cuánto, y cuántos m³ y cm hay ese día; no mezcles el nivel que queda en el bidón con lo gastado ese día, son cosas distintas. Después da en «decir» la lectura corta de los datos y las 2 o 3 causas más probables en orden, y en «ver» la lista completa con qué comprobar en cada una. Si te falta un dato para decidir (lectura, m³, si se rellenó el bidón, de qué día habla), di cuál es y pregúntalo: es mejor preguntar que adivinar. Nunca presentes una causa como segura si los datos no la demuestran: di «lo más probable» o «hay que comprobar».
+Causas habituales de dosis REAL BAJA (sale menos abono del previsto): m³ de más (contador del cabezal o riegos que no son del día, o m³ mal apuntados), lectura de la regla equivocada o de otro día, bidón rellenado sin apuntarlo (el gasto sale de menos), pérdida o rebose apuntados de más, depósito compartido con los m³ de los otros cabezales mal puestos, bomba o inyector que no inyecta bien (aire en la línea, filtro sucio, válvula), cambio de producto o de concentración sin actualizarlo. Si sale ALTA es lo contrario: m³ de menos, gasto de más, pérdida sin apuntar, dosificación excesiva. Cuando un solo producto sale mal y los demás bien, apunta a ese bidón (lectura, receta o concentración); si salen todos igual, apunta a los m³ o al día. Para el tiempo usa la previsión de arriba. Si solo te saludan o te llaman, contesta «Dime». «El potásico», «el calcio», «el hierro», «el nítrico» son los bidones de ese nombre; si no dice cabezal y hay varios, usa el que tiene abierto (${cabNombre(st.cab)}).
 
 CONVERSACIÓN RECIENTE:
 ${AG.hist.slice(-6).map(m=>(m.r==='yo'?'Usuario: ':'AGRO: ')+m.t).join('\n')||'(ninguna)'}
@@ -1928,10 +1955,10 @@ Responde SOLO con JSON: {"decir":"lo que vas a decir en voz alta","ver":"detalle
 const AG_ERR={sin_ia:'Para entenderte necesito la IA de la app: actívala en Ajustes.',red:'No tengo conexión con la IA. Mira la cobertura y prueba otra vez.',ia_tiempo:'La IA no contesta. Puede ser la cobertura o que tu compañía de internet esté bloqueando el servidor (pasa con el fútbol): prueba con datos móviles o más tarde.',ia_clave:'La clave de Claude del servidor no es válida.',ia_creditos:'La cuenta de Claude no tiene saldo.',ia_cuota:'La IA está saturada ahora mismo. Prueba en un minuto.',ia_ocupada:'La IA está saturada ahora mismo. Prueba en un minuto.',ia_sesion:'Tu sesión ha caducado: sal y vuelve a entrar.',ia_sinacceso:'Tu usuario no tiene acceso a la IA.',ia_origen:'El servidor de IA no acepta esta dirección.',ia_appcheck:'La IA de Google ha rechazado la petición (comprobación de la app).',ia_noactiva:'La IA de Google no está activada en el proyecto.',ia_modelo:'El modelo de IA no está disponible.',ia_bloqueo:'La IA no ha querido contestar a eso.'};
 const agSoloLlamada=t=>/^\s*(?:oye|hola|ey|eh)?\s*a\s?gro\s*[.,!¡?¿]*\s*$/i.test(t);
 async function agPide(t){t=String(t||'').trim();if(!t||AG.busy)return;AG.ab=true;t=t.replace(/^\s*(?:oye|hola|ey)\s+a\s?gro\b[\s,.:]*/i,'')||t;if(agSoloLlamada(t)){AG.hist.push({r:'yo',t},{r:'ag',t:'Dime.'});agPinta();agHabla('Dime',true);return}AG.hist.push({r:'yo',t});AG.busy=true;AG.est='';AG.hecho=[];agPinta();let r=null;
-  try{r=await iaFotoJson(agPrompt(t),[],{rapido:true});if(!r||typeof r!=='object')throw{code:'vacia'}}catch(e){AG.busy=false;console.error('AGRO',e);const m=(e&&AG_ERR[e.code])||('No he podido pensar la respuesta'+(e&&e.code?' ('+e.code+(e.detail?': '+String(e.detail).slice(0,80):'')+')':'')+'. Prueba otra vez.');AG.hist.push({r:'ag',t:m});agHabla(m);agPinta();return}
+  try{r=await iaFotoJson(agPrompt(t),[],{rapido:true,pro:/\bpor\s*qu[eé](?![a-z])|\bmotivo|\bcausa|\braz[oó]n\b|\bqu[eé]\s+(?:pasa|ocurre|le\s+pasa|puede)|\bc[oó]mo\s+(?:es\s+que|puede)|\bexpl[ií]ca|\bsale\s+(?:bajo|alto|mal)|\bno\s+cuadra/i.test(t)});if(!r||typeof r!=='object')throw{code:'vacia'}}catch(e){AG.busy=false;console.error('AGRO',e);const m=(e&&AG_ERR[e.code])||('No he podido pensar la respuesta'+(e&&e.code?' ('+e.code+(e.detail?': '+String(e.detail).slice(0,80):'')+')':'')+'. Prueba otra vez.');AG.hist.push({r:'ag',t:m});agHabla(m);agPinta();return}
   AG.busy=false;const decir=String(r&&r.decir||'').trim()||'Hecho.',acc=Array.isArray(r&&r.acciones)?r.acciones.slice(0,6):[];
   let extra='';try{const h=await agHaz(acc);AG.hecho=h.ok;if(h.mal.length)extra=' Pero no he podido: '+h.mal.join('; ')+'.'}catch(e){extra=' No he podido apuntarlo.'}
-  const ver=String(r&&r.ver||'').trim().slice(0,700);AG.hist.push({r:'ag',t:decir+extra,v:ver});agPinta();agHabla(decir+extra,/\?\s*$/.test(decir)&&!AG.tec)}
+  const ver=String(r&&r.ver||'').trim().slice(0,1400);AG.hist.push({r:'ag',t:decir+extra,v:ver});agPinta();agHabla(decir+extra,/\?\s*$/.test(decir)&&!AG.tec)}
 /* Hacer lo que ha pedido: todo en el día de hoy y guardado */
 async function agHaz(acc){const ok=[],mal=[];let dia=false,ir=null;const nb=b=>`${b.nombre} (${b.cabezales.map(cabNombre).join(' + ')})`,vis=new Set(cabsVis().map(c=>c.id));
   const hoyAbierto=async()=>{if(st.fecha!==hoy()){if(st.dirtyReg)await saveReg();await loadFecha(hoy())}};
