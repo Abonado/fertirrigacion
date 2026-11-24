@@ -741,6 +741,36 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 .agpie{display:flex;align-items:center;gap:10px}.agmic{flex:none;width:58px;height:58px;border-radius:50%;border:0;color:#fff;background:radial-gradient(circle at 30% 25%,#2fa36b,#1b5e3f 70%);display:grid;place-items:center;cursor:pointer}.agmic svg{width:26px;height:26px}.agmic.on{background:#c0392b;animation:agpul 1.2s ease-out infinite}.agmic[disabled]{opacity:.4}
 .agtx{flex:1;display:flex;gap:6px;min-width:0}.agtx input{flex:1;min-width:0;font:inherit;font-size:15px;padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:var(--bg)}
 .agman{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:12.5px;color:var(--muted);text-transform:none}
+.agbtn{background:radial-gradient(circle at 50% 28%,#f1faf3,#b9dfc6 78%);border:2px solid #fff;box-shadow:0 6px 18px rgba(16,60,40,.38)}
+.agbtn .av-fab{display:block;width:100%;height:100%;border-radius:50%}
+.agbtn .agmb{position:absolute;right:-3px;bottom:-3px;width:22px;height:22px;border-radius:50%;background:#1b5e3f;border:2px solid #fff;display:grid;place-items:center;color:#fff}.agbtn .agmb svg{width:11px;height:11px}
+.agt{flex:1;display:grid;min-width:0}.agph .agt b{font:800 15px var(--f-display);letter-spacing:.05em;color:var(--navy)}.agph .agt small{color:var(--muted);font-size:12px;text-transform:none}
+.avst{display:grid;justify-items:center;gap:4px;margin-top:6px}.avbox{width:132px;height:132px;border-radius:50%;box-shadow:0 4px 16px rgba(16,60,40,.2)}
+.av{display:block;width:100%;height:100%}.avcap{font-size:13px;color:var(--muted);text-transform:none;min-height:18px}
+.av-cabeza{transform-origin:100px 170px;transition:transform .35s ease}.av-pup,.av-cejas{transition:transform .3s}
+.av-ojos{transform-box:fill-box;transform-origin:center;animation:avpar 5.4s infinite}
+.av-cuerpo{animation:avresp 4.2s ease-in-out infinite}
+.av-pens{opacity:0;transition:opacity .2s}.av-onda{fill:none;stroke:#2fa36b;stroke-width:2;opacity:0;transform-box:fill-box;transform-origin:center}
+.av[data-e=listen] .av-onda{animation:avonda 1.8s ease-out infinite}.av[data-e=listen] .av-onda.o2{animation-delay:.9s}
+.av[data-e=listen] .av-cabeza{transform:rotate(-4deg)}
+.av[data-e=think] .av-pup{transform:translate(3px,-4px)}.av[data-e=think] .av-cejas{transform:translateY(-3px)}
+.av[data-e=think] .av-pens{opacity:1;animation:avpiensa 1.2s ease-in-out infinite}
+.av[data-e=talk] .av-cabeza{animation:avhabla 1.7s ease-in-out infinite}
+@keyframes avpar{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes avonda{0%{opacity:.55;transform:scale(.95)}100%{opacity:0;transform:scale(1.55)}}
+@keyframes avhabla{0%,100%{transform:rotate(0) translateY(0)}35%{transform:rotate(1.6deg) translateY(-1px)}70%{transform:rotate(-1.4deg) translateY(.5px)}}
+@keyframes avresp{0%,100%{transform:translateY(0)}50%{transform:translateY(1.2px)}}
+@keyframes avpiensa{0%,100%{opacity:.35}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.av *{animation:none!important;transition:none!important}}
+@media (max-height:560px){.avbox{width:84px;height:84px}}
+.agop{display:flex;gap:8px;margin-top:8px}.agbt{flex:1;min-width:0;font-size:13px;padding:8px 10px}.agbt#agvozt{flex:0 0 auto}
+.agtec{display:grid;gap:8px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--bg);margin:8px 0;overflow:auto}.agtec[hidden]{display:none}
+.agtec p{margin:0;font-size:13px;color:var(--muted);text-transform:none}.agtec b{color:var(--navy)}
+.agtec textarea,.msg textarea[data-cons-txt]{font:inherit;font-size:15px;padding:9px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);resize:vertical;width:100%;box-sizing:border-box}
+.agtecb{display:flex;gap:8px}.agtecr{text-transform:none}
+.agv{display:block;margin-top:6px;font-size:13px;color:var(--muted);text-transform:none;white-space:pre-line}
+.agdet{margin:6px 0;text-transform:none}.agdet summary{cursor:pointer;font-size:13px;color:var(--muted)}.agdet .agm{max-width:100%;margin-top:6px}
+.agp.contec .agcv{flex:0 0 auto;max-height:52px;min-height:0;margin:6px 0}.agp.contec .avbox{width:60px;height:60px}.agp.contec .avcap,.agp.contec .agop,.agp.contec .agman,.agp.contec .agej{display:none}.agp.contec .agtec{flex:1 1 auto;min-height:0}.agp.contec .agpie{display:none}
 .m3t{border-collapse:collapse;font-size:13px;min-width:100%}.m3t th,.m3t td{padding:5px 7px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.m3t th:first-child,.m3t td:first-child{text-align:center;position:sticky;left:0;background:var(--surface);z-index:1}
 .m3t thead th{font-size:11.5px;color:var(--muted);text-transform:none}.m3t thead tr:first-child th{color:var(--ink);font-weight:700;text-align:center;border-bottom:0}.m3t td.ac{color:var(--muted);font-size:12px}
 .m3t .g{background:#eef5f0}.m3t .f{background:#e8eef6}.m3t tr.hoyf td{background:var(--ok-bg,#e6f2ea)}.m3t tr.tot td{border-top:2px solid var(--line);text-align:center}
@@ -1002,7 +1032,7 @@ function kgDia(cab){const o={};for(const b of bidonesDe(cab)){const L=litros(b,c
 function dosisPrincipales(cab){const out={};for(const b of bidonesDe(cab)){const x=b.productos.find(p=>p.p===b.principal);if(!x||!x.dosis)continue;out[b.id]={real:dosisReal(b,x,cab),des:x.dosis}}return out}
 
 /* ---------- Vistas ---------- */
-const TABS=[['hoy','Hoy'],['mas','Más'],['choy','Hoy'],['cmas','Más'],['ccamp','Campaña'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['planriego','Planos de riego'],['diseno','Diseño a mano'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['otrat','Tratamientos'],['cotrat','Tratamientos'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['qrtaller','Entrada al taller'],['cqrtaller','Entrada al taller'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['robolab','RoboLab XXI'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
+const TABS=[['hoy','Hoy'],['mas','Más'],['choy','Hoy'],['cmas','Más'],['ccamp','Campaña'],['notas','Mis notas'],['cnotas','Mis notas'],['cuentas','Cuentas del día'],['cmbid','CM de bidones'],['drenaje','Drenaje'],['rellenar','Rellenar depósito'],['receta','Receta'],['aforo','Cálculo del aforo'],['instal','Mapa de la finca'],['planriego','Planos de riego'],['diseno','Diseño a mano'],['estres','Clima y estrés'],['plagas','Plagas'],['solucion','Solución nutritiva'],['parte','Parte diario'],['partes','Partes recibidos'],['global','Datos totales'],['ubic','Fichar y ubicación'],['cubic','Fichar y ubicación'],['mapa','Mapa de naves'],['vivo','Finca en vivo'],['cvivo','Finca en vivo'],['tareas','Tareas'],['almacen','Almacén'],['material','Material'],['montaje','Montaje con IA'],['cultivo','Crecimiento'],['historial','Historial'],['graficas','Gráficas'],['informe','Informe'],['cuaderno','Cuaderno de explotación'],['diagnostico','IA incidencias'],['chatia','Asistente IA'],['mensajes','Mensajes'],['consultas','Consultas al técnico'],['casist','Asistencia'],['cincid','Incidencias'],['ctareas','Tareas'],['otrat','Tratamientos'],['cotrat','Tratamientos'],['corend','Rendimiento'],['coparte','Parte del día'],['cmensajes','Mensajes'],['ctiempo','Tiempo'],['cajustes','Ajustes'],['cogente','Collas y gente'],['qrtaller','Entrada al taller'],['cqrtaller','Entrada al taller'],['tiempo','Tiempo'],['climanv','Clima de las naves'],['m3mes','M³ del mes'],['ajriego','Ajuste del riego'],['satelite','Satélite'],['ajustes','Ajustes'],['estructura','Fincas y cabezales'],['catalogo','Catálogo'],['taller','Taller de sensores'],['robolab','RoboLab XXI'],['aparatos','Mis aparatos'],['cajon','Cajón y compra']];
 /* ---------- Fincas ---------- */
 /* Qué fincas ve cada persona (lo decide el administrador en Ajustes) */
 /* …y qué zonas (cabezales) de cada finca: si de una finca no tiene ninguna elegida, ve todas las de esa finca */
@@ -1128,7 +1158,7 @@ function hoySaludo(){const nom=(yoNombre()||'').split(' ')[0],h=new Date().getHo
 function renderSaludo(){const e=$('#hoysal');if(!e)return;const on=st.tab==='hoy'||st.tab==='choy';e.hidden=!on;if(on){const S=hoySaludo();e.innerHTML=`<b>${esc(S.sal)}</b><span>${esc(S.fecha)}</span>`}}
 /* El día de arriba: corto («30 oct»); si no es hoy, se marca para que se vea que estás en otro día */
 function fechaTxt(){const e=$('#fechaTxt');if(!e)return;const d=new Date(st.fecha+'T12:00:00'),h=st.fecha===hoy();e.textContent=h?'Hoy':d.toLocaleDateString('es-ES',{day:'numeric',month:'short'}).replace('.','');$('#fechaL').classList.toggle('otro',!h)}
-function renderCabs(){renderSaludo();fechaTxt();const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['mas','estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic','qrtaller'].includes(st.tab);
+function renderCabs(){renderSaludo();fechaTxt();const campo=areaDe(st.tab)==='campo';$('#cabs').hidden=campo||['mas','estructura','partes','historial','mensajes','almacen','informe','tiempo','diagnostico','tareas','material','satelite','global','ubic','qrtaller','consultas'].includes(st.tab);
   $('#fechaL').hidden=campo;{const b=$('header .fback');if(b){b.dataset.act='volver';const v=volverTxt();$('#fbackT').textContent=v;b.setAttribute('aria-label','Volver a '+v)}}$('#eyeb').textContent=campo?'Personal de campo':'Personal de riego';document.body.classList.toggle('campo',campo);const h=$('#h1');if(h){const f=fincaAct();h.textContent=f?f.nombre:'Abonado-Fertirrigación'}{const Z=cabsFinca(),c=Z.find(x=>x.id===st.cab)||Z[0];$('#cabs').classList.add('zbar');$('#cabs').style.setProperty('--zc',c?zonaCol(c.id):'var(--accent)');
     $('#cabs').innerHTML=c?`<span class="zdot" aria-hidden="true"></span><span class="zn"><small>Zona</small><b>${esc(c.nombre)}</b></span>${Z.length>1?'<button class="zcam" type="button" data-act="zonas">Cambiar zona</button>':''}`:''}
   navGuarda()}
@@ -1149,7 +1179,7 @@ window.addEventListener('popstate',()=>{try{if(volver())navGuarda()}catch(e){con
 /* Menú en 5 apartados */
 const IC_HOY='<path d="M3.5 11 12 4l8.5 7"/><path d="M6 9.5V20h12V9.5"/><path d="M10 20v-5h4v5"/>',IC_MAS='<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>';
 const GRUPOS_RIEGO=[{id:'hoy',n:'Hoy',tabs:['hoy'],ic:IC_HOY},{id:'riego',n:'Riego',tabs:['cuentas','cmbid','drenaje','ajriego','rellenar','receta','aforo','instal','planriego','diseno','mapa','vivo','estres','plagas','solucion','parte','partes','global'],ic:'<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/>'},
-  {id:'equipo',n:'Equipo',tabs:['tareas','otrat','mensajes','ubic','qrtaller'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
+  {id:'equipo',n:'Equipo',tabs:['tareas','otrat','mensajes','consultas','ubic','qrtaller'],ic:'<circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M15.5 14.4c2.6-.3 4.6 1.3 5 4.1"/>'},
   {id:'almacen',n:'Almacén',tabs:['almacen','material','montaje'],ic:'<path d="M3.5 8.5 12 4l8.5 4.5V19a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1z"/><path d="M8 20v-6h8v6M8 17h8"/>'},
   {id:'datos',n:'Datos',tabs:['m3mes','climanv','cultivo','historial','graficas','informe','cuaderno','diagnostico','chatia','tiempo','satelite'],ic:'<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'},
   {id:'notas',n:'Notas',tabs:['notas'],ic:'<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 10h6M9.5 13.5h6M9.5 17h3.5"/>'},
@@ -1713,29 +1743,111 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
    móvil, manda lo que has dicho y los datos de ahora (bidones, niveles, avisos, almacén, clima de las naves, pantallas) a la IA de la app,
    y responde en voz alta. Además de contestar, HACE cosas: abrir pantallas, apuntar la lectura de la regla, los cm gastados, una pérdida,
    que se ha hecho el bidón, los m³ del día o una nota/recordatorio. Lo que apunta lo guarda en el día de hoy y lo dice. */
-const AG={ab:false,est:'',oye:'',hist:[],manos:false,rec:null,busy:false,hecho:[]};
+const AG={ab:false,est:'',oye:'',hist:[],manos:false,rec:null,busy:false,hecho:[],hab:false,analiza:false,tok:0,cache:new Map(),tec:null,bnd:0,fk:0,vozFalla:'',mudo:(()=>{try{return localStorage.getItem('abono.agmudo')==='1'}catch(e){return false}})()};
 const agSR=()=>window.SpeechRecognition||window.webkitSpeechRecognition;
+/* ---------- El avatar de AGRO: dibujo 2D propio (técnico de campo con gorra verde) ---------- */
+function avSVG(fab){
+  const cab=`<g class="av-cabeza">
+      <rect x="86" y="140" width="28" height="34" rx="12" fill="#dba37c"/>
+      <ellipse cx="58" cy="114" rx="7.5" ry="10.5" fill="#efbf9a"/><ellipse cx="142" cy="114" rx="7.5" ry="10.5" fill="#efbf9a"/>
+      <ellipse cx="100" cy="108" rx="42" ry="50" fill="#efbf9a"/>
+      <path d="M58 100q-5 14 1 28q6-6 7-22z" fill="#2b2118"/><path d="M142 100q5 14-1 28q-6-6-7-22z" fill="#2b2118"/>
+      <ellipse cx="73" cy="139" rx="8" ry="5" fill="#e79a8a" opacity=".35"/><ellipse cx="127" cy="139" rx="8" ry="5" fill="#e79a8a" opacity=".35"/>
+      <path d="M56 100C53 56 78 42 100 42c22 0 47 14 44 58Q100 112 56 100z" fill="#2f8f4e"/>
+      <path d="M100 43c-9 17-9 36-3 54" stroke="#1f6b3a" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M94 76C94 67 100 62 109 62C109 71 103 76 94 76z" fill="#fff"/><path d="M99 81C99 74 104 70 111 70C111 77 106 81 99 81z" fill="#bfe8cd"/>
+      <path d="M50 92Q100 104 150 92Q154 100 143 103Q100 114 57 103Q46 100 50 92z" fill="#1f6b3a"/>
+      <g class="av-cejas" stroke="#2b2118" stroke-width="3.2" stroke-linecap="round" fill="none"><path d="M70 117Q80 111 91 115"/><path d="M109 115Q120 111 130 117"/></g>
+      <g class="av-ojos"><ellipse cx="80" cy="128" rx="7.5" ry="7.4" fill="#fff"/><ellipse cx="120" cy="128" rx="7.5" ry="7.4" fill="#fff"/>
+        <g class="av-pup"><circle cx="80" cy="129" r="4.2" fill="#1d2a3a"/><circle cx="120" cy="129" r="4.2" fill="#1d2a3a"/><circle cx="81.5" cy="127.3" r="1.3" fill="#fff"/><circle cx="121.5" cy="127.3" r="1.3" fill="#fff"/></g></g>
+      <path d="M100 131q-5 11 0 15q4 2 6-1" stroke="#c98b64" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <path ${fab?'':'id="av-boca" '}class="av-boca" data-v="0" d="M90 148Q100 155 110 148" stroke="#7a2e2e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </g>`;
+  if(fab)return `<svg class="av av-fab" viewBox="38 38 124 124" aria-hidden="true" focusable="false"><g class="av-cuerpo"><path d="M18 210C20 178 54 166 100 166C146 166 180 178 182 210z" fill="#12315a"/></g>${cab}</svg>`;
+  return `<svg class="av" viewBox="0 0 200 200" role="img" aria-label="AGRO, el experto de Agro FLY" data-e="idle">
+    <defs><radialGradient id="avbg" cx=".5" cy=".3" r=".85"><stop offset="0" stop-color="#eef9f1"/><stop offset="1" stop-color="#b9dfc6"/></radialGradient><clipPath id="avclip"><circle cx="100" cy="100" r="98"/></clipPath></defs>
+    <g clip-path="url(#avclip)"><circle cx="100" cy="100" r="98" fill="url(#avbg)"/>
+      <circle class="av-onda" cx="100" cy="108" r="58"/><circle class="av-onda o2" cx="100" cy="108" r="58"/>
+      <g class="av-cuerpo"><path d="M18 210C20 178 54 166 100 166C146 166 180 178 182 210z" fill="#12315a"/><path d="M84 167L100 187L116 167z" fill="#dba37c"/><path d="M78 167L100 193L122 167" fill="none" stroke="#e8eef6" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>
+        <g transform="translate(138 178)"><path d="M0 12C0 4 6 0 14 0C14 8 8 12 0 12z" fill="#4cba6f"/><path d="M6 17C6 10 11 6 18 6C18 13 13 17 6 17z" fill="#2f8f4e"/></g></g>
+      ${cab}
+      <g class="av-pens" fill="#2f8f4e"><circle cx="150" cy="58" r="3"/><circle cx="161" cy="48" r="4"/><circle cx="175" cy="40" r="5"/></g>
+    </g></svg>`}
+const AG_BOCA=['M90 148Q100 155 110 148','M92 148Q100 153 108 148Q100 156 92 148z','M91 147Q100 149 109 147Q108 160 100 161Q92 160 91 147z','M89 146Q100 149 111 146Q112 163 100 165Q88 163 89 146z','M95 148Q100 145 105 148Q108 156 100 159Q92 156 95 148z'];
+function agBoca(v){const e=document.getElementById('av-boca');if(!e)return;v=v|0;if(e.dataset.v==String(v))return;e.dataset.v=String(v);e.setAttribute('d',AG_BOCA[v]||AG_BOCA[0]);e.setAttribute('fill',v?'#7a2e2e':'none')}
+/* Voz de AGRO. Natural: el servidor (OpenAI) la genera y la boca sigue el sonido de verdad. Si no hay servidor de voz, saldo o cobertura, habla con la voz del móvil. */
+const agUrl=()=>{try{return (st.cfg&&st.cfg.iaUrl)||''}catch(e){return ''}},agEspera=ms=>{const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal};
+const agDiccion=t=>String(t||'').replace(/[·•]/g,',').replace(/\bmS\/cm\b/g,'milisiemens por centímetro').replace(/\bdS\/m\b/g,'decisiemens por metro').replace(/\bcm\b/g,'centímetros').replace(/\bm³/g,'metros cúbicos').replace(/\bL\b/g,'litros').replace(/°C/g,' grados').replace(/(\d)\s*%/g,'$1 por ciento').replace(/\bkg\b/g,'kilos');
 function agVoz(){try{const v=speechSynthesis.getVoices();return v.find(x=>/^es[-_]ES/i.test(x.lang))||v.find(x=>/^es/i.test(x.lang))||null}catch(e){return null}}
-function agHabla(t,escuchar){try{if(!window.speechSynthesis||!t)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(t).replace(/[·•]/g,',').replace(/\bcm\b/g,'centímetros').replace(/\bm³/g,'metros cúbicos').replace(/\bL\b/g,'litros'));u.lang='es-ES';u.rate=1.03;const v=agVoz();if(v)u.voice=v;
-  u.onend=()=>{if(escuchar&&AG.ab&&!AG.rec&&!AG.busy)setTimeout(agEscucha,250);else if(AG.manos)agManosSigue()};speechSynthesis.speak(u)}catch(e){}}
+let agCtx=null,agAn=null,agFuente=null;
+function agDesbloquea(){try{const C=window.AudioContext||window.webkitAudioContext;if(!C)return;if(!agCtx){agCtx=new C();agAn=agCtx.createAnalyser();agAn.fftSize=512;agAn.smoothingTimeConstant=.5;agAn.connect(agCtx.destination)}
+  if(agCtx.state==='suspended')agCtx.resume();const s=agCtx.createBufferSource();s.buffer=agCtx.createBuffer(1,1,22050);s.connect(agCtx.destination);s.start(0)}catch(e){}}
+function agCalla(){AG.tok++;try{agFuente&&agFuente.stop()}catch(e){}agFuente=null;try{window.speechSynthesis&&speechSynthesis.cancel()}catch(e){}clearTimeout(AG.bt);clearInterval(AG.fi);AG.hab=false;AG.analiza=false;agBoca(0)}
+function agLabios(){if(!agAn)return;const buf=new Uint8Array(agAn.fftSize);let ult=0;const paso=t=>{if(!AG.hab||!AG.analiza){agBoca(0);return}agAn.getByteTimeDomainData(buf);let s=0;for(let i=0;i<buf.length;i++){const x=(buf[i]-128)/128;s+=x*x}const rms=Math.sqrt(s/buf.length);
+  if(t-ult>70){ult=t;let v=rms<.015?0:rms<.05?1:rms<.11?2:3;if(v===2&&Math.random()<.35)v=4;agBoca(v)}requestAnimationFrame(paso)};requestAnimationFrame(paso)}
+/* El texto se parte en frases: se piden todas a la vez y suena la primera en cuanto llega */
+const agTrozos=t=>{const fr=t.replace(/([.!?])\s+/g,'$1\u0001').split('\u0001'),out=[];let c='';for(const f of fr){if(c&&(c+' '+f).length>230){out.push(c);c=f}else c=c?c+' '+f:f}if(c.trim())out.push(c.trim());return out.slice(0,6)};
+async function agAudio(txt){if(AG.cache.has(txt))return AG.cache.get(txt);
+  const tk=await NUBE.auth.currentUser.getIdToken();let r;try{r=await fetch(agUrl(),{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+tk},body:JSON.stringify({voz:txt}),signal:agEspera(20000)})}catch(e){throw {code:e&&e.name==='AbortError'?'ia_tiempo':'red'}}
+  if(!r.ok){const j=await r.json().catch(()=>null);throw{code:(j&&j.error)||'voz_error'}}
+  const ab=await r.arrayBuffer(),buf=await new Promise((ok,ko)=>{const p=agCtx.decodeAudioData(ab,ok,ko);p&&p.catch&&p.catch(ko)});
+  if(AG.cache.size>40)AG.cache.delete(AG.cache.keys().next().value);AG.cache.set(txt,buf);return buf}
+const AG_VOZ_ERR={creditos:'La cuenta de voz no tiene saldo',clave:'La clave de la voz no es válida',sin_voz:'El servidor no tiene voz configurada',limite_voz:'Has llegado al límite de voz de hoy',limite:'La voz está saturada',ocupada:'La voz está saturada',sesion:'Tu sesión ha caducado',sin_acceso:'Tu usuario no tiene acceso',origen:'El servidor no acepta esta dirección'};
+/* Devuelve 'ok', 'cancelado' o 'movil' (no ha podido: que hable el móvil) */
+async function agHablaNat(trozos,tok){const ps=trozos.map(x=>agAudio(x));ps.forEach(p=>p.catch(()=>{}));let hablo=false;
+  for(let i=0;i<ps.length;i++){let buf;try{buf=await ps[i]}catch(e){if(tok!==AG.tok)return 'cancelado';
+      const c=e&&e.code;AG.vozFalla=AG_VOZ_ERR[c]||'No hay conexión con la voz';if(['sin_voz','creditos','clave','limite_voz'].includes(c))window.IA_VOZ=false;console.warn('Voz natural',c);
+      return hablo?'resto:'+trozos.slice(i).join(' '):'movil'}
+    if(tok!==AG.tok)return 'cancelado';if(!hablo){hablo=true;AG.hab=true;AG.analiza=true;agPinta();agLabios()}
+    await new Promise(fin=>{const s=agCtx.createBufferSource();s.buffer=buf;s.connect(agAn);agFuente=s;s.onended=fin;s.start(0)});if(tok!==AG.tok)return 'cancelado'}
+  return 'ok'}
+function agHablaMovil(d,tok,fin){try{if(!window.speechSynthesis){fin();return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(d);u.lang='es-ES';u.rate=1.03;const v=agVoz();if(v)u.voice=v;
+  AG.hab=true;AG.analiza=false;AG.bnd=0;AG.fk=0;agPinta();
+  u.onboundary=ev=>{try{AG.bnd=Date.now();const m=/[aeiouáéíóú]/.exec(d.slice(ev.charIndex,ev.charIndex+8).toLowerCase()),c=m?m[0]:'a';agBoca(({a:3,á:3,e:2,é:2,i:2,í:2,o:4,ó:4,u:4,ú:4})[c]||1);clearTimeout(AG.bt);AG.bt=setTimeout(()=>agBoca(0),170)}catch(e){}};
+  /* Algunos móviles no avisan de cada palabra: entonces la boca se mueve sola mientras dura la voz */
+  clearInterval(AG.fi);AG.fi=setInterval(()=>{if(!AG.hab||AG.analiza){clearInterval(AG.fi);return}if(Date.now()-AG.bnd>380)agBoca([1,2,3,2,1,4,2,0][AG.fk++%8])},140);
+  u.onend=u.onerror=()=>{clearInterval(AG.fi);fin()};speechSynthesis.speak(u)}catch(e){fin()}}
+function agHabla(t,escuchar){t=String(t||'').trim();if(!t)return;agCalla();const tok=AG.tok,d=agDiccion(t);
+  const fin=()=>{if(tok!==AG.tok)return;AG.hab=false;AG.analiza=false;agBoca(0);agPinta();if(escuchar&&AG.ab&&!AG.rec&&!AG.busy)setTimeout(agEscucha,250);else if(AG.manos)agManosSigue()};
+  if(AG.mudo){fin();return}
+  if(window.IA_VOZ===true&&agUrl()&&agCtx&&agCtx.state==='running'){
+    agHablaNat(agTrozos(d),tok).then(r=>{if(tok!==AG.tok||r==='cancelado')return;if(r==='ok')fin();else{AG.est=(AG.vozFalla||'La voz natural no está disponible')+': hablo con la voz del móvil.';agHablaMovil(r.startsWith('resto:')?r.slice(6):d,tok,fin)}});return}
+  agHablaMovil(d,tok,fin)}
 const AG_MIC='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg>';
+const AG_EJ='<div class="agej"><b>Prueba a decir:</b><span>«¿Cuánto queda en el potásico de Franco?»</span><span>«Apunta 125 en el potásico de Gasolinera»</span><span>«Las hojas de abajo se ponen amarillas, ¿qué puede ser?»</span><span>«¿Qué tengo para mirar?»</span><span>«Recuérdame mañana a las 8 pedir nitrato»</span><span>«Quiero hablar con un técnico»</span></div>';
+function agEsqueleto(){const sr=!!agSR();return `<div class="agph"><div class="agt"><b>Hablar con nuestro experto</b><small>AGRO · experto virtual (IA) de Agro FLY</small></div><button class="agx" type="button" data-ag="cerrar" aria-label="Cerrar">✕</button></div>
+    <div class="avst"><div class="avbox">${avSVG(false)}</div><div class="avcap" id="avcap" aria-live="polite"></div></div>
+    <div class="agcv" id="agcv"></div>
+    <div class="agtec" id="agtec" hidden></div>
+    <div class="agpie"><button class="agmic" type="button" data-ag="mic" ${sr?'':'disabled'}>${AG_MIC}</button>
+      <div class="agtx"><input id="agtxt" placeholder="${sr?'O escríbelo aquí…':'Escribe lo que quieras…'}" autocomplete="off" style="text-transform:none"><button class="btn" type="button" data-ag="enviar">Enviar</button></div></div>
+    <div class="agop"><button class="btn agbt" type="button" data-ag="tecnico">Pasar con un técnico</button><button class="btn agbt" type="button" data-ag="vozt" id="agvozt"></button></div>
+    ${sr?`<label class="agman"><input type="checkbox" data-ag="manos" ${AG.manos?'checked':''}> Manos libres: escuchar «Oye Agro» mientras la app está abierta</label>`:''}`}
+function agTecHTML(){const t=AG.tec;if(!t)return '';return `<b>Pasar con un técnico</b>
+    <p>Le llega un aviso con esta conversación, tu nombre, la finca y el cabezal que tienes abierto. Te responderá por mensaje privado aquí, en la app.</p>
+    ${t.resumen?`<p class="agtecr"><small>Resumen para el técnico:</small> ${esc(t.resumen)}</p>`:''}
+    <textarea id="agtecm" rows="3" maxlength="1000" placeholder="Cuéntale qué pasa con tus palabras (opcional si ya lo has hablado con AGRO)" style="text-transform:none">${esc(t.msg||'')}</textarea>
+    <label class="agman"><input type="checkbox" id="agtecu" ${t.urg?'checked':''}> Es urgente</label>
+    <div class="agtecb"><button class="btn pri" type="button" data-ag="tec-envia" ${t.envio?'disabled':''}>${t.envio?'Enviando…':'Enviar al técnico'}</button><button class="btn" type="button" data-ag="tec-no" ${t.envio?'disabled':''}>Cancelar</button></div>`}
 function agPinta(){const p=$('#agp'),b=$('#agbtn');if(b){b.classList.toggle('oye',!!AG.rec);b.classList.toggle('manos',AG.manos)}if(!p)return;p.hidden=!AG.ab;if(!AG.ab)return;
-  const ia=typeof iaModo==='function'&&!!iaModo(),sr=!!agSR();
-  p.innerHTML=`<div class="agph"><span class="aglogo">${AG_MIC}</span><div><b>AGRO</b><small>${AG.rec?'Te escucho…':AG.busy?'Pensando…':'Tu asistente de la finca'}</small></div><button class="agx" type="button" data-ag="cerrar" aria-label="Cerrar">✕</button></div>
-    <div class="agcv">${!ia?'<div class="mezav warn">Para que AGRO entienda lo que dices hace falta la IA de la app: actívala en Ajustes.</div>':''}
-      ${AG.hist.length?AG.hist.slice(-6).map(m=>`<div class="agm ${m.r}">${esc(m.t)}</div>`).join(''):`<div class="agej"><b>Prueba a decir:</b><span>«¿Cuánto queda en el potásico de Franco?»</span><span>«Apunta 125 en el potásico de Gasolinera»</span><span>«Se ha hecho el bidón del calcio a las nueve y media, marcaba 130»</span><span>«¿Qué tengo para mirar?»</span><span>«¿Qué temperatura hay en la nave 3?»</span><span>«Recuérdame mañana a las 8 pedir nitrato»</span><span>«Abre rellenar depósito»</span></div>`}
+  if(!p.dataset.ok){p.innerHTML=agEsqueleto();p.dataset.ok='1'}
+  const ia=typeof iaModo==='function'&&!!iaModo(),e=AG.rec?'listen':AG.busy?'think':AG.hab?'talk':'idle';
+  const sv=p.querySelector('.av');if(sv)sv.dataset.e=e;
+  const cap=$('#avcap');if(cap)cap.textContent=e==='listen'?'Te escucho…':e==='think'?'Pensando…':e==='talk'?'Hablando…':'Pulsa el micro y cuéntame';
+  const cv=$('#agcv');if(cv){cv.innerHTML=`${!ia?'<div class="mezav warn">Para que AGRO entienda lo que dices hace falta la IA de la app: actívala en Ajustes.</div>':''}
+      ${AG.hist.length?AG.hist.slice(-6).map(m=>`<div class="agm ${m.r}">${esc(m.t)}${m.v?`<small class="agv">${esc(m.v)}</small>`:''}</div>`).join(''):AG_EJ}
       ${AG.rec&&AG.oye?`<div class="agm yo oyendo">${esc(AG.oye)}</div>`:''}${AG.busy?'<div class="agm ag pens">…</div>':''}
       ${AG.hecho.length?`<div class="aghe">${AG.hecho.map(x=>`<span>✓ ${esc(x)}</span>`).join('')}</div>`:''}
-      ${AG.est?`<div class="note" style="text-transform:none">${esc(AG.est)}</div>`:''}</div>
-    <div class="agpie"><button class="agmic ${AG.rec?'on':''}" type="button" data-ag="mic" ${sr?'':'disabled'} aria-label="${AG.rec?'Parar':'Hablar'}">${AG_MIC}</button>
-      <div class="agtx"><input id="agtxt" placeholder="${sr?'O escríbelo aquí…':'Escribe lo que quieras…'}" autocomplete="off" style="text-transform:none"><button class="btn" type="button" data-ag="enviar">Enviar</button></div></div>
-    ${sr?`<label class="agman"><input type="checkbox" data-ag="manos" ${AG.manos?'checked':''}> Manos libres: escuchar «Oye Agro» mientras la app está abierta</label>`:''}`;
-  const c=p.querySelector('.agcv');if(c)c.scrollTop=c.scrollHeight}
-function agAbre(){AG.ab=true;AG.est='';agPinta();try{if(!st.splashWx&&typeof loadSplashWx==='function')loadSplashWx();if(!st.wx&&typeof loadWx==='function'&&typeof ubicOk==='function'&&ubicOk())loadWx()}catch(e){}}
-function agCierra(){AG.ab=false;try{AG.rec&&!AG.manos&&AG.rec.stop()}catch(e){}try{speechSynthesis.cancel()}catch(e){}agPinta()}
+      ${AG.est?`<div class="note" style="text-transform:none">${esc(AG.est)}</div>`:''}`;cv.scrollTop=cv.scrollHeight}
+  const mc=p.querySelector('.agmic');if(mc){mc.classList.toggle('on',!!AG.rec);mc.setAttribute('aria-label',AG.rec?'Parar':'Hablar')}
+  const vt=$('#agvozt');if(vt){vt.textContent=AG.mudo?'Voz: no':'Voz: sí';vt.setAttribute('aria-pressed',AG.mudo?'false':'true');vt.title=AG.mudo?'Solo texto':(window.IA_VOZ===true?'Voz natural':'Voz del móvil')}
+  const tc=$('#agtec');if(tc){const k=AG.tec?'a'+(AG.tec.envio?'e':''):'';if(tc.dataset.k!==k){const m0=$('#agtecm'),u0=$('#agtecu');if(AG.tec&&m0)AG.tec.msg=m0.value;if(AG.tec&&u0)AG.tec.urg=u0.checked;tc.dataset.k=k;tc.hidden=!AG.tec;tc.innerHTML=AG.tec?agTecHTML():''}}
+  p.classList.toggle('contec',!!AG.tec)}
+function agAbre(){AG.ab=true;AG.est='';agDesbloquea();try{window.NUBE&&NUBE.ia&&NUBE.ia.nombre()}catch(e){}agPinta();try{if(!st.splashWx&&typeof loadSplashWx==='function')loadSplashWx();if(!st.wx&&typeof loadWx==='function'&&typeof ubicOk==='function'&&ubicOk())loadWx()}catch(e){}}
+function agCierra(){AG.ab=false;AG.tec=null;try{AG.rec&&!AG.manos&&AG.rec.stop()}catch(e){}agCalla();agPinta()}
 function agEscucha(){const SR=agSR();if(!SR){AG.est='Este móvil no deja que la app escuche: escríbelo abajo.';agPinta();return}
   if(AG.rec){try{AG.rec.stop()}catch(e){}return}if(AG.manos){agManos(false)}
-  try{speechSynthesis.cancel()}catch(e){}const r=new SR();r.lang='es-ES';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;AG.rec=r;AG.oye='';AG.est='';AG.hecho=[];agPinta();
+  agCalla();const r=new SR();r.lang='es-ES';r.interimResults=true;r.continuous=false;r.maxAlternatives=1;AG.rec=r;AG.oye='';AG.est='';AG.hecho=[];agPinta();
   r.onresult=e=>{let t='';for(const x of e.results)t+=x[0].transcript;AG.oye=t;agPinta()};
   r.onerror=e=>{AG.est=e.error==='not-allowed'||e.error==='service-not-allowed'?'No tengo permiso para el micrófono: dalo en los ajustes del navegador y vuelve a tocar el micro.':e.error==='no-speech'?'No te he oído. Toca el micro y habla.':'No he podido escuchar. Prueba otra vez o escríbelo.'};
   r.onend=()=>{AG.rec=null;const t=AG.oye.trim();AG.oye='';if(t)agPide(t);else agPinta()};
@@ -1743,7 +1855,7 @@ function agEscucha(){const SR=agSR();if(!SR){AG.est='Este móvil no deja que la 
 /* Manos libres: escucha seguido y solo hace caso a lo que empieza por «Agro» u «Oye Agro» */
 let agMR=null;
 function agManos(on){AG.manos=on;try{localStorage.setItem('abono.agmanos',on?'1':'')}catch(e){}if(on)agManosSigue();else{try{agMR&&agMR.stop()}catch(e){}agMR=null}agPinta()}
-function agManosSigue(){const SR=agSR();if(!SR||!AG.manos||agMR||AG.rec||AG.busy||document.hidden)return;try{if(speechSynthesis.speaking)return}catch(e){}
+function agManosSigue(){const SR=agSR();if(!SR||!AG.manos||agMR||AG.rec||AG.busy||AG.hab||document.hidden)return;try{if(speechSynthesis.speaking)return}catch(e){}
   const r=new SR();r.lang='es-ES';r.continuous=true;r.interimResults=false;agMR=r;
   r.onresult=e=>{const x=e.results[e.results.length-1];if(!x.isFinal)return;const t=x[0].transcript.trim(),m=/^(?:oye\s+|hola\s+|ey\s+)?a\s?gro\b[\s,.:]*(.*)$/i.exec(t);if(!m)return;
     const q=m[1].trim();try{r.stop()}catch(_){}AG.ab=true;if(q)agPide(q);else{agHabla('Dime');agPinta()}};
@@ -1768,8 +1880,11 @@ function agContexto(){const L=[],f=fincaAct(),n1=(v,d)=>v==null?'—':fmt(v,d??1
   try{const P=[];const ps=Object.keys(st.cfg.productos);for(let i=0;i<ps.length;i++)for(let j=i+1;j<ps.length;j++){const r=mezDe(mezTipo(ps[i]),mezTipo(ps[j]));if(r==='I'||r==='R')P.push(`${pn(ps[i])} + ${pn(ps[j])}: ${r==='I'?'incompatibles':'se reduce la solubilidad'}`)}if(P.length)L.push('MEZCLAS QUE NO VAN BIEN (lo demás es compatible): '+P.join('; '))}catch(e){}
   L.push('PANTALLAS: '+TABS.filter(([k])=>VIEWS[k]&&tabPermitida(k)&&!['mas'].includes(k)).map(([k,t])=>`${k} = ${t}`).join('; '));
   return L.join('\n')}
-function agPrompt(t){let ctx='';try{ctx=agContexto()}catch(e){console.error('AGRO contexto',e);ctx='(no se han podido leer los datos de la app)'}return `Eres AGRO, el asistente de voz de la app de fertirrigación de una finca de tomate en Murcia. Te hablan por voz en el campo, a veces con las manos ocupadas.
-Contesta en español de España, MUY breve (una o dos frases, se va a leer en voz alta), sin listas, sin emojis, con números redondeados y sus unidades.
+function agPrompt(t){let ctx='';try{ctx=agContexto()}catch(e){console.error('AGRO contexto',e);ctx='(no se han podido leer los datos de la app)'}return `Eres AGRO, el experto de Agro FLY: un técnico agrícola con experiencia que habla con la gente de la finca desde la app de fertirrigación (tomate en invernadero en Murcia). Te hablan por voz en el campo, a veces con las manos ocupadas.
+Contesta en español de España, MUY breve (una o dos frases, se va a leer en voz alta), sin listas, sin emojis, con números redondeados y sus unidades. Si la respuesta necesita más detalle (pasos, varias opciones), di lo esencial en "decir" y pon el resto en "ver" (se muestra en pantalla, no se lee).
+Respondes sobre el campo: riego y fertirrigación, CE y pH, drenaje, nutrición, plagas y enfermedades, clima, labores, maquinaria y normativa agraria de España y de la Región de Murcia, y sobre los datos de esta app. De cualquier otro tema di en una frase amable que solo ayudas con el campo.
+Eres una IA y, si te lo preguntan, lo dices. Lo que digas es orientativo: no inventes datos y, si falta información, di qué mirar o medir. Para fitosanitarios nunca des una dosis como definitiva: solo productos autorizados para ese cultivo, etiqueta y técnico asesor.
+PASAR CON UN TÉCNICO HUMANO: si es grave (plaga o enfermedad que se extiende, avería, cultivo en riesgo), no se puede resolver por voz o la persona pide hablar con alguien, ofrécelo ("¿Quieres que avise a un técnico?"). La acción "tecnico" solo abre un formulario que la persona confirma: úsala cuando lo pida o acepte, no antes.
 
 DATOS DE AHORA:
 ${ctx}
@@ -1782,20 +1897,21 @@ ACCIONES QUE PUEDES HACER (en "acciones"; solo si te lo piden claramente):
 - {"tipo":"hecho","bidon":"id","cuando":"ayer|antes|hora","hora":"HH:MM o null","cm":130} → se ha hecho el bidón (ayer después de leer, hoy antes de regar o hoy a una hora) y lo que marcaba la regla al hacerlo
 - {"tipo":"m3","cab":"id","m3":205} → agua regada hoy en un cabezal
 - {"tipo":"nota","texto":"…","fecha":"AAAA-MM-DD o null","hora":"HH:MM o null"} → nota o recordatorio (si dice una hora o un día, ponlos)
+- {"tipo":"tecnico","resumen":"2 o 3 frases: qué pasa, desde cuándo, qué se ha probado","urgente":false} → abre el aviso al técnico para que la persona lo confirme
 Reglas: usa SOLO ids de los datos de arriba. Si falta algo para hacer la acción (qué bidón, cuántos cm…), pregúntalo en "decir" y no la hagas. Si te preguntan algo, contesta con los datos de arriba; si no está, dilo claro y no inventes. Para el tiempo usa la previsión de arriba. Si solo te saludan o te llaman, contesta «Dime». «El potásico», «el calcio», «el hierro», «el nítrico» son los bidones de ese nombre; si no dice cabezal y hay varios, usa el que tiene abierto (${cabNombre(st.cab)}).
 
 CONVERSACIÓN RECIENTE:
 ${AG.hist.slice(-6).map(m=>(m.r==='yo'?'Usuario: ':'AGRO: ')+m.t).join('\n')||'(ninguna)'}
 Usuario: ${t}
 
-Responde SOLO con JSON: {"decir":"lo que vas a decir en voz alta","acciones":[]}`}
+Responde SOLO con JSON: {"decir":"lo que vas a decir en voz alta","ver":"detalle opcional solo para la pantalla, o vacío","acciones":[]}`}
 const AG_ERR={sin_ia:'Para entenderte necesito la IA de la app: actívala en Ajustes.',red:'No tengo conexión con la IA. Mira la cobertura y prueba otra vez.',ia_tiempo:'La IA no contesta. Puede ser la cobertura o que tu compañía de internet esté bloqueando el servidor (pasa con el fútbol): prueba con datos móviles o más tarde.',ia_clave:'La clave de Claude del servidor no es válida.',ia_creditos:'La cuenta de Claude no tiene saldo.',ia_cuota:'La IA está saturada ahora mismo. Prueba en un minuto.',ia_ocupada:'La IA está saturada ahora mismo. Prueba en un minuto.',ia_sesion:'Tu sesión ha caducado: sal y vuelve a entrar.',ia_sinacceso:'Tu usuario no tiene acceso a la IA.',ia_origen:'El servidor de IA no acepta esta dirección.',ia_appcheck:'La IA de Google ha rechazado la petición (comprobación de la app).',ia_noactiva:'La IA de Google no está activada en el proyecto.',ia_modelo:'El modelo de IA no está disponible.',ia_bloqueo:'La IA no ha querido contestar a eso.'};
 const agSoloLlamada=t=>/^\s*(?:oye|hola|ey|eh)?\s*a\s?gro\s*[.,!¡?¿]*\s*$/i.test(t);
 async function agPide(t){t=String(t||'').trim();if(!t||AG.busy)return;AG.ab=true;t=t.replace(/^\s*(?:oye|hola|ey)\s+a\s?gro\b[\s,.:]*/i,'')||t;if(agSoloLlamada(t)){AG.hist.push({r:'yo',t},{r:'ag',t:'Dime.'});agPinta();agHabla('Dime',true);return}AG.hist.push({r:'yo',t});AG.busy=true;AG.est='';AG.hecho=[];agPinta();let r=null;
   try{r=await iaFotoJson(agPrompt(t),[],{rapido:true});if(!r||typeof r!=='object')throw{code:'vacia'}}catch(e){AG.busy=false;console.error('AGRO',e);const m=(e&&AG_ERR[e.code])||('No he podido pensar la respuesta'+(e&&e.code?' ('+e.code+(e.detail?': '+String(e.detail).slice(0,80):'')+')':'')+'. Prueba otra vez.');AG.hist.push({r:'ag',t:m});agHabla(m);agPinta();return}
   AG.busy=false;const decir=String(r&&r.decir||'').trim()||'Hecho.',acc=Array.isArray(r&&r.acciones)?r.acciones.slice(0,6):[];
   let extra='';try{const h=await agHaz(acc);AG.hecho=h.ok;if(h.mal.length)extra=' Pero no he podido: '+h.mal.join('; ')+'.'}catch(e){extra=' No he podido apuntarlo.'}
-  AG.hist.push({r:'ag',t:decir+extra});agPinta();agHabla(decir+extra,/\?\s*$/.test(decir))}
+  const ver=String(r&&r.ver||'').trim().slice(0,700);AG.hist.push({r:'ag',t:decir+extra,v:ver});agPinta();agHabla(decir+extra,/\?\s*$/.test(decir)&&!AG.tec)}
 /* Hacer lo que ha pedido: todo en el día de hoy y guardado */
 async function agHaz(acc){const ok=[],mal=[];let dia=false,ir=null;const nb=b=>`${b.nombre} (${b.cabezales.map(cabNombre).join(' + ')})`,vis=new Set(cabsVis().map(c=>c.id));
   const hoyAbierto=async()=>{if(st.fecha!==hoy()){if(st.dirtyReg)await saveReg();await loadFecha(hoy())}};
@@ -1807,6 +1923,7 @@ async function agHaz(acc){const ok=[],mal=[];let dia=false,ir=null;const nb=b=>`
     else if(a.tipo==='perdida'){if(v==null||v<0){mal.push('los cm perdidos');continue}await hoyAbierto();st.reg.perd=st.reg.perd||{};st.reg.perdM=st.reg.perdM||{};st.reg.perd[b.id]=v;marcaReg('perd.'+b.id);const m=PERD_M.find(x=>x.toLowerCase()===String(a.motivo||'').toLowerCase())||'';if(m){st.reg.perdM[b.id]=m;marcaReg('perdM.'+b.id)}dia=true;ok.push(`Pérdida de ${fmt(v,1)} cm en ${nb(b)}${m?' ('+m+')':''}`)}
     else if(a.tipo==='hecho'){const cu=HT[a.cuando]?a.cuando:'antes';if(v==null){mal.push('lo que marcaba al hacerlo');continue}await hoyAbierto();for(const g of ['hT','hH','hA'])st.reg[g]=st.reg[g]||{};st.reg.hT[b.id]=cu;marcaReg('hT.'+b.id);if(cu==='hora'&&/^\d{1,2}:\d{2}$/.test(a.hora||'')){st.reg.hH[b.id]=a.hora.padStart(5,'0');marcaReg('hH.'+b.id)}st.reg.hA[b.id]=v;marcaReg('hA.'+b.id);cmbRecalc(b.id);dia=true;ok.push(`Bidón hecho: ${nb(b)}, marcaba ${fmt(v,1)} cm`)}
     else if(a.tipo==='m3'){const c=cabById(a.cab),m=typeof a.m3==='number'?a.m3:num(String(a.m3??''));if(!c||!vis.has(c.id)||m==null||m<0){mal.push('los metros cúbicos');continue}await hoyAbierto();st.reg.m3[c.id]=m;marcaReg('m3.'+c.id);dia=true;ok.push(`${fmt(m,0)} m³ en ${c.nombre}`)}
+    else if(a.tipo==='tecnico'){AG.tec={resumen:String(a.resumen||'').slice(0,500),urg:!!a.urgente,msg:'',envio:0};ok.push('Preparo el aviso al técnico: confírmalo abajo')}
     else if(a.tipo==='nota'){const tx=String(a.texto||'').trim();if(!tx){mal.push('el texto de la nota');continue}const cuando=/^\d{4}-\d{2}-\d{2}$/.test(a.fecha||'')?a.fecha+'T'+(/^\d{1,2}:\d{2}$/.test(a.hora||'')?a.hora.padStart(5,'0'):'08:00'):(/^\d{1,2}:\d{2}$/.test(a.hora||'')?hoy()+'T'+a.hora.padStart(5,'0'):null),d=cuando?ntDate(cuando):null;
       const n={id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),email:miEmail()||'',texto:tx.slice(0,140),det:'Apuntada con AGRO',cuando,rep:'',n:null,dm:d?d.getDate():null,hecha:false,hechaTs:null,ts:ahoraISO(),area:'riego'};
       try{if(!st.notas)await loadNotas();await ntGuardarDoc(n);ok.push('Nota: '+tx.slice(0,60)+(cuando?' · '+cuando.replace('T',' a las '):''))}catch(e){mal.push('guardar la nota')}}}
@@ -1814,11 +1931,51 @@ async function agHaz(acc){const ok=[],mal=[];let dia=false,ir=null;const nb=b=>`
   if(ir){if(ir.cab){st.cab=ir.cab;const f=(st.cfg.fincas||[]).find(x=>x.cabezales.includes(ir.cab));if(f)st.finca=f.id}st.tab=ir.tab;renderCabs();renderTabs();renderMain();window.scrollTo(0,0)}
   else if(dia&&['cmbid','cuentas','hoy','rellenar'].includes(st.tab))renderMain();
   return {ok,mal}}
-document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('#agbtn,[data-ag]');if(!t)return;if(t.id==='agbtn'){if(AG.ab&&!AG.rec)agEscucha();else{agAbre();agEscucha()}return}
-  const a=t.dataset.ag;if(a==='cerrar')agCierra();else if(a==='mic')agEscucha();else if(a==='enviar'){const i=$('#agtxt');const v=i&&i.value.trim();if(v){i.value='';agPide(v)}}});
+document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('#agbtn,[data-ag]');if(!t)return;agDesbloquea();if(t.id==='agbtn'){if(AG.ab&&!AG.rec)agEscucha();else{agAbre();agEscucha()}return}
+  const a=t.dataset.ag;if(a==='cerrar')agCierra();else if(a==='mic')agEscucha();else if(a==='tecnico')agTecAbre('',false);else if(a==='tec-envia')agTecEnvia();else if(a==='tec-no'){AG.tec=null;agPinta()}else if(a==='vozt'){AG.mudo=!AG.mudo;try{localStorage.setItem('abono.agmudo',AG.mudo?'1':'')}catch(e){}if(AG.mudo)agCalla();agPinta()}else if(a==='enviar'){const i=$('#agtxt');const v=i&&i.value.trim();if(v){i.value='';agPide(v)}}});
 document.addEventListener('change',e=>{const t=e.target;if(t&&t.dataset&&t.dataset.ag==='manos')agManos(t.checked)});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='agtxt'){e.preventDefault();const v=e.target.value.trim();if(v){e.target.value='';agPide(v)}}});
 try{if(window.speechSynthesis)speechSynthesis.onvoiceschanged=()=>{}}catch(e){}
+try{const fb=document.getElementById('agbtn');if(fb){fb.setAttribute('aria-label','Hablar con nuestro experto');fb.innerHTML=avSVG(true)+'<i class="agmb">'+AG_MIC+'</i>'}}catch(e){}
+/* ---------- Pasar con un técnico humano ----------
+   La persona lo confirma siempre (AGRO solo abre el formulario). Se guarda la consulta (abonado_consultas: solo la ve quien la envía y el
+   administrador) y se avisa al móvil de los administradores. El técnico contesta desde Equipo → Consultas al técnico, por mensaje privado. */
+function agTecAbre(res,urg){AG.tec={resumen:String(res||'').slice(0,500),urg:!!urg,msg:'',envio:0};agPinta();const c=$('#agtec');c&&c.scrollIntoView&&c.scrollIntoView({block:'nearest'})}
+async function agTecEnvia(){const t=AG.tec;if(!t||t.envio)return;const m=(($('#agtecm')||{}).value||t.msg||'').trim(),urg=!!(($('#agtecu')||{}).checked||t.urg);
+  const conv=AG.hist.slice(-12).map(x=>({r:x.r==='yo'?'persona':'agro',t:String(x.t||'').slice(0,400)})),resumen=(t.resumen||conv.filter(x=>x.r==='persona').slice(-2).map(x=>x.t).join(' · ')).slice(0,500);
+  if(!m&&!resumen){AG.est='Cuéntale al técnico qué pasa: escríbelo ahí arriba o habla antes con AGRO.';agPinta();return}
+  t.msg=m;t.urg=urg;t.envio=1;agPinta();
+  const f=typeof fincaAct==='function'?fincaAct():null,doc={ts:new Date().toISOString(),fecha:hoy(),email:miEmail()||'',nombre:yoNombre()||'',finca:f?f.id:'',fincaNombre:f?f.nombre:'',cab:st.cab||'',cabNombre:st.cab?cabNombre(st.cab):'',pantalla:st.tab||'',mensaje:m.slice(0,1000),resumen,urgente:urg,estado:'nueva',conv};
+  let id=null,guardada=false;try{id=await Store.addCol('consultas',doc);guardada=true;if(Array.isArray(st.cons))st.cons.unshift({...doc,id})}catch(e){console.error('consulta al técnico',e)}
+  const para=adminsEmails().filter(e=>e&&e!==miEmail());let avisado=false;
+  if(para.length&&pushListo()){pushEnviar(para,(urg?'URGENTE · ':'')+'Consulta al técnico de '+(doc.nombre||'alguien'),(resumen||m).slice(0,200),'consulta-'+(id||Date.now().toString(36)),'consultas',{urgente:urg});avisado=true}
+  AG.tec=null;
+  const dec=guardada?(avisado?'Hecho. He avisado al técnico: te responderá por mensaje aquí, en la app.':'Guardada la consulta, pero no he podido avisar al móvil del técnico. La verá en la app.'):(avisado?'He avisado al técnico, pero la consulta no se ha podido guardar: cuéntaselo también por Mensajes.':'No he podido enviar la consulta. Prueba otra vez o escribe al técnico por Mensajes.');
+  AG.hist.push({r:'ag',t:dec});agPinta();agHabla(dec)}
+/* El técnico (administrador) ve las consultas, contesta por mensaje privado y las marca como atendidas */
+async function loadConsultas(){if(st.consCarga)return;st.consCarga=true;try{st.cons=await Store.listCol('consultas',200);st.consErr=null}catch(e){console.error(e);st.cons=st.cons||[];st.consErr=e&&e.code||'error'}st.consCarga=false;try{renderGrupos()}catch(e){}if(st.tab==='consultas'||st.tab==='hoy')renderMain()}
+const consNuevas=()=>(st.cons||[]).filter(c=>c.estado!=='atendida').length;
+function vConsultas(){if(st.cons==null){loadConsultas();return '<section class="card"><div class="note">Cargando consultas…</div></section>'}
+  const L=[...st.cons].sort((a,b)=>(a.estado==='atendida')-(b.estado==='atendida')||(b.urgente?1:0)-(a.urgente?1:0)||(a.ts<b.ts?1:-1));
+  let h=`<section class="card"><div><h3>Consultas al técnico</h3><div class="sub">${consNuevas()} por atender · ${L.length} en total</div></div>`;
+  if(st.consErr)h+=`<div class="mezav warn">${st.consErr==='permission-denied'?'Faltan las reglas de Firebase para las consultas: publica las reglas nuevas (Firestore → Reglas).':'No se han podido leer las consultas.'}</div>`;
+  if(!L.length)return h+'<div class="note">Todavía no hay consultas. Llegan cuando alguien pulsa «Pasar con un técnico» en AGRO.</div></section>';
+  return h+'<div class="msgs">'+L.map(c=>{const at=c.estado==='atendida',ab=st.consAb===c.id;
+    return `<div class="msg ${at?'done':''}"><div class="h"><b>${esc(c.nombre||c.email||'Sin nombre')}</b>${c.urgente?'<span class="pill bad">Urgente</span>':''}<span class="mini">${esc([c.fincaNombre,c.cabNombre].filter(Boolean).join(' · '))}</span><span>${fHora(c.ts)}</span>${at?'<span class="pill ok">Atendida</span>':'<span class="pill warn">Por atender</span>'}</div>
+      ${c.mensaje?`<p>${esc(c.mensaje)}</p>`:''}${c.resumen?`<p class="agtecr"><small>Resumen de AGRO:</small> ${esc(c.resumen)}</p>`:''}
+      ${(c.conv||[]).length?`<details class="agdet"><summary>Conversación con AGRO (${c.conv.length})</summary>${c.conv.map(x=>`<div class="agm ${x.r==='persona'?'yo':'ag'}">${esc(x.t)}</div>`).join('')}</details>`:''}
+      ${c.respuesta?`<p class="agtecr"><small>Respondido${c.respondeNombre?' por '+esc(c.respondeNombre):''}:</small> ${esc(c.respuesta)}</p>`:''}
+      ${ab?`<textarea data-cons-txt="${esc(c.id)}" rows="3" maxlength="1000" placeholder="Tu respuesta (le llega como mensaje privado)" style="text-transform:none">${esc((st.consTxt||{})[c.id]||'')}</textarea><div class="row"><button class="btn pri" data-cons="resp-ok" data-id="${esc(c.id)}">Enviar respuesta</button><button class="btn" data-cons="resp-no">Cancelar</button></div>`
+        :`<div class="row">${c.email&&c.email!==miEmail()?`<button class="btn" data-cons="resp" data-id="${esc(c.id)}">Responder</button>`:''}<button class="btn" data-cons="hecha" data-id="${esc(c.id)}">${at?'Marcar por atender':'Marcar atendida'}</button></div>`}</div>`}).join('')+'</div></section>'}
+async function consResponde(id){const c=(st.cons||[]).find(x=>x.id===id),txt=((st.consTxt||{})[id]||'').trim();if(!c||!txt){toast('Escribe la respuesta');return}
+  const p={ts:new Date().toISOString(),fecha:hoy(),de:miEmail(),deNombre:yoNombre()||'Técnico',para:c.email,paraNombre:c.nombre||c.email,miembros:[miEmail(),c.email],txt:'Respuesta a tu consulta al técnico: '+txt,adjuntos:[],leido:false};
+  try{const pid=await Store.addPriv(p);(st.priv=st.priv||[]).unshift({...p,id:pid});pushEnviar([c.email],'Respuesta del técnico',txt,'priv-'+pid,'mensajes-priv');
+    const patch={estado:'atendida',respuesta:txt,respondeNombre:yoNombre()||'',respondidaTs:p.ts};await Store.updCol('consultas',id,patch);Object.assign(c,patch);st.consAb=null;(st.consTxt||{})[id]='';renderMain();renderGrupos();toast('Respuesta enviada a '+(c.nombre||c.email))}
+  catch(e){toast(e&&e.code==='permission-denied'?'Faltan las reglas de mensajes privados o de consultas en Firebase':errMsg(e))}}
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-cons]');if(!b||st.tab!=='consultas')return;const a=b.dataset.cons,id=b.dataset.id;
+  if(a==='resp'){st.consAb=id;renderMain()}else if(a==='resp-no'){st.consAb=null;renderMain()}else if(a==='resp-ok')consResponde(id);
+  else if(a==='hecha'){const c=(st.cons||[]).find(x=>x.id===id);if(!c)return;const patch={estado:c.estado==='atendida'?'nueva':'atendida'};Store.updCol('consultas',id,patch).then(()=>{Object.assign(c,patch);renderMain();renderGrupos()}).catch(er=>toast(errMsg(er)))}});
+document.addEventListener('input',e=>{const t=e.target;if(t&&t.dataset&&t.dataset.consTxt){(st.consTxt=st.consTxt||{})[t.dataset.consTxt]=t.value}});
 /* ---------- Hoy: lo que hay que mirar y lo de todos los días, de un vistazo ---------- */
 const HOY_T=[['cuentas','Cuentas del día','<path d="M5 4h14v16H5z"/><path d="M8 8h8M8 12h8M8 16h5"/>'],['rellenar','Rellenar depósito','<path d="M6 8h12l-1 12H7z"/><path d="M9 8V5h6v3"/>'],['drenaje','Drenaje','<path d="M12 3c3 4 6 7.2 6 10.5A6 6 0 0 1 6 13.5C6 10.2 9 7 12 3z"/><path d="M9 14h6"/>'],
   ['parte','Parte diario','<path d="M6.5 3.5h8l3.5 3.5v13.5h-11.5z"/><path d="M9.5 12l2 2 3.5-4"/>'],['mapa','Mapa de la finca','<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>'],['climanv','Clima de las naves','<path d="M10 14V5a2 2 0 1 1 4 0v9a4 4 0 1 1-4 0z"/>'],
@@ -1848,6 +2005,7 @@ function hoyAvisos(){const av=[],n=(k,a,b)=>k+' '+(k===1?a:b);
   try{if(ptRevisa()&&st.partes){const k=ptPend().length;if(k)av.push(['warn',n(k,'parte','partes')+' por revisar','partes'])}}catch(e){}
   try{const k=st.tareas?tareasMias().length:0;if(k)av.push(['warn',n(k,'tarea','tareas')+' para ti','tareas'])}catch(e){}
   try{const k=(st.priv?privSinLeer().length:0)+(st.msgs?pendParaMi().length:0);if(k)av.push(['warn',n(k,'mensaje','mensajes')+' sin leer','mensajes'])}catch(e){}
+  try{if(esAdminU()&&Store.mode==='fb'){if(st.cons===undefined&&!st.consCarga)loadConsultas();const k=consNuevas();if(k)av.push(['warn',n(k,'consulta','consultas')+' al técnico por atender','consultas'])}}catch(e){}
   const ins=insignias();if(ins.almacen)av.push(['warn',n(ins.almacen,'cosa','cosas')+' del almacén para pedir o revisar','almacen']);
   if(ins.notas)av.push(['warn',n(ins.notas,'nota','notas')+' para hoy','notas']);
   if(ins.lab&&tabPermitida('aparatos'))av.push(['warn',n(ins.lab,'aparato','aparatos')+' del taller a revisar','aparatos']);
@@ -2654,7 +2812,7 @@ const rolDe=()=>{const u=window.NUBE&&NUBE.user;if(!window.NUBE)return 'admin';i
 const esGestor=()=>rolDe()!=='trabajador';
 const ROL_TXT={admin:'Administrador',encargado:'Encargado',trabajador:'Trabajador'};
 const SOLO_GESTOR=new Set(['graficas','informe','cuaderno','global']);
-function tabPermitida(k){if(k==='diseno')return veRiego()&&esAdminU();if(k==='planriego')return veRiego()&&prHay();if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cqrtaller'||k==='cvivo'||k==='choy'||k==='cmas'||k==='ccamp')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
+function tabPermitida(k){if(k==='consultas')return esAdminU()&&veRiego();if(k==='diseno')return veRiego()&&esAdminU();if(k==='planriego')return veRiego()&&prHay();if(!CAMPO.has(k)&&!veRiego())return false;if(k==='partes')return puedePartes();if(['casist','cincid','ctareas','corend','coparte','cmensajes'].includes(k))return puedeCollas();if(k==='cogente')return esGestor()&&veCampo();if(k==='ctiempo'||k==='cajustes'||k==='cubic'||k==='cqrtaller'||k==='cvivo'||k==='choy'||k==='cmas'||k==='ccamp')return veCampo();if(k==='estructura')return esAdminU();if(SOLO_GESTOR.has(k))return esGestor();return true}
 let mLoading=false;
 async function loadMat(){if(mLoading)return;mLoading=true;try{st.mat=await Store.listCol('material',1000)}catch(e){st.mat=st.mat||[]}mLoading=false;renderGrupos();avisosMat();spRes();if(!$('#fincas').hidden)renderFincas();if(st.tab==='material')renderMain()}
 const mVisible=m=>!restringido()||m.pideEmail===miEmail()||m.para===miEmail()||(fincasVis().some(f=>f.id===m.finca)&&cabOk(m.cab));
@@ -6167,7 +6325,7 @@ document.addEventListener('pointerup',e=>{if(!disArr||st.tab!=='diseno')return;c
   if(a.t==='pan'){if(!a.mov&&E.sel){E.sel=null;renderMain()}return}
   if(a.mov){E.hist.push(a.ini);if(E.hist.length>60)E.hist.shift();E.dirty=true;for(const z of a.els||[]){const x=E.D.el.find(w=>w.id===z.id);if(x){x.x=+x.x.toFixed(1);x.y=+x.y.toFixed(1)}}const o=disObj(E.D,E.sel);if(o&&o.p)o.p=o.p.map(q=>[+q[0].toFixed(1),+q[1].toFixed(1)]);if(o&&o.x!=null){o.x=+o.x.toFixed(1);o.y=+o.y.toFixed(1);o.nave=disNaveEn(E.D,[o.x,o.y])}}
   renderMain()});
-const VIEWS={qrtaller:vQrTaller,cqrtaller:vQrTaller,ccamp:vCCamp,choy:vCHoy,cmas:vMas,diseno:vDiseno,planriego:vPlanRiego,cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,otrat:vOtrat,cotrat:vOtrat,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,robolab:vRobolab,catalogo:vCatalogo};
+const VIEWS={consultas:vConsultas,qrtaller:vQrTaller,cqrtaller:vQrTaller,ccamp:vCCamp,choy:vCHoy,cmas:vMas,diseno:vDiseno,planriego:vPlanRiego,cajon:vCajon,aparatos:vAparatos,estructura:vEstructura,mapa:vMapa,cultivo:vCultivo,parte:vParte,partes:vPartes,cuentas:vCuentas,tareas:vTareas,material:vMaterial,drenaje:vDrenaje,aforo:vAforo,instal:vInstal,estres:vEstres,plagas:vPlagas,rellenar:vRellenar,receta:vReceta,historial:vHistorial,graficas:vGraficas,mensajes:vMensajes,almacen:vAlmacen,informe:vInforme,tiempo:vTiempo,diagnostico:vDiagnostico,ajustes:vAjustes,coparte:()=>vCollas('parte'),corend:()=>vCollas('rend'),cogente:()=>vCollas('gestion'),casist:()=>vCollas('asis'),cincid:vCIncid,ctareas:vCTareas,otrat:vOtrat,cotrat:vOtrat,cmensajes:vCMensajes,ctiempo:vTiempo,cajustes:vCAjustes,notas:vNotas,cnotas:vNotas,solucion:vSolucion,cuaderno:vCuaderno,satelite:vSatelite,global:vGlobal,ubic:vUbic,cubic:vUbic,chatia:vChat,m3mes:vM3Mes,ajriego:vAjRiego,cmbid:vCmBid,hoy:vHoy,mas:vMas,climanv:vClimaNaves,vivo:vVivo,cvivo:vVivo,montaje:vMontaje,taller:vTaller,robolab:vRobolab,catalogo:vCatalogo};
 for(const k of TL_TABS){const f=VIEWS[k];VIEWS[k]=()=>tlAbierto()?tlAviso()+f()+tlPie():vTlLlave()}
 for(const k of MF_VISTAS)VIEWS[k]=(f=>()=>mfHead()+f())(VIEWS[k]);
 /* Cuentas y Drenaje de un día pasado: con la receta de ese día, igual que su parte */

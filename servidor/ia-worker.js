@@ -8,6 +8,13 @@
 // leer pantallas; por defecto claude-sonnet-5-5, que ve mucho mejor) y MODEL_RAPIDO (AGRO, el asistente de voz; claude-haiku-5-5).
 // Para gastar aún menos: MODEL_FOTOS = claude-haiku-5-5 (todo con Haiku). Para la máxima calidad: MODEL = claude-sonnet-5-5.
 // Solo responde a personas que han entrado en la app y que el administrador ha dado de alta.
+//
+// VOZ NATURAL de AGRO, el experto (avatar): el mismo servidor convierte texto en voz con OpenAI (modelo gpt-4o-mini-tts).
+//   OPENAI_VOZ_KEY  →  clave de OpenAI solo para la voz (si no existe, se usa OPENAI_API_KEY). Es independiente de la IA que piense:
+//                      el texto puede pensarlo Claude y la voz ponerla OpenAI.
+// Opcionales: VOZ (voz; por defecto cedar. Otras: marin, ash, onyx, sage, coral, nova…), VOZ_MODELO (por defecto gpt-4o-mini-tts),
+//   VOZ_DIA (máximo de caracteres de voz por persona y día; por defecto 8000, unos 8-10 minutos hablados).
+// Sin clave de voz, la app habla con la voz del propio móvil (sin coste).
 
 const PROYECTO = 'fertirrigacion-cabezales';           // proyecto de Firebase
 const ORIGENES = ['https://abonado.github.io', 'https://agrofly-abonado.pages.dev', 'https://agro-fly.netlify.app'];          // desde dónde se puede usar
@@ -17,6 +24,10 @@ const MODELO = 'claude-haiku-5-5';          // solo texto: barato y suficiente
 const MODELO_FOTOS = 'claude-sonnet-5-5';   // con fotos: aquí sí compensa el modelo bueno
 const MODELO_RAPIDO = 'claude-haiku-5-5';
 const MODELO_OPENAI = 'gpt-6-sol';
+const VOZ_MODELO = 'gpt-4o-mini-tts', VOZ_DEFECTO = 'cedar';
+const VOZ_INSTR = 'Habla en español de España, con acento peninsular neutro. Tono de técnico agrícola con experiencia: cercano, tranquilo y seguro, como quien explica algo a un compañero en el campo. Ritmo natural, ni lento ni acelerado. Di las cifras y las unidades con claridad.';
+const VOZ_MAX = 700;                                   // caracteres por petición
+const usoVoz = new Map();                              // email → { dia, chars, cola: [ms de cada petición] } (aprox.: vive mientras viva esta instancia)
 const JWK_URL = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 // Instrucciones del asistente agrícola (no las puede cambiar la app ni quien pregunta)
 const SISTEMA_CHAT = `Eres el asistente agronómico de Agro FLY, una app de fertirrigación y gestión de fincas (sobre todo tomate en invernadero en la Región de Murcia, también árboles al aire libre).
@@ -73,6 +84,7 @@ export default {
       'Access-Control-Allow-Origin': okOrigen(origin) ? origin : ORIGENES[0],
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'content-type, authorization',
+      'Access-Control-Expose-Headers': 'x-voz-chars',
       'Access-Control-Max-Age': '86400',
       'Vary': 'Origin'
     };
@@ -81,11 +93,9 @@ export default {
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
     const prov = env.OPENAI_API_KEY && (env.PROVEEDOR === 'openai' || !env.ANTHROPIC_API_KEY) ? 'openai' : env.ANTHROPIC_API_KEY ? 'claude' : null;
     const nombre = prov === 'openai' ? 'OpenAI' : 'Claude';
-    if (request.method === 'GET') return json({ ok: true, configurado: !!prov, proveedor: prov ? nombre : null }, 200);   // no da más pistas a nadie de fuera
+    if (request.method === 'GET') return json({ ok: true, configurado: !!prov, proveedor: prov ? nombre : null, voz: !!(env.OPENAI_VOZ_KEY || env.OPENAI_API_KEY) }, 200);   // no da más pistas a nadie de fuera
     if (request.method !== 'POST') return json({ error: 'metodo' }, 405);
     if (!okOrigen(origin)) return json({ error: 'origen' }, 403);
-    if (!prov) return json({ error: 'sin_clave' }, 500);
-
     // 1. ¿Quién es? (sesión de la app)
     const token = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
     let user;
@@ -97,6 +107,31 @@ export default {
     // 2. Petición
     let body;
     try { body = await request.json(); } catch { return json({ error: 'peticion' }, 400); }
+
+    // 2a. Voz natural: texto → audio mp3 (OpenAI). Límites por persona para que un fallo o un abuso no dispare el gasto
+    if (typeof body.voz === 'string') {
+      const clave = env.OPENAI_VOZ_KEY || env.OPENAI_API_KEY;
+      if (!clave) return json({ error: 'sin_voz' }, 503);
+      const texto = body.voz.replace(/[\u0000-\u001f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, VOZ_MAX);
+      if (!texto) return json({ error: 'peticion' }, 400);
+      const dia = new Date().toISOString().slice(0, 10), ahora = Date.now(), tope = Math.max(500, +env.VOZ_DIA || 8000);
+      let u = usoVoz.get(email); if (!u || u.dia !== dia) { u = { dia, chars: 0, cola: [] }; usoVoz.set(email, u); }
+      u.cola = u.cola.filter(t => ahora - t < 600000);
+      if (u.cola.length >= 60 || u.chars + texto.length > tope) return json({ error: 'limite_voz' }, 429);
+      u.cola.push(ahora); u.chars += texto.length;
+      const rv = await fetch('https://api.openai.com/v1/audio/speech', {
+        method: 'POST', headers: { authorization: 'Bearer ' + clave, 'content-type': 'application/json' },
+        body: JSON.stringify({ model: env.VOZ_MODELO || VOZ_MODELO, voice: env.VOZ || VOZ_DEFECTO, input: texto, instructions: VOZ_INSTR, response_format: 'mp3' })
+      });
+      if (!rv.ok) {
+        u.chars -= texto.length; u.cola.pop();           // lo que no se ha generado no cuenta
+        const jv = await rv.json().catch(() => null), msg = (jv && jv.error && jv.error.message) || ('HTTP ' + rv.status);
+        const code = /quota|billing|credit/i.test(msg) ? 'creditos' : rv.status === 429 ? 'limite' : rv.status === 401 ? 'clave' : rv.status >= 500 ? 'ocupada' : 'api';
+        return json({ error: code, detail: msg }, 502);
+      }
+      return new Response(rv.body, { status: 200, headers: { ...cors, 'content-type': 'audio/mpeg', 'cache-control': 'no-store', 'x-voz-chars': String(texto.length) } });
+    }
+    if (!prov) return json({ error: 'sin_clave' }, 500);
     // Chat agrícola: la conversación viene de la app y las instrucciones las pone SIEMPRE este servidor
     const esChat = Array.isArray(body.chat);
     const chat = esChat ? body.chat.slice(-20).map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', text: String(m.text || '').slice(0, 4000) })).filter(m => m.text) : [];

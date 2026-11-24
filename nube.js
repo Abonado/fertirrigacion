@@ -218,7 +218,7 @@ function iaCode(e){const m=String((e&&(e.message||e.code))||e||'').toLowerCase()
 const iaProv=()=>{try{return localStorage.getItem('abono.iaProv')||''}catch(e){return ''}};
 const iaProvPon=x=>{if(!x)return;try{localStorage.setItem('abono.iaProv',x)}catch(e){}};
 let iaSondeado=false;
-function iaSondear(){if(iaSondeado||!iaUrl())return;iaSondeado=true;fetch(iaUrl()).then(r=>r.json()).then(j=>{if(j&&j.proveedor)iaProvPon(j.proveedor)}).catch(()=>{})}
+function iaSondear(){if(iaSondeado||!iaUrl())return;iaSondeado=true;fetch(iaUrl()).then(r=>r.json()).then(j=>{if(j&&j.proveedor)iaProvPon(j.proveedor);if(j)window.IA_VOZ=!!j.voz}).catch(()=>{})}
 const iaUrl=()=>{try{return (st.cfg&&st.cfg.iaUrl)||''}catch(e){return ''}};
 /* Si el servidor no contesta (sin cobertura, o la compañía de internet bloquea Cloudflare), no se queda cargando para siempre */
 const iaEspera=ms=>{const c=new AbortController();setTimeout(()=>c.abort(),ms);return c.signal};

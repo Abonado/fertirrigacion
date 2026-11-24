@@ -13,6 +13,14 @@ service cloud.firestore {
            get(/databases/$(database)/documents/abonado_acceso/usuarios).data.emails);
     }
 
+    function esAdminApp() {
+      return esAdmin() || (request.auth != null
+        && request.auth.token.email in
+           get(/databases/$(database)/documents/abonado_acceso/usuarios).data.emails
+        && get(/databases/$(database)/documents/abonado_acceso/usuarios).data.info
+             .get(request.auth.token.email, {}).get('admin', false) == true);
+    }
+
     function esEncargado() {
       return request.auth != null
         && get(/databases/$(database)/documents/abonado_acceso/usuarios).data.info
@@ -121,6 +129,14 @@ service cloud.firestore {
       allow create: if autorizado() && request.resource.data.email == request.auth.token.email;
       allow update: if autorizado() && resource.data.email == request.auth.token.email
         && request.resource.data.email == request.auth.token.email;
+    }
+
+    // Consultas a un técnico (botón «Pasar con un técnico» de AGRO): las crea cualquiera del equipo con su propio correo;
+    // las ve su autor y los administradores; solo los administradores las contestan, marcan o borran
+    match /abonado_consultas/{doc} {
+      allow read: if esAdminApp() || (autorizado() && resource.data.email == request.auth.token.email);
+      allow create: if autorizado() && request.resource.data.email == request.auth.token.email;
+      allow update, delete: if esAdminApp();
     }
 
     // Fotos y archivos adjuntos (troceados): los usa todo el equipo, sea de riego o de campo
@@ -254,6 +270,7 @@ service cloud.firestore {
         && coleccion != 'abonado_cmensajes'
         && coleccion != 'abonado_adjuntos'
         && coleccion != 'abonado_notas'
+        && coleccion != 'abonado_consultas'
         && coleccion != 'abonado_fichajes'
         && coleccion != 'abonado_posiciones'
         && coleccion != 'abonado_ordenes'
