@@ -102,6 +102,7 @@ shutil.copy('plantilla2/parte-tpl-p.js', out/'parte-tpl-p.js')
 import zipfile
 with zipfile.ZipFile(out/'lector-clima.zip','w',zipfile.ZIP_DEFLATED) as z:   # Lector del clima (extensión de Edge para el PC del controlador)
     for f in sorted(pathlib.Path('lector-clima').iterdir()): z.write(f, 'lector-clima/'+f.name)
+shutil.copy('alta.js', out/'alta.js')              # Alta guiada de una empresa nueva (solo el administrador; se carga al abrirla)
 shutil.copy('taller/taller.js', out/'taller.js')          # Taller de sensores (solo el administrador; se carga al abrirlo)
 shutil.copy('taller/catalogo.js', out/'catalogo.js')    # Catálogo de tecnología agrícola (solo el administrador; se carga al abrirlo)
 # Guías de montaje del catálogo (solo el administrador; se carga al abrir una ficha): el visor y las guías van en un solo archivo
