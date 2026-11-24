@@ -474,7 +474,7 @@ table.cmat td,table.cmat th{white-space:nowrap}table.cmat td:nth-child(2),table.
 .cmb.yo{align-self:flex-end;background:#e3eefb;border-color:#c9dcf3;border-radius:14px 14px 4px 14px}.cmb small{font-size:11px;color:var(--muted)}.cmb p{color:var(--ink);margin:0;text-transform:none;white-space:pre-wrap;word-break:break-word}
 .cmd{align-self:center;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;background:var(--surface);border-radius:999px;padding:2px 10px;margin:4px 0}
 .cmw{display:grid;gap:8px;margin-top:4px}.cmw textarea{width:100%;text-transform:none}
-.carga{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#0e2851;transition:opacity .35s ease,visibility .55s}
+.carga{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#0c3b38;transition:opacity .35s ease,visibility .55s}
 .carga.fuera{opacity:0;visibility:hidden}.carga .cin{display:grid;justify-items:center;gap:34px;width:min(80vw,420px)}
 .carga .clogo{width:100%;height:auto;display:block;animation:cg-in .8s cubic-bezier(.2,.8,.2,1) both}
 .carga .cbar{width:46%;height:3px;border-radius:3px;background:rgba(255,255,255,.16);overflow:hidden}.carga .cbar i{display:block;height:100%;width:100%;background:#fff;transform-origin:left;animation:cg-bar 1.5s linear both}
@@ -836,6 +836,51 @@ body.scrolled .top{box-shadow:0 8px 18px -12px rgba(15,30,40,.4)}
 @media (prefers-reduced-motion:reduce){.ajv.on .ajv-dot{animation:none}}.ajr-cola{color:#8a5a00}.ajr-av{border-top:1px solid var(--line);margin-top:10px;padding-top:8px;display:grid;gap:6px}.ajr-big small.ok{color:#2f7a52;font-weight:600}.ajr-big small.bad{color:#b3261e;font-weight:600}
 body.teclado .bnav,body.teclado .agbtn{display:none!important}body.teclado.conbn .savebar{bottom:0}
 .bnav,.savebar,.agbtn{translate:0 var(--vvfix,0px)}
+
+/* ===== Estilo natural y profesional (verde oscuro azulado) ===== */
+@media screen{
+
+:root{--bg:#f4f2ec;--surface:#fffefb;--surface-2:#f8f6f0;--ink:#1c2a29;--muted:#66726e;--line:#e0dccf;--accent:#14705f;--navy:#0c3b38;--ok-bg:#dcece6;--bar:#cfe0d9}
+*{text-transform:none!important;letter-spacing:0!important}
+body{font-size:16px}
+h1,h2,h3,.hoyfh h3,.hoysal b{font-family:var(--f-body)!important;font-weight:650!important}
+/* cabecera */
+.top{background:#0c3b38!important;border-bottom:0!important}
+.top h1{color:#fff!important;font-size:24px!important;font-weight:700!important}
+.top .eyebrow{color:#9fcfc4!important;font-size:12.5px!important;font-weight:500!important}
+.top .hoysal b{color:#fff!important;font-size:17px!important;font-weight:600!important}
+.top .hoysal span{color:#aacfc7!important}
+.top .date,.top .frec,.top .fback{background:rgba(255,255,255,.10)!important;border:1px solid rgba(255,255,255,.22)!important;color:#fff!important}
+.top .date *,.fback span{color:#fff!important}
+.top .tabs .tab{color:#9fcfc4!important;font:600 15px var(--f-body)!important}
+.top .tabs .tab[aria-selected="true"]{color:#fff!important;border-bottom-color:#6fd6bb!important}
+/* zona */
+#cabs.zbar:not([hidden]){background:rgba(255,255,255,.08)!important;border:1px solid rgba(255,255,255,.2)!important;border-left:5px solid var(--zc)!important;border-radius:12px!important}
+#cabs .zn small{color:#aacfc7!important;font-size:12px!important}
+#cabs .zn b{color:#fff!important;font-size:19px!important;font-weight:650!important}
+#cabs .zcam{background:rgba(255,255,255,.14)!important;color:#fff!important;border:1px solid rgba(255,255,255,.3)!important;font-weight:600!important}
+/* secciones y atajos: rejilla en vez de deslizar */
+.hoyfh h3{font-size:15px!important;color:var(--muted)!important;font-weight:650!important;border:0}
+.hoyfh small{display:none!important}
+.hoyrow{display:grid!important;grid-template-columns:repeat(3,1fr);gap:10px;overflow:visible!important;margin:0!important;padding:0!important;contain:none!important}
+.hoyrow .hoyt{flex:none!important;min-height:92px;border:0!important;border-radius:14px!important;background:var(--surface)!important;box-shadow:0 1px 2px rgba(20,40,38,.06),0 4px 12px rgba(20,40,38,.05);gap:8px;padding:14px 6px 12px}
+.hoyt svg{width:26px!important;height:26px!important;padding:9px;box-sizing:content-box;border-radius:12px;background:#e3efea;color:#14705f}
+.hoyt b{font:600 13.5px var(--f-body)!important;color:var(--ink)!important;line-height:1.2}
+/* botones y tarjetas */
+.btn.pri,.hoyfichar,button.pri{background:#14705f!important;border-color:#14705f!important}
+.card{border:0!important;border-radius:14px!important;box-shadow:0 1px 2px rgba(20,40,38,.06),0 4px 12px rgba(20,40,38,.05)}
+.chip,.btn{border-radius:10px!important}
+/* menú inferior */
+.bnav{background:#fffefb!important;box-shadow:0 -1px 0 var(--line)!important;border-top:0!important}
+.bnav .grp{font:600 11.5px var(--f-body)!important;color:#7a8682}
+.bnav .grp[aria-pressed="true"]{color:#0c3b38!important}
+.bnav .grp[aria-pressed="true"] svg{background:#dcece6!important}
+
+/* pantalla de carga y logo en el verde del tema */
+.carga{background:#0c3b38!important}
+.carga .cnom{color:#8fbdb3!important}
+.carga .cbar{background:rgba(255,255,255,.18)!important}
+}
 </style>
 
 <div class="splash" id="splash" role="dialog" aria-label="Bienvenida"></div>
