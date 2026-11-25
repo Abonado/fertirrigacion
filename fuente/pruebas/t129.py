@@ -26,13 +26,13 @@ async def main():
         await pg.click('[data-act="zona-go"][data-z="fra"]'); await pg.wait_for_timeout(500)
         assert await pg.evaluate("[st.tab,st.cab,$('#fincas').hidden]") == ['hoy', 'fra', True]
         assert 'FRANCO' in (await pg.text_content('#cabs')).upper() and await pg.locator('#cabs [data-cab]').count() == 0, 'no hay botones para cambiar de zona sin querer'
-        # 3) Hoy: «Riego» y debajo sus cuadros, desplazables, sin que la página se salga de ancho
+        # 3) Hoy: «Riego» y debajo sus cuadros en rejilla, sin que la página se salga de ancho
         h = await pg.locator('.hoyfila h3').all_inner_texts(); print(h); assert h[0].upper() == 'RIEGO'
-        assert await pg.evaluate("(()=>{const r=document.querySelector('.hoyfila[data-fila=riego] .hoyrow');return r.scrollWidth>r.clientWidth+50&&getComputedStyle(r).overflowX==='auto'})()"), 'se desplaza'
+        assert await pg.evaluate("(()=>{const r=document.querySelector('.hoyfila[data-fila=riego] .hoyrow');return getComputedStyle(r).display==='grid'&&r.scrollWidth<=r.clientWidth+1})()"), 'rejilla sin desplazar de lado (estilo nuevo)'
         assert await pg.evaluate("document.documentElement.scrollWidth") <= 390, 'la página no se sale de ancho'
         # 4) Fichar hoy: botón verde, letras blancas, encima de las filas
         fb = await pg.evaluate("(()=>{const e=document.querySelector('.hoyfich .btn'),c=getComputedStyle(e);return [c.backgroundColor,c.color]})()"); print('fichar', fb)
-        assert fb == ['rgb(29, 107, 71)', 'rgb(255, 255, 255)']
+        assert fb == ['rgb(20, 112, 95)', 'rgb(255, 255, 255)']  # verde del tema nuevo
         # cambiar de zona a propósito: vuelve al apartado en el que estabas
         await pg.click('.hoyfila[data-fila="riego"] .hoyt[data-tab="drenaje"]'); await pg.wait_for_timeout(400)
         await pg.click('#cabs [data-act="zonas"]'); await pg.wait_for_timeout(300)

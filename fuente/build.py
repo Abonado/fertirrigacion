@@ -56,7 +56,7 @@ head = """<!doctype html>
 <meta name="referrer" content="strict-origin">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#1b2f4a">
+<meta name="theme-color" content="#0c3b38">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Abonado">
@@ -70,7 +70,7 @@ head = """<!doctype html>
 (out/'index.html').write_text(head + s + "\n</body></html>\n")
 (out/'manifest.webmanifest').write_text(json.dumps({
  "name":"Abonado-Fertirrigación","short_name":"Abonado","lang":"es","start_url":"./","scope":"./","display":"standalone",
- "background_color":"#0e2851","theme_color":"#1b2f4a",
+ "background_color":"#0c3b38","theme_color":"#0c3b38",
  "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
           {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]},ensure_ascii=False,indent=1))
 (out/'sw.js').write_text("""const C='abonado-v234';
