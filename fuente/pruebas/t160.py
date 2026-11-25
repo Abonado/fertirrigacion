@@ -41,7 +41,7 @@ async def main():
             r.min[s2.id]=96;r.rie[s2.id]=12;for(const bj of s2.bandejas)r.dren[bj.id]=0.40*96*bj.caudal;
             r.ceB={gas:1.5};r.inc={gas:0.9};r.ceD={};for(const bj of s1.bandejas)r.ceD[bj.id]=4.0;
             if(i===1){r.rcs[s1.id]=140;r.rcs[s2.id]=160}H.push(r)}
-          st.hist=H.slice(1);st.reg=normReg(H[0],H[0].fecha);st.fecha=H[0].fecha;st.tab='calcriego';renderAll()})()""")
+          st.cfg.calc={gas:{reposo:0}};st.hist=H.slice(1);st.reg=normReg(H[0],H[0].fecha);st.fecha=H[0].fecha;st.tab='calcriego';renderAll()})()""")
         await pg.wait_for_timeout(1500)
         assert await pg.evaluate("TABS.some(t=>t[0]==='calcriego')") and await pg.evaluate("GRUPOS_RIEGO.find(g=>g.id==='riego').tabs.includes('calcriego')")
         t = (await pg.locator('#main').inner_text()).upper(); print(t[:1400])
@@ -49,7 +49,7 @@ async def main():
         assert X['nD'] == 7 and X['fuente'] == 'cal' and X['pulso'] == 6 and X['Rd'] == 2400 and abs(X['sr'] - 7.9167) < 0.01, X
         assert X['mae'] is not None and X['mae'] < 0.01 and X['n'] == 6, 'con días iguales acierta el drenaje'
         assert 16 <= X['N'] <= 18 and 23 <= X['D'] <= 28, X  # hoy hay un 20 % más de sol que los días apuntados: ~17 riegos en vez de 14
-        assert 'CALCULADORA DE RIEGO' in t and 'PON HOY EN LA MÁQUINA' in t and 'RADIACIÓN DE CONTROL (POR RIEGO)' in t and 'FIABILIDAD' in t and '±0,0 PUNTOS' in t, t[:600]
+        assert 'CALCULADORA DE RIEGO' in t and 'PON HOY EN LA MÁQUINA' in t and 'RADIACIÓN ACUMULADA' in t and 'RADIACIÓN MÍNIMA' in t and 'REPOSO' in t and 'DRENAJE IDEAL' in t and 'REPARTO DEL CABEZAL' in t and 'FIABILIDAD' in t and '±0,0 PUNTOS' in t, t[:600]
         assert 'CE BAJA CON EL DRENAJE BIEN: SUBE LA CE DE ENTRADA' in t, 'CE 4000 < 5500 con el drenaje en su sitio'
         assert await pg.locator('svg.ccg').count() == 1 and await pg.locator('svg.ccg path.ccradf, svg.ccg path.cchoraf').count() >= 12, 'la gráfica lleva una gota por riego'
         await pg.screenshot(path='pruebas/salida/t160.png', full_page=True)
@@ -79,6 +79,6 @@ async def main():
         # copiar ajustes
         await pg.evaluate("window.__cp=null;Object.defineProperty(navigator,'clipboard',{value:{writeText:t=>{window.__cp=t;return Promise.resolve()}},configurable:true})")
         await pg.click('[data-cc="copiar"]'); await pg.wait_for_timeout(300)
-        cp = await pg.evaluate("window.__cp"); print(cp); assert cp and 'Radiación de control' in cp and 'Riegos previstos' in cp
+        cp = await pg.evaluate("window.__cp"); print(cp); assert cp and 'Radiación de control' in cp and 'Reposo: ' in cp and 'acumulada' in cp and 'CE de entrada' in cp
         print('errs', errs); await b.close(); sys.exit(1 if errs else 0)
 asyncio.run(main())
