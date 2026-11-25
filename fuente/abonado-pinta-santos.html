@@ -876,6 +876,12 @@ h1,h2,h3,.hoyfh h3,.hoysal b{font-family:var(--f-body)!important;font-weight:650
 .bnav .grp[aria-pressed="true"]{color:#0c3b38!important}
 .bnav .grp[aria-pressed="true"] svg{background:#dcece6!important}
 
+/* bienvenida: saludo equilibrado y «Bienvenido» más grande */
+.splash .saludo{gap:6px}
+.splash .saludo .eyebrow{font:600 clamp(20px,5.6vw,26px)/1.1 var(--f-body)!important;color:var(--accent)!important;margin:0!important}
+.splash .hola{display:flex;flex-direction:column;align-items:center;gap:2px;text-wrap:balance;line-height:1.05!important;font-family:var(--f-body)!important}
+.splash .hola .g1{font-weight:500;font-size:clamp(24px,7vw,34px);color:var(--muted)}
+.splash .hola .g2{font-weight:750;font-size:clamp(46px,14vw,72px);letter-spacing:-.01em!important;color:var(--navy);overflow-wrap:anywhere;max-width:100%}
 /* pantalla de carga y logo en el verde del tema */
 .carga{background:#0c3b38!important}
 .carga .cnom{color:#8fbdb3!important}
@@ -5583,7 +5589,7 @@ function spRes(){const el=$('#sp_res');if(el&&!$('#splash').hidden)el.innerHTML=
 function cerrarSplash(){$('#splash').hidden=true;document.documentElement.style.overflow='';window.scrollTo(0,0)}
 function renderSplash(){const hoyTxt=new Date().toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   const nom=(st.autor||'').trim().split(/\s+/)[0];
-  $('#splash').innerHTML=`<div class="in">${logoEmpresa()||emblema()}<div class="saludo"><div class="eyebrow">Bienvenido</div><h1 class="hola">${saludo()}${nom?`, ${esc(nom)}`:''}</h1></div>
+  $('#splash').innerHTML=`<div class="in">${logoEmpresa()||emblema()}<div class="saludo"><div class="eyebrow">Bienvenido</div><h1 class="hola">${nom?`<span class="g1">${saludo()},</span><span class="g2">${esc(nom)}</span>`:`<span class="g2">${saludo()}</span>`}</h1></div>
     ${(f=>`<p class="frase">«${esc(f[0])}»<small>${esc(f[1]||'Frase del día')}</small></p>`)(fraseHoy())}
     <div class="hoy">Hoy es ${esc(hoyTxt)}</div>
     <section class="card"><div class="tank-h"><div><h3>El tiempo hoy</h3><div class="sub">${AGUILAS.nombre}</div></div>${enClaude()?'':`<a class="btn" href="https://www.aemet.es/es/eltiempo/prediccion/avisos" target="_blank" rel="noopener">Avisos AEMET</a>`}</div>${splashWxHTML()}</section>
