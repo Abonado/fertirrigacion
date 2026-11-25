@@ -1826,6 +1826,10 @@ function ccPre(cab,s){
     if(ok.length>=3&&ok.length<H.length){desc=H.filter(h=>Math.abs(h.kd-m)>lim);H=ok}}
   const err=[];for(let i=1;i<H.length;i++){const kp=ajrMedia(H.slice(0,i).map(h=>h.kd));if(!kp)continue;const Dp=(1-kp*H[i].R/H[i].fd/H[i].sup)*100;err.push({f:H[i].f,Dp,e:Dp-H[i].D})}
   const prueba={n:err.length,mae:err.length?err.reduce((a,o)=>a+Math.abs(o.e),0)/err.length:null,sesgo:err.length?err.reduce((a,o)=>a+o.e,0)/err.length:null};
+  // ¿el agua que se lleva la planta crece en proporción al sol (k fija) o hay una parte que no depende del sol? recta  agua = base + b·sol  con los días apuntados
+  const eMap={};err.forEach(o=>{eMap[o.f]=o});let reg=null;
+  if(H.length>=5){const xs=H.map(h=>h.R),ys=H.map(h=>h.upt*h.fd),n=H.length,mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;let sxx=0,sxy=0,syy=0;for(let i=0;i<n;i++){sxx+=(xs[i]-mx)**2;sxy+=(xs[i]-mx)*(ys[i]-my);syy+=(ys[i]-my)**2}
+    if(sxx>0&&Math.max(...xs)/Math.min(...xs)>=1.25){const b=sxy/sxx;reg={a:my-b*mx,b,r2:syy>0?sxy*sxy/(sxx*syy):0,n,mx,my}}}
   const kCal=H.length?ajrMedia(H.map(h=>h.kd)):null,kPri=CC_K0/(K.ppm/K.sep),k=kCal??kPri;
   const f0=hoy(),Rd=dia(f0),dpH=ccDpvDia(W,f0),fdH=ccFD(dpH),Dobj=(C.dren??25)/100,wd=(W.dia||{})[f0]||{};
   const sr=ccTh(wd.sr)??7.9,ss=ccTh(wd.ss)??17.7,h1=ccTh(C.hIni)??8;
@@ -1835,7 +1839,7 @@ function ccPre(cab,s){
   const A=ml&&Rd?ml*(1-Dobj)/k*fdH*kM*WH:null;      // Wh/m² de la máquina
   const fuente=A!=null&&H.length>=3?'cal':B!=null?'bandeja':A!=null?(kCal!=null?'cal':'inicio'):null,R0=fuente==='bandeja'?B:A;
   const cv=Rd?ccCurva(W,f0,Rd,sr,ss):null,minF=K.rmin/kM;
-  return{s,C,K,W,D0,cq,ml,pulso,kM,kSrc:AR.kSrc,k,kCal,kPri,H,desc,prueba,Rd,dpH,fdH,Dobj,sr,ss,h1,yb,yR,B,A,fuente,R0,cv,minF,nD:H.length}}
+  return{s,C,K,W,D0,cq,ml,pulso,kM,kSrc:AR.kSrc,k,kCal,kPri,H,desc,prueba,reg,eMap,Rd,dpH,fdH,Dobj,sr,ss,h1,yb,yR,B,A,fuente,R0,cv,minF,nD:H.length}}
 // mínima: el suelo de la radiación por riego (la de Ajuste del riego si la hay; si no, ~60 % de la acumulada)
 const ccMin=(w,mb)=>mb?(w<mb*1.1?r5w(w*0.7):mb):r5w(w*0.6);
 function ccCalc(cab,s){
@@ -1958,6 +1962,8 @@ function vCalcRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();
     L.push(`Se simula el sol de hoy minuto a minuto con <b>todos los sectores del cabezal a la vez</b>: un sector arranca cuando ha pasado su reposo (${fmt(X.rep,0)} min desde que acaba su riego), ha juntado la radiación y el cabezal está libre; si no, espera su turno. Arranque a ${fmt(X.K.rmin,0)} W/m², corte a las ${ccHm(X.ss-2)}: salen <b>${b?b.N:'—'}</b> riegos`);
     L.push(`La mínima es el suelo de la radiación por riego (la de Ajuste del riego o ~60 % de la acumulada). Mientras sea menor que la acumulada, manda la acumulada. Comprueba el primer día: si tu máquina arranca al llegar a la mínima, avísame y lo cambio.`);
     h+=`<section class="card"><details class="ajr-det"><summary>Cómo se ha calculado</summary><ol class="ajr-ol">${L.map(x=>`<li>${x}</li>`).join('')}</ol></details></section>`}
+  if(X.H&&X.H.length){const g=X.reg,rg=g?`<p class="ajr-p">Agua que se lleva la planta (ml por piqueta y día) frente al sol: <b>${fmt(g.a,0)} ml</b> con sol cero + <b>${fmt(g.b,3)} ml</b> por cada J/cm²; ajuste r² = <b>${fmt(g.r2,2)}</b>. ${g.a>0.25*g.my?'La parte «con sol cero» es grande: la planta bebe aunque haya poco sol y una k fija se queda corta en días nublados. Si no cuadran los días de poco sol, es la fórmula.':g.r2<0.5?'El sol explica poco el agua que se lleva la planta: mira si los datos de esos días son fiables.':'Sube en proporción al sol: la fórmula con k fija es razonable.'}</p>`:'';
+    h+=`<section class="card"><details class="ajr-det"><summary>Día a día: ¿falla la fórmula o los datos?</summary>${rg}<div class="ajo-wrap"><table class="ajo-tb cc-tb cc-dia"><thead><tr><th>Día</th><th>Sol</th><th>Min</th><th>Drenaje apuntado</th><th>Habría dado</th></tr></thead><tbody>${X.H.map(d=>{const e=X.eMap[d.f];return`<tr><td>${fFecha(d.f)}</td><td>${fmt(d.R,0)}</td><td>${fmt(d.x.M,0)}</td><td>${fmt(d.D,0)} %</td><td>${e?fmt(e.Dp,0)+' %':'—'}</td></tr>`}).join('')}</tbody></table></div><p class="hint">Sol en J/cm². «Habría dado» = el drenaje que habría calculado la calculadora con los días de antes, sin mirar ese día. Si los errores van con el sol (siempre se pasa en días nublados, por ejemplo), es la fórmula; si saltan al azar, son los datos.</p></details></section>`}
   return h}
 document.addEventListener('click',e=>{if(st.tab!=='calcriego'||!e.target.closest)return;const sb=e.target.closest('[data-ccs]');if(sb){st.ccSec[st.cab]=sb.dataset.ccs;renderMain();return}
   const b=e.target.closest('[data-cc]');if(!b)return;if(b.dataset.cc==='recargar'){ccCargar(st.cab,true);return}
