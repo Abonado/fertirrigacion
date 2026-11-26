@@ -29,6 +29,6 @@ async def main():
         # 3) se vuelve a apagar y no toca el resumen diario
         await pg.uncheck('[data-k="cfg.bd.on"]'); await pg.wait_for_timeout(200)
         ok((await pg.evaluate('st.cfg.boletin')).get('on') is False and not await pg.evaluate('st.cfg.resumen&&st.cfg.resumen.on===false'), 'apagar')
-        ok(not errs, str(errs)); print('T171 OK')
+        ok(not errs, str(errs)); print('T171 OK'); print('errs', errs)
         await b.close()
 asyncio.run(main())
