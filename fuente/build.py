@@ -102,6 +102,45 @@ shutil.copy('plantilla2/parte-tpl-p.js', out/'parte-tpl-p.js')
 import zipfile
 with zipfile.ZipFile(out/'lector-clima.zip','w',zipfile.ZIP_DEFLATED) as z:   # Lector del clima (extensión de Edge para el PC del controlador)
     for f in sorted(pathlib.Path('lector-clima').iterdir()): z.write(f, 'lector-clima/'+f.name)
+# Lector de la Gasolinera para Chrome: la misma extensión con «Gasolinera» por defecto y su propio nombre, para que no se mezcle con la de Edge (que lee Franco)
+LEEME_CHROME = """AGRO FLY · LECTOR DE LA GASOLINERA PARA CHROME
+Es la misma extensión que usas en Edge para Franco, pero preparada para leer la Gasolinera en Chrome: al añadir la página del uCrop ya sale «Gasolinera».
+Chrome y Edge no comparten nada, así que el uCrop de la Gasolinera en Chrome no se pisa con el de Franco en Edge.
+
+INSTALAR (una vez, en el ordenador donde se ve el uCrop de la Gasolinera, con Google Chrome)
+ 1. Descomprime esta carpeta en un sitio fijo, por ejemplo Documentos\\lector-gasolinera-chrome (no la borres luego).
+ 2. En Chrome, escribe en la barra:  chrome://extensions
+ 3. Activa «Modo de desarrollador» (arriba a la derecha).
+ 4. Pulsa «Cargar descomprimida» y elige la carpeta lector-gasolinera-chrome.
+ 5. Pulsa el icono del puzle (arriba a la derecha) y la chincheta junto a «Agro FLY · Lector Gasolinera» para tenerlo a mano.
+
+CONFIGURAR
+ 1. En Chrome, entra en app.ucrop.net con tu usuario y abre la página de riego de la GASOLINERA (Fincas › la finca › riego).
+    Despliega «Estado del cabezal» («Ver más») para que se vean los cuadros de Drenaje 1 y Drenaje 2.
+ 2. Pulsa el icono del lector → «Añadir la pestaña de delante». Debe salir lo leído (2 drenajes) y el cabezal ya marcado como Gasolinera.
+ 3. Rellena la dirección del puente y la clave: son LAS MISMAS que en el lector de Edge (abre el de Edge y cópialas). Pon «cada 15 min» como allí → «Guardar».
+ 4. Pulsa «Leer y mandar ya». Debe decir «Enviado: 2 drenajes». En la app, Riego › Ajuste del riego › Gasolinera debe salir «Última lectura del uCrop a las…».
+    El Drenaje 1 del uCrop es el primer sector de la Gasolinera (plano 3) y el Drenaje 2 el segundo (plano 4).
+
+PARA QUE NO PARE
+ · El ordenador encendido y sin suspender (Configuración → Sistema → Energía → Suspender: Nunca).
+ · Chrome abierto (puede estar minimizado) con la pestaña del uCrop fijada. Para usar el uCrop tú, ábrelo en otra pestaña.
+ · Chrome «duerme» las pestañas que no usas y entonces el lector no lee: ve a chrome://settings/performance, desactiva «Ahorro de memoria»
+   o, en «Mantener estos sitios siempre activos», añade app.ucrop.net.
+ · Al abrir Chrome puede avisar de «Desactivar las extensiones del modo de desarrollador»: ciérralo sin desactivarla.
+ · No dejes abierto el uCrop de la Gasolinera en la misma sesión de Chrome en la que mires otras fincas del uCrop.
+
+Lo que sigue es el LEEME de la extensión (instrucciones generales; donde habla de Edge, aquí es Chrome).
+"""
+with zipfile.ZipFile(out/'lector-gasolinera-chrome.zip','w',zipfile.ZIP_DEFLATED) as z:
+    for f in sorted(pathlib.Path('lector-clima').iterdir()):
+        d = f.read_bytes()
+        if f.name == 'popup.js':
+            n = d.replace(b"r.tipo === 'riego' ? 'fra' : 'gas'", b"'gas'"); assert n != d; d = n
+        if f.name == 'manifest.json':
+            n = d.replace('"Agro FLY · Lector del clima y del riego"'.encode(), '"Agro FLY · Lector Gasolinera (Chrome)"'.encode()); assert n != d; d = n
+        if f.name == 'LEEME.txt': d = LEEME_CHROME.encode() + b'\n\n' + d
+        z.writestr('lector-gasolinera-chrome/'+f.name, d)
 shutil.copy('alta.js', out/'alta.js')              # Alta guiada de una empresa nueva (solo el administrador; se carga al abrirla)
 shutil.copy('taller/taller.js', out/'taller.js')          # Taller de sensores (solo el administrador; se carga al abrirlo)
 shutil.copy('taller/catalogo.js', out/'catalogo.js')    # Catálogo de tecnología agrícola (solo el administrador; se carga al abrirlo)

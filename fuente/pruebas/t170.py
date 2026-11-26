@@ -43,6 +43,15 @@ async def main():
             if(i===1){r.rcs[s1.id]=140;r.rcs[s2.id]=160}H.push(r)}
           st.hist=H.slice(1);st.reg=normReg(H[0],H[0].fecha);st.fecha=H[0].fecha;st.tab='calcriego';renderAll()})()""")
         await pg.wait_for_timeout(1500)
+        # 0) un día mal apuntado (60 % de drenaje entre días del 25 %) se ignora y se dice; no estropea la k
+        Q = "(()=>{const X=ccCalc('gas',cabById('gas').sectores[0]);return [X.nD,X.desc.length,X.k,X.prueba.mae]})()"
+        Q0 = await pg.evaluate(Q)
+        await pg.evaluate("""(()=>{window.__h=st.hist.map(r=>JSON.parse(JSON.stringify(r)));const s1=cabById('gas').sectores[0];for(const bj of s1.bandejas)st.hist[2].dren[bj.id]=0.60*84*bj.caudal;renderMain()})()""")
+        Q1 = await pg.evaluate(Q); print('día malo', Q0, Q1)
+        assert Q1[0] == Q0[0] - 1 and Q1[1] == 1 and abs(Q1[2] - Q0[2]) < 1e-6 and Q1[3] < 0.01, (Q0, Q1)
+        assert 'SE HAN IGNORADO 1 DÍA' in (await pg.locator('#main').inner_text()).upper()
+        await pg.evaluate("st.hist=window.__h;renderMain()")
+        assert await pg.locator('table.cc-dia tbody tr').count() == Q0[0], 'tabla día a día con todos los días de la calibración'
         K = "(()=>{const c=cabById('gas'),X=ccCalc('gas',c.sectores[0]);return {rep:X.rep,sec:X.rp.sec.map(o=>({n:o.N,nlib:o.Nlib,D:o.D,wh:o.wh,min:o.min,p:o.P.pulso,ev:o.ev.map(e=>[e.t,e.end])})),repLibre:X.rp.J.repLibre,repRot:X.rp.J.repRot}})()"
         R = await pg.evaluate(K); print({k: R[k] for k in ('rep', 'repLibre', 'repRot')}, [(o['n'], o['nlib'], round(o['D'], 1)) for o in R['sec']])
         assert R['rep'] == 24, 'sin tocar nada el reposo es el de siempre: 24 min'

@@ -857,6 +857,7 @@ body.teclado .bnav,body.teclado .agbtn{display:none!important}body.teclado.conbn
 .ajr-big>div:first-child{background:var(--navy);border-color:var(--navy)}
 .ccg{width:100%;height:auto;display:block;margin:8px 0 2px}.ccx{font:600 21px var(--f-body);fill:var(--muted)}.ccv{fill:var(--ink)}.ccl{stroke:var(--line)}
 .ccsol{fill:#f6dfa0;stroke:#d99a00;stroke-width:2.5}.ccmin{stroke:#b3261e;stroke-dasharray:5 4;stroke-width:1.5}.cccut{stroke:var(--muted);stroke-dasharray:2 4}
+.cch{width:100%;height:auto;display:block;margin:8px 0 2px}.ccb0{fill:#2160c4}.ccb1{fill:#2a8a4a}.ccb2{fill:#b36b00}.ccb3{fill:#8a3fb3}.ccb0,.ccb1,.ccb2,.ccb3{opacity:.55}.ccbs{opacity:1}.ccbf0{background:#2160c4}.ccbf1{background:#2a8a4a}.ccbf2{background:#b36b00}.ccbf3{background:#8a3fb3}.cc-all th{text-align:left;font-size:12px;color:var(--muted)}
 .ccrad{stroke:#2160c4;stroke-width:2}.ccradf{fill:#2160c4}.cchora{stroke:var(--accent);stroke-width:2}.cchoraf{fill:var(--accent)}.ccseg{stroke:#b3261e;stroke-width:2}.ccsegf{fill:#b3261e}
 .cc-leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin:0 0 8px}.ccsw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.ccsw.ccradf{background:#2160c4}.ccsw.cchoraf{background:var(--accent)}.cc-hrs{font-size:14px;color:var(--muted);line-height:1.6}
 .cc-src{display:block;color:var(--muted);font-size:12px;margin-top:2px}.cc-src.cc-no{color:#b3261e}.cc-tb td{padding:6px 4px}.cc-tb td:last-child{text-align:right}
@@ -1783,7 +1784,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
    La k no se supone: sale de los días ya apuntados (mediana ponderada de la última semana). Con menos de 3 días usa la bandeja de ayer y,
    sin nada, los valores de partida de la calculadora; y siempre dice cuánto habría acertado con los días pasados. */
 st.ccW={};st.ccSec={};
-const CC_DEF={ppm:3,sep:1.5,ceMin:5500,ceMax:6000,rmin:120,gap:0},CC_K0=2.5;
+const CC_DEF={ppm:3,sep:1.5,ceMin:5500,ceMax:6000,rmin:120,gap:0,reposo:24},CC_K0=2.5;
 const ccCfg=cab=>({...CC_DEF,...((st.cfg.calc||{})[cab]||{})});
 const ccKey=cab=>radKey(cab);
 const ccUs=v=>v==null?null:(v<100?v*1000:v);
@@ -1798,25 +1799,57 @@ function ccDpvDia(W,f){const o=(W.hr||{})[f];if(!o)return null;const T=[],H=[];f
 function ccCurva(W,f,Rd,sr,ss){const o=(W.hr||{})[f],P=[];if(o)for(let h=0;h<24;h++)if(o.r[h]!=null)P.push([h-0.5,o.r[h]]);
   if(P.length<12||!P.some(p=>p[1]>50)){const L=ss-sr;if(!(L>2)||!(Rd>0))return null;const Im=Rd*10000*Math.PI/(2*L*3600);return {sin:true,I:t=>t<sr||t>ss?0:Im*Math.sin(Math.PI*(t-sr)/L)}}
   return {sin:false,I:t=>{if(t<=P[0][0]||t>=P[P.length-1][0])return 0;let i=0;while(i<P.length-2&&P[i+1][0]<t)i++;const a=P[i],b=P[i+1];return a[1]+(b[1]-a[1])*(t-a[0])/(b[0]-a[0])}}}
-// el día minuto a minuto: primer riego por hora y después uno cada vez que se junta la radiación (en J/cm² de la previsión), hasta 2 h antes de anochecer
-function ccSim(cv,sr,ss,Rpf,minF,ini,h1,gap){const cut=ss-2,ev=[];if(!cv||!(Rpf>0))return{ev,cut};let acc=0,started=!ini,last=null;
-  for(let m=Math.floor(sr*60);m<=cut*60;m++){const t=m/60,I=cv.I(t);
-    if(ini&&!started&&t>=h1){started=true;ev.push({t,by:'hora'});last=t;acc=0;continue}
-    if(started&&I>=minF)acc+=I*60/10000;
-    if(started&&acc>=Rpf){ev.push({t,by:'rad'});acc=0;last=t;continue}
-    if(started&&gap>0&&last!=null&&t-last>=gap){ev.push({t,by:'seg'});acc=0;last=t}}
-  return{ev,cut}}
-function ccCalc(cab,s){
+// el día minuto a minuto con TODOS los sectores del cabezal a la vez: solo riega uno cada vez (los demás esperan su turno).
+// Un sector arranca cuando: ha pasado su reposo (contado desde que ACABA su riego) + ha juntado la radiación + el cabezal está libre.
+// La radiación se cuenta desde que arranca el riego anterior y no se pierde mientras espera. El primer riego del día va por hora.
+function ccSimJ(I,m0,S,rep,gap){const n=S.length,R=rep/60,q=S.map(x=>({acc:0,go:!x.ini,last:null,tr:null,rs:null,ev:[]}));let busy=-1;
+  for(let j=0;j<I.length;j++){const t=(m0+j)/60,Iw=I[j];
+    for(let i=0;i<n;i++){const x=S[i],a=q[i];if(a.go&&Iw>=x.minF)a.acc+=Iw*60/10000;if(a.rs!=null)continue;let ok=false;
+      if(!a.go){if(t>=x.h1){ok=true;if(a.tr==null)a.tr=t}}
+      else{if(a.acc>=x.Rpf&&a.tr==null)a.tr=t;const lib=a.last==null||t>=a.last+R-1e-9;if(lib&&(a.acc>=x.Rpf||(gap>0&&a.last!=null&&t-a.last>=gap)))ok=true}
+      if(ok)a.rs=t}
+    if(t<busy-1e-9)continue;
+    let pk=-1;for(let i=0;i<n;i++)if(q[i].rs!=null&&(pk<0||q[i].rs<q[pk].rs-1e-9))pk=i;if(pk<0)continue;
+    const x=S[pk],a=q[pk],by=!a.go?'hora':a.acc>=x.Rpf?'rad':'seg',lp=a.last;
+    a.ev.push({t,by,end:t+x.p/60,cola:(t-a.rs)*60,drep:(a.tr!=null&&lp!=null)?Math.max(0,lp+R-Math.max(a.tr,lp))*60:0});
+    a.acc=0;a.go=true;a.last=t+x.p/60;a.tr=null;a.rs=null;busy=a.last}
+  return q.map(a=>a.ev)}
+// con lo que sale de cada sector (agua por riego y radiación de partida) busca la radiación de cada uno para que, con el reposo y la cola, el drenaje se acerque al que pide el perito
+function ccJoint(act,rep,gap){const P=act[0],m0=Math.floor(P.sr*60),m1=Math.floor((P.ss-2)*60),I=[];for(let m=m0;m<=m1;m++)I.push(P.cv.I(m/60));
+  const mk=whs=>act.map((p,i)=>({p:p.pulso,Rpf:whs[i]/(p.kM*WH),minF:p.minF,ini:p.C.ini,h1:p.h1})),run=(whs,rp)=>ccSimJ(I,m0,mk(whs),rp,gap),
+    Dof=(p,N)=>N>0?(1-(p.k*p.Rd/p.fdH)/(N*p.ml))*100:null;
+  const whs=act.map(p=>Math.max(5,Math.round(p.R0/5)*5)),base=whs.slice();
+  for(let pass=0,ch=1;pass<4&&ch;pass++){ch=0;act.forEach((p,i)=>{let bw=whs[i],be=1e9;const seen=new Set();
+    for(let m=0.6;m<=1.6001;m+=0.01){const wh=Math.max(5,Math.round(p.R0*m/5)*5);if(seen.has(wh))continue;seen.add(wh);const w2=whs.slice();w2[i]=wh;
+      const D=Dof(p,run(w2,rep)[i].length);if(D==null)continue;const e=Math.abs(D-p.Dobj*100);
+      if(e<be-0.05||(Math.abs(e-be)<=0.05&&Math.abs(wh-p.R0)<Math.abs(bw-p.R0))){be=e;bw=wh}}
+    if(bw!==whs[i])ch=1;whs[i]=bw})}
+  const ev=run(whs,rep),N=ev.map(e=>e.length),D=act.map((p,i)=>Dof(p,N[i])),S0=mk(whs);
+  // lo que pediría el sol de hoy sin reposo ni cola (cada sector solo)
+  const Nlib=act.map((p,i)=>ccSimJ(I,m0,[S0[i]],0,gap)[0].length),Dlib=act.map((p,i)=>Dof(p,Nlib[i]));
+  // hasta qué reposo no se pierde ningún riego frente a reposo 0
+  const tot=r=>run(whs,r).reduce((a,e)=>a+e.length,0),t0=tot(0);let repLibre=0;for(let r=2;r<=90;r+=2){if(tot(r)>=t0)repLibre=r;else break}
+  const repRot=act.length>1?Math.round((act.length-1)*act.reduce((a,p)=>a+p.pulso,0)/act.length):0;
+  return{whs,base,ev,N,D,Nlib,Dlib,repLibre,repRot,cola:ev.map(e=>e.reduce((a,o)=>a+o.cola,0)),drep:ev.map(e=>e.reduce((a,o)=>a+o.drep,0))}}
+// lo que sale de cada sector por separado: agua por riego, k calibrada, radiación de partida y el sol de hoy
+function ccPre(cab,s){
   const C=ajrSecCfg(ajrCfg(cab),s.id),K=ccCfg(cab),W=st.ccW[ccKey(cab)]||{},AW=(st.ajrW[ajrKey(cab)]||{}).dias||{};
   const caud=s.bandejas.map(b=>b.caudal).filter(x=>x>0),cq=caud.length?caud.reduce((a,b)=>a+b,0)/caud.length:null;
   const D0=ajrDias(cab,s),AR=ajrCalc(cab,s),pulso=C.pulso||AR.pulso||C.pulsoDef||8,ml=cq?cq/AF.n*pulso:null,kM=AR.k>0?AR.k:1;
   const dia=f=>{const a=(W.dia||{})[f],b=AW[f];return a&&a.R>0?a.R:b&&b.R>0?b.R:null};
   // los días con minutos, drenaje y sol: lo que se llevó la planta por piqueta y por J/cm² de sol, con el aire de ese día
-  const H=[];for(const x of D0){if(!(x.M>0)||x.D==null||!cq)continue;const R=dia(x.f);if(!(R>=200))continue;const dp=ccDpvDia(W,x.f),fd=ccFD(dp),sup=cq/AF.n*x.M,upt=sup*(1-x.D/100);
+  let H=[];for(const x of D0){if(!(x.M>0)||x.D==null||x.D<0||x.D>80||!cq)continue;const R=dia(x.f);if(!(R>=200))continue;const dp=ccDpvDia(W,x.f),fd=ccFD(dp),sup=cq/AF.n*x.M,upt=sup*(1-x.D/100);
     if(upt>0)H.push({f:x.f,R,dp,fd,sup,upt,D:x.D,kd:upt*fd/R,x})}
   H.sort((a,b)=>a.f<b.f?-1:1);
+  // días que no cuadran (minutos, ml o drenaje mal apuntados): su k se aleja mucho de la del resto → se ignoran para no estropear la calibración
+  let desc=[];if(H.length>=4){const med=a=>{const q=[...a].sort((x,y)=>x-y),m=q.length>>1;return q.length%2?q[m]:(q[m-1]+q[m])/2},m=med(H.map(h=>h.kd)),dv=med(H.map(h=>Math.abs(h.kd-m))),lim=Math.max(0.25*m,3*1.4826*dv),ok=H.filter(h=>Math.abs(h.kd-m)<=lim);
+    if(ok.length>=3&&ok.length<H.length){desc=H.filter(h=>Math.abs(h.kd-m)>lim);H=ok}}
   const err=[];for(let i=1;i<H.length;i++){const kp=ajrMedia(H.slice(0,i).map(h=>h.kd));if(!kp)continue;const Dp=(1-kp*H[i].R/H[i].fd/H[i].sup)*100;err.push({f:H[i].f,Dp,e:Dp-H[i].D})}
   const prueba={n:err.length,mae:err.length?err.reduce((a,o)=>a+Math.abs(o.e),0)/err.length:null,sesgo:err.length?err.reduce((a,o)=>a+o.e,0)/err.length:null};
+  // ¿el agua que se lleva la planta crece en proporción al sol (k fija) o hay una parte que no depende del sol? recta  agua = base + b·sol  con los días apuntados
+  const eMap={};err.forEach(o=>{eMap[o.f]=o});let reg=null;
+  if(H.length>=5){const xs=H.map(h=>h.R),ys=H.map(h=>h.upt*h.fd),n=H.length,mx=xs.reduce((a,b)=>a+b,0)/n,my=ys.reduce((a,b)=>a+b,0)/n;let sxx=0,sxy=0,syy=0;for(let i=0;i<n;i++){sxx+=(xs[i]-mx)**2;sxy+=(xs[i]-mx)*(ys[i]-my);syy+=(ys[i]-my)**2}
+    if(sxx>0&&Math.max(...xs)/Math.min(...xs)>=1.25){const b=sxy/sxx;reg={a:my-b*mx,b,r2:syy>0?sxy*sxy/(sxx*syy):0,n,mx,my}}}
   const kCal=H.length?ajrMedia(H.map(h=>h.kd)):null,kPri=CC_K0/(K.ppm/K.sep),k=kCal??kPri;
   const f0=hoy(),Rd=dia(f0),dpH=ccDpvDia(W,f0),fdH=ccFD(dpH),Dobj=(C.dren??25)/100,wd=(W.dia||{})[f0]||{};
   const sr=ccTh(wd.sr)??7.9,ss=ccTh(wd.ss)??17.7,h1=ccTh(C.hIni)??8;
@@ -1825,21 +1858,21 @@ function ccCalc(cab,s){
   const B=yb&&yR?yR*(1-Dobj)/(1-yb.D/100)*fdH/ccFD(ccDpvDia(W,yb.f)):null;
   const A=ml&&Rd?ml*(1-Dobj)/k*fdH*kM*WH:null;      // Wh/m² de la máquina
   const fuente=A!=null&&H.length>=3?'cal':B!=null?'bandeja':A!=null?(kCal!=null?'cal':'inicio'):null,R0=fuente==='bandeja'?B:A;
-  const cv=Rd?ccCurva(W,f0,Rd,sr,ss):null,minF=K.rmin/kM,unif=wh=>wh/(kM*WH);
-  // con un corte (Wh/m²) y la duración de cada riego: riegos que salen y drenaje que da; se prueba alrededor de lo calculado y se queda el más cercano al que se busca
-  const solve=(p,R0)=>{if(!(R0&&cv&&cq))return null;const mlp=cq/AF.n*p,dexp=N=>N>0?(1-(k*Rd/fdH)/(N*mlp))*100:null,sim=wh=>{const x=ccSim(cv,sr,ss,unif(wh),minF,C.ini,h1,K.gap);x.N=x.ev.length;x.D=dexp(x.N);return x},R5=Math.max(5,Math.round(R0/5)*5);
-    const base={wh:R5,...sim(R5)};let best=base;const seen=new Set([R5]);
-    for(let m=0.6;m<=1.6;m+=0.01){const wh=Math.max(5,Math.round(R0*m/5)*5);if(seen.has(wh))continue;seen.add(wh);const x=sim(wh);
-      if(x.D==null)continue;const a=Math.abs(x.D-Dobj*100),b=best.D==null?1e9:Math.abs(best.D-Dobj*100);if(a<b-0.05||(Math.abs(a-b)<=0.05&&Math.abs(wh-R0)<Math.abs(best.wh-R0)))best={wh,...x}}
-    return{p,ml:mlp,R0,base,best}};
-  const S=solve(pulso,R0),best=S&&S.best,base=S&&S.base;let alt=null;
-  // la duración de cada riego también afina: cada riego de más o de menos mueve el drenaje unos puntos; si otra duración se acerca mucho más al drenaje que se busca, se aconseja
-  if(S&&fuente!=='bandeja'&&best.D!=null){const dif0=Math.abs(best.D-Dobj*100);
-    if(dif0>1.5){for(let p=Math.max(2,pulso-3);p<=pulso+3.01;p+=0.5){if(Math.abs(p-pulso)<0.01)continue;const Ap=cq/AF.n*p*(1-Dobj)/k*fdH*kM*WH,Sp=solve(p,Ap);
-        if(Sp&&Sp.best.D!=null&&Sp.best.N>=8&&Math.abs(Sp.best.D-Dobj*100)<dif0-1.5&&(!alt||Math.abs(Sp.best.D-Dobj*100)<Math.abs(alt.best.D-Dobj*100)-0.05))alt=Sp}}}
-  // CE: lo de ayer frente a lo que se busca
-  const yc=[...D0].reverse().find(x=>x.ceD>0&&x.D!=null),ceD=yc?ccUs(yc.ceD):null,ceI=yc&&yc.ceI>0?ccUs(yc.ceI):null,cem=(K.ceMin+K.ceMax)/2,ceIn=Dobj*cem+(1-Dobj)*1800;
-  return{s,C,K,W,cq,ml,pulso,kM,kSrc:AR.kSrc,k,kCal,kPri,H,prueba,Rd,dpH,fdH,Dobj,sr,ss,h1,yb,yR,B,A,fuente,R0,cv,minF,best,base,alt,yc,ceD,ceI,cem,ceIn,nD:H.length}}
+  const cv=Rd?ccCurva(W,f0,Rd,sr,ss):null,minF=K.rmin/kM;
+  return{s,C,K,W,D0,cq,ml,pulso,kM,kSrc:AR.kSrc,k,kCal,kPri,H,desc,prueba,reg,eMap,Rd,dpH,fdH,Dobj,sr,ss,h1,yb,yR,B,A,fuente,R0,cv,minF,nD:H.length}}
+// mínima: el suelo de la radiación por riego (la de Ajuste del riego si la hay; si no, ~60 % de la acumulada)
+const ccMin=(w,mb)=>mb?(w<mb*1.1?r5w(w*0.7):mb):r5w(w*0.6);
+function ccCalc(cab,s){
+  const P0=ccPre(cab,s),K=P0.K,c=cabById(cab),rep=K.reposo>=0?K.reposo:24,Dobj=P0.Dobj,D0=P0.D0;
+  const todos=c.sectores.map(x=>x.id===s.id?P0:ccPre(cab,x)),act=todos.filter(P=>P.R0&&P.cv&&P.cq&&P.Rd),sin=todos.filter(P=>!act.includes(P)).map(P=>P.s);
+  const J=act.length?ccJoint(act,rep,K.gap):null,ix=act.indexOf(P0);
+  const mkB=i=>J&&i>=0?{wh:J.whs[i],N:J.N[i],D:J.D[i],ev:J.ev[i],cut:P0.ss-2}:null,best=mkB(ix),base=best?{wh:J.base[ix]}:null;
+  const rp=J?{rep,J,sec:act.map((P,i)=>({s:P.s,P,wh:J.whs[i],min:ccMin(J.whs[i],P.C.rb),N:J.N[i],D:J.D[i],Dobj:P.Dobj,ev:J.ev[i],Nlib:J.Nlib[i],Dlib:J.Dlib[i],cola:J.cola[i],drep:J.drep[i]})),sin}:null;
+  // CE: lo de ayer frente a lo que se busca; lo que se lleva la planta (Cu) sale de los días apuntados con CE de entrada y de drenaje
+  const yc=[...D0].reverse().find(x=>x.ceD>0&&x.D!=null),ceD=yc?ccUs(yc.ceD):null,ceI=yc&&yc.ceI>0?ccUs(yc.ceI):null,cem=K.ceT>0?K.ceT:(K.ceMin+K.ceMax)/2;
+  const cus=D0.filter(x=>x.ceI>0&&x.ceD>0&&x.D!=null&&x.D>=0&&x.D<80).slice(-7).map(x=>{const d=x.D/100;return(ccUs(x.ceI)-d*ccUs(x.ceD))/(1-d)}).filter(v=>v>500&&v<3000).sort((a,b)=>a-b),
+    cu=cus.length?cus[Math.floor((cus.length-1)/2)]:1800,ceIn=Dobj*cem+(1-Dobj)*cu;
+  return{...P0,rep,best,base,alt:null,yc,ceD,ceI,cem,ceIn,cu,cuN:cus.length,rp,ix}}
 async function ccCargar(cab,force){if(enClaude())return;const k=ccKey(cab),c=st.ccW[k];if(!force&&c&&(c.cargando||Date.now()-c.t<30*60e3))return;
   st.ccW[k]={...(c||{}),cargando:true,t:Date.now()};const[lat,lon]=k.split(',');
   try{const j=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=sunrise,sunset,shortwave_radiation_sum&hourly=shortwave_radiation,temperature_2m,relative_humidity_2m&timezone=Europe%2FMadrid&past_days=31&forecast_days=2`)).json();
@@ -1862,6 +1895,20 @@ function ccGrafica(X){const w=640,h=320,ml=66,mr=14,mt=34,mb=30,sr=X.sr,ss=X.ss,
   ev.forEach(e=>{const x=px(e.t),c=e.by==='rad'?'ccrad':e.by==='hora'?'cchora':'ccseg';g+=`<line x1="${x}" x2="${x}" y1="${mt+4}" y2="${py(0)}" class="${c}"/><path d="M${x},${mt-6} q8,11 0,19 q-8,-8 0,-19Z" class="${c}f"/>`;
     });
   return `<svg class="ccg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Sol del día con los riegos previstos">${g}</svg>`}
+function ccReparto(X){const R=X.rp;if(!R||!R.sec.length)return '';const w=640,ml=40,mr=14,mt=26,rh=34,n=R.sec.length,h=mt+n*rh+30,x0=Math.floor(X.sr)-0.5,x1=Math.ceil(X.ss)+0.5,px=t=>ml+(t-x0)/(x1-x0)*(w-ml-mr);
+  let g=`<text x="${ml}" y="16" class="ccx">Un solo sector regando a la vez</text>`;
+  for(let t=Math.ceil(x0);t<=x1;t++)if(t%2===0)g+=`<line x1="${px(t).toFixed(1)}" x2="${px(t).toFixed(1)}" y1="${mt-4}" y2="${mt+n*rh}" class="ccl"/><text x="${px(t).toFixed(1)}" y="${h-8}" text-anchor="middle" class="ccx">${t}h</text>`;
+  R.sec.forEach((o,i)=>{const y=mt+i*rh,sel=i===X.ix;g+=`<text x="${ml-6}" y="${y+rh/2+6}" text-anchor="end" class="ccx${sel?' ccv':''}">S${i+1}</text>`;
+    o.ev.forEach(e=>{const x=px(e.t),wd=Math.max(2,px(e.end)-x);g+=`<rect x="${x.toFixed(1)}" y="${y+4}" width="${wd.toFixed(1)}" height="${rh-10}" rx="3" class="ccb${i%4}${sel?' ccbs':''}"/>`})});
+  return `<h4 class="ajr-h4">Reparto del cabezal</h4><svg class="cch" viewBox="0 0 ${w} ${h}" role="img" aria-label="Riegos de cada sector sin coincidir">${g}</svg>
+    <div class="cc-leg">${R.sec.map((o,i)=>`<span><i class="ccsw ccbf${i%4}"></i>S${i+1} ${esc(o.s.nombre)}</span>`).join('')}</div>`}
+function ccRepNotes(X){const R=X.rp;if(!R||X.ix<0)return '';const o=R.sec[X.ix],n=R.sec.length,pm=Math.round(R.sec.reduce((a,q)=>a+q.P.pulso,0)/n),perd=o.Nlib-o.N;let h='';
+  if(perd>=1)h+=`<div class="note ajr-cola"><b>El reposo y la cola te recortan ${perd} riego${perd>1?'s':''}.</b> Con el sol de hoy ${esc(o.s.nombre)} pediría ${o.Nlib} riegos (drenaje ${fmt(o.Dlib,0)} %), pero con ${fmt(R.rep,0)} min de reposo y ${n} sectores en el cabezal salen ${o.N} (drenaje ${fmt(o.D,0)} %).${R.J.repLibre<R.rep?` Hasta <b>${R.J.repLibre} min</b> de reposo no se pierde ningún riego; con más manda el reposo y no el sol.`:' Es el cabezal, que va lleno: manda la cola y no el reposo.'}</div>`;
+  else h+=`<div class="note">El reposo de ${fmt(R.rep,0)} min no frena ningún riego de ${esc(o.s.nombre)} hoy: manda el sol.</div>`;
+  if(n>1)h+=`<div class="note">Con ${n} sectores de unos ${pm} min, el reposo que cierra la rotación sin huecos es <b>${R.J.repRot} min</b> (cada sector espera a que rieguen los demás). Con menos reposo no cambia nada en las horas de más sol, porque el cabezal ya va lleno y la cola los ordena; con más, esperan de más.${o.cola>=5?` Hoy ${esc(o.s.nombre)} espera turno ${fmt(o.cola,0)} min en total.`:''}</div>`;
+  if(R.sin.length)h+=`<div class="note tbad">Sin datos de ${R.sin.map(q=>esc(q.nombre)).join(', ')}: no cuentan en el reparto. Si riegan por el mismo cabezal, la cola real será algo mayor.</div>`;
+  return h}
+function ccTabla(X){const R=X.rp;if(!R)return '';return `<div class="ajo-wrap"><table class="ajo-tb cc-tb cc-all"><thead><tr><th>Sector</th><th>Acumulada</th><th>Mínima</th><th>Duración</th><th>Riegos</th><th>Drenaje</th></tr></thead><tbody>${R.sec.map(o=>`<tr><td>${esc(o.s.nombre)}</td><td><b>${fmt(o.wh,0)}</b></td><td>${fmt(o.min,0)}</td><td>${fmt(o.P.pulso,o.P.pulso%1?1:0)} min</td><td>${o.N}</td><td>${o.D!=null?fmt(Math.max(0,o.D),0):'—'} / ${fmt(o.Dobj*100,0)} %</td></tr>`).join('')}</tbody></table></div><p class="hint">Radiación en Wh/m² · reposo ${fmt(R.rep,0)} min en todos · drenaje esperado / ideal</p>`}
 function vCalcRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();lecCargar();const c=cabById(st.cab);if(!c||!c.sectores.length)return '<section class="card"><div class="note">Este cabezal no tiene sectores.</div></section>';
   const Wa=st.ajrW[ajrKey(st.cab)];if(!Wa||(!Wa.dias&&!Wa.fallo&&!Wa.cargando))ajrCargar(st.cab);const Wc=st.ccW[ccKey(st.cab)];if(!Wc||(!Wc.dia&&!Wc.fallo&&!Wc.cargando))ccCargar(st.cab);
   const g=esGestor(),dis=g?'':'disabled',s=c.sectores.find(x=>x.id===st.ccSec[st.cab])||c.sectores[0],X=ccCalc(st.cab,s),n0=v=>fmt(v,v%1?1:0),b=X.best;
@@ -1871,29 +1918,34 @@ function vCalcRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();
   else if(!X.Rd)h+=`<div class="note">${!Wc||Wc.cargando?'Cargando el sol de hoy…':'Sin previsión de sol para hoy.'}</div>`;
   if(!X.cq)h+=`<div class="note tbad">Esta bandeja no tiene caudal: haz el <b>Aforo</b> (6 piquetas, 10 minutos) y ponlo como caudal de la bandeja. Sin caudal no se puede calcular el agua por riego.</div>`;
   else if(b&&X.Rd){const dif=b.D==null?null:b.D-X.Dobj*100,okD=dif!=null&&Math.abs(dif)<=3,pru=X.prueba;
+    const R=X.rp,xs=R?R.sec[X.ix]:null,mi=xs?xs.min:null;
     h+=`<h4 class="ajr-h4">Pon hoy en la máquina · ${esc(s.nombre)}</h4><div class="ajr-big">
-      <div><span>Radiación de control (por riego)</span><b>${fmt(b.wh,0)}</b><small>Wh/m² · = ${fmt(b.wh/WH,0)} J/cm²</small></div>
-      <div><span>Sol mínimo para regar</span><b>${fmt(X.K.rmin,0)}</b><small>W/m² de la máquina</small></div>
-      <div><span>Último riego</span><b>${ccHm(b.cut)}</b><small>2 h antes de anochecer</small></div>
+      <div><span>Radiación acumulada</span><b>${fmt(b.wh,0)}</b><small>Wh/m² · = ${fmt(b.wh/WH,0)} J/cm²</small></div>
+      <div><span>Radiación mínima</span><b>${mi!=null?fmt(mi,0):'—'}</b><small>Wh/m² · permiso de arranque</small></div>
+      <div><span>Duración del riego</span><b>${n0(X.pulso)}</b><small>min · la del perito</small></div>
+      <div><span>Reposo</span><b>${fmt(X.rep,0)}</b><small>min desde que acaba el riego</small></div>
+      <div><span>Drenaje ideal</span><b>${fmt(X.Dobj*100,0)} %</b><small>el que pide el perito</small></div>
       <div class="${okD?'ok':''}"><span>Riegos previstos</span><b>${b.N}</b><small>${X.C.ini?'1 a las '+esc(X.C.hIni)+' + '+Math.max(0,b.N-1)+' por radiación':'por radiación'}</small></div>
-      <div class="${okD?'ok':''}"><span>Drenaje esperado</span><b>${b.D!=null?fmt(Math.max(0,b.D),0)+' %':'—'}</b><small class="${okD?'ok':'bad'}">buscas ${fmt(X.Dobj*100,0)} %</small></div></div>`;
-    h+=ccGrafica(X);
+      <div class="${okD?'ok':''}"><span>Drenaje esperado</span><b>${b.D!=null?fmt(Math.max(0,b.D),0)+' %':'—'}</b><small class="${okD?'ok':'bad'}">buscas ${fmt(X.Dobj*100,0)} %</small></div>
+      <div><span>Último riego</span><b>${ccHm(b.cut)}</b><small>2 h antes de anochecer</small></div>
+      <div><span>CE de entrada</span><b>${fmt(Math.round(X.ceIn/50)*50,0)}</b><small>µS/cm para ${fmt(X.cem,0)} en el drenaje</small></div></div>`;
+    h+=ccTabla(X)+ccGrafica(X);
     h+=`<div class="cc-leg"><span><i class="ccsw cchoraf"></i>primer riego por hora</span><span><i class="ccsw ccradf"></i>por radiación</span></div>
-      <p class="ajr-p cc-hrs"><b>Riegos:</b> ${b.ev.map(e=>ccHm(e.t)).join(' · ')}</p>`;
+      <p class="ajr-p cc-hrs"><b>Riegos:</b> ${b.ev.map(e=>ccHm(e.t)).join(' · ')}</p>`+ccReparto(X)+ccRepNotes(X);
     // fiabilidad: lo que habría fallado con los días pasados
     if(X.fuente==='cal'&&pru.n>=2){const f=pru.mae<=3;h+=`<div class="note ${f?'':'tbad'}"><b>Fiabilidad:</b> con los ${X.nD} días apuntados, la calculadora habría acertado el drenaje de cada día con <b>±${fmt(pru.mae,1)} puntos</b>${Math.abs(pru.sesgo)>=1.5?` (de media se queda ${pru.sesgo>0?'corta de agua: drena de menos':'larga de agua: drena de más'} ${fmt(Math.abs(pru.sesgo),1)} puntos)`:''}. ${f?'Es suficiente para fiarte de ella.':'Todavía es poco fino: revisa que minutos, riegos y drenaje estén bien apuntados y comprueba las piquetas de las bandejas.'}</div>`}
     else if(X.fuente==='cal')h+=`<div class="note"><b>Calibrando:</b> usa los ${X.nD} días apuntados. Con 5 o más días apuntados te dirá cuánto acierta.</div>`;
     else if(X.fuente==='bandeja')h+=`<div class="note tbad"><b>Aún sin calibrar:</b> solo hay ${X.nD} día${X.nD===1?'':'s'} con minutos, riegos y drenaje apuntados. Calcula con la bandeja de ayer (${fmt(X.yb.D,0)} % de drenaje, control ${fmt(X.yR,0)}). Con 3 días ya se calibra sola.</div>`;
     else h+=`<div class="note tbad"><b>Sin datos de tu finca todavía:</b> usa los valores de partida de la calculadora (k ${fmt(CC_K0,1)}). Apunta en <b>Drenaje</b> los minutos, los riegos y los ml de las bandejas de cada día; con 3 días se calibra sola.</div>`;
+    if(X.desc&&X.desc.length)h+=`<div class="note tbad"><b>Se han ignorado ${X.desc.length} día${X.desc.length>1?'s':''} que no cuadra${X.desc.length>1?'n':''} con el resto:</b> ${X.desc.map(d=>fFecha(d.f)+' (drenaje apuntado '+fmt(d.D,0)+' %)').join(', ')}. Su cuenta de agua se aleja mucho de la de los demás días; revisa en <b>Drenaje</b> los minutos, los riegos y los ml de las bandejas de ${X.desc.length>1?'esos días':'ese día'}.</div>`;
     if(b.D!=null&&!okD&&X.fuente!=='inicio')h+=`<div class="note">Con riegos enteros el drenaje que sale es ${fmt(b.D,0)} % y no el ${fmt(X.Dobj*100,0)} %: es lo más cercano que se puede conseguir hoy con este sol.</div>`;
-    if(X.alt){const q=X.alt;h+=`<div class="note ajr-cola"><b>Para afinar más:</b> con riegos de <b>${n0(q.p)} min</b> en vez de ${n0(X.pulso)} saldrían ${q.best.N} riegos con control ${fmt(q.best.wh,0)} Wh/m² y un drenaje de ${fmt(q.best.D,0)} %, más cerca del ${fmt(X.Dobj*100,0)} % que buscas.${g?` <button class="btn sm" type="button" data-ccpu="${q.p}">Poner ${n0(q.p)} min en el Ajuste del riego</button>`:''}</div>`}
     const fdd=X.fdH!==1?`<br><b>DPV ${fmt(X.dpH,2)} kPa:</b> ${X.fdH<1?'aire seco, la planta bebe más':'aire muy húmedo, la planta bebe menos'} (×${fmt(X.fdH,2)} ya aplicado).`:'';
     h+=`<div class="note"><b>Agua por riego:</b> ${fmt(X.cq,0)} ml/min de bandeja ÷ ${AF.n} piquetas × ${n0(X.pulso)} min = <b>${fmt(X.ml,0)} ml por piqueta</b>; tiene que salir ~${fmt(X.ml*X.Dobj,0)} ml (${fmt(X.Dobj*100,0)} %).${fdd}${X.kSrc==='supuesto'?'<br>La máquina frente al sol de la previsión se supone igual (1,00): apunta la «Radiación» de la máquina en Drenaje o lee el uCrop para afinar.':''}</div>`;
     h+=`<div class="row"><button class="btn pri" data-cc="copiar">Copiar ajustes</button><span id="cc_ok" class="hint"></span></div>`}
   h+=`</section>`;
   // ---- conductividad
   const yc=X.yc;h+=`<section class="card"><div><h3>Conductividad (CE)</h3><div class="sub">Entrada y drenaje de ${esc(s.nombre)}</div></div>`;
-  h+=`<p class="ajr-p">Para un drenaje de <b>${fmt(X.cem,0)} µS</b> (entre ${fmt(X.K.ceMin,0)} y ${fmt(X.K.ceMax,0)}) con ${fmt(X.Dobj*100,0)} % de drenaje, la CE de entrada tiene que andar por <b>${fmt(Math.round(X.ceIn/50)*50,0)} µS</b>.${X.ceI?` Ayer entró con ${fmt(X.ceI,0)} µS.`:''}</p>`;
+  h+=`<p class="ajr-p">Para un drenaje de <b>${fmt(X.cem,0)} µS</b> con ${fmt(X.Dobj*100,0)} % de drenaje, la CE de entrada tiene que andar por <b>${fmt(Math.round(X.ceIn/50)*50,0)} µS</b>.${X.ceI?` Ayer entró con ${fmt(X.ceI,0)} µS.`:''} <span class="hint">Cálculo: ${fmt(X.Dobj,2)} × ${fmt(X.cem,0)} + ${fmt(1-X.Dobj,2)} × ${fmt(X.cu,0)} (lo que se lleva la planta, ${X.cuN?'sacado de tus '+X.cuN+' días':'valor de partida'}).</span></p>${X.cem>4500?`<div class="note tbad">Ojo: un drenaje de ${fmt(X.cem,0)} µS está por encima de lo que suele aguantar el tomate sin perder cosecha (la bibliografía de Cajamar/IFAPA la ve caer a partir de unos 3.800–4.500 µS en la zona de raíz). Tiene sentido si lo buscáis por calidad y lo decide el perito; ve tocando la CE de entrada de 100 en 100 µS.</div>`:''}`;
   if(yc&&X.ceD!=null){const Dy=yc.D,hi=X.ceD>X.K.ceMax,lo=X.ceD<X.K.ceMin,dH=Dy>X.Dobj*100+3,dL=Dy<X.Dobj*100-3;let a='CE del drenaje en rango: no toques la CE.';
     if(hi)a=dL?'CE alta y drenaje bajo: primero riega más (ya lo hace el cálculo de hoy), no toques la CE.':dH?'CE alta aunque drenas de más: baja la CE de entrada 100–200 µS.':'CE alta con el drenaje bien: baja la CE de entrada 100–200 µS.';
     if(lo)a=dH?'CE baja y drenaje alto: primero riega menos (ya lo hace el cálculo de hoy), no toques la CE.':dL?'CE baja aunque drenas poco: sube la CE de entrada 100–200 µS.':'CE baja con el drenaje bien: sube la CE de entrada 100–200 µS.';
@@ -1904,7 +1956,10 @@ function vCalcRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();
   // ---- datos que usa y ajustes
   const fu=(t,ok)=>`<small class="cc-src ${ok?'':'cc-no'}">${t}</small>`;
   h+=`<section class="card"><div><h3>Datos que usa</h3><div class="sub">Todo sale de la app; lo que se puede cambiar, aquí</div></div><div class="frm">
-    <div class="field"><label for="cc_dr">Drenaje que buscas</label><div class="inp"><input id="cc_dr" data-cc="dObj" inputmode="decimal" value="${inVal(X.C.dren??25)}" ${dis}><span class="u">%</span></div>${fu('el mismo del Ajuste del riego',1)}</div>
+    <div class="field"><label for="cc_dr">Drenaje que pide el perito</label><div class="inp"><input id="cc_dr" data-cc="dObj" inputmode="decimal" value="${inVal(X.C.dren??25)}" ${dis}><span class="u">%</span></div>${fu('el mismo del Ajuste del riego',1)}</div>
+    <div class="field"><label for="cc_pu">Duración de cada riego (perito)</label><div class="inp"><input id="cc_pu" data-cc="pulso" inputmode="decimal" value="${inVal(X.pulso)}" ${dis}><span class="u">min</span></div>${fu('el mismo del Ajuste del riego',1)}</div>
+    <div class="field"><label for="cc_re">Reposo (desde que acaba el riego)</label><div class="inp"><input id="cc_re" data-cc="reposo" inputmode="decimal" value="${inVal(X.rep)}" ${dis}><span class="u">min</span></div>${fu('el mismo en todos los sectores',1)}</div>
+    <div class="field"><label for="cc_ct">CE del drenaje que necesitas</label><div class="inp"><input id="cc_ct" data-cc="ceT" inputmode="decimal" value="${inVal(X.K.ceT)}" placeholder="${fmt(X.cem,0)}" ${dis}><span class="u nt">µS/cm</span></div>${fu('vacío = mitad entre mínima y máxima',1)}</div>
     <div class="field"><label for="cc_rm">Sol mínimo para regar</label><div class="inp"><input id="cc_rm" data-cc="rmin" inputmode="decimal" value="${inVal(X.K.rmin)}" ${dis}><span class="u nt">W/m²</span></div></div>
     <div class="field"><label for="cc_gp">Máximo sin regar (0 = sin límite)</label><div class="inp"><input id="cc_gp" data-cc="gap" inputmode="decimal" value="${inVal(X.K.gap)}" ${dis}><span class="u">h</span></div></div>
     <div class="field"><label for="cc_pp">Piquetas por metro de línea</label><div class="inp"><input id="cc_pp" data-cc="ppm" inputmode="decimal" value="${inVal(X.K.ppm)}" ${dis}></div>${fu('solo para el valor de partida de k',1)}</div>
@@ -1919,18 +1974,21 @@ function vCalcRiego(){if(st.hist===null)loadHist();if(st.crec===null)loadCrec();
     <tr><td>k (agua por piqueta y J/cm²)</td><td><b>${fmt(X.k,3)}</b> ml</td><td>${fu(X.kCal!=null?X.nD+' días de tu finca':'valor de partida',X.kCal!=null)}</td></tr></tbody></table></section>`;
   // ---- cómo se ha calculado
   if(X.Rd&&X.ml){const L=[];L.push(`Agua por piqueta y riego: ${fmt(X.cq,0)} ÷ ${AF.n} × ${n0(X.pulso)} = <b>${fmt(X.ml,0)} ml</b>`);L.push(`Se queda la planta: ${fmt(X.ml,0)} × (1 − ${fmt(X.Dobj,2)}) = <b>${fmt(X.ml*(1-X.Dobj),0)} ml</b>`);
-    L.push(`k: <b>${fmt(X.k,3)}</b> ml por piqueta y J/cm²${X.kCal!=null?` (mediana ponderada de ${X.nD} días)`:` (valor de partida: ${fmt(CC_K0,1)} ÷ ${fmt(X.K.ppm/X.K.sep,2)} piquetas/m²)`}`);
+    L.push(`k: <b>${fmt(X.k,3)}</b> ml por piqueta y J/cm²${X.kCal!=null?` (media ponderada de ${X.nD} días${X.desc&&X.desc.length?', sin '+X.desc.length+' que no cuadra'+(X.desc.length>1?'n':''):''})`:` (valor de partida: ${fmt(CC_K0,1)} ÷ ${fmt(X.K.ppm/X.K.sep,2)} piquetas/m²)`}`);
     L.push(`Aire de hoy: ${X.dpH!=null?'DPV '+fmt(X.dpH,2)+' kPa':'sin datos'} → ×${fmt(X.fdH,2)}`);
     L.push(`Por fórmula: ${fmt(X.ml*(1-X.Dobj),0)} ÷ ${fmt(X.k,3)} × ${fmt(X.fdH,2)} = <b>${fmt(X.ml*(1-X.Dobj)/X.k*X.fdH,0)} J/cm²</b> del sol de la previsión${X.fuente==='cal'||X.fuente==='inicio'?'<span class="tag">usada</span>':''}`);
     if(X.B!=null)L.push(`Por la bandeja de ayer: ${fmt(X.yR,0)} × (1 − ${fmt(X.Dobj,2)}) ÷ (1 − ${fmt(X.yb.D/100,2)}) × aire = <b>${fmt(X.B,0)} Wh/m²</b>${X.fuente==='bandeja'?'<span class="tag">usada</span>':''}`);
     L.push(`En la máquina: × ${fmt(X.kM,2)} × ${fmt(WH,2)} = <b>${X.A!=null?fmt(X.A,0):'—'} Wh/m²</b> por fórmula${X.base?`; afinado a ${fmt(X.best.wh,0)} para que los riegos enteros den el drenaje más cercano`:''}`);
-    L.push(`Se simula el sol de hoy hora a hora con arranque a ${fmt(X.K.rmin,0)} W/m² (de la máquina) y corte a las ${ccHm(X.ss-2)}: salen <b>${b?b.N:'—'}</b> riegos`);
+    L.push(`Se simula el sol de hoy minuto a minuto con <b>todos los sectores del cabezal a la vez</b>: un sector arranca cuando ha pasado su reposo (${fmt(X.rep,0)} min desde que acaba su riego), ha juntado la radiación y el cabezal está libre; si no, espera su turno. Arranque a ${fmt(X.K.rmin,0)} W/m², corte a las ${ccHm(X.ss-2)}: salen <b>${b?b.N:'—'}</b> riegos`);
+    L.push(`La mínima es el suelo de la radiación por riego (la de Ajuste del riego o ~60 % de la acumulada). Mientras sea menor que la acumulada, manda la acumulada. Comprueba el primer día: si tu máquina arranca al llegar a la mínima, avísame y lo cambio.`);
     h+=`<section class="card"><details class="ajr-det"><summary>Cómo se ha calculado</summary><ol class="ajr-ol">${L.map(x=>`<li>${x}</li>`).join('')}</ol></details></section>`}
+  if(X.H&&X.H.length){const g=X.reg,rg=g?`<p class="ajr-p">Agua que se lleva la planta (ml por piqueta y día) frente al sol: <b>${fmt(g.a,0)} ml</b> con sol cero + <b>${fmt(g.b,3)} ml</b> por cada J/cm²; ajuste r² = <b>${fmt(g.r2,2)}</b>. ${g.a>0.25*g.my?'La parte «con sol cero» es grande: la planta bebe aunque haya poco sol y una k fija se queda corta en días nublados. Si no cuadran los días de poco sol, es la fórmula.':g.r2<0.5?'El sol explica poco el agua que se lleva la planta: mira si los datos de esos días son fiables.':'Sube en proporción al sol: la fórmula con k fija es razonable.'}</p>`:'';
+    h+=`<section class="card"><details class="ajr-det"><summary>Día a día: ¿falla la fórmula o los datos?</summary>${rg}<div class="ajo-wrap"><table class="ajo-tb cc-tb cc-dia"><thead><tr><th>Día</th><th>Sol</th><th>Min</th><th>Drenaje apuntado</th><th>Habría dado</th></tr></thead><tbody>${X.H.map(d=>{const e=X.eMap[d.f];return`<tr><td>${fFecha(d.f)}</td><td>${fmt(d.R,0)}</td><td>${fmt(d.x.M,0)}</td><td>${fmt(d.D,0)} %</td><td>${e?fmt(e.Dp,0)+' %':'—'}</td></tr>`}).join('')}</tbody></table></div><p class="hint">Sol en J/cm². «Habría dado» = el drenaje que habría calculado la calculadora con los días de antes, sin mirar ese día. Si los errores van con el sol (siempre se pasa en días nublados, por ejemplo), es la fórmula; si saltan al azar, son los datos.</p></details></section>`}
   return h}
 document.addEventListener('click',e=>{if(st.tab!=='calcriego'||!e.target.closest)return;const sb=e.target.closest('[data-ccs]');if(sb){st.ccSec[st.cab]=sb.dataset.ccs;renderMain();return}
   const b=e.target.closest('[data-cc]');if(!b)return;if(b.dataset.cc==='recargar'){ccCargar(st.cab,true);return}
   if(b.dataset.cc==='copiar'){const c=cabById(st.cab),s=c.sectores.find(x=>x.id===st.ccSec[st.cab])||c.sectores[0],X=ccCalc(st.cab,s),q=X.best;if(!q)return;
-    const t=`Ajuste de riego ${new Date().toLocaleDateString('es-ES')} · ${c.nombre} · ${s.nombre}\nRadiación de control: ${fmt(q.wh,0)} Wh/m² (${fmt(q.wh/WH,0)} J/cm²)\nSol mínimo para regar: ${fmt(X.K.rmin,0)} W/m²\nÚltimo riego: ${ccHm(q.cut)}\nRiegos previstos: ${q.N}${X.C.ini?' (el primero a las '+X.C.hIni+')':''}\nDrenaje esperado: ${q.D!=null?fmt(q.D,0):'—'} % (buscas ${fmt(X.Dobj*100,0)} %)\nCE de entrada orientativa: ${fmt(Math.round(X.ceIn/50)*50,0)} µS/cm`;
+    const R=X.rp,t=`Ajuste de riego ${new Date().toLocaleDateString('es-ES')} · ${c.nombre}\nReposo: ${fmt(X.rep,0)} min (desde que acaba el riego) · primer riego por hora: ${X.C.ini?X.C.hIni:'no'} · último riego: ${ccHm(q.cut)}\n`+(R?R.sec.map(o=>`${o.s.nombre}: acumulada ${fmt(o.wh,0)} Wh/m² (${fmt(o.wh/WH,0)} J/cm²) · mínima ${fmt(o.min,0)} · riego ${fmt(o.P.pulso,o.P.pulso%1?1:0)} min · ${o.N} riegos · drenaje esperado ${o.D!=null?fmt(Math.max(0,o.D),0):'—'} % (ideal ${fmt(o.Dobj*100,0)} %)`).join('\n')+'\n':'')+`Radiación de control: ${fmt(q.wh,0)} Wh/m² (${s.nombre})\nCE de entrada orientativa: ${fmt(Math.round(X.ceIn/50)*50,0)} µS/cm para ${fmt(X.cem,0)} µS en el drenaje`;
     const ok=m=>{const o=document.getElementById('cc_ok');if(o){o.textContent=m;setTimeout(()=>{o.textContent=''},2500)}};
     try{navigator.clipboard.writeText(t).then(()=>ok('Copiado'),()=>ok('No se pudo copiar'))}catch(err){ok('No se pudo copiar')}}});
 document.addEventListener('click',e=>{if(st.tab!=='calcriego'||!e.target.closest)return;const pb=e.target.closest('[data-ccpu]');if(!pb||!esGestor())return;const c=cabById(st.cab),sc=c.sectores.find(x=>x.id===st.ccSec[st.cab])||c.sectores[0],
@@ -1938,7 +1996,9 @@ document.addEventListener('click',e=>{if(st.tab!=='calcriego'||!e.target.closest
 document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='calcriego'||!t.dataset||!t.dataset.cc||!esGestor())return;const k=t.dataset.cc,v=num(t.value),cab=st.cab;
   if(k==='dObj'){const c=cabById(cab),s=c.sectores.find(x=>x.id===st.ccSec[cab])||c.sectores[0],A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[cab]={...(A[cab]||{})};x.sec={...(x.sec||{})};
     if(v!=null&&(v<5||v>60)){toast('Pon un drenaje entre 5 y 60 %.');renderMain();return}x.sec[s.id]={...(x.sec[s.id]||{}),dren:v==null?undefined:v}}
-  else if(['ceMin','ceMax','rmin','gap','ppm','sep'].includes(k)){if(v!=null&&v<0){renderMain();return}const A=st.cfg.calc={...(st.cfg.calc||{})};A[cab]={...(A[cab]||{}),[k]:v==null?undefined:v}}
+  else if(k==='pulso'){const c=cabById(cab),s=c.sectores.find(x=>x.id===st.ccSec[cab])||c.sectores[0],A=st.cfg.ajr={...(st.cfg.ajr||{})},x=A[cab]={...(A[cab]||{})};x.sec={...(x.sec||{})};
+    if(v!=null&&(v<1||v>60)){toast('Pon una duración entre 1 y 60 minutos.');renderMain();return}x.sec[s.id]={...(x.sec[s.id]||{}),pulso:v==null?undefined:v}}
+  else if(['ceMin','ceMax','ceT','reposo','rmin','gap','ppm','sep'].includes(k)){if(v!=null&&v<0){renderMain();return}const A=st.cfg.calc={...(st.cfg.calc||{})};A[cab]={...(A[cab]||{}),[k]:v==null?undefined:v}}
   else return;st.dirtyCfg=true;renderSave();renderMain()});
 /* ---------- M³ del mes: la hoja del contador ----------
    Día a día del mes, los m³ de cada zona (cabezal de la app) y lo que llevan acumulado, y la suma por cabezal de verdad
