@@ -39,6 +39,13 @@ Cada día, a la hora que se elija en Ajustes → **Resumen diario** (por defecto
 - Prueba a mano (solo al administrador, sin gastar el aviso del día): `POST https://<puente>.workers.dev/resumen` con `Authorization: Bearer <PUENTE_TOKEN>` y cuerpo `{}`. Con `{"todos":true}` lo manda a todos los destinatarios.
 - Pruebas: `fuente/pruebas/datos/prueba-resumen-diario.mjs` y `fuente/pruebas/t167.py`.
 
+## Boletín de drenajes (cada 15, 30 o 60 min mientras se riega)
+Con el aviso encendido en Ajustes → **Boletín de drenajes** (viene apagado), el puente manda a administrador y encargados el % de drenaje de hoy de cada sector con lo último que leyó el uCrop: «Franco D1 22 % · D2 18 %». Por Telegram añade los riegos de hoy y el drenaje del último riego. Cada boletín sustituye al anterior en el móvil (mismo `tag`).
+- Horario por defecto de 8:00 a 19:00 (se cambia en Ajustes). Un solo boletín por tramo; si el servidor de avisos falla, el tramo no se da por hecho y se reintenta en la pasada siguiente. Si el lector del ordenador no manda nada hoy, no sale ningún aviso vacío.
+- El ritmo real lo marca el Cron del puente: con `*/5 * * * *` sale en punto (:00, :30); con `*/30 * * * *` también, pero «cada 15 min» quedaría en 30. Se apunta en `abonado_lecturas/BOLETIN-ESTADO`.
+- Prueba a mano (solo al administrador): `POST https://<puente>.workers.dev/boletin` con `Authorization: Bearer <PUENTE_TOKEN>` y cuerpo `{}`. Con `{"todos":true}` a todos los destinatarios.
+- Hace falta lo mismo que el resumen diario (`AVISOS_SVC`, `INTERNO_TOKEN`, `ADMIN_EMAIL`, `avisos-worker.js` al día). Pruebas: `fuente/pruebas/datos/prueba-boletin-drenajes.mjs` y `fuente/pruebas/t171.py`.
+
 ## Límites y detalles
 - El plan gratuito de Cloudflare admite ~50 peticiones por ejecución. El servidor lleva la cuenta: si en un aviso no caben todas las personas, el resto sale en la pasada siguiente (5 min) en los avisos programados. La app manda en grupos de 6.
 - El botón de prueba del móvil («Probar con la app cerrada») no escribe a Telegram.

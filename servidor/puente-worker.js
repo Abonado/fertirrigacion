@@ -288,6 +288,17 @@ async function leerDoc(env, ruta, mask) {
   try { const d = await fs(env, 'GET', ruta + (mask ? '?' + mask.map(k => 'mask.fieldPaths=' + k).join('&') : '')); return Object.fromEntries(Object.entries(d.fields || {}).map(([k, x]) => [k, deFS(x)])); }
   catch (e) { return /firestore 404/.test(e.message) ? null : Promise.reject(e); }
 }
+/* A quién va un aviso de grupo: administrador + encargados con la cuenta activa; cada uno ve solo sus fincas y zonas, así que se agrupan los que ven lo mismo.
+   Devuelve Map «cabezales» → {ids, para:[correos]}; vacío si no hay nadie. */
+async function gruposDestino(env, cfg, soloAdmin) {
+  const acc = await leerDoc(env, '/abonado_acceso/usuarios', ['emails', 'info']) || {}, info = acc.info || {}, lista = Array.isArray(acc.emails) ? acc.emails.map(e => String(e).toLowerCase()) : [];
+  const admin = String(env.ADMIN_EMAIL || '').toLowerCase(), esAdm = e => e === admin || !!(info[e] || {}).admin;
+  let dest = [...new Set([...(admin ? [admin] : []), ...lista])].filter(e => (e === admin || lista.includes(e)) && (esAdm(e) || !!(info[e] || {}).encargado));
+  if (soloAdmin) dest = dest.filter(e => e === admin);
+  const grupos = new Map();
+  for (const e of dest) { const ids = cabsVisibles(cfg, info[e] || {}, esAdm(e)); if (!ids.length) continue; const k = ids.join('|'); if (!grupos.has(k)) grupos.set(k, { ids, para: [] }); grupos.get(k).para.push(e); }
+  return grupos;
+}
 /* opc: {forzar: sin mirar hora ni repetición, soloAdmin: solo al administrador (prueba), ahora: reloj para pruebas} */
 async function resumenDiario(env, opc) {
   opc = opc || {};
@@ -299,14 +310,8 @@ async function resumenDiario(env, opc) {
   if (!opc.forzar && (h < hora || h >= hora + 4)) return { enviado: false, motivo: 'fuera_de_hora' };
   const est = await leerDoc(env, '/abonado_lecturas/RESUMEN-ESTADO') || {}, mismoDia = est.dia === hoy;
   if (!opc.forzar && mismoDia && (est.ok || (est.n || 0) >= 3)) return { enviado: false, motivo: est.ok ? 'ya_enviado' : 'demasiados_intentos' };
-  const acc = await leerDoc(env, '/abonado_acceso/usuarios', ['emails', 'info']) || {}, info = acc.info || {}, lista = Array.isArray(acc.emails) ? acc.emails.map(e => String(e).toLowerCase()) : [];
-  const admin = String(env.ADMIN_EMAIL || '').toLowerCase(), esAdm = e => e === admin || !!(info[e] || {}).admin;
-  let dest = [...new Set([...(admin ? [admin] : []), ...lista])].filter(e => (e === admin || lista.includes(e)) && (esAdm(e) || !!(info[e] || {}).encargado));
-  if (opc.soloAdmin) dest = dest.filter(e => e === admin);
-  if (!dest.length) return { enviado: false, motivo: 'sin_destinatarios' };
-  const [rh, ra] = await Promise.all([leerDoc(env, '/abonado_registros/' + hoy).catch(() => null), leerDoc(env, '/abonado_registros/' + ayer).catch(() => null)]);
-  const grupos = new Map();   // cada persona ve solo sus fincas y zonas: se agrupan las que ven lo mismo
-  for (const e of dest) { const ids = cabsVisibles(cfg, info[e] || {}, esAdm(e)); if (!ids.length) continue; const k = ids.join('|'); if (!grupos.has(k)) grupos.set(k, { ids, para: [] }); grupos.get(k).para.push(e); }
+  const [rh, ra, grupos] = await Promise.all([leerDoc(env, '/abonado_registros/' + hoy).catch(() => null), leerDoc(env, '/abonado_registros/' + ayer).catch(() => null), gruposDestino(env, cfg, opc.soloAdmin)]);
+  if (!grupos.size) return { enviado: false, motivo: 'sin_destinatarios' };
   if (!opc.forzar) await fs(env, 'PATCH', '/abonado_lecturas/RESUMEN-ESTADO?updateMask.fieldPaths=dia&updateMask.fieldPaths=n&updateMask.fieldPaths=ok', { fields: { dia: aFS(hoy), n: aFS((mismoDia ? est.n || 0 : 0) + 1), ok: aFS(false) } });
   let llamadas = 0, buenas = 0, personas = 0, enviados = 0, errores = [];
   for (const g of grupos.values()) {
@@ -322,6 +327,65 @@ async function resumenDiario(env, opc) {
   }
   if (!opc.forzar && buenas) await fs(env, 'PATCH', '/abonado_lecturas/RESUMEN-ESTADO?updateMask.fieldPaths=ok', { fields: { ok: aFS(true) } }).catch(() => {});
   return { enviado: buenas > 0, personas, enviados, grupos: grupos.size, ...(errores.length ? { errores } : {}) };
+}
+
+/* ---------- boletín de drenajes (cada 15, 30 o 60 min mientras se riega) ----------
+   Lo último que mandó el lector del uCrop de cada cabezal (abonado_lecturas/UCR-<CAB>_<fecha>, último punto): % de drenaje de hoy de cada sector y los riegos.
+   Ajuste en la app: abonado_config/finca → boletin {on, cada: 15|30|60, desde, hasta}. Sin nada puesto: APAGADO (es un aviso nuevo; lo enciende la persona).
+   Estado: abonado_lecturas/BOLETIN-ESTADO {dia, slot}. Un solo aviso por tramo de «cada» minutos; el móvil sustituye el anterior (mismo tag). */
+const hm = t => new Date(t).toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false });
+function textoBoletin(cfg, ids, ult, t) {
+  const nom = id => ((cfg.cabezales || []).find(c => c && c.id === id) || {}).nombre || id, cortos = [], largos = [];
+  for (const id of ids) {
+    const u = ult[id], n = nom(id);
+    if (!u) { largos.push(`${n}\nSin lectura hoy`); continue; }
+    const rancia = t - u.t > 40 * 60000, dr = (u.v.dren || []).filter(d => d && d.n).sort((a, b) => a.n - b.n);
+    const pct = d => d.rH > 0 && d.drH != null ? d.drH / d.rH * 100 : d.dH;
+    const f = d => `D${d.n} ${pct(d) == null ? '—' : Math.round(pct(d)) + ' %'}`;
+    if (!dr.length) { largos.push(`${n}\nSin lectura de drenajes`); continue; }
+    cortos.push(`${n} ${dr.map(f).join(' · ')}`);
+    largos.push(`${n}${rancia ? ` (última lectura a las ${hm(u.t)})` : ''}\n${dr.map(d => `${f(d)}${d.act != null ? ` · ${Math.round(d.act)} riegos` : ''}${d.dU != null ? ` · último ${Math.round(d.dU)} %` : ''}`).join('\n')}`);
+  }
+  return { hay: cortos.length > 0, titulo: `Drenajes · ${hm(t)}`, cuerpo: corto(cortos.join('\n') || 'Sin lecturas', 280), cuerpoTg: corto(largos.join('\n\n'), 1700) };
+}
+/* Último punto de hoy de cada cabezal (null si no hay). */
+async function ultimosRiego(env, ids, hoy) {
+  const out = {};
+  await Promise.all(ids.map(async id => {
+    const d = await leerDoc(env, `/abonado_lecturas/UCR-${id.toUpperCase()}_${hoy}`, ['p']).catch(() => null), p = d && Array.isArray(d.p) ? d.p : [];
+    const u = p.filter(x => x && x.t && x.v).sort((a, b) => a.t - b.t).at(-1); if (u) out[id] = u;
+  }));
+  return out;
+}
+/* opc: {forzar: sin mirar hora ni tramo, soloAdmin: solo al administrador (prueba), ahora: reloj para pruebas} */
+async function boletinDrenajes(env, opc) {
+  opc = opc || {};
+  if (!(env.AVISOS_SVC || env.AVISOS_URL) || !env.INTERNO_TOKEN) return { enviado: false, motivo: 'sin_avisos' };
+  const t = opc.ahora || Date.now(), hoy = hoyMadrid(t), parts = new Date(t).toLocaleString('en-GB', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit', hour12: false }).split(':'), min = (+parts[0] % 24) * 60 + +parts[1];
+  const cfg = await leerDoc(env, '/abonado_config/finca', ['boletin', 'alertas', 'cabezales', 'fincas']) || {}, aj = cfg.boletin || {};
+  if (!aj.on && !opc.forzar) return { enviado: false, motivo: 'apagado' };
+  const cada = [15, 30, 60].includes(aj.cada) ? aj.cada : 30, desde = Number.isInteger(aj.desde) && aj.desde >= 0 && aj.desde <= 23 ? aj.desde : 8, hasta = Number.isInteger(aj.hasta) && aj.hasta >= 1 && aj.hasta <= 24 ? aj.hasta : 19;
+  if (!opc.forzar && (min < desde * 60 || min >= hasta * 60)) return { enviado: false, motivo: 'fuera_de_hora' };
+  const slot = Math.floor(min / cada), est = await leerDoc(env, '/abonado_lecturas/BOLETIN-ESTADO') || {};
+  if (!opc.forzar && est.dia === hoy && est.slot === slot) return { enviado: false, motivo: 'ya_enviado' };
+  const [grupos, todos] = await Promise.all([gruposDestino(env, cfg, opc.soloAdmin), Promise.resolve((cfg.cabezales || []).map(c => c && c.id).filter(Boolean))]);
+  if (!grupos.size) return { enviado: false, motivo: 'sin_destinatarios' };
+  const ult = await ultimosRiego(env, todos, hoy);
+  if (!Object.keys(ult).length) return { enviado: false, motivo: 'sin_lecturas' };   // de noche o con el lector parado: no se manda un aviso vacío
+  let llamadas = 0, buenas = 0, personas = 0, errores = [];
+  for (const g of grupos.values()) {
+    const x = textoBoletin(cfg, g.ids, ult, t); if (!x.hay) continue;
+    for (let i = 0; i < g.para.length && llamadas < 20; i += 5) {
+      const para = g.para.slice(i, i + 5); llamadas++;
+      try {
+        const r = await avisosFetch(env, { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.INTERNO_TOKEN },
+          body: JSON.stringify({ para, titulo: x.titulo, cuerpo: x.cuerpo, cuerpoTg: x.cuerpoTg, tag: 'boletin-drenaje', tab: 'ajriego' }) });
+        if (r.ok) { buenas++; personas += para.length; } else errores.push(r.status);
+      } catch (e) { errores.push('red'); }
+    }
+  }
+  if (!opc.forzar && buenas) await fs(env, 'PATCH', '/abonado_lecturas/BOLETIN-ESTADO?updateMask.fieldPaths=dia&updateMask.fieldPaths=slot', { fields: { dia: aFS(hoy), slot: aFS(slot) } }).catch(() => {});   // el tramo solo se da por hecho si salió; si no, se reintenta en 5 min
+  return { enviado: buenas > 0, personas, grupos: grupos.size, ...(errores.length ? { errores } : {}) };
 }
 
 /* ---------- entradas ---------- */
@@ -347,6 +411,10 @@ export default {
         if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
         return json(await resumenDiario(env, { forzar: true, soloAdmin: !b.todos }));
       }
+      if (ruta === 'boletin') {   // prueba a mano: manda el boletín ahora, solo al administrador (o a todos con «todos»: true)
+        if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
+        return json(await boletinDrenajes(env, { forzar: true, soloAdmin: !b.todos }));
+      }
       if (ruta === 'clima') {
         if (!env.PUENTE_TOKEN || !igual(tk, env.PUENTE_TOKEN)) return json({ error: 'clave' }, 401);
         return json(await registrarClima(env, b));
@@ -362,5 +430,5 @@ export default {
     } catch (e) { return json({ error: 'servidor', detalle: corto(e.message, 200) }, 500); }
     return json({ error: 'ruta' }, 404);
   },
-  async scheduled(event, env, ctx) { ctx.waitUntil(Promise.all([revisar(env).catch(() => {}), revisarClima(env).catch(() => {}), resumenDiario(env).catch(() => {})])); }
+  async scheduled(event, env, ctx) { ctx.waitUntil(Promise.all([revisar(env).catch(() => {}), revisarClima(env).catch(() => {}), resumenDiario(env).catch(() => {}), boletinDrenajes(env).catch(() => {})])); }
 };
