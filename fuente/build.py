@@ -141,6 +141,7 @@ with zipfile.ZipFile(out/'lector-gasolinera-chrome.zip','w',zipfile.ZIP_DEFLATED
             n = d.replace('"Agro FLY · Lector del clima y del riego"'.encode(), '"Agro FLY · Lector Gasolinera (Chrome)"'.encode()); assert n != d; d = n
         if f.name == 'LEEME.txt': d = LEEME_CHROME.encode() + b'\n\n' + d
         z.writestr('lector-gasolinera-chrome/'+f.name, d)
+shutil.copy('alta.js', out/'alta.js')              # Alta guiada de una empresa nueva (solo el administrador; se carga al abrirla)
 shutil.copy('taller/taller.js', out/'taller.js')          # Taller de sensores (solo el administrador; se carga al abrirlo)
 shutil.copy('taller/catalogo.js', out/'catalogo.js')    # Catálogo de tecnología agrícola (solo el administrador; se carga al abrirlo)
 # Guías de montaje del catálogo (solo el administrador; se carga al abrir una ficha): el visor y las guías van en un solo archivo
