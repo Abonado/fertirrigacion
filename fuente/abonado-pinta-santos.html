@@ -2481,17 +2481,21 @@ scrollRaton($('#tabs'));scrollRaton($('#cabs'));
 function banner(){return ''}
 
 const esSuelo=c=>!!(c&&c.suelo);
+/* En suelo las cuentas se reparten por hectárea o, en árboles (LA TORRE), por árbol: lo gastado en g o ml por árbol */
+const esArbol=c=>esSuelo(c)&&c.arboles>0,uArb=p=>uCant(p)==='L'?'ml':'g';
 const pctDe=(b,x)=>conc(b,x)/10;   // % en el depósito (12 % = 120 kg por 1000 L)
 function pctPon(b,p,pct){const pp=b.productos.find(x=>x.p===b.principal),x=b.productos.find(y=>y.p===p);if(!pp||!x||!(pct>=0))return;
   if(p===b.principal){const antes=b.productos.map(y=>[y,conc(b,y)]);if(!(pp.dosis>0))pp.dosis=1;b.kgPrincipal=pct*10;for(const[y,cc]of antes)if(y!==pp)y.dosis=b.kgPrincipal>0?cc*pp.dosis/b.kgPrincipal:y.dosis}
   else x.dosis=b.kgPrincipal>0?pct*10*pp.dosis/b.kgPrincipal:0}
 /* Cuentas en suelo: los L gastados del depósito, y de cada producto lo gastado y por hectárea */
-function sueloCuentas(b,c){const L=litros(b,c.id),ha=c.ha||0;let h=nivelHTML(b);
-  h+=`<div class="tbl"><table class="suelo"><thead><tr><th>Producto</th><th>%</th><th>Gastado</th><th>Por hectárea${ha?` <small>(÷ ${fmt(ha,ha%1?1:0)} ha)</small>`:''}</th></tr></thead><tbody>`;
+function sueloCuentas(b,c){const L=litros(b,c.id),ha=c.ha||0,ar=esArbol(c)?c.arboles:0;let h=nivelHTML(b);
+  h+=`<div class="tbl"><table class="suelo"><thead><tr><th>Producto</th><th>%</th><th>Gastado</th>${ar?`<th>Por árbol <small>(÷ ${fmt(ar,0)} árboles)</small></th>`:`<th>Por hectárea${ha?` <small>(÷ ${fmt(ha,ha%1?1:0)} ha)</small>`:''}</th>`}</tr></thead><tbody>`;
   for(const x of b.productos){const q=L==null?null:L*conc(b,x)/1000;
-    h+=`<tr data-sp="${x.p}"><td>${esc(prod(x.p).n)}</td><td>${fmt(pctDe(b,x),pctDe(b,x)%1?1:0)} %</td><td><b>${q==null?'—':fmt(q,1)+' '+uCant(x.p)}</b></td><td><b>${q==null||!ha?'—':fmt(q/ha,2)+' '+uCant(x.p)+'/ha'}</b></td></tr>`}
+    h+=`<tr data-sp="${x.p}"><td>${esc(prod(x.p).n)}</td><td>${fmt(pctDe(b,x),pctDe(b,x)%1?1:0)} %</td><td><b>${q==null?'—':fmt(q,1)+' '+uCant(x.p)}</b></td><td><b>${ar?(q==null?'—':fmt(q*1000/ar,1)+' '+uArb(x.p)+'/árbol'):(q==null||!ha?'—':fmt(q/ha,2)+' '+uCant(x.p)+'/ha')}</b></td></tr>`}
   return h+`</tbody></table></div><div class="note">${L==null?'Pon los cm gastados del depósito.':`${fmt(st.reg.cm[b.id]||0,(st.reg.cm[b.id]||0)%1?1:0)} cm × ${fmt(b.lpcm,b.lpcm%1?1:0)} L/cm = <b>${fmt(L,0)} L</b> del depósito`}</div>`}
 function sumSuelo(c){const m=st.reg.m3[c.id],ha=c.ha||0,kg=kgDia(c.id),ps=Object.keys(kg).filter(p=>kg[p]>0.0001);
+  if(esArbol(c)){const ar=c.arboles;return `<div class="stat"><span>Agua por árbol</span><b>${m==null?'—':fmt(m*1000/ar,1)+' L/árbol'}</b><small>${m==null?'faltan los m³':fmt(m,1)+' m³ en '+fmt(ar,0)+' árboles'}</small></div>
+  ${ps.map(p=>`<div class="stat"><span>${esc(pn(p))}</span><b>${fmt(kg[p]*1000/ar,1)} ${uArb(p)}/árbol</b><small>${fmt(kg[p],1)} ${uCant(p)} hoy</small></div>`).join('')}`}
   return `<div class="stat"><span>Agua por hectárea</span><b>${m==null||!ha?'—':fmt(m/ha,1)+' m³/ha'}</b><small>${m==null?'faltan los m³':fmt(m,1)+' m³ en '+fmt(ha,1)+' ha'}</small></div>
   ${ps.map(p=>`<div class="stat"><span>${esc(pn(p))}</span><b>${ha?fmt(kg[p]/ha,2)+' '+uCant(p)+'/ha':fmt(kg[p],1)+' '+uCant(p)}</b><small>${fmt(kg[p],1)} ${uCant(p)} hoy</small></div>`).join('')}`}
 function vCuentas(){const c=cabById(st.cab);let h=banner()+`<div data-out="pend" style="display:contents">${pendHTML()}${lvlBanner()}</div>`;
@@ -2822,10 +2826,11 @@ function fillOut(b){const cm=st.fill[b.id]!==undefined?st.fill[b.id]:cmLlenar(b)
   return h+fila('agua','Agua (cm de depósito)',`${fmt(cm-liqCm,1)} cm`,'water')+`</div>`}
 
 function recetaSuelo(c){const ed=esGestor(),bs=bidonesDe(c.id);
-  return `<section class="card rsuelo"><div><h3>Lo que pide el técnico</h3><div class="sub">${esc(c.nombre)} · cultivo en suelo · las cuentas van por % y por hectárea</div></div>
-    <div class="field"><label for="ha_${c.id}">Hectáreas</label><div class="inp sm"><input id="ha_${c.id}" data-sha="${c.id}" inputmode="decimal" value="${inVal(c.ha)}" ${ed?'':'disabled'}><span class="u">ha</span></div></div>
+  return `<section class="card rsuelo"><div><h3>Lo que pide el técnico</h3><div class="sub">${esc(c.nombre)} · cultivo en suelo · las cuentas van por % y por ${esArbol(c)?'árbol':'hectárea'}</div></div>
+    ${esArbol(c)?`<div class="field"><label for="arb_${c.id}">Árboles</label><div class="inp sm"><input id="arb_${c.id}" data-sarb="${c.id}" inputmode="numeric" value="${inVal(c.arboles)}" ${ed?'':'disabled'}><span class="u">árboles</span></div></div>`
+    :`<div class="field"><label for="ha_${c.id}">Hectáreas</label><div class="inp sm"><input id="ha_${c.id}" data-sha="${c.id}" inputmode="decimal" value="${inVal(c.ha)}" ${ed?'':'disabled'}><span class="u">ha</span></div></div>`}
     ${bs.map(b=>`<div class="rs-dep"><h4>${esc(b.nombre)} <small>${fmt(b.lpcm,1)} L/cm</small></h4>${b.productos.map(x=>`<div class="field"><label for="pct_${b.id}_${x.p}">${esc(prod(x.p).n)}</label><div class="inp sm"><input id="pct_${b.id}_${x.p}" data-spct="${b.id}|${x.p}" inputmode="decimal" value="${inVal(+pctDe(b,x).toFixed(2))}" ${ed?'':'disabled'}><span class="u">%</span></div></div>`).join('')}
-      <div class="note">Cuenta: cm × ${fmt(b.lpcm,1)} × (% × 10) ÷ 1000 = ${b.productos.map(x=>uCant(x.p)==='L'?'litros':'kilos').filter((v,i,A)=>A.indexOf(v)===i).join(' o ')} · ÷ ${fmt(c.ha||0,1)} ha = por hectárea</div></div>`).join('')}
+      <div class="note">${esArbol(c)?`Cuenta: cm × ${fmt(b.lpcm,1)} × (% × 10) ÷ ${fmt(c.arboles,0)} árboles = ${b.productos.map(x=>uCant(x.p)==='L'?'ml':'gramos').filter((v,i,A)=>A.indexOf(v)===i).join(' o ')} por árbol (un 20 % es × 200)`:`Cuenta: cm × ${fmt(b.lpcm,1)} × (% × 10) ÷ 1000 = ${b.productos.map(x=>uCant(x.p)==='L'?'litros':'kilos').filter((v,i,A)=>A.indexOf(v)===i).join(' o ')} · ÷ ${fmt(c.ha||0,1)} ha = por hectárea`}</div></div>`).join('')}
     ${ed?'<div class="note">Cambia el % cuando lo diga el técnico y pulsa «Guardar» abajo.</div>':''}</section>`}
 function vReceta(){const c=cabById(st.cab);if(esSuelo(c))return recetaSuelo(c);let h=`<section class="summary" data-out="rsum">${sumReceta(c)}</section>`;
   if(esGestor())h+=`<section class="card"><div class="field"><label for="rec_f">Este cambio de receta empieza el</label><div class="inp"><input type="date" id="rec_f" data-hr="rfecha" max="${hoy()}" value="${st.recFecha||hoy()}"></div></div><div class="note">Si os dieron la receta otro día y la metéis más tarde, pon aquí ese día: así sale bien en la hoja de cambios de receta.</div></section>`;
@@ -5362,7 +5367,9 @@ function vEstructura(){if(!esAdminU())return `<section class="card"><div class="
       h+=`<div class="edc"><button class="edch" data-ed="toggle" data-id="${c.id}" aria-expanded="${ab}"><b>${esc(c.nombre)}</b><small>${c.sectores.length} sectores · ${c.sectores.reduce((a,s)=>a+s.bandejas.length,0)} bandejas · ${deps.length} depósitos</small><span>${ab?'▲':'▼'}</span></button>`;
       if(ab){h+=`<div class="edcb"><div class="frm"><div class="field"><label>Nombre del cabezal</label>${edInp(`data-edv="cab.nombre" data-id="${c.id}"`,c.nombre)}</div>
           <div class="field"><label>Finca</label><div class="inp"><select data-edv="cab.finca" data-id="${c.id}">${cfg.fincas.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></div></div>
-          <div class="field"><label>Almacén de abonos</label><div class="inp"><select data-edv="cab.alm" data-id="${c.id}">${almacenes().map(a=>`<option value="${a.id}" ${a.id===alm?'selected':''}>${esc(a.nombre)}</option>`).join('')}</select></div></div></div>
+          <div class="field"><label>Almacén de abonos</label><div class="inp"><select data-edv="cab.alm" data-id="${c.id}">${almacenes().map(a=>`<option value="${a.id}" ${a.id===alm?'selected':''}>${esc(a.nombre)}</option>`).join('')}</select></div></div>
+          <div class="field"><label>Cómo se hacen las cuentas</label><div class="inp"><select data-edv="cab.tipo" data-id="${c.id}">${[['receta','Receta por depósito (invernadero)'],['ha','Suelo: % del técnico, por hectárea'],['arbol','Suelo: % del técnico, por árbol']].map(([k,t])=>`<option value="${k}" ${k===(esArbol(c)?'arbol':esSuelo(c)?'ha':'receta')?'selected':''}>${t}</option>`).join('')}</select></div></div>
+          ${esArbol(c)?`<div class="field"><label>Árboles</label>${edInp(`data-edv="cab.arboles" data-id="${c.id}"`,c.arboles,{num:1,sm:1,u:'árboles'})}</div>`:esSuelo(c)?`<div class="field"><label>Hectáreas</label>${edInp(`data-edv="cab.ha" data-id="${c.id}"`,c.ha,{num:1,sm:1,u:'ha'})}</div>`:''}</div>
         <h4>Sectores y bandejas de drenaje</h4>`;
         for(const s of c.sectores){h+=`<div class="eds"><div class="row" style="align-items:flex-end"><div class="field" style="flex:1"><label>Sector</label>${edInp(`data-edv="sec.nombre" data-id="${s.id}"`,s.nombre)}</div>${edBtnDel('sec:'+s.id,'Quitar sector')}</div>`;
           for(const bj of s.bandejas)h+=`<div class="edb">${edInp(`data-edv="bj.nombre" data-id="${bj.id}" aria-label="Nombre de la bandeja"`,bj.nombre)}${edInp(`data-edv="bj.caudal" data-id="${bj.id}" aria-label="Caudal"`,bj.caudal,{num:1,sm:1,u:'ml/min'})}${edBtnDel('bj:'+bj.id,'×')}</div>`;
@@ -5420,6 +5427,9 @@ function onEdInput(e){const t=e.target,k=t.dataset&&t.dataset.edv;if(!k)return;c
   if(k==='finca.nombre'){if(!txt)return;f.nombre=txt}
   else if(k==='cab.nombre'){if(!txt)return;cab.nombre=txt}
   else if(k==='cab.finca'){if(e.type!=='change')return;for(const x of cfg.fincas)x.cabezales=x.cabezales.filter(c=>c!==id);cfg.fincas.find(x=>x.id===v).cabezales.push(id);rerender=true}
+  else if(k==='cab.tipo'){if(e.type!=='change')return;if(v==='receta'){delete cab.suelo;delete cab.arboles}else{cab.suelo=true;if(v==='arbol'){if(!(cab.arboles>0))cab.arboles=1000}else delete cab.arboles}rerender=true}
+  else if(k==='cab.arboles'){const n=num(v);if(!(n>=1))return;cab.arboles=Math.round(n)}
+  else if(k==='cab.ha'){const n=num(v);if(!(n>0))return;cab.ha=n}
   else if(k==='cab.alm'){if(e.type!=='change')return;for(const a of almacenes())a.cabezales=a.cabezales.filter(c=>c!==id);almacenes().find(a=>a.id===v).cabezales.push(id);if(!cfg.almacenes)cfg.almacenes=almacenes();rerender=true}
   else if(k==='sec.nombre'){if(!txt)return;for(const c of cfg.cabezales)for(const s of c.sectores)if(s.id===id)s.nombre=txt}
   else if(k==='bj.nombre'||k==='bj.caudal'){for(const c of cfg.cabezales)for(const s of c.sectores)for(const b of s.bandejas)if(b.id===id){if(k==='bj.nombre'){if(!txt)return;b.nombre=txt}else{if(!(n>0))return;b.caudal=n}}}
@@ -6699,6 +6709,7 @@ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest
 document.addEventListener('change',e=>{const t=e.target;if(t&&t.id==='gd_mp'){const n=t.value==='__nuevo';for(const id of['gd_mn','gd_ml']){const x=document.getElementById(id);if(x)x.style.display=n?'':'none'}if(n){const i=document.getElementById('gd_mn');if(i)i.focus()}}});
 document.addEventListener('change',e=>{const t=e.target;if(!t||!t.dataset)return;
   if(t.dataset.spct){const[bi,p]=t.dataset.spct.split('|'),b=bid(bi),v=num(t.value);if(!b||v==null||v<0)return toast('Escribe el %');pctPon(b,p,v);st.dirtyCfg=true;setTimeout(()=>{renderSave();renderMain()},0)}
+  else if(t.dataset.sarb){const c=cabById(t.dataset.sarb),v=num(t.value);if(!c||!(v>=1))return toast('Escribe el número de árboles');c.arboles=Math.round(v);st.dirtyCfg=true;setTimeout(()=>{renderSave();renderMain()},0)}
   else if(t.dataset.sha){const c=cabById(t.dataset.sha),v=num(t.value);if(!c||!(v>0))return toast('Escribe las hectáreas');c.ha=v;st.dirtyCfg=true;setTimeout(()=>{renderSave();renderMain()},0)}});
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.matches&&d.matches('details[data-saj]'))st.sajOpen=d.open},true);
 async function recargarApp(){const b=$('#recargar');if((st.dirtyReg||st.dirtyCfg)&&!confirm('Tienes cambios sin guardar. Si recargas se pierden. ¿Recargar igualmente?'))return;
