@@ -842,6 +842,8 @@ body.teclado .bnav,body.teclado .agbtn{display:none!important}body.teclado.conbn
 .ccg{width:100%;height:auto;display:block;margin:8px 0 2px}.ccx{font:600 21px var(--f-body);fill:var(--muted)}.ccv{fill:var(--ink)}.ccl{stroke:var(--line)}
 .ccsol{fill:#f6dfa0;stroke:#d99a00;stroke-width:2.5}.ccmin{stroke:#b3261e;stroke-dasharray:5 4;stroke-width:1.5}.cccut{stroke:var(--muted);stroke-dasharray:2 4}
 .cch{width:100%;height:auto;display:block;margin:8px 0 2px}.ccb0{fill:#2160c4}.ccb1{fill:#2a8a4a}.ccb2{fill:#b36b00}.ccb3{fill:#8a3fb3}.ccb0,.ccb1,.ccb2,.ccb3{opacity:.55}.ccbs{opacity:1}.ccbf0{background:#2160c4}.ccbf1{background:#2a8a4a}.ccbf2{background:#b36b00}.ccbf3{background:#8a3fb3}.cc-all th{text-align:left;font-size:12px;color:var(--muted)}
+.m3sel{display:flex;flex-wrap:wrap;gap:6px 14px}.m3sel .chk{margin:0}.m3t th.s,.m3t td.s{background:var(--sub,#f3f6f4)}
+.m3gr{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;width:100%;margin-top:8px}.m3gr .m3cv{min-height:44px;display:flex;align-items:center}
 .ccrad{stroke:#2160c4;stroke-width:2}.ccradf{fill:#2160c4}.cchora{stroke:var(--accent);stroke-width:2}.cchoraf{fill:var(--accent)}.ccseg{stroke:#b3261e;stroke-width:2}.ccsegf{fill:#b3261e}
 .cc-leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin:0 0 8px}.ccsw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.ccsw.ccradf{background:#2160c4}.ccsw.cchoraf{background:var(--accent)}.cc-hrs{font-size:14px;color:var(--muted);line-height:1.6}
 .cc-src{display:block;color:var(--muted);font-size:12px;margin-top:2px}.cc-src.cc-no{color:#b3261e}.cc-tb td{padding:6px 4px}.cc-tb td:last-child{text-align:right}
@@ -1037,13 +1039,13 @@ const st={cfg:clone(DEFAULT_CONFIG),savedCfg:clone(DEFAULT_CONFIG),reg:null,fech
   gRange:30,dg:{tipo:'planta',cultivo:'Tomate',cab:null,sector:'',sint:'',fotos:[],datos:true,busy:false,res:null,err:null,ctl:null},diags:null,confirmDg:null,wx:null,wxErr:null,rv:null,rvI:0,rvZ:7,rvTimer:null,llen:null,alm:null,lf:null,confirmLl:null,confirmMv:null,mes:hoy().slice(0,7),
   ent:{p:'kno3',qty:null,fecha:hoy(),prov:'',alb:'',adj:[]},aj:{p:'kno3',real:null},msgs:null,msgCab:null,msgF:'todos',msgDraft:'',msgAdj:[],confirmDel:null,autor:(()=>{try{return localStorage.getItem('abono.autor')||''}catch(e){return ''}})()};
 
-function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},cm:{},perd:{},perdM:{},vac:{},hT:{},hH:{},hA:{},hD:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},rcon:{},rcs:{},obs:{},afo:{},pre:{},clima:{},trampa:{},meteo:{},sug:null}}
+function ejemploReg(f){return{fecha:f,ejemplo:true,m3:{},m3g:{},cm:{},perd:{},perdM:{},vac:{},hT:{},hH:{},hA:{},hD:{},niv:{},min:{},rie:{},dren:{},ceE:{},phE:{},ceD:{},phD:{},mue:{},ceB:{},phB:{},ceR:{},inc:{},phS:{},incR:{},m3R:{},rad:{},rcon:{},rcs:{},obs:{},afo:{},pre:{},clima:{},trampa:{},meteo:{},sug:null}}
 /* Lo del último día guardado se ofrece como sugerencia (gris), nunca se guarda solo */
 const sugDe=(g,id)=>{const s=st.reg&&st.reg.sug;return s&&s[g]&&s[g][id]!=null?s[g][id]:null};
 const sugPh=(g,id)=>{const v=sugDe(g,id);return v==null?'':` placeholder="${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(v))}"`};
 st.regMod=new Set();
 const marcaReg=k=>{st.regMod.add(k);st.dirtyReg=true};
-function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},cm:{...(r.cm||{})},perd:{...(r.perd||{})},perdM:{...(r.perdM||{})},vac:{...(r.vac||{})},hT:{...(r.hT||{})},hH:{...(r.hH||{})},hA:{...(r.hA||{})},hD:{...(r.hD||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},rcon:{...(r.rcon||{})},rcs:{...(r.rcs||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},meteo:{...(r.meteo||{})},guardado:r.guardado||null}}
+function normReg(r,f){return{fecha:f,...(r.resumen?{resumen:r.resumen}:{}),...(r.receta?{receta:r.receta}:{}),m3:{...(r.m3||{})},m3g:{...(r.m3g||{})},cm:{...(r.cm||{})},perd:{...(r.perd||{})},perdM:{...(r.perdM||{})},vac:{...(r.vac||{})},hT:{...(r.hT||{})},hH:{...(r.hH||{})},hA:{...(r.hA||{})},hD:{...(r.hD||{})},min:{...(r.min||{})},rie:{...(r.rie||{})},ceB:{...(r.ceB||{})},ceR:{...(r.ceR||{})},inc:{...(r.inc||{})},phS:{...(r.phS||{})},dren:{...(r.dren||{})},niv:{...(r.niv||{})},ceE:{...(r.ceE||{})},phE:{...(r.phE||{})},ceD:{...(r.ceD||{})},phD:{...(r.phD||{})},mue:{...(r.mue||{})},incR:{...(r.incR||{})},phB:{...(r.phB||{})},m3R:{...(r.m3R||{})},rad:{...(r.rad||{})},rcon:{...(r.rcon||{})},rcs:{...(r.rcs||{})},obs:{...(r.obs||{})},afo:{...(r.afo||{})},pre:{...(r.pre||{})},clima:{...(r.clima||{})},trampa:{...(r.trampa||{})},meteo:{...(r.meteo||{})},guardado:r.guardado||null}}
 
 /* ---------- Cálculos ---------- */
 const prod=id=>st.cfg.productos[id]||{n:id,liq:false,ce:0,un:0};
@@ -1990,19 +1992,26 @@ function m3Grupos(f){const ids=(f.cabezales||[]).filter(id=>cabById(id)&&cabsVis
 function m3MesDatos(f,mes){const [y,m]=mes.split('-').map(Number),n=new Date(y,m,0).getDate(),dias=Array.from({length:n},(_,i)=>mes+'-'+String(i+1).padStart(2,'0'));
   const v={};for(const r of st.hist||[]){const d=diaRiego(r.fecha);if(!d||d.slice(0,7)!==mes)continue;for(const[c,x]of Object.entries(r.m3||{}))if(x!=null)(v[c]=v[c]||{})[d]=x}
   if(st.reg&&st.reg.m3){const d=diaRiego(st.fecha);if(d&&d.slice(0,7)===mes)for(const[c,x]of Object.entries(st.reg.m3))if(x!=null)(v[c]=v[c]||{})[d]=x}
-  return {dias,v,G:m3Grupos(f)}}
+  const pon=(r,d)=>{for(const[k,x]of Object.entries(r.m3g||{})){const i=k.lastIndexOf('_');if(x!=null)(v[k.slice(0,i)+'#'+k.slice(i+1)]=v[k.slice(0,i)+'#'+k.slice(i+1)]||{})[d]=x}};
+  for(const r of st.hist||[]){const d=diaRiego(r.fecha);if(d&&d.slice(0,7)===mes)pon(r,d)}if(st.reg){const d=diaRiego(st.fecha);if(d&&d.slice(0,7)===mes)pon(st.reg,d)}
+  const sel=st.m3sel||{},G0=m3Grupos(f);return {dias,v,G:G0.map(g=>g.filter(c=>sel[c]!==false)).filter(g=>g.length),todos:G0.flat()}}
+/* las columnas de la tabla y del Excel: cada cabezal (con sus contadores si tiene dos), los totales de los que comparten y el de la finca */
+function m3Cols(f,D){const cols=[],gr=c=>{const k=cabById(c),G=m3Gr(k);return G?G.map((g,i)=>({t:'s',ids:[c+'#'+i],n:k.nombre+' · '+m3GrNom(k,g)})):[]};
+  for(const g of D.G){for(const c of g)cols.push(...gr(c),{t:'z',ids:[c],n:cabNombre(c)});if(g.length>1)cols.push({t:'g',ids:g,n:'Total '+g.map(cabNombre).join(' + '),key:m3Key(g)})}
+  if(D.G.length>1)cols.push({t:'f',ids:D.G.flat(),n:D.G.flat().length<D.todos.length?'Total de los elegidos':'Total '+f.nombre});return cols}
 const m3Key=g=>g.slice().sort().join('+');
 function vM3Mes(){if(st.hist===null)loadHist();const f=fincaAct();if(!f)return '';const mes=st.m3mes||diaRiego(hoy()).slice(0,7),D=m3MesDatos(f,mes),hoyR=diaRiego(hoy());
-  const cols=[];for(const g of D.G){for(const c of g)cols.push({t:'z',ids:[c],n:cabNombre(c)});if(g.length>1)cols.push({t:'g',ids:g,n:'Total '+g.map(cabNombre).join(' + '),key:m3Key(g)})}
-  if(D.G.length>1)cols.push({t:'f',ids:D.G.flat(),n:'Total '+f.nombre});
+  const cols=m3Cols(f,D),sel=st.m3sel||{};
   const dia=(ids,d)=>{let s=0,h=false;for(const c of ids){const x=(D.v[c]||{})[d];if(x!=null){s+=x;h=true}}return h?s:null};
   const acum=cols.map(()=>0),filas=D.dias.filter(d=>d<=hoyR||cols.some(c=>dia(c.ids,d)!=null)).map(d=>({d,c:cols.map((c,i)=>{const x=dia(c.ids,d);if(x!=null)acum[i]+=x;return {x,a:x!=null||acum[i]?acum[i]:null}})}));
   const tot=cols.map((c,i)=>acum[i]),nd=cols.map(c=>D.dias.filter(d=>dia(c.ids,d)!=null).length);
   const C=st.cfg.contador||{};
   let h=`<section class="card"><div class="tank-h"><div><h3>M³ del mes · ${esc(f.nombre)}</h3><div class="sub">Lo regado cada día de riego en cada zona y lo acumulado del mes${D.G.some(g=>g.length>1)?' · las zonas que comparten cabezal se suman juntas':''}</div></div>
     <div class="field"><label for="m3_mes">Mes</label><div class="inp"><input type="month" id="m3_mes" data-m3="mes" value="${mes}"></div></div></div>
-    <div class="row"><button class="btn" type="button" data-m3="xlsx">Descargar Excel</button></div></section>
-    <section class="summary">${cols.filter(c=>c.t!=='z'||D.G.find(g=>g.includes(c.ids[0])).length===1).map((c,i)=>{const k=cols.indexOf(c);return `<div class="stat"><span>${esc(c.n.replace(/^Total /,''))}</span><b>${fmt(tot[k],0)} m³</b><small>${nd[k]} días · media ${nd[k]?fmt(tot[k]/nd[k],0):'—'} m³/día</small></div>`}).join('')}</section>
+    <div class="field"><label>Cabezales en la tabla y el Excel</label><div class="m3sel">${D.todos.map(c=>`<label class="chk"><input type="checkbox" data-m3s="${c}" ${sel[c]!==false?'checked':''}> ${esc(cabNombre(c))}</label>`).join('')}</div></div>
+    <div class="row"><button class="btn" type="button" data-m3="xlsx" ${D.G.length?'':'disabled'}>Descargar Excel</button></div></section>
+    ${D.G.length?'':'<section class="card"><div class="note">Marca al menos un cabezal.</div></section>'}
+    <section class="summary">${cols.filter(c=>c.t==='s'||(c.t!=='z'||D.G.find(g=>g.includes(c.ids[0])).length===1)).map((c,i)=>{const k=cols.indexOf(c);return `<div class="stat"><span>${esc(c.n.replace(/^Total /,''))}</span><b>${fmt(tot[k],0)} m³</b><small>${nd[k]} días · media ${nd[k]?fmt(tot[k]/nd[k],0):'—'} m³/día</small></div>`}).join('')}</section>
     <section class="card"><div style="overflow-x:auto"><table class="m3t"><thead><tr><th rowspan="2">Día</th>${cols.map(c=>`<th colspan="2" class="${c.t}">${esc(c.n)}</th>`).join('')}</tr><tr>${cols.map(c=>`<th class="${c.t}">Día</th><th class="${c.t}">Acum.</th>`).join('')}</tr></thead><tbody>
     ${filas.map(r=>`<tr class="${r.d===hoyR?'hoyf':''}"><td><b>${+r.d.slice(8)}</b></td>${r.c.map((x,i)=>`<td class="${cols[i].t}">${x.x!=null?fmt(x.x,0):'—'}</td><td class="${cols[i].t} ac">${x.a!=null?fmt(x.a,0):''}</td>`).join('')}</tr>`).join('')}
     <tr class="tot"><td>Total</td>${cols.map((c,i)=>`<td class="${c.t}" colspan="2"><b>${fmt(tot[i],0)} m³</b></td>`).join('')}</tr></tbody></table></div>
@@ -2015,12 +2024,13 @@ function vM3Mes(){if(st.hist===null)loadHist();const f=fincaAct();if(!f)return '
       <div class="field"><label>Diferencia</label><div class="m3cv"><b class="${dif!=null&&Math.abs(dif)>Math.max(20,t*0.02)?'tbad':''}">${dif!=null?(dif>0?'+':'')+fmt(dif,0)+' m³':'—'}</b></div></div></div></div>`}).join('')}
     ${esGestor()?'<div class="note">Se guarda con «Guardar» abajo.</div>':''}</section>`;
   return h}
-function m3MesXlsx(){const f=fincaAct(),mes=st.m3mes||diaRiego(hoy()).slice(0,7),D=m3MesDatos(f,mes);const cols=[];for(const g of D.G){for(const c of g)cols.push({ids:[c],n:cabNombre(c)});if(g.length>1)cols.push({ids:g,n:'Total '+g.map(cabNombre).join(' + ')})}if(D.G.length>1)cols.push({ids:D.G.flat(),n:'Total '+f.nombre});
+function m3MesXlsx(){const f=fincaAct(),mes=st.m3mes||diaRiego(hoy()).slice(0,7),D=m3MesDatos(f,mes);if(!D.G.length)return toast('Marca al menos un cabezal');const cols=m3Cols(f,D),nom=D.G.flat().length<D.todos.length?D.G.flat().map(cabNombre).join('-'):f.nombre||'finca';
   const dia=(ids,d)=>{let s=0,h=false;for(const c of ids){const x=(D.v[c]||{})[d];if(x!=null){s+=x;h=true}}return h?s:null};const ac=cols.map(()=>0);
   const rows=[['M³ del mes · '+f.nombre+' · '+nomMes(mes)],[],['Día',...cols.flatMap(c=>[c.n+' (día)',c.n+' (acum.)'])],...D.dias.map(d=>[+d.slice(8),...cols.flatMap((c,i)=>{const x=dia(c.ids,d);if(x!=null)ac[i]+=x;return [x??'',x!=null||ac[i]?ac[i]:'']})]),[],['Total',...cols.flatMap((c,i)=>[ac[i],''])]];
-  saveBlob(xlsxBlob([{name:'M3 '+mes,rows,bold:[0,2,rows.length-1]}]),`m3-${(f.nombre||'finca').replace(/\s+/g,'-').toLowerCase()}-${mes}.xlsx`)}
+  saveBlob(xlsxBlob([{name:'M3 '+mes,rows,bold:[0,2,rows.length-1]}]),`m3-${nom.replace(/\s+/g,'-').toLowerCase()}-${mes}.xlsx`)}
 document.addEventListener('change',e=>{const t=e.target;if(st.tab!=='m3mes'||!t.dataset)return;
   if(t.dataset.m3==='mes'&&/^\d{4}-\d{2}$/.test(t.value)){st.m3mes=t.value;renderMain()}
+  else if(t.dataset.m3s){st.m3sel={...(st.m3sel||{}),[t.dataset.m3s]:t.checked};renderMain()}
   else if(t.dataset.m3c&&esGestor()){const k=t.dataset.g,mes=st.m3mes||diaRiego(hoy()).slice(0,7),v=num(t.value);const C=st.cfg.contador={...(st.cfg.contador||{})};C[k]={...(C[k]||{})};C[k][mes]={...(C[k][mes]||{}),[t.dataset.m3c]:v};st.dirtyCfg=true;renderSave();renderMain()}});
 document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-m3="xlsx"]');if(b&&st.tab==='m3mes')m3MesXlsx()});
 /* ---------- AGRO: el asistente de voz de la app ----------
@@ -2482,6 +2492,10 @@ function banner(){return ''}
 
 const esSuelo=c=>!!(c&&c.suelo);
 /* En suelo las cuentas se reparten por hectárea o, en árboles (LA TORRE), por árbol: lo gastado en g o ml por árbol */
+/* m³ por contadores: un cabezal puede tener dos contadores (Franco: sectores 1 y 2 · sectores 3 y 4). Se guardan en reg.m3g['<cab>_<n>'] y el total del cabezal (reg.m3) es la suma */
+const m3Gr=c=>{if(!c||!(c.m3g>=2)||!c.sectores||c.sectores.length<2)return null;const h=Math.ceil(c.sectores.length/2);return [c.sectores.slice(0,h),c.sectores.slice(h)]};
+const m3GrNom=(c,g)=>{const n=g.map(s=>c.sectores.indexOf(s)+1);return n.length===1?'Sector '+n[0]:'Sectores '+n.slice(0,-1).join(', ')+' y '+n[n.length-1]};
+function m3GrSuma(cid){const c=cabById(cid),G=m3Gr(c);if(!G)return;const r=st.reg,v=G.map((_,i)=>(r.m3g||{})[cid+'_'+i]);r.m3[cid]=v.every(x=>x!=null)?+v.reduce((a,b)=>a+b,0).toFixed(3):null;marcaReg('m3.'+cid)}
 const esArbol=c=>esSuelo(c)&&c.arboles>0,uArb=p=>uCant(p)==='L'?'ml':'g';
 const pctDe=(b,x)=>conc(b,x)/10;   // % en el depósito (12 % = 120 kg por 1000 L)
 function pctPon(b,p,pct){const pp=b.productos.find(x=>x.p===b.principal),x=b.productos.find(y=>y.p===p);if(!pp||!x||!(pct>=0))return;
@@ -2501,7 +2515,8 @@ function sumSuelo(c){const m=st.reg.m3[c.id],ha=c.ha||0,kg=kgDia(c.id),ps=Object
 function vCuentas(){const c=cabById(st.cab);let h=banner()+`<div data-out="pend" style="display:contents">${pendHTML()}${lvlBanner()}</div>`;
   h+=`<section class="summary" data-out="sum">${esSuelo(c)?sumSuelo(c):sumCuentas()}</section>`;
   h+=`<div class="card"><div class="tank-h"><div><h3>Agua regada</h3><div class="sub">${esc(c.nombre)} · total del día</div></div>
-    <div class="field big"><label for="m3_${c.id}">m³ del cabezal</label><div class="inp"><input id="m3_${c.id}" data-k="reg.m3.${c.id}" inputmode="decimal" autocomplete="off"${sugPh('m3',c.id)} value="${inVal(st.reg.m3[c.id])}"><span class="u">m³</span></div>${st.reg.m3[c.id]==null&&sugDe('m3',c.id)!=null?`<button class="btn sm" data-act="sug-m3" data-id="${c.id}">Igual que el ${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(sugDe('m3',c.id)))} m³</button>`:''}${(()=>{const V=vlvDia(c.id,st.fecha);return V&&V.hay&&V.m3>0.005?`<button class="btn sm" data-act="vlv-m3" data-id="${c.id}" data-v="${V.m3.toFixed(2)}">Contador del cabezal: ${fmt(V.m3,2)} m³ (${V.riegos.length} riegos) · usar</button>`:''})()}</div></div></div>`;
+    ${m3Gr(c)?`<div class="m3gr">${m3Gr(c).map((g,i)=>`<div class="field"><label for="m3g_${c.id}_${i}">m³ ${esc(m3GrNom(c,g))}</label><div class="inp"><input id="m3g_${c.id}_${i}" data-k="reg.m3g.${c.id}_${i}" inputmode="decimal" autocomplete="off" value="${inVal((st.reg.m3g||{})[c.id+'_'+i])}"><span class="u">m³</span></div></div>`).join('')}
+      <div class="field"><label>Total del cabezal</label><div class="m3cv" data-out="m3t"><b>${st.reg.m3[c.id]!=null?fmt(st.reg.m3[c.id],st.reg.m3[c.id]%1?1:0)+' m³':'—'}</b></div></div></div></div></div>`:`<div class="field big"><label for="m3_${c.id}">m³ del cabezal</label><div class="inp"><input id="m3_${c.id}" data-k="reg.m3.${c.id}" inputmode="decimal" autocomplete="off"${sugPh('m3',c.id)} value="${inVal(st.reg.m3[c.id])}"><span class="u">m³</span></div>${st.reg.m3[c.id]==null&&sugDe('m3',c.id)!=null?`<button class="btn sm" data-act="sug-m3" data-id="${c.id}">Igual que el ${esc(fCorta(st.reg.sug.fecha))}: ${esc(inVal(sugDe('m3',c.id)))} m³</button>`:''}${(()=>{const V=vlvDia(c.id,st.fecha);return V&&V.hay&&V.m3>0.005?`<button class="btn sm" data-act="vlv-m3" data-id="${c.id}" data-v="${V.m3.toFixed(2)}">Contador del cabezal: ${fmt(V.m3,2)} m³ (${V.riegos.length} riegos) · usar</button>`:''})()}</div></div></div>`}`;
   for(const b of bidonesDe(st.cab)){const otros=b.cabezales.filter(x=>x!==c.id).map(x=>cabById(x).nombre).join(', ');
     h+=`<section class="card"><div class="tank-h"><div><h3>${esc(b.nombre)}</h3><div class="sub">${otros?'Compartido con '+esc(otros)+' · ':''}${fmt(b.lpcm,1)} L por cm</div></div></div>
       ${lecturaBoxes(b,c)}
@@ -4971,6 +4986,8 @@ async function migMetalicos(){try{if(!esAdminU()||(st.cfg.mig||{}).metalicos||st
     c.bidones.push({id:'pot_met',nombre:'Depósito potásico',cabezales:['met'],lpcm:31,capacidad:5000,principal:'kno3',kgPrincipal:120,venturis:1,reparto:false,cmHabitual:null,modo:'manual',productos:[{p:'kno3',dosis:1}]},
       {id:'aci_met',nombre:'Depósito ácido',cabezales:['met'],lpcm:20,capacidad:3000,principal:'h3po4',kgPrincipal:100,venturis:1,reparto:false,cmHabitual:null,modo:'manual',productos:[{p:'h3po4',dosis:1},{p:'sma',dosis:1}]})};
   f(st.cfg);f(st.savedCfg);await Store.setConfig(clone(st.savedCfg));renderAll()}catch(e){console.warn('alta de los Metálicos',e)}}
+async function migM3Franco(){try{const c=cabById('fra');if(!esAdminU()||!c||(st.cfg.mig||{}).m3Franco||st.dirtyCfg||c.sectores.length<4)return;
+  const f=x=>{const k=(x.cabezales||[]).find(y=>y.id==='fra');if(k&&!(k.m3g>=2))k.m3g=2;x.mig={...(x.mig||{}),m3Franco:1}};f(st.cfg);f(st.savedCfg);await Store.setConfig(clone(st.savedCfg));if(st.tab==='cuentas'&&st.cab==='fra')renderMain()}catch(e){}}
 async function migNavesGas(){try{if(!esAdminU()||!cabById('gas')||(st.cfg.mig||{}).gasNaves||st.dirtyCfg)return;
   const l=await Store.listCol('incidencias',0),hechos={};for(const i of l)if(i.cab==='gas'&&!i.navMig&&i.nave>=1&&i.nave<=6){await Store.updCol('incidencias',i.id,{nave:7-i.nave,navMig:1});hechos[i.id]=7-i.nave}
   const enMem=()=>{for(const x of st.inc||[])if(hechos[x.id]!=null&&!x.navMig){x.nave=hechos[x.id];x.navMig=1}};enMem();setTimeout(enMem,4000);
@@ -5369,6 +5386,7 @@ function vEstructura(){if(!esAdminU())return `<section class="card"><div class="
           <div class="field"><label>Finca</label><div class="inp"><select data-edv="cab.finca" data-id="${c.id}">${cfg.fincas.map(x=>`<option value="${x.id}" ${x.id===f.id?'selected':''}>${esc(x.nombre)}</option>`).join('')}</select></div></div>
           <div class="field"><label>Almacén de abonos</label><div class="inp"><select data-edv="cab.alm" data-id="${c.id}">${almacenes().map(a=>`<option value="${a.id}" ${a.id===alm?'selected':''}>${esc(a.nombre)}</option>`).join('')}</select></div></div>
           <div class="field"><label>Cómo se hacen las cuentas</label><div class="inp"><select data-edv="cab.tipo" data-id="${c.id}">${[['receta','Receta por depósito (invernadero)'],['ha','Suelo: % del técnico, por hectárea'],['arbol','Suelo: % del técnico, por árbol']].map(([k,t])=>`<option value="${k}" ${k===(esArbol(c)?'arbol':esSuelo(c)?'ha':'receta')?'selected':''}>${t}</option>`).join('')}</select></div></div>
+          ${c.sectores.length>=2&&!esSuelo(c)?`<div class="field"><label>Contadores de m³</label><div class="inp"><select data-edv="cab.m3g" data-id="${c.id}"><option value="1" ${m3Gr(c)?'':'selected'}>Uno para todo el cabezal</option><option value="2" ${m3Gr(c)?'selected':''}>Dos: ${esc(m3GrNom(c,c.sectores.slice(0,Math.ceil(c.sectores.length/2))))} · ${esc(m3GrNom(c,c.sectores.slice(Math.ceil(c.sectores.length/2))))}</option></select></div></div>`:''}
           ${esArbol(c)?`<div class="field"><label>Árboles</label>${edInp(`data-edv="cab.arboles" data-id="${c.id}"`,c.arboles,{num:1,sm:1,u:'árboles'})}</div>`:esSuelo(c)?`<div class="field"><label>Hectáreas</label>${edInp(`data-edv="cab.ha" data-id="${c.id}"`,c.ha,{num:1,sm:1,u:'ha'})}</div>`:''}</div>
         <h4>Sectores y bandejas de drenaje</h4>`;
         for(const s of c.sectores){h+=`<div class="eds"><div class="row" style="align-items:flex-end"><div class="field" style="flex:1"><label>Sector</label>${edInp(`data-edv="sec.nombre" data-id="${s.id}"`,s.nombre)}</div>${edBtnDel('sec:'+s.id,'Quitar sector')}</div>`;
@@ -5428,6 +5446,7 @@ function onEdInput(e){const t=e.target,k=t.dataset&&t.dataset.edv;if(!k)return;c
   else if(k==='cab.nombre'){if(!txt)return;cab.nombre=txt}
   else if(k==='cab.finca'){if(e.type!=='change')return;for(const x of cfg.fincas)x.cabezales=x.cabezales.filter(c=>c!==id);cfg.fincas.find(x=>x.id===v).cabezales.push(id);rerender=true}
   else if(k==='cab.tipo'){if(e.type!=='change')return;if(v==='receta'){delete cab.suelo;delete cab.arboles}else{cab.suelo=true;if(v==='arbol'){if(!(cab.arboles>0))cab.arboles=1000}else delete cab.arboles}rerender=true}
+  else if(k==='cab.m3g'){if(e.type!=='change')return;if(v==='2')cab.m3g=2;else delete cab.m3g}
   else if(k==='cab.arboles'){const n=num(v);if(!(n>=1))return;cab.arboles=Math.round(n)}
   else if(k==='cab.ha'){const n=num(v);if(!(n>0))return;cab.ha=n}
   else if(k==='cab.alm'){if(e.type!=='change')return;for(const a of almacenes())a.cabezales=a.cabezales.filter(c=>c!==id);almacenes().find(a=>a.id===v).cabezales.push(id);if(!cfg.almacenes)cfg.almacenes=almacenes();rerender=true}
@@ -6760,7 +6779,7 @@ function applyCfg(p,v){const b=bid(p[2]);switch(p[1]){
   case 'bname':b.nombre=v||b.nombre;break;case 'ia':{const u=(v||'').trim();if(!u)delete st.cfg.iaUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.iaUrl=u;break}case 'avisos':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.avisosUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.avisosUrl=u;break}case 'sat':{const u=(v||'').trim().replace(/\/+$/,'');if(!u)delete st.cfg.satUrl;else if(/^https:\/\/\S+$/.test(u))st.cfg.satUrl=u;break}case 'medida':if(v==='gaste'||v==='nivel'||v==='cm'){st.cfg.medida=v;st.cfg.medidaV=2}break;case 'modo':if(MODOS[v])b.modo=v;break;case 'cons':if(v>0)b.consumoDia=v;else delete b.consumoDia;break;case 'riego':if(/^\d{1,2}:\d{2}$/.test(v||''))st.cfg.riego={...(st.cfg.riego||{}),[p[2]]:v};break;case 'caudal':{const bj=bandeja(p[2]);if(bj&&v)bj.caudal=v;break}}}
 function onInput(e){const t=e.target,k=t.dataset.k;if(!k)return;const p=k.split('.');let v=t.type==='checkbox'?t.checked:(t.dataset.text?t.value.trim():num(t.value));
   if(p[0]==='reg'){if(p[1]==='ceD'&&v!=null&&v>=50)v=v/1000;   // 4400 µS → 4,4 mS (4,4 también vale)
-    if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);if(p[1]==='mue'){const s=((cabById(st.cab)||{}).sectores||[]).find(x=>x.bandejas.some(bj=>bj.id===p[2])),o=s&&$('#mu_'+s.id);if(o)o.outerHTML=muHTML(s)}for(const o of document.querySelectorAll('#main [data-k]'))if(o!==t&&o.dataset.k===k&&o.type!=='checkbox')o.value=t.value;if(p[1]==='niv')autoCm(p[2]);if(['vac','hA','hD','hT'].includes(p[1])){cmbRecalc(p[2]);if(p[1]==='hT'){softUpdate();renderSave();renderMain();return}}}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
+    if(!st.reg[p[1]])st.reg[p[1]]={};st.reg[p[1]][p[2]]=v;marcaReg(p[1]+'.'+p[2]);if(p[1]==='m3g')m3GrSuma(p[2].slice(0,p[2].lastIndexOf('_')));if(p[1]==='mue'){const s=((cabById(st.cab)||{}).sectores||[]).find(x=>x.bandejas.some(bj=>bj.id===p[2])),o=s&&$('#mu_'+s.id);if(o)o.outerHTML=muHTML(s)}for(const o of document.querySelectorAll('#main [data-k]'))if(o!==t&&o.dataset.k===k&&o.type!=='checkbox')o.value=t.value;if(p[1]==='niv')autoCm(p[2]);if(['vac','hA','hD','hT'].includes(p[1])){cmbRecalc(p[2]);if(p[1]==='hT'){softUpdate();renderSave();renderMain();return}}}else if(p[0]==='fill'){st.fill[p[1]]=v}else if(p[0]==='cfg'){applyCfg(p,v);st.dirtyCfg=true}
   softUpdate();renderSave()}
 $('#main').addEventListener('input',onInput);
 $('#main').addEventListener('change',e=>{if(e.target.type==='checkbox')onInput(e)});
@@ -8143,6 +8162,9 @@ const PP_VAL={D:[31,33,34],I:[31],M:[31],O:[31]}; // casillas con números de ej
 /* m³ de cada sector: los del contador repartidos por los minutos de riego (y por el caudal del sector si está puesto en Ajustes) */
 function m3Sectores(cabId){const r=st.reg,c=cabById(cabId),m3=r.m3[cabId];if(m3==null||!c)return null;const ss=c.sectores.filter(s=>r.min[s.id]>0);if(!ss.length)return null;
   const q=s=>num(((st.cfg.sectInfo||{})[s.id]||{}).qh),conQ=ss.every(s=>q(s)>0),w=s=>r.min[s.id]*(conQ?q(s):1),t=ss.reduce((a,s)=>a+w(s),0);
+  // con dos contadores, lo de cada contador se reparte solo entre sus sectores
+  const G=m3Gr(c),mg=G&&G.map((_,i)=>(r.m3g||{})[cabId+'_'+i]);
+  if(G&&mg.every(x=>x!=null)){const m={};G.forEach((g,i)=>{const tg=g.filter(s=>r.min[s.id]>0).reduce((a,s)=>a+w(s),0);for(const s of g)m[s.id]=r.min[s.id]>0&&tg>0?mg[i]*w(s)/tg:null});return{conQ,m}}
   return{conQ,m:Object.fromEntries(c.sectores.map(s=>[s.id,r.min[s.id]>0?m3*w(s)/t:null]))}}
 function parteHojaP(cabId){const r=st.reg,c=cabById(cabId),P=parteFijos(cabId),V={},cover=[];
   const put=(ref,v,o)=>{if(v==null||v===''||(typeof v==='number'&&!isFinite(v)))return;V[ref]={v,...(o||{})}};
@@ -8808,7 +8830,7 @@ document.addEventListener('keydown',e=>{if(st.tab==='chatia'&&e.target.id==='ch_
 /* ---------- Arranque ---------- */
 (async function boot(){st.reg=ejemploReg(st.fecha);abrirSplash();renderAll();if(window.NUBE){await NUBE.ready();if(NUBE.user&&NUBE.user.nombre)st.autor=NUBE.user.nombre;setTimeout(()=>accApuntar(),3000);{const ok=cabsVis().map(c=>c.id);if(ok.length&&!ok.includes(st.cab))st.cab=ok[0];if(st.finca&&!fincaAct())st.finca=null}renderSplash()}await Store.init();await Adj.init();
   try{const c=await Store.getConfig();if(c&&c.v===DEFAULT_CONFIG.v&&Array.isArray(c.bidones)){c.productos={...(c.productos||{}),...PRODUCTOS};c.alertas={...DEFAULT_CONFIG.alertas,...(c.alertas||{})};if(!c.ubic||c.ubic.lat==null||c.ubic.lon==null)c.ubic={...DEFAULT_CONFIG.ubic};c.stockMin=c.stockMin||{};c.cultivo=c.cultivo||{gas:{cultivo:'Tomate',variedad:'',plantacion:'2026-08-20',guias:2}};c.saco=c.saco||{};c.riego=c.riego||{...DEFAULT_CONFIG.riego};if(c.medidaV!==2){c.medida='cm';c.medidaV=2}if(!Array.isArray(c.fincas))c.fincas=clone(DEFAULT_CONFIG.fincas);if(!Array.isArray(c.almacenes))c.almacenes=clone(DEFAULT_CONFIG.almacenes);c.bidones.forEach(b=>{b.nombre=String(b.nombre).replace(/Bid[oó]n/gi,'Depósito')});st.cfg=c;st.savedCfg=clone(c);splashLogo()}}catch(e){}
-  st.ready=true;loadFich();migNavesGas().then(migModoManual).then(migMetalicos).then(migNavesPlanos);if(!veRiego()){st.tab=tabPermitida('choy')?'choy':'casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
+  st.ready=true;loadFich();migNavesGas().then(migModoManual).then(migMetalicos).then(migNavesPlanos).then(migM3Franco);if(!veRiego()){st.tab=tabPermitida('choy')?'choy':'casist';renderAll()}else if(!st.dirtyReg)await loadFecha(st.fecha);else renderAll();if(veRiego()){loadHist();loadOps();loadMsgs();loadTareas();loadMat();loadPartes();loadInc()}loadCollas();loadNotas();setTimeout(wkBorrarRestos,20000);
   setTimeout(()=>{pushSuscribir(false);pushEstado()},4000);
   const ir=/[#&]ir=([\w:-]+)/.exec(location.hash);if(ir){history.replaceState(null,'',location.pathname+location.search);irA(ir[1])}
   const qr=/[#&]qr=([\w-]+)/.exec(location.hash);if(qr){history.replaceState(null,'',location.pathname+location.search);cerrarSplash();st.tab=veRiego()?'qrtaller':'cqrtaller';renderAll();qtEscanear(qr[1])}
